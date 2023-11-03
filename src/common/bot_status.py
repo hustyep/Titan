@@ -12,6 +12,15 @@ enabled: bool = False
 player_pos = (0, 0)
 player_direction = 'right'
 
+invisible = False
+
+
+# Rune status
+rune_pos = None
+rune_closest_pos = None
+free = True
+
+
 
 def run_if_enabled(function):
     """

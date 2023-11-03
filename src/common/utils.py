@@ -66,3 +66,30 @@ def multi_match(frame, template, threshold=0.95, debug=False):
         cv2.imshow("result", src_copy)
         cv2.waitKey()
     return results
+
+
+def distance(a, b):
+    """
+    Applies the distance formula to two points.
+    :param a:   The first point.
+    :param b:   The second point.
+    :return:    The distance between the two points.
+    """
+
+    return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+
+
+def bernoulli(p):
+    """
+    Returns the value of a Bernoulli random variable with probability P.
+    :param p:   The random variable's probability of being True.
+    :return:    True or False.
+    """
+
+    return random() < p
+
+
+def print_separator():
+    """Prints a 3 blank lines for visual clarity."""
+
+    print('\n')
