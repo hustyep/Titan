@@ -1,0 +1,72 @@
+"""A module for saving map layouts and determining shortest paths."""
+
+import os
+import cv2
+import math
+import pickle
+import xlrd
+import numpy as np
+
+from os.path import join, isfile, splitext, basename
+from heapq import heappush, heappop
+from src.common import constants, utils
+
+class Map:
+    """Uses a quadtree to represent possible player positions in a map layout."""
+
+    def __init__(self, name):
+        """
+        Creates a new Layout object with the given NAME.
+        :param name:     The name of this layout.
+        """
+
+        self.name = name
+        self.minimap_data = []
+        self.mob_templates = []
+        self.elite_templates = []
+        self.boss_templates = []
+        
+        self.load_data()
+    
+    def load_data(self):
+        self.load_minimap_data()
+        
+    def load_minimap_data(self):
+        resArray=[]
+        minimap_data_file = f'{get_maps_dir(self.name)}.xlsx'
+        try:
+            data = xlrd.open_workbook(minimap_data_file) #读取文件
+        except Exception as e:
+            data = None
+            print(f'载入地图{minimap_data_file}失败! \n{e}')
+        if data:
+            table = data.sheet_by_index(0) #按索引获取工作表，0就是工作表1
+            for i in range(1, table.nrows): #table.nrows表示总行数
+                line=table.row_values(i)[1:] #读取每行数据，保存在line里面，line是list
+                resArray.append(line) #将line加入到resArray中，resArray是二维list
+            resArray=np.array(resArray) #将resArray从二维list变成数组
+            self.minimap_data = resArray
+            
+            
+    def load_mob_template(self):
+        try:
+            mob_template = cv2.imread(f'assets/mobs/{self.name}_normal.png', 0)
+            elite_template = cv2.imread(f'assets/mobs/{self.name}_elite.png', 0)
+            boss_template = cv2.imread(f'assets/mobs/{self.name}_boss.png', 0)
+        except:
+            pass
+        if mob_template is not None:
+            self.mob_templates = [mob_template, cv2.flip(mob_template, 1)]
+        
+        if elite_template is not None:
+            self.elite_templates = [elite_template, cv2.flip(elite_template, 1)]
+        elif mob_template:
+            elite_template = cv2.resize(mob_template, None, fx=2, fy=2)
+            self.elite_templates = [elite_template, cv2.flip(elite_template, 1)]
+                            
+        if boss_template is not None:
+            self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
+                
+            
+def get_maps_dir(name):
+    return os.path.join(constants.RESOURCES_DIR, 'maps', name)
