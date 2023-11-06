@@ -13,7 +13,7 @@ player_pos = (0, 0)
 player_direction = 'right'
 
 invisible = False
-
+stage_fright = False
 
 # Rune status
 rune_pos = None

@@ -3,7 +3,7 @@ import math
 from enum import Enum
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils
-from src.map.map import Map
+from src.map.map import map
 from src.rune import rune
 from src.modules.capture import capture
 
@@ -30,7 +30,6 @@ class Command():
     castedTime: float = 0
     precast: float = 0
     backswing: float = 0.5
-    map: Map = None
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -82,7 +81,6 @@ class Move(Command):
         self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
         self.step = bot_settings.validate_nonnegative_int(step)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
-        self.prev_direction = ''
 
     def main(self):
         if self.step > self.max_steps:
@@ -113,23 +111,6 @@ class Move(Command):
 #      Shared Functions     #
 #############################
 
-
-@bot_status.run_if_enabled
-def sleep_in_the_air():
-    pass
-
-
-class MobType(Enum):
-    NORMAL = 'normal mob'
-    ELITE = 'elite mob'
-    BOSS = 'boss mob'
-
-
-@bot_status.run_if_enabled
-def detect_mobs(top=0, left=0, right=0, bottom=0, type: MobType = MobType.NORMAL, debug=False):
-    pass
-
-
 def step(direction, target):
     """
     The default 'step' function. If not overridden, immediately stops the bot.
@@ -141,6 +122,83 @@ def step(direction, target):
     print("\n[!] Function 'step' not implemented in current command book, aborting process.")
     bot_status.enabled = False
 
+
+def sleep_in_the_air():
+    pass
+
+
+class MobType(Enum):
+    NORMAL = 'normal mob'
+    ELITE = 'elite mob'
+    BOSS = 'boss mob'
+
+
+def detect_mobs(top=0, left=0, right=0, bottom=0, type: MobType = MobType.NORMAL, debug=False):
+    frame = capture.frame
+    minimap = capture.minimap
+
+    if frame is None or minimap is None:
+        return []
+
+    match (type):
+        case (MobType.BOSS):
+            mob_templates = map.boss_template
+        case (MobType.ELITE):
+            mob_templates = map.elite_template
+        case (_):
+            mob_templates = map.mob_template
+
+    if len(mob_templates) == 0:
+        raise ValueError(f"Missing {type.value} template")
+
+    if bot_settings.role_template is None:
+        raise ValueError('Missing Role template')
+
+    player_match = utils.multi_match(
+        capture.frame, bot_settings.role_template, threshold=0.9)
+    if len(player_match) == 0:
+        # print("lost player")
+        if type != MobType.NORMAL or abs(left) <= 300 and abs(right) <= 300:
+            return []
+        else:
+            crop = frame[50:-100,]
+    else:
+        player_pos = (player_match[0][0] - 5, player_match[0][1] - 55)
+        y_start = max(0, player_pos[1]-top)
+        x_start = max(0, player_pos[0]-left)
+        crop = frame[y_start:player_pos[1]+bottom,
+                     x_start:player_pos[0]+right]
+
+    mobs = []
+    for mob_template in mob_templates:
+        mobs_tmp = utils.multi_match(
+            crop, mob_template, threshold=0.98, debug=debug)
+        if len(mobs_tmp) > 0:
+            for mob in mobs_tmp:
+                mobs.append(mob)
+
+    return mobs
+
+
+def direction_changed() -> bool:
+    if bot_status.player_direction == 'left':
+        return abs(bot_settings.guard_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+    else:
+        return abs(bot_settings.guard_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+
+
+def edge_reached() -> bool:
+    if abs(bot_settings.guard_point_l[1] - bot_status.player_pos[1]) > 1:
+        return
+    if bot_status.player_direction == 'left':
+        return abs(bot_settings.guard_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+    else:
+        return abs(bot_settings.guard_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+
+
+#############################
+#      Common Command       #
+#############################
 
 class ErdaShower(Command):
     key = Keybindings.ERDA_SHOWER
@@ -157,7 +215,6 @@ class ErdaShower(Command):
     def main(self):
         while not self.canUse():
             time.sleep(0.1)
-        self.print_debug_info()
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.1)
         key_down('down')
@@ -215,7 +272,7 @@ class FeedPet(Command):
     key = Keybindings.FEED_PET
 
     def canUse(self, next_t: float = 0) -> bool:
-        pet_settings = config.gui_settings.pets
+        pet_settings = bot_settings.pets
         auto_feed = pet_settings.auto_feed.get()
         if not auto_feed:
             return False

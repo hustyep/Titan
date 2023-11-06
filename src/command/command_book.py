@@ -26,7 +26,6 @@ class CommandBook():
         # self.Potion = commands.Potion
 
         self.step = commands.step
-        self.Keybindings = commands.Keybindings
 
         result = self._load_commands(file)
         if result is None:
@@ -71,7 +70,7 @@ class CommandBook():
 
         # Load key map
         if hasattr(module, 'Keybindings'):
-            self.Keybindings = module.Keybindings
+            commands.Keybindings = module.Keybindings
         else:
             print(
                 f" !  Error loading command book '{self.name}', keymap class 'Keybindings' is missing")

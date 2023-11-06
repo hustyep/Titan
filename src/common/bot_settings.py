@@ -83,7 +83,6 @@ SETTING_VALIDATORS = {
     'adjust_tolerance': int,
     'record_layout': validate_boolean,
     'buff_cooldown': validate_nonnegative_int,
-    'mob_name': str,
     'role_name': str,
 }
 
@@ -91,46 +90,24 @@ SETTING_VALIDATORS = {
 def reset():
     """Resets all settings to their default values."""
 
-    global move_tolerance, adjust_tolerance, record_layout, buff_cooldown, mob_name, role_name, map_name, class_name
-    global role_template, mob_template, elite_template, boss_template, guard_point_l, guard_point_r
+    global move_tolerance, adjust_tolerance, record_layout, buff_cooldown, role_name, map_name, class_name
+    global role_template, guard_point_l, guard_point_r
     
     move_tolerance = 13
     adjust_tolerance = 3
     record_layout = False
     buff_cooldown = 180
-    mob_name = ''
     role_name = ''
     map_name = ''
     class_name = ''
     
     role_template = None
-    mob_template = []
-    elite_template = []
-    boss_template = []
+
     guard_point_l = (100, 0)
     guard_point_r = (0, 0)
     
 def setup_template():
-    global role_template, mob_template, elite_template, boss_template
-
-    if len(mob_name) > 0:
-        try:
-            mob_template = cv2.imread(f'assets/mobs/{mob_name}.png', 0)
-            elite_template = cv2.imread(f'assets/mobs/{mob_name}_elite.png', 0)
-            boss_template = cv2.imread(f'assets/mobs/{mob_name}_boss.png', 0)
-        except:
-            pass
-        if mob_template is not None:
-            mob_template = [mob_template, cv2.flip(mob_template, 1)]
-        
-        if elite_template is not None:
-            elite_template = [elite_template, cv2.flip(elite_template, 1)]
-        elif mob_template:
-            elite_template = cv2.resize(mob_template, None, fx=2, fy=2)
-            elite_template = [elite_template, cv2.flip(elite_template, 1)]
-                            
-        if boss_template is not None:
-            boss_template = [boss_template, cv2.flip(boss_template, 1)]
+    global role_template
     
     if len(role_name) > 0:
         try:
@@ -150,9 +127,6 @@ record_layout = False
 # The amount of time (in seconds) to wait between each call to the 'buff' command
 buff_cooldown = 180
 
-# The image name of the mob template in the map
-mob_name = ''
-
 class_name = ''
 
 # The name of the role
@@ -161,10 +135,10 @@ role_name = ''
 map_name = ''
 
 role_template = None
-mob_template = []
-elite_template = []
-boss_template = []
+
 guard_point_l = (100, 0)
 guard_point_r = (0, 0)
+
+mob_detect = False
 
 reset()

@@ -51,26 +51,79 @@ class Keybindings(DefaultKeybindings):
 #########################
 #       Commands        #
 #########################
-
-@bot_status.run_if_enabled
-def move_up(target):
-    print("\n[!] Function 'move_up' not implemented in current command book, aborting process.")
-    bot_status.enabled = False
-
-
-@bot_status.run_if_enabled
-def move_down(target):
-    print("\n[!] Function 'move_down' not implemented in current command book, aborting process.")
-    bot_status.enabled = False
-
-
-@bot_status.run_if_enabled
-def move_horizontal(target):
-    print("\n[!] Function 'move_horizontal' not implemented in current command book, aborting process.")
-    bot_status.enabled = False
-
+def step(direction, target):
+    """
+    Performs one movement step in the given DIRECTION towards TARGET.
+    Should not press any arrow keys, as those are handled by Mars.
+    """
+        
+    if bot_status.stage_fright and direction != 'up' and utils.bernoulli(0.75):
+        time.sleep(utils.rand_float(0.1, 0.3))
+    d_x = target[0] - bot_status.player_pos[0]
+    d_y = target[1] - bot_status.player_pos[1]
+    if direction == "up":
+        MoveUp(dy=abs(d_y)).execute()
+    elif direction == "down":
+        MoveDown(dy=abs(d_y)).execute()
+    elif abs(d_y) >= 26 and abs(d_x) >= 24 and ShadowAssault.usable_count() > 2:
+        ShadowAssault(dx=d_x, dy=d_y).execute()
+    elif abs(d_x) >= 26:
+        HitAndRun(direction, target).execute()
+    else:
+        Walk(target_x=target[0]).execute()
+        
+    if edge_reached():
+        print("edge reached")
+        key_up(direction)
+        if bot_status.player_direction == 'left':
+            has_elite = detect_mobs(top=100,bottom=80,left=300,right=0)
+        else:
+            has_elite = detect_mobs(top=100,bottom=80,left=0,right=300)
+        if has_elite is not None and len(has_elite) > 0:
+            CruelStabRandomDirection().execute()
             
+class HitAndRun(Command):
+    def __init__(self, direction, target):
+        super().__init__(locals())
+        self.direction = direction
+        self.target = target
 
+    def main(self):
+        d_x = self.target[0] - bot_status.player_pos[0]
+        if bot_settings.mob_detect:
+            if direction_changed():
+                print("direction_changed")
+                
+                if time.time() - ErdaShower.castedTime > 5:
+                    time.sleep(0.08)
+                    key_up(self.direction)
+                    time.sleep(0.5)
+                    SlashShadowFormation().execute()
+                    count = 0
+                    while count < 80:
+                        count += 1
+                        has_boss = detect_mobs(top=180,bottom=-20,left=300,right=300,type=MobType.BOSS)
+                        if has_boss is not None and len(has_boss) > 0:
+                            SonicBlow().execute()
+                        mobs = detect_mobs(top=350,bottom=50,left=1100,right=1100)
+                        if mobs is not None and len(mobs) >= 2:
+                            break
+                    key_down(self.direction)                
+            
+            # threading.Thread(target=pre_detect, args=(self.direction,)).start()
+            FlashJump(dx=abs(d_x)).execute()
+            CruelStabRandomDirection().execute()
+            sleep_in_the_air()
+            # if config.elite_detected:
+            #     SonicBlow().execute()
+            #     config.elite_detected = False
+        else:
+            FlashJump(dx=abs(d_x)).execute()
+            CruelStabRandomDirection().execute()
+            # sleep_before_y(target_y=self.target[1])
+            sleep_in_the_air(interval=0.018, n=5)
+            
+            
 #########################
 #        Y轴移动         #
 #########################
