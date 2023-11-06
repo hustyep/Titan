@@ -3,13 +3,13 @@
 import threading
 import time
 import random
-from rx.subject import Subject
 
 from src.common import utils, bot_status
 from src.modules.capture import capture
-from src.map.map import Map
+from src.map.map import map
+from src.command.command_book import CommandBook
 
-class Bot(Subject):
+class Bot():
     """A class that interprets and executes user-defined routines."""
     
 
@@ -17,8 +17,7 @@ class Bot(Subject):
         """Loads a user-defined routine on start up and initializes this Bot's main thread."""
 
         super().__init__()
-
-        self.map: Map = None
+        self.command_book: CommandBook = None
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -43,5 +42,13 @@ class Bot(Subject):
         while True:
             time.sleep(0.01)
 
+    def load_commands(self, file):
+        try:
+            self.command_book = CommandBook(file)
+        except Exception as e:
+            print(e)
+        else:
+            pass
+            # command_book.move.step_callback = self.point_check
 
 bot = Bot()

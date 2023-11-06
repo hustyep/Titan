@@ -14,21 +14,28 @@ from src.common import constants, utils
 class Map:
     """Uses a quadtree to represent possible player positions in a map layout."""
 
-    def __init__(self, name):
+    def __init__(self):
         """
         Creates a new Layout object with the given NAME.
         :param name:     The name of this layout.
         """
 
-        self.name = name
+        self.name = ''
         self.minimap_data = []
         self.mob_templates = []
         self.elite_templates = []
         self.boss_templates = []
         
-        self.load_data()
-    
-    def load_data(self):
+    def clear(self):
+        self.name = ''
+        self.minimap_data = []
+        self.mob_templates = []
+        self.elite_templates = []
+        self.boss_templates = []
+        
+    def load_data(self, name):
+        self.clear()
+        self.name = name
         self.load_minimap_data()
         
     def load_minimap_data(self):
@@ -66,7 +73,30 @@ class Map:
                             
         if boss_template is not None:
             self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
-                
+            
+    def near_rope(self, location):
+        if len(self.minimap_data) > 0:
+            _, width = self.minimap_data.shape
+            cur_x = location[0]
+            cur_y = location[1]
+            for y in range(max(0, cur_y - 10), cur_y):
+                for x in range(max(0, cur_x - 1), max(width - 1, cur_x + 1)):
+                    if self.minimap_data[cur_x][y] == 2:
+                        return True
+        return False
+    
+    def on_the_rope(self, location):
+        if len(self.minimap_data) > 0:
+            if self.minimap_data[location[0]][location[1] + 7] == 1:
+                return False
+            else:
+                return self.minimap_data[location[0]][location[1]] == 2
+        return False        
             
 def get_maps_dir(name):
     return os.path.join(constants.RESOURCES_DIR, 'maps', name)
+
+
+
+
+map = Map()

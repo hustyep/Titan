@@ -3,8 +3,8 @@ import inspect
 import importlib
 import traceback
 from os.path import basename, splitext
-from src.common import settings, utils
-from command import commands
+from src.common import bot_settings, utils
+from src.command import commands
 
 CB_KEYBINDING_DIR = os.path.join('resources', 'keybindings')
 
@@ -16,11 +16,18 @@ class CommandBook():
         self.Move = commands.Move
         self.Walk = commands.Walk
         self.Wait = commands.Wait
+        self.ErdaShower = commands.ErdaShower
+        self.SolveRune = commands.SolveRune
+        self.FeedPet = commands.FeedPet
 
-        self.MoveVertical = commands.MoveVertical
-        self.MoveHorizontal = commands.MoveHorizontal
+        self.Summon = commands.Summon
+        self.DotAoe = commands.DotAoe
         self.Buff = commands.Buff
-        self.Potion = commands.Potion
+        # self.Potion = commands.Potion
+
+        self.move_up = commands.move_up
+        self.move_down = commands.move_down
+        self.move_horizontal = commands.move_horizontal
 
         result = self._load_commands(file)
         if result is None:
@@ -38,7 +45,16 @@ class CommandBook():
             print(f" !  '{ext}' is not a supported file extension.")
             return
 
+        new_func = {}
         new_cb = {}
+        # load default Fuction
+        for name, func in inspect.getmembers(commands, inspect.isfunction):
+            new_func[name.lower()] = func
+
+        # load default Command
+        for name, command in inspect.getmembers(commands, inspect.isclass):
+            if issubclass(command, commands.Command):
+                new_cb[name.lower()] = command
 
         # Import the desired command book file
         target = '.'.join(['resources', 'command_books', self.name])
@@ -66,26 +82,43 @@ class CommandBook():
                 f" !  Error loading command book '{self.name}', keymap class 'Keybindings' is missing")
             return
 
+        for name, func in inspect.getmembers(module, inspect.isfunction):
+            new_func[name.lower()] = func
+
         # Populate the new command book
         for name, command in inspect.getmembers(module, inspect.isclass):
             if issubclass(command, commands.Command):
                 new_cb[name.lower()] = command
 
+        # Check if required functions have been implemented and overridden
+        required_function_found = True
+        for func_name in ['move_up', 'move_down', 'move_horizontal']:
+            if func_name not in new_func:
+                required_function_found = False
+                print(
+                    f" !  Error: Must implement required function '{func_name}'.")
+
         # Check if required commands have been implemented and overridden
-        required_found = True
-        for command in (commands.MoveVertical, commands.MoveHorizontal, commands.Buff, commands.Potion):
+        required_command_found = True
+        for command in [commands.Buff]:
             name = command.__name__.lower()
             if name not in new_cb:
-                required_found = False
+                required_command_found = False
                 new_cb[name] = command
                 print(f" !  Error: Must implement required command '{name}'.")
 
-        if required_found:
-            self.MoveVertical = new_cb['movevertical']
-            self.MoveHorizontal = new_cb['movehorizontal']
+        if required_command_found and required_function_found:
             self.Buff = new_cb['buff']
-            self.Potion = new_cb["potion"]
+            # self.Potion = commands.Potion
 
+            self.move_up = new_func['move_up']
+            self.move_down = new_func['move_down']
+            self.move_horizontal = new_func['move_horizontal']
+
+            for command in (commands.Summon, commands.DotAoe):
+                name = command.__name__
+                if name.lower() in new_cb:
+                    self.__setattr__(name, new_cb[name.lower()])
             print(f" ~  Successfully loaded command book '{self.name}'")
             return new_cb, module
         else:
@@ -108,6 +141,3 @@ class CommandBook():
     def _set_keybinds(self):
         for k, v in self.config.items():
             setattr(self.module.Keybindings, k, v)
-
-
-command_book = CommandBook()

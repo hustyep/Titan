@@ -1,8 +1,11 @@
 import time
 import math
+from enum import Enum
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils
 from src.map.map import Map
+from src.rune import rune
+from src.modules.capture import capture
 
 
 class DefaultKeybindings:
@@ -13,6 +16,7 @@ class DefaultKeybindings:
     JUMP = 's'
     FLASH_JUMP = ';'
     ROPE_LIFT = 'b'
+    ERDA_SHOWER = '~'
 
 
 class Keybindings(DefaultKeybindings):
@@ -72,12 +76,12 @@ class Command():
 
 class Move(Command):
 
-    def __init__(self, x, y, tolerance, step=1):
+    def __init__(self, x, y, tolerance, step=1, max_steps=15):
         super().__init__(locals())
         self.target = (int(x), int(y))
         self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
         self.step = bot_settings.validate_nonnegative_int(step)
-        self.max_steps = 15
+        self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
         self.prev_direction = ''
 
     def main(self):
@@ -91,23 +95,86 @@ class Move(Command):
         d_x = self.target[0] - bot_status.player_pos[0]
         d_y = self.target[1] - bot_status.player_pos[1]
         if abs(d_x) <= threshold:
-            MoveVertical(self.target).execute()
+            move_vertical(self.target)
         elif abs(d_y) <= threshold:
-            MoveHorizontal(self.target).execute()
+            move_horizontal(self.target)
         elif utils.bernoulli(0.7):
-            MoveHorizontal(self.target).execute()
+            move_horizontal(self.target)
         else:
-            MoveVertical(self.target).execute()
+            move_vertical(self.target)
 
-        Move(self.target[0], self.target[1], self.tolerance, self.step+1)
-
-
-class MoveVertical(Command):
-    ...
+        Move(self.target[0], self.target[1],
+             self.tolerance, self.step+1).execute()
 
 
-class MoveHorizontal(Command):
-    ...
+#############################
+#      Shared Functions     #
+#############################
+
+
+@bot_status.run_if_enabled
+def sleep_in_the_air():
+    pass
+
+class MobType(Enum):
+    NORMAL = 'normal mob'
+    ELITE = 'elite mob'
+    BOSS = 'boss mob'
+
+@bot_status.run_if_enabled
+def detect_mobs(top=0, left=0, right=0, bottom=0, type: MobType = MobType.NORMAL, debug=False):
+    pass
+
+@bot_status.run_if_enabled
+def move_vertical(target):
+    d_y = target[1] - bot_status.player_pos[1]
+    if d_y > 0:
+        move_down(target)
+    else:
+        move_up(target)
+
+
+@bot_status.run_if_enabled
+def move_up(target):
+    print("\n[!] Function 'move_up' not implemented in current command book, aborting process.")
+    bot_status.enabled = False
+
+
+@bot_status.run_if_enabled
+def move_down(target):
+    print("\n[!] Function 'move_down' not implemented in current command book, aborting process.")
+    bot_status.enabled = False
+
+
+@bot_status.run_if_enabled
+def move_horizontal(target):
+    print("\n[!] Function 'move_horizontal' not implemented in current command book, aborting process.")
+    bot_status.enabled = False
+
+
+class ErdaShower(Command):
+    key = Keybindings.ERDA_SHOWER
+    cooldown = 57
+    backswing = 0.7
+
+    def __init__(self, direction=None):
+        super().__init__(locals())
+        if direction is None:
+            self.direction = direction
+        else:
+            self.direction = bot_settings.validate_horizontal_arrows(direction)
+
+    def main(self):
+        while not self.canUse():
+            time.sleep(0.1)
+        self.print_debug_info()
+        if self.direction:
+            press_acc(self.direction, down_time=0.03, up_time=0.1)
+        key_down('down')
+        press(Keybindings.ERDA_SHOWER)
+        key_up('down')
+        self.__class__.castedTime = time.time()
+        time.sleep(self.__class__.backswing)
 
 
 class Walk(Command):
@@ -178,8 +245,9 @@ class SolveRune(Command):
     cooldown = 8
     max_attempts = 3
 
-    def __init__(self, attempts = 0):
+    def __init__(self, target, attempts=0):
         super().__init__(locals())
+        self.target = target
         self.attempts = attempts
 
     def canUse(self, next_t: float = 0) -> bool:
@@ -189,11 +257,10 @@ class SolveRune(Command):
         if not self.canUse():
             return -1, None
 
-        Move(*config.rune_pos).execute()
-        Adjust(*config.rune_pos).execute()
+        Move(x=self.target[0], y=self.target[1], tolerance=1).execute()
         time.sleep(0.5)
         # Inherited from Configurable
-        press('space', 1, down_time=0.2, up_time=0.8)
+        press(Keybindings.INTERACT, 1, down_time=0.2, up_time=0.8)
         interact_result = False
         for _ in range(3):
             interact_result = rune.rune_interact_result(capture.frame)
@@ -205,7 +272,7 @@ class SolveRune(Command):
         if interact_result:
             self.__class__.castedTime = time.time()
         elif self.attempts < 2:
-            return SolveRune(attempts=self.attempts+1).execute()
+            return SolveRune(target=self.target, attempts=self.attempts+1).execute()
         else:
             return 0, None
 
@@ -230,6 +297,21 @@ class SolveRune(Command):
 
         return 1 if find_solution else -1, used_frame
 
+
+class Summon(Command):
+    """Undefined 'Summon' command for the default command book."""
+
+    def canUse(self, next_t: float = 0) -> bool:
+        return False
+
+
+class DotAoe(Command):
+    """Undefined 'DotAoe' command for the default command book."""
+
+    def canUse(self, next_t: float = 0) -> bool:
+        return False
+
+
 class Buff(Command):
     """Undefined 'buff' command for the default command book."""
 
@@ -243,110 +325,110 @@ class Buff(Command):
 #      Potion     #
 ###################
 
-class Potion(Command):
-    """Uses each of Shadowers's potion once."""
+# class Potion(Command):
+#     """Uses each of Shadowers's potion once."""
 
-    def __init__(self):
-        super().__init__(locals())
-        self.potions = [
-            GOLD_POTION,
-            CANDIED_APPLE,
-            GUILD_POTION,
-            LEGION_WEALTHY,
-            EXP_COUPON,
-            EXP_POTION,
-            WEALTH_POTION,
-        ]
+#     def __init__(self):
+#         super().__init__(locals())
+#         self.potions = [
+#             GOLD_POTION,
+#             CANDIED_APPLE,
+#             GUILD_POTION,
+#             LEGION_WEALTHY,
+#             EXP_COUPON,
+#             EXP_POTION,
+#             WEALTH_POTION,
+#         ]
 
-    def main(self):
-        if bot_status.invisible:
-            return False
-        for potion in self.potions:
-            if potion().canUse():
-                potion().execute()
-                time.sleep(0.3)
-        return True
-
-
-class EXP_POTION(Command):
-    key = Keybindings.EXP_POTION
-    cooldown = 7250
-    backswing = 0.5
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = config.gui_settings.buffs.buff_settings.get('Exp Potion')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
+#     def main(self):
+#         if bot_status.invisible:
+#             return False
+#         for potion in self.potions:
+#             if potion().canUse():
+#                 potion().execute()
+#                 time.sleep(0.3)
+#         return True
 
 
-class WEALTH_POTION(Command):
-    key = Keybindings.WEALTH_POTION
-    cooldown = 7250
-    backswing = 0.5
+# class EXP_POTION(Command):
+#     key = Keybindings.EXP_POTION
+#     cooldown = 7250
+#     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = config.gui_settings.buffs.buff_settings.get('Wealthy Potion')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
-
-
-class GOLD_POTION(Command):
-    key = Keybindings.GOLD_POTION
-    cooldown = 1810
-    backswing = 0.5
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = config.gui_settings.buffs.buff_settings.get('Gold Potion')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
+#     def canUse(self, next_t: float = 0) -> bool:
+#         enabled = config.gui_settings.buffs.buff_settings.get('Exp Potion')
+#         if not enabled:
+#             return False
+#         return super().canUse(next_t)
 
 
-class GUILD_POTION(Command):
-    key = Keybindings.GUILD_POTION
-    cooldown = 1810
-    backswing = 0.5
+# class WEALTH_POTION(Command):
+#     key = Keybindings.WEALTH_POTION
+#     cooldown = 7250
+#     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = config.gui_settings.buffs.buff_settings.get('Guild Potion')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
-
-
-class CANDIED_APPLE(Command):
-    key = Keybindings.CANDIED_APPLE
-    cooldown = 1800
-    backswing = 0.5
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = config.gui_settings.buffs.buff_settings.get('Candied Apple')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
+#     def canUse(self, next_t: float = 0) -> bool:
+#         enabled = config.gui_settings.buffs.buff_settings.get('Wealthy Potion')
+#         if not enabled:
+#             return False
+#         return super().canUse(next_t)
 
 
-class LEGION_WEALTHY(Command):
-    key = Keybindings.LEGION_WEALTHY
-    cooldown = 1810
-    backswing = 0.5
+# class GOLD_POTION(Command):
+#     key = Keybindings.GOLD_POTION
+#     cooldown = 1810
+#     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = config.gui_settings.buffs.buff_settings.get('Legion Wealthy')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
+#     def canUse(self, next_t: float = 0) -> bool:
+#         enabled = config.gui_settings.buffs.buff_settings.get('Gold Potion')
+#         if not enabled:
+#             return False
+#         return super().canUse(next_t)
 
 
-class EXP_COUPON(Command):
-    key = Keybindings.EXP_COUPON
-    cooldown = 1810
-    backswing = 0.5
+# class GUILD_POTION(Command):
+#     key = Keybindings.GUILD_POTION
+#     cooldown = 1810
+#     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = config.gui_settings.buffs.buff_settings.get('Exp Coupon')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
+#     def canUse(self, next_t: float = 0) -> bool:
+#         enabled = config.gui_settings.buffs.buff_settings.get('Guild Potion')
+#         if not enabled:
+#             return False
+#         return super().canUse(next_t)
+
+
+# class CANDIED_APPLE(Command):
+#     key = Keybindings.CANDIED_APPLE
+#     cooldown = 1800
+#     backswing = 0.5
+
+#     def canUse(self, next_t: float = 0) -> bool:
+#         enabled = config.gui_settings.buffs.buff_settings.get('Candied Apple')
+#         if not enabled:
+#             return False
+#         return super().canUse(next_t)
+
+
+# class LEGION_WEALTHY(Command):
+#     key = Keybindings.LEGION_WEALTHY
+#     cooldown = 1810
+#     backswing = 0.5
+
+#     def canUse(self, next_t: float = 0) -> bool:
+#         enabled = config.gui_settings.buffs.buff_settings.get('Legion Wealthy')
+#         if not enabled:
+#             return False
+#         return super().canUse(next_t)
+
+
+# class EXP_COUPON(Command):
+#     key = Keybindings.EXP_COUPON
+#     cooldown = 1810
+#     backswing = 0.5
+
+#     def canUse(self, next_t: float = 0) -> bool:
+#         enabled = config.gui_settings.buffs.buff_settings.get('Exp Coupon')
+#         if not enabled:
+#             return False
+#         return super().canUse(next_t)

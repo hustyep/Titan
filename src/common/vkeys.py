@@ -2,7 +2,7 @@
 
 import time
 from random import random
-from src.common import utils, config
+from src.common import utils, bot_status
 from src.common.hid import hid
 
 
@@ -111,7 +111,7 @@ KEY_MAP = {
 #################################
 
 
-@utils.run_if_enabled
+@bot_status.run_if_enabled
 def key_down(key):
     """
     Simulates a key-down action. Can be cancelled by Bot.toggle_enabled.
@@ -142,7 +142,7 @@ def key_down(key):
         hid.key_down(key)
 
     if key == 'left' or key == "right":
-        config.player_direction = key
+        bot_status.player_direction = key
 
 
 def key_up(key):
@@ -180,7 +180,7 @@ def releaseAll():
     hid.key_release()
 
 
-@utils.run_if_enabled
+@bot_status.run_if_enabled
 def press(key, n: int = 1, down_time=0.05, up_time=0.05):
     """
     Presses KEY N times, holding it for DOWN_TIME seconds, and releasing for UP_TIME seconds.
@@ -197,7 +197,7 @@ def press(key, n: int = 1, down_time=0.05, up_time=0.05):
         return
 
     if key == 'left' or key == "right":
-        config.player_direction = key
+        bot_status.player_direction = key
 
     for _ in range(n):
         key_down(key)
@@ -206,7 +206,7 @@ def press(key, n: int = 1, down_time=0.05, up_time=0.05):
         time.sleep(up_time * (1 + 0.1 * random()))
 
 
-@utils.run_if_enabled
+@bot_status.run_if_enabled
 def press_acc(key, n: int = 1, down_time=0.05, up_time=0.05):
     key = key.lower()
     if key not in KEY_MAP.keys():
@@ -214,7 +214,7 @@ def press_acc(key, n: int = 1, down_time=0.05, up_time=0.05):
         return
 
     if key == 'left' or key == "right":
-        config.player_direction = key
+        bot_status.player_direction = key
 
     for _ in range(n):
         key_down(key)
@@ -222,7 +222,7 @@ def press_acc(key, n: int = 1, down_time=0.05, up_time=0.05):
         key_up(key)
         time.sleep(up_time)
 
-# @utils.run_if_enabled
+# @bot_status.run_if_enabled
 
 
 def click(position, button='left'):

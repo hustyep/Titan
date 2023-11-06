@@ -68,6 +68,29 @@ def multi_match(frame, template, threshold=0.95, debug=False):
     return results
 
 
+def filter_color(img, ranges):
+    """
+    Returns a filtered copy of IMG that only contains pixels within the given RANGES.
+    on the HSV scale.
+    :param img:     The image to filter.
+    :param ranges:  A list of tuples, each of which is a pair upper and lower HSV bounds.
+    :return:        A filtered copy of IMG.
+    """
+    if img is None or len(img) == 0:
+        return None
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, ranges[0][0], ranges[0][1])
+    for i in range(1, len(ranges)):
+        mask = cv2.bitwise_or(mask, cv2.inRange(
+            hsv, ranges[i][0], ranges[i][1]))
+
+    # Mask the image
+    color_mask = mask > 0
+    result = np.zeros_like(img, np.uint8)
+    result[color_mask] = img[color_mask]
+    return result
+
+
 def distance(a, b):
     """
     Applies the distance formula to two points.
