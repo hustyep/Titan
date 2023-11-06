@@ -8,6 +8,7 @@ from src.common import utils, bot_status
 from src.modules.capture import capture
 from src.map.map import map
 from src.command.command_book import CommandBook
+from src.routine.routine import Routine
 
 class Bot():
     """A class that interprets and executes user-defined routines."""
@@ -18,6 +19,7 @@ class Bot():
 
         super().__init__()
         self.command_book: CommandBook = None
+        self.routine: Routine = None
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -50,5 +52,8 @@ class Bot():
         else:
             pass
             # command_book.move.step_callback = self.point_check
+
+    def load_routine(self, file:str):
+        self.routine = Routine(file, self.command_book)
 
 bot = Bot()

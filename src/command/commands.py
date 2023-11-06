@@ -89,6 +89,8 @@ class Move(Command):
         distance = utils.distance(bot_status.player_pos, self.target)
         if distance <= self.tolerance:
             return
+        
+        bot_status.path = [bot_status.player_pos, self.target]
         threshold = self.tolerance / math.sqrt(2)
         d_x = self.target[0] - bot_status.player_pos[0]
         d_y = self.target[1] - bot_status.player_pos[1]

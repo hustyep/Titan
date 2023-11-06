@@ -102,6 +102,28 @@ def distance(a, b):
     return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
 
+def separate_args(arguments):
+    """
+    Separates a given array ARGUMENTS into an array of normal arguments and a
+    dictionary of keyword arguments.
+    :param arguments:    The array of arguments to separate.
+    :return:             An array of normal arguments and a dictionary of keyword arguments.
+    """
+
+    args = []
+    kwargs = {}
+    for a in arguments:
+        a = a.strip()
+        index = a.find('=')
+        if index > -1:
+            key = a[:index].strip()
+            value = a[index+1:].strip()
+            kwargs[key] = value
+        else:
+            args.append(a)
+    return args, kwargs
+
+
 def bernoulli(p):
     """
     Returns the value of a Bernoulli random variable with probability P.

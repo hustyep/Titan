@@ -12,6 +12,9 @@ enabled: bool = False
 player_pos = (0, 0)
 player_direction = 'right'
 
+# Represents the current path that the bot is taking
+path = []
+
 invisible = False
 stage_fright = False
 
@@ -20,7 +23,11 @@ rune_pos = None
 rune_closest_pos = None
 free = True
 
-
+# Minal status
+mining_enable = False
+minal_pos = None
+minal_closest_pos = None
+mineral_type = None
 
 def run_if_enabled(function):
     """

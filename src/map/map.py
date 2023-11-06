@@ -9,7 +9,7 @@ import numpy as np
 
 from os.path import join, isfile, splitext, basename
 from heapq import heappush, heappop
-from src.common import constants, utils
+from src.common import constants, utils, bot_settings
 
 class Map:
     """Uses a quadtree to represent possible player positions in a map layout."""
@@ -33,9 +33,9 @@ class Map:
         self.elite_templates = []
         self.boss_templates = []
         
-    def load_data(self, name):
+    def load_data(self):
         self.clear()
-        self.name = name
+        self.name = bot_settings.map_name
         self.load_minimap_data()
         
     def load_minimap_data(self):
@@ -95,8 +95,6 @@ class Map:
             
 def get_maps_dir(name):
     return os.path.join(constants.RESOURCES_DIR, 'maps', name)
-
-
 
 
 map = Map()

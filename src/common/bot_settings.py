@@ -91,7 +91,7 @@ def reset():
     """Resets all settings to their default values."""
 
     global move_tolerance, adjust_tolerance, record_layout, buff_cooldown, role_name, map_name, class_name
-    global role_template, guard_point_l, guard_point_r
+    global role_template, boundary_point_l, boundary_point_r, file_setting, gui_setting
     
     move_tolerance = 13
     adjust_tolerance = 3
@@ -103,8 +103,11 @@ def reset():
     
     role_template = None
 
-    guard_point_l = (100, 0)
-    guard_point_r = (0, 0)
+    boundary_point_l = (100, 0)
+    boundary_point_r = (0, 0)
+    
+    file_setting = {}
+    gui_setting = {}
     
 def setup_template():
     global role_template
@@ -136,9 +139,12 @@ map_name = ''
 
 role_template = None
 
-guard_point_l = (100, 0)
-guard_point_r = (0, 0)
+boundary_point_l = (100, 0)
+boundary_point_r = (0, 0)
 
 mob_detect = False
+
+file_setting = {}
+gui_setting= {}
 
 reset()

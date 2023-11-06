@@ -43,17 +43,6 @@ class CommandBook():
             print(f" !  '{ext}' is not a supported file extension.")
             return
 
-        new_func = {}
-        new_cb = {}
-        # load default Fuction
-        for name, func in inspect.getmembers(commands, inspect.isfunction):
-            new_func[name.lower()] = func
-
-        # load default Command
-        for name, command in inspect.getmembers(commands, inspect.isclass):
-            if issubclass(command, commands.Command):
-                new_cb[name.lower()] = command
-
         # Import the desired command book file
         target = '.'.join(['resources', 'command_books', self.name])
         try:
@@ -68,6 +57,25 @@ class CommandBook():
             print(f"\n !  Command book '{self.name}' was not loaded")
             return
 
+        new_func = {}
+        new_cb = {}
+        # load default Fuction
+        for name, func in inspect.getmembers(commands, inspect.isfunction):
+            new_func[name.lower()] = func
+
+        # load default Command
+        for name, command in inspect.getmembers(commands, inspect.isclass):
+            if issubclass(command, commands.Command):
+                new_cb[name.lower()] = command
+
+        # Populate the new command book
+        for name, func in inspect.getmembers(module, inspect.isfunction):
+            new_func[name.lower()] = func
+
+        for name, command in inspect.getmembers(module, inspect.isclass):
+            if issubclass(command, commands.Command):
+                new_cb[name.lower()] = command
+
         # Load key map
         if hasattr(module, 'Keybindings'):
             commands.Keybindings = module.Keybindings
@@ -75,14 +83,6 @@ class CommandBook():
             print(
                 f" !  Error loading command book '{self.name}', keymap class 'Keybindings' is missing")
             return
-
-        for name, func in inspect.getmembers(module, inspect.isfunction):
-            new_func[name.lower()] = func
-
-        # Populate the new command book
-        for name, command in inspect.getmembers(module, inspect.isclass):
-            if issubclass(command, commands.Command):
-                new_cb[name.lower()] = command
 
         # Check if required functions have been implemented and overridden
         required_function_found = True
