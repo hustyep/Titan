@@ -94,17 +94,19 @@ class Move(Command):
         threshold = self.tolerance / math.sqrt(2)
         d_x = self.target[0] - bot_status.player_pos[0]
         d_y = self.target[1] - bot_status.player_pos[1]
+        direction = None
         if abs(d_x) <= threshold:
-            move_vertical(self.target)
+            direction = 'up' if d_y < 0 else 'down'
         elif abs(d_y) <= threshold:
-            move_horizontal(self.target)
+            direction = 'left' if d_x < 0 else 'right'
         elif utils.bernoulli(0.7):
-            move_horizontal(self.target)
+            direction = 'left' if d_x < 0 else 'right'
         else:
-            move_vertical(self.target)
+            direction = 'up' if d_y < 0 else 'down'
+        step(direction, self.target)
 
         Move(self.target[0], self.target[1],
-             self.tolerance, self.step+1).execute()
+             self.tolerance, self.step+1, self.max_steps).execute()
 
 
 #############################
@@ -116,39 +118,27 @@ class Move(Command):
 def sleep_in_the_air():
     pass
 
+
 class MobType(Enum):
     NORMAL = 'normal mob'
     ELITE = 'elite mob'
     BOSS = 'boss mob'
 
+
 @bot_status.run_if_enabled
 def detect_mobs(top=0, left=0, right=0, bottom=0, type: MobType = MobType.NORMAL, debug=False):
     pass
 
-@bot_status.run_if_enabled
-def move_vertical(target):
-    d_y = target[1] - bot_status.player_pos[1]
-    if d_y > 0:
-        move_down(target)
-    else:
-        move_up(target)
 
+def step(direction, target):
+    """
+    The default 'step' function. If not overridden, immediately stops the bot.
+    :param direction:   The direction in which to move.
+    :param target:      The target location to step towards.
+    :return:            None
+    """
 
-@bot_status.run_if_enabled
-def move_up(target):
-    print("\n[!] Function 'move_up' not implemented in current command book, aborting process.")
-    bot_status.enabled = False
-
-
-@bot_status.run_if_enabled
-def move_down(target):
-    print("\n[!] Function 'move_down' not implemented in current command book, aborting process.")
-    bot_status.enabled = False
-
-
-@bot_status.run_if_enabled
-def move_horizontal(target):
-    print("\n[!] Function 'move_horizontal' not implemented in current command book, aborting process.")
+    print("\n[!] Function 'step' not implemented in current command book, aborting process.")
     bot_status.enabled = False
 
 

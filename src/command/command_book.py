@@ -25,9 +25,8 @@ class CommandBook():
         self.Buff = commands.Buff
         # self.Potion = commands.Potion
 
-        self.move_up = commands.move_up
-        self.move_down = commands.move_down
-        self.move_horizontal = commands.move_horizontal
+        self.step = commands.step
+        self.Keybindings = commands.Keybindings
 
         result = self._load_commands(file)
         if result is None:
@@ -72,11 +71,7 @@ class CommandBook():
 
         # Load key map
         if hasattr(module, 'Keybindings'):
-            default_config = {}
-            for key, value in module.Keybindings.__dict__.items():
-                if not key.startswith('__') and not key.endswith('__'):
-                    default_config[key] = value
-            self.DEFAULT_CONFIG = default_config
+            self.Keybindings = module.Keybindings
         else:
             print(
                 f" !  Error loading command book '{self.name}', keymap class 'Keybindings' is missing")
@@ -92,7 +87,7 @@ class CommandBook():
 
         # Check if required functions have been implemented and overridden
         required_function_found = True
-        for func_name in ['move_up', 'move_down', 'move_horizontal']:
+        for func_name in ['step']:
             if func_name not in new_func:
                 required_function_found = False
                 print(
@@ -111,9 +106,7 @@ class CommandBook():
             self.Buff = new_cb['buff']
             # self.Potion = commands.Potion
 
-            self.move_up = new_func['move_up']
-            self.move_down = new_func['move_down']
-            self.move_horizontal = new_func['move_horizontal']
+            self.step = new_func['step']
 
             for command in (commands.Summon, commands.DotAoe):
                 name = command.__name__
@@ -129,15 +122,3 @@ class CommandBook():
 
     def __contains__(self, item):
         return item in self.dict
-
-    def load_config(self):
-        super().load_config()
-        self._set_keybinds()
-
-    def save_config(self):
-        self._set_keybinds()
-        super().save_config()
-
-    def _set_keybinds(self):
-        for k, v in self.config.items():
-            setattr(self.module.Keybindings, k, v)
