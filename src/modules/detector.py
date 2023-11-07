@@ -9,7 +9,6 @@ import sys
 import win32gui
 import win32con
 import win32com.client as client
-import keyboard as kb
 import win32gui
 import win32con
 import win32com.client as client
@@ -18,11 +17,11 @@ from rx.subject import Subject
 
 from src.routine.components import Point
 from src.routine.routine import routine
+from src.common import bot_status, bot_settings
 from src.common.image_template import *
 from src.common.constants import *
-from src.common import bot_status, bot_settings
-from src.modules.capture import capture
 from src.common.hid import hid
+from src.modules.capture import capture
 
 class Detector(Subject):
 

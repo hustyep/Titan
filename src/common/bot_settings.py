@@ -149,4 +149,21 @@ mob_detect = False
 
 file_setting: File_Setting = None
 
+################################
+#       Notifier Config        #
+################################
+
+wechat_name = 'yep'
+
+# 填写真实的发邮件服务器用户名、密码
+mail_user = 'mars_maple@163.com'
+mail_password = 'KQJKXCWSVPGOWPEW'
+# 实际发给的收件人
+mail_to_addrs = '326143583@qq.com'
+
+telegram_apiToken = '6683915847:AAH1iOECS1y394jkvDCD2YhHLxIDIAmGGac'
+# telegram_apiToken = '6497654972:AAExWRJvmuswPb2MzbtHi8fIp140TdeDSQM'
+
+telegram_chat_id = '805381440'
+
 reset()

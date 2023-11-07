@@ -10,6 +10,8 @@ from src.common import bot_status, utils
 from src.modules.capture import capture
 # from src.modules.notifier import notifier
 from src.routine.routine import routine
+from src.chat_bot.chat_bot_entity import ChatBotCommand
+from src.common.action_simulator import ActionSimulator
 
 class Listener(Configurable):
     DEFAULT_CONFIG = {
@@ -111,5 +113,44 @@ class Listener(Configurable):
         self.notify('recored', pos, now)
         print(f'\n[~] Recorded position ({pos[0]}, {pos[1]}) at {now}')
         time.sleep(0.6)
+
+    def on_new_command(self, command: ChatBotCommand, *args):
+            match (command):
+                case ChatBotCommand.INFO:
+                    return self.bot_status(), None
+                case ChatBotCommand.START:
+                    self.toggle(True)
+                    return self.bot_status(), None
+                case ChatBotCommand.PAUSE:
+                    self.toggle(False)
+                    return self.bot_status(), None
+                case ChatBotCommand.SCREENSHOT:
+                    filepath = utils.save_screenshot(capture.frame)
+                    return None, filepath
+                case ChatBotCommand.PRINTSCREEN:
+                    filepath = utils.save_screenshot()
+                    return None, filepath
+                case ChatBotCommand.CLICK:
+                    ActionSimulator.click_key(args[0])
+                    filepath = utils.save_screenshot(capture.frame)
+                    return "done", filepath
+                case ChatBotCommand.LEVEL:
+                    level = int(args[0])
+                    # bot_status.notice_level = level
+                    self.notify('notice_level', level)
+                    return "done", None
+                case ChatBotCommand.SAY:
+                    ActionSimulator.say_to_all(args[0])
+                    filepath = utils.save_screenshot(capture.frame)
+                    return f'said: "{args[0]}"', filepath
+                case ChatBotCommand.TP:
+                    ActionSimulator.go_home()
+                    return "tp...", None
+                case ChatBotCommand.CHANGE_CHANNEL:
+                    channel_num = 0
+                    if len(args) > 0:
+                        channel_num = int(args[0])
+                    ActionSimulator.change_channel(channel_num)
+                    return "changing channel...", None
 
 listener = Listener()
