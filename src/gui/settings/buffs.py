@@ -1,13 +1,13 @@
 import tkinter as tk
 from src.gui.interfaces import LabelFrame, Frame
-from src.common.interfaces import Configurable
+from src.common.gui_setting import gui_setting
 
 
 class Buffs(LabelFrame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, 'Buffs', **kwargs)
 
-        self.buff_settings = BuffSettings('buffs')
+        self.buff_settings = gui_setting.buff
 
         buff_row = Frame(self)
         buff_row.pack(side=tk.TOP, expand=True, pady=5, padx=5)
@@ -38,22 +38,3 @@ class Buffs(LabelFrame):
             value = self.check_values[i]
             self.buff_settings.set(check.cget('text'), value.get())
         self.buff_settings.save_config()
-
-class BuffSettings(Configurable):
-    DEFAULT_CONFIG = {
-        'Guild Buff': False,
-        'Guild Potion': False,
-        'Exp Potion': False,
-        'Wealthy Potion': False,
-        'Gold Potion': False,
-        'Candied Apple': False,
-        'Legion Wealthy': False,
-        'Exp Coupon': False
-    }
-
-    def get(self, key):
-        return self.config[key]
-
-    def set(self, key, value):
-        assert key in self.config
-        self.config[key] = value

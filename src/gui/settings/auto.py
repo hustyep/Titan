@@ -1,14 +1,13 @@
 import tkinter as tk
 from src.gui.interfaces import LabelFrame, Frame
-from src.common.interfaces import Configurable
 from src.common import bot_settings
+from src.common.gui_setting import gui_setting
 
 class Auto(LabelFrame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, 'Auto', **kwargs)
 
-        self.settings = AutoSettings('auto')
-        self.update_config()
+        self.settings = gui_setting.auto
 
         row = Frame(self)
         row.pack(side=tk.TOP, expand=True, pady=5, padx=5)
@@ -37,24 +36,4 @@ class Auto(LabelFrame):
             check = self.check_boxes[i]
             value = self.check_values[i]
             self.settings.set(check.cget('text'), value.get())
-        self.settings.save_config()
-        self.update_config()
-        
-    def update_config(self):
-        bot_settings.gui_setting['mining_enable'] = bool(self.settings.get("Mining"))
-        bot_settings.gui_setting['mob_detect'] = bool(self.settings.get("MobDetect"))
-
-class AutoSettings(Configurable):
-    DEFAULT_CONFIG = {
-        'MVP': False,
-        'Ask': False,
-        'Mining': False,
-        'MobDetect': False
-    }
-
-    def get(self, key):
-        return self.config[key]
-
-    def set(self, key, value):
-        assert key in self.config
-        self.config[key] = value
+        self.settings.save_config()        

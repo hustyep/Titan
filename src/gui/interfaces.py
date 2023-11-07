@@ -3,7 +3,7 @@
 import tkinter as tk
 import keyboard as kb
 from tkinter import ttk
-from src.common import utils
+from src.common import utils, bot_status
 from src.common.interfaces import Configurable
 
 
@@ -112,7 +112,7 @@ class KeyBindings(LabelFrame):
             self.canvas.destroy()
             self.scrollbar.destroy()
 
-    @utils.run_if_disabled('\n[!] Cannot save key bindings while Mars is enabled')
+    @bot_status.run_if_disabled('\n[!] Cannot save key bindings while Mars is enabled')
     def save_keybindings(self):
         utils.print_separator()
         print(f"[~] Saving key bindings to '{self.target.TARGET}':")

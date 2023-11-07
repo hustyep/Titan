@@ -1,13 +1,13 @@
 import tkinter as tk
 from src.gui.interfaces import LabelFrame, Frame
-from src.common.interfaces import Configurable
+from src.common.gui_setting import gui_setting
 
 
 class Pets(LabelFrame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, 'Pets', **kwargs)
 
-        self.pet_settings = PetSettings('pets')
+        self.pet_settings = gui_setting.pet
         self.auto_feed = tk.BooleanVar(value=self.pet_settings.get('Auto-feed'))
         self.num_pets = tk.IntVar(value=self.pet_settings.get('Num pets'))
 
@@ -41,17 +41,3 @@ class Pets(LabelFrame):
         self.pet_settings.set('Auto-feed', self.auto_feed.get())
         self.pet_settings.set('Num pets', self.num_pets.get())
         self.pet_settings.save_config()
-
-
-class PetSettings(Configurable):
-    DEFAULT_CONFIG = {
-        'Auto-feed': False,
-        'Num pets': 1
-    }
-
-    def get(self, key):
-        return self.config[key]
-
-    def set(self, key, value):
-        assert key in self.config
-        self.config[key] = value

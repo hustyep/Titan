@@ -138,3 +138,47 @@ def print_separator():
     """Prints a 3 blank lines for visual clarity."""
 
     print('\n')
+
+def print_tag(tag):
+    print_separator()
+    print('#' * (10 + len(tag)))
+    print(f"#    {tag}    #")
+    print('#' * (10 + len(tag)))
+
+
+def print_state(enabled):
+    """Prints whether Mars is currently enabled or disabled."""
+    print_tag('ENABLED ' if enabled else 'DISABLED')
+    
+##########################
+#       Threading        #
+##########################
+class Async(threading.Thread):
+    def __init__(self, function, *args, **kwargs):
+        super().__init__()
+        self.queue = queue.Queue()
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+        self.function(*self.args, **self.kwargs)
+        self.queue.put('x')
+
+    def process_queue(self, root):
+        def f():
+            try:
+                self.queue.get_nowait()
+            except queue.Empty:
+                root.after(100, self.process_queue(root))
+        return f
+
+
+def async_callback(context, function, *args, **kwargs):
+    """Returns a callback function that can be run asynchronously by the GUI."""
+
+    def f():
+        task = Async(function, *args, **kwargs)
+        task.start()
+        context.after(100, task.process_queue(context))
+    return f

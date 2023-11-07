@@ -24,6 +24,8 @@ class CaptureExceptionType(Enum):
 
 class CaptureException(Exception):
     def __init__(self, type: CaptureExceptionType, last: int):
+        super().__init__(locals())
+        
         self.type = type
         self.last = last
 
@@ -31,16 +33,24 @@ class CaptureException(Exception):
 class Capture(Subject):
 
     def __init__(self):
+        super().__init__()
+        
         self.camera = dxcam.create(output_idx=0, output_color="BGR")
         self.calibrated = False
         self.hwnd = None
         self.frame = None
+        self.minimap_sample = None
+        self.minimap = None
         self.window = {
             'left': 0,
             'top': 0,
             'width': 1366,
             'height': 768
         }
+        
+        self.lost_window_time = 0
+        self.lost_minimap_time = 0
+        self.lost_player_time = 0
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)

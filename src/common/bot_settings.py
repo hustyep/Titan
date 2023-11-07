@@ -1,6 +1,7 @@
 import cv2
+from src.common.file_setting import File_Setting
 
-"""
+"""p
 A list of user-defined settings that can be changed by routines. Also contains a collection
 of validator functions that can be used to enforce parameter types.
 """
@@ -16,9 +17,10 @@ def validate_nonnegative_int(value):
     :return:        VALUE as an integer.
     """
 
-    if int(value) >= 1:
+    if int(value) >= 0:
         return int(value)
     raise ValueError(f"'{value}' is not a valid non-negative integer.")
+
 
 def validate_nonnegative_float(value):
     """
@@ -30,6 +32,7 @@ def validate_nonnegative_float(value):
     if float(value) >= 0:
         return float(value)
     raise ValueError(f"'{value}' is not a valid non-negative float.")
+
 
 def validate_boolean(value):
     """
@@ -91,8 +94,8 @@ def reset():
     """Resets all settings to their default values."""
 
     global move_tolerance, adjust_tolerance, record_layout, buff_cooldown, role_name, map_name, class_name
-    global role_template, boundary_point_l, boundary_point_r, file_setting, gui_setting
-    
+    global role_template, boundary_point_l, boundary_point_r
+
     move_tolerance = 13
     adjust_tolerance = 3
     record_layout = False
@@ -100,23 +103,23 @@ def reset():
     role_name = ''
     map_name = ''
     class_name = ''
-    
+
     role_template = None
 
     boundary_point_l = (100, 0)
     boundary_point_r = (0, 0)
-    
-    file_setting = {}
-    gui_setting = {}
-    
+
+
 def setup_template():
     global role_template
-    
+
     if len(role_name) > 0:
         try:
-            role_template = cv2.imread(f'assets/roles/player_{role_name}_template.png', 0)
+            role_template = cv2.imread(
+                f'assets/roles/player_{role_name}_template.png', 0)
         except:
             pass
+
 
 # The allowed error from the destination when moving towards a Point
 move_tolerance = 13
@@ -144,7 +147,6 @@ boundary_point_r = (0, 0)
 
 mob_detect = False
 
-file_setting = {}
-gui_setting= {}
+file_setting: File_Setting = None
 
 reset()

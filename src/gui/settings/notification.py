@@ -1,18 +1,18 @@
 import tkinter as tk
 from src.gui.interfaces import LabelFrame, Frame
-from src.common.interfaces import Configurable
-from src.common import config
+from src.common.gui_setting import gui_setting
+from src.common import bot_status
 
 
 class Notification(LabelFrame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, 'Notification', **kwargs)
 
-        self.notification_settings = NotificationSettings('Notification')
+        self.notification_settings = gui_setting.notification
         self.notice_level = tk.IntVar(
             value=self.notification_settings.get('notice_level'))
         self.notice_levels = ['Fatal', 'Error', 'Warnning', 'Info', 'Debug']
-        config.notice_level = int(self.notice_level.get())
+        bot_status.notice_level = int(self.notice_level.get())
 
         channel_row = Frame(self)
         channel_row.pack(side=tk.TOP, expand=True, pady=5, padx=5)
@@ -61,21 +61,4 @@ class Notification(LabelFrame):
             value = self.check_values[i]
             self.notification_settings.set(check.cget('text'), value.get())
         self.notification_settings.set("notice_level", self.notice_level.get())
-        config.notice_level = self.notice_level.get()
         self.notification_settings.save_config()
-
-
-class NotificationSettings(Configurable):
-    DEFAULT_CONFIG = {
-        'Telegram': True,
-        'Wechat': False,
-        'Email': False,
-        'notice_level': 1
-    }
-
-    def get(self, key):
-        return self.config[key]
-
-    def set(self, key, value):
-        assert key in self.config
-        self.config[key] = value

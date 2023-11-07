@@ -1,9 +1,8 @@
 import tkinter as tk
 from src.gui.interfaces import LabelFrame, Frame
-from src.common.interfaces import Configurable
-from src.common import utils
+from src.common.gui_setting import gui_setting
+from src.common import bot_status
 import keyboard
-import time
 import threading
 from src.common.action_simulator import ActionSimulator as sim
 
@@ -12,7 +11,7 @@ class Shadower(LabelFrame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, 'Shadower', **kwargs)
 
-        self.settings = ShadowerMacrosSettings('macros_shadower')
+        self.settings = gui_setting.shadower
 
         row = Frame(self)
         row.pack(side=tk.TOP, expand=True, pady=5, padx=5)
@@ -59,25 +58,12 @@ class Shadower(LabelFrame):
             else:
                 # keyboard.remove_hotkey(hotkey)
                 keyboard.unhook_key(hotkey)
-
+                
+    @bot_status.run_if_disabled
     def meso_explosion(self):
         threading.Timer(0.2, sim.click_key, ('d', )).start()
 
-    @utils.run_if_disabled
+    @bot_status.run_if_disabled
     def trickblade(self) -> None:
         sim.click_key('v')
         sim.click_key('a1')
-
-
-class ShadowerMacrosSettings(Configurable):
-    DEFAULT_CONFIG = {
-        'Meso Explosion': False,
-        'Trickblade': False,
-    }
-
-    def get(self, key):
-        return self.config[key]
-
-    def set(self, key, value):
-        assert key in self.config
-        self.config[key] = value

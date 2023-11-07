@@ -5,7 +5,7 @@ import threading
 from src.common.action_simulator import ActionSimulator as sim
 
 from src.gui.interfaces import LabelFrame, Frame
-from src.common.interfaces import Configurable
+from src.common.gui_setting import gui_setting
 
 class Misc(LabelFrame):
     def __init__(self, parent, **kwargs):
@@ -16,7 +16,7 @@ class Misc(LabelFrame):
         # 使用keyboard库注册热键
         keyboard.add_hotkey('ctrl+shift+y', self.hotkey_pressed)
 
-        self.buff_settings = MiscSettings('macros_misc')
+        self.buff_settings = gui_setting.misc
 
         buff_row = Frame(self)
         buff_row.pack(side=tk.TOP, expand=True, pady=5, padx=5)
@@ -79,20 +79,3 @@ class Misc(LabelFrame):
             sim.click_key('enter')
             sim.click_key('enter')
             sim.click_key('enter')
-            
-            
-
-class MiscSettings(Configurable):
-    DEFAULT_CONFIG = {
-        'Open Herb': False,
-        'Open Mineral': False,
-        'Cube': False,
-        'Star': False,
-    }
-
-    def get(self, key):
-        return self.config[key]
-
-    def set(self, key, value):
-        assert key in self.config
-        self.config[key] = value

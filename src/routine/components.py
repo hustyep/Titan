@@ -25,7 +25,7 @@ class Component:
             self.kwargs.pop('__class__')
             self.kwargs.pop('self')
 
-    @utils.run_if_enabled
+    @bot_status.run_if_enabled
     def execute(self):
         self.main()
 
@@ -67,7 +67,7 @@ class Point(Component):
 
     id = '*'
 
-    def __init__(self, x, y, interval=0, tolerance=0, skip='False') -> None:
+    def __init__(self, x, y, interval=0, tolerance=13, skip='False') -> None:
         super().__init__(locals())
         self.x = int(x)
         self.y = int(y)

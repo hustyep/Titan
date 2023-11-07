@@ -5,11 +5,10 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesno
 
 from src.common import bot_status, bot_settings, utils
-from src.common.interfaces import Configurable
+from src.common.file_setting import File_Setting
 from src.common.constants import RESOURCES_DIR
 from src.gui.interfaces import MenuBarItem
 from src.modules.bot import bot
-
 
 class File(MenuBarItem):
     def __init__(self, parent, **kwargs):
@@ -62,8 +61,8 @@ class File(MenuBarItem):
 
     def loadDefault(self):
 
-        bot.load_commands(bot_settings.file_setting.get('command_book_path'))
-        bot.load_routine(bot_settings.file_setting.get("routine_path"))
+        bot.load_commands(bot_settings.file_setting.command_book_path)
+        bot.load_routine(bot_settings.file_setting.routine_path)
 
     def enable_routine_state(self):
         self.entryconfig('New Routine', state=tk.NORMAL)
@@ -72,7 +71,7 @@ class File(MenuBarItem):
 
         self.load_routine_menu.delete(2, tk.END)
         
-        command_path = bot_settings.file_setting.get('command_book_path')
+        command_path = bot_settings.file_setting.command_book_path
         command_name = os.path.basename(command_path)[:-3]
 
         for file in get_routines(command_name):
@@ -80,7 +79,7 @@ class File(MenuBarItem):
                                                command=lambda name=file: File._load_routine_by_name(name))
 
     @staticmethod
-    @utils.run_if_disabled('\n[!] Cannot create a new routine while Mars is enabled')
+    @bot_status.run_if_disabled('\n[!] Cannot create a new routine while Mars is enabled')
     def _new_routine():
         if bot.routine.dirty:
             if not askyesno(title='New Routine',
@@ -91,7 +90,7 @@ class File(MenuBarItem):
         bot.routine.clear()
 
     @staticmethod
-    @utils.run_if_disabled('\n[!] Cannot save routines while Mars is enabled')
+    @bot_status.run_if_disabled('\n[!] Cannot save routines while Mars is enabled')
     def _save_routine():
         file_path = asksaveasfilename(initialdir=get_routines_dir(),
                                       title='Save routine',
@@ -101,7 +100,7 @@ class File(MenuBarItem):
             bot.routine.save(file_path)
 
     @staticmethod
-    @utils.run_if_disabled('\n[!] Cannot load routines while Mars is enabled')
+    @bot_status.run_if_disabled('\n[!] Cannot load routines while Mars is enabled')
     def _load_routine():
         if bot.routine.dirty:
             if not askyesno(title='Load Routine',
@@ -113,12 +112,12 @@ class File(MenuBarItem):
                                     title='Select a routine',
                                     filetypes=[('*.csv', '*.csv')])
         if file_path:
-            bot_settings.file_setting.set('routine_path', file_path)
+            bot_settings.file_setting.routine_path = file_path
             bot_settings.file_setting.save_config()
             bot.routine.load(file_path)
 
     @staticmethod
-    @utils.run_if_disabled('\n[!] Cannot load command books while Mars is enabled')
+    @bot_status.run_if_disabled('\n[!] Cannot load command books while Mars is enabled')
     def _load_commands():
         if bot.routine.dirty:
             if not askyesno(title='Load Command Book',
@@ -132,10 +131,10 @@ class File(MenuBarItem):
         File._load_command(file_path)
 
     @staticmethod
-    @utils.run_if_disabled('\n[!] Cannot load command books while Mars is enabled')
+    @bot_status.run_if_disabled('\n[!] Cannot load command books while Mars is enabled')
     def _load_command(file_path):
         if file_path:
-            bot_settings.file_setting.set('command_book_path', file_path)
+            bot_settings.file_setting.command_book_path = file_path
             bot_settings.file_setting.save_config()
             bot.load_commands(file_path)
 
@@ -145,7 +144,7 @@ class File(MenuBarItem):
         File._load_command(target)
         
     def _load_routine_by_name(name):
-        command_path = bot_settings.file_setting.get('command_book_path')
+        command_path = bot_settings.file_setting.command_book_path
         command_name = os.path.basename(command_path)[:-3]
         target = os.path.join(RESOURCES_DIR,
                               'routines', command_name, name + '.csv')
@@ -190,17 +189,3 @@ def get_routines_dir(command_name=None):
     if not os.path.exists(target):
         os.makedirs(target)
     return target
-
-
-class File_Setting(Configurable):
-    DEFAULT_CONFIG = {
-        'command_book_path': 'resources/command_books/shadower.py',
-        'routine_path': 'resources/routines/shadower/ResarchTrain1.csv'
-    }
-
-    def get(self, key):
-        return self.config[key]
-
-    def set(self, key, value):
-        assert key in self.config
-        self.config[key] = value

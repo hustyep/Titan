@@ -3,7 +3,7 @@ import win32con
 import win32clipboard as wc
 import time
 from random import random
-from src.common import utils, config
+from src.common import utils, bot_status
 from src.common.hid import hid
 from src.common.image_template import *
 from src.modules.capture import capture
@@ -32,23 +32,23 @@ class ActionSimulator:
 
     @staticmethod
     def say_to_all(text):
-        last_status = config.enabled
-        config.enabled = False
+        last_status = bot_status.enabled
+        bot_status.enabled = False
         time.sleep(1)
         ActionSimulator.say(text)
         if last_status:
-            config.enabled = True
+            bot_status.enabled = True
 
     @staticmethod
     def go_home():
         for i in range(0, 6):
-            config.enabled = False
+            bot_status.enabled = False
         ActionSimulator.click_key('H', 0.5)
         ActionSimulator.click_key('H', 5)
 
     @staticmethod
     def stop_game():
-        config.enabled = False
+        bot_status.enabled = False
 
         ActionSimulator.press_key('alt', 0.5)
         ActionSimulator.click_key('f4', 0.5)
@@ -58,12 +58,12 @@ class ActionSimulator:
 
     @staticmethod
     def jump_down():
-        config.enabled = False
+        bot_status.enabled = False
         ActionSimulator.press_key('left', 0.1)
         ActionSimulator.click_key('s', 0.5)
         ActionSimulator.click_key('s', 0.5)
         ActionSimulator.release_key('left', 0.5)
-        config.enabled = True
+        bot_status.enabled = True
 
     @staticmethod
     def potion_buff():
@@ -127,10 +127,10 @@ class ActionSimulator:
 
     @staticmethod
     def change_channel(num: int = 0, enable=True):
-        config.enabled = False
-        config.change_channel = True
-        config.rune_pos = None
-        config.rune_closest_pos = None
+        bot_status.enabled = False
+        bot_status.change_channel = True
+        bot_status.rune_pos = None
+        bot_status.rune_closest_pos = None
         threading.Timer(5, ActionSimulator._change_channel, (num, enable, )).start()
 
     @staticmethod
@@ -168,24 +168,24 @@ class ActionSimulator:
             return
 
         delay = 0
-        while not config.lost_minimap:
+        while not bot_status.lost_minimap:
             delay += 0.1
             if delay > 5:
                 ActionSimulator._change_channel()
                 return
             time.sleep(0.1)
 
-        while config.lost_minimap:
+        while bot_status.lost_minimap:
             time.sleep(0.1)
 
         if not enable:
             return
 
-        config.enabled = True
+        bot_status.enabled = True
 
         others = False
         for i in range(5):
-            if config.stage_fright:
+            if bot_status.stage_fright:
                 others = True
                 break
             time.sleep(1)
@@ -193,5 +193,5 @@ class ActionSimulator:
         if others:
             ActionSimulator.change_channel()
         else:
-            config.change_channel = False
-            config.enabled = True
+            bot_status.change_channel = False
+            bot_status.enabled = True

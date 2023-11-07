@@ -16,6 +16,8 @@ class Configurable:
         self.config = self.DEFAULT_CONFIG.copy()        # Shallow copy, should only contain primitives
         self.load_config()
 
+    
+
     def load_config(self):
         path = os.path.join(self.DIRECTORY, self.TARGET)
         if os.path.isfile(path):
@@ -28,9 +30,18 @@ class Configurable:
     def save_config(self):
         if not self.TARGET:
             return
+        
         path = os.path.join(self.DIRECTORY, self.TARGET)
         directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
         with open(path, 'wb') as file:
             pickle.dump(self.config, file)
+            
+    
+    def get(self, key):
+        return self.config[key]
+
+    def set(self, key, value):
+        assert key in self.config
+        self.config[key] = value

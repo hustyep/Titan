@@ -18,7 +18,6 @@ def update(func):
 
     def f(self, *args, **kwargs):
         result = func(self, *args, **kwargs)
-        self.notify('update')
         return result
     return f
 
@@ -168,7 +167,7 @@ class Routine():
     def current_step(self):
         return self.sequence[self.index]
 
-    @utils.run_if_enabled
+    @bot_status.run_if_enabled
     def step(self):
         """Increments config.seq_index and wraps back to 0 at the end of config.sequence."""
 

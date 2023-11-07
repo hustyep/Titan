@@ -1,12 +1,16 @@
-"""User friendly GUI to interact with Auto Maple."""
+"""User friendly GUI to interact with Mars."""
 
 import time
 import threading
 import tkinter as tk
 from tkinter import ttk
-from src.gui import Menu, View, Edit, Settings
+from os.path import basename
+from src.gui import Menu, View, Edit, Settings, Macros
+from src.common import bot_settings
+from src.modules.bot import bot
+from src.modules.listener import listener
 
-class GUI:
+class GUI():
     DISPLAY_FRAME_RATE = 30
     RESOLUTIONS = {
         'DEFAULT': '800x800',
@@ -14,12 +18,14 @@ class GUI:
     }
 
     def __init__(self):
+        super().__init__()
+        
         self.root = tk.Tk()
-        self.root.title('Auto Maple')
+        self.root.title('Mars')
         icon = tk.PhotoImage(file='assets/icon.png')
         self.root.iconphoto(False, icon)
         self.root.geometry(GUI.RESOLUTIONS['DEFAULT'])
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
 
         # Initialize GUI variables
         self.routine_var = tk.StringVar()
@@ -30,9 +36,10 @@ class GUI:
 
         self.navigation = ttk.Notebook(self.root)
 
-        self.view = View(self.navigation)
-        self.edit = Edit(self.navigation)
+        self.view = View(self.navigation, routine_var=self.routine_var)
+        self.edit = Edit(self.navigation, routine_var=self.routine_var, curr_cb=self.view.status.curr_cb)
         self.settings = Settings(self.navigation)
+        self.macro = Macros(self.navigation)
 
         self.navigation.pack(expand=True, fill='both')
         self.navigation.bind('<<NotebookTabChanged>>', self._resize_window)
@@ -82,3 +89,39 @@ class GUI:
         while True:
             self.view.minimap.display_minimap()
             time.sleep(delay)
+            
+    # def update(self, subject: Subject, *args, **kwargs) -> None:
+    #     if subject == bot:
+    #         type = args[0]
+    #         if type == 'notify_level':
+    #             self.settings.notification.notice_level.set(args[1])
+    #             self.settings.notification.notification_settings.save_config()
+    #         else:
+    #             index = args[1]
+    #             self.view.routine.select(index)
+    #             self.view.details.display_info(index)
+    #     elif subject == command_book:
+    #         self.settings.update_class_bindings()
+    #         self.menu.file.enable_routine_state()
+    #         self.view.status.set_cb(command_book.name)
+    #     elif subject == routine:
+    #         match (args[0]):
+    #             case 'clear':
+    #                 self.clear_routine_info()
+    #             case 'update':
+    #                 self.set_routine(routine.display)
+    #                 self.view.details.update_details()
+    #             case 'load':
+    #                 self.view.status.set_routine(basename(routine.path))
+    #                 self.edit.minimap.draw_default()
+    #     elif subject == listener:
+    #         match (args[0]):
+    #             case 'recalibrated':
+    #                 self.edit.minimap.redraw()
+    #             case 'record':
+    #                 self.edit.record.add_entry(args[2], args[1])
+
+
+if __name__ == '__main__':
+    gui = GUI()
+    gui.start()

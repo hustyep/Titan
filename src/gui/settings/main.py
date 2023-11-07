@@ -9,13 +9,12 @@ from src.gui.settings.auto import Auto
 from src.gui.settings.notification import Notification
 from src.gui.interfaces import Tab, Frame
 from src.modules.listener import listener
-from src.command_book.command_book import command_book
-from src.common import config
+from src.modules.bot import bot
+from src.common import bot_settings
 
 class Settings(Tab):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, 'Settings', **kwargs)
-        config.gui_settings = self
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(3, weight=1)
@@ -44,7 +43,8 @@ class Settings(Tab):
         # self.common_bindings.pack(side=tk.TOP, fill='x', expand=True, pady=(10, 0))
         
     def update_class_bindings(self):
-        self.class_bindings.destroy()
-        class_name = command_book.name.capitalize()
-        self.class_bindings = KeyBindings(self.column2, f'{class_name} Keybindings', command_book)
-        self.class_bindings.pack(side=tk.TOP, fill='x', expand=True)
+        pass
+        # self.class_bindings.destroy()
+        # class_name = command_book.name.capitalize()
+        # self.class_bindings = KeyBindings(self.column2, f'{class_name} Keybindings', command_book)
+        # self.class_bindings.pack(side=tk.TOP, fill='x', expand=True)

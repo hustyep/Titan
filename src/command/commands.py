@@ -31,9 +31,22 @@ class Command():
     precast: float = 0
     backswing: float = 0.5
 
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.name = self.__class__.__name__
+    def __init__(self, *args, **kwargs):
+        if len(args) > 1:
+            raise TypeError(
+                'Component superclass __init__ only accepts 1 (optional) argument: LOCALS')
+        if len(kwargs) != 0:
+            raise TypeError(
+                'Component superclass __init__ does not accept any keyword arguments')
+        if len(args) == 0:
+            self.kwargs = {}
+        elif type(args[0]) != dict:
+            raise TypeError(
+                "Component superclass __init__ only accepts arguments of type 'dict'.")
+        else:
+            self.kwargs = args[0].copy()
+            self.kwargs.pop('__class__')
+            self.kwargs.pop('self')
 
     def __str__(self):
         variables = self.__dict__
@@ -89,7 +102,7 @@ class Move(Command):
         distance = utils.distance(bot_status.player_pos, self.target)
         if distance <= self.tolerance:
             return
-        
+
         bot_status.path = [bot_status.player_pos, self.target]
         threshold = self.tolerance / math.sqrt(2)
         d_x = self.target[0] - bot_status.player_pos[0]
