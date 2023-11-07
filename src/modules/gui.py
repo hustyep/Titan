@@ -5,10 +5,14 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 from os.path import basename
+
 from src.gui import Menu, View, Edit, Settings, Macros
 from src.common import bot_settings
-from src.modules.bot import bot
+from src.modules.bot import BotUpdateType, bot
 from src.modules.listener import listener
+from src.command.command_book import CommandBook
+from src.routine.routine import RoutineUpdateType, routine
+
 
 class GUI():
     DISPLAY_FRAME_RATE = 30
@@ -19,7 +23,7 @@ class GUI():
 
     def __init__(self):
         super().__init__()
-        
+
         self.root = tk.Tk()
         self.root.title('Mars')
         icon = tk.PhotoImage(file='assets/icon.png')
@@ -37,13 +41,17 @@ class GUI():
         self.navigation = ttk.Notebook(self.root)
 
         self.view = View(self.navigation, routine_var=self.routine_var)
-        self.edit = Edit(self.navigation, routine_var=self.routine_var, curr_cb=self.view.status.curr_cb)
+        self.edit = Edit(self.navigation, routine_var=self.routine_var,
+                         curr_cb=self.view.status.curr_cb)
         self.settings = Settings(self.navigation)
         self.macro = Macros(self.navigation)
 
         self.navigation.pack(expand=True, fill='both')
         self.navigation.bind('<<NotebookTabChanged>>', self._resize_window)
         self.root.focus()
+
+        bot.subscribe(lambda i: self.on_bot_update(i))
+        routine.subscribe(lambda i: self.on_routine_update(i))
 
     def set_routine(self, arr):
         self.routine_var.set(arr)
@@ -89,7 +97,25 @@ class GUI():
         while True:
             self.view.minimap.display_minimap()
             time.sleep(delay)
-            
+
+    def on_bot_update(self, type: BotUpdateType):
+        match (type):
+            case (BotUpdateType.command_loaded):
+                self.settings.update_class_bindings()
+                self.menu.file.enable_routine_state()
+                self.view.status.set_cb(bot.command_book.name)
+
+    def on_routine_update(self, type: RoutineUpdateType):
+        match (type):
+            case (RoutineUpdateType.loaded):
+                self.view.status.set_routine(basename(routine.path))
+                self.edit.minimap.draw_default()
+            case (RoutineUpdateType.cleared):
+                self.clear_routine_info()
+            case (RoutineUpdateType.updated):
+                self.set_routine(routine.display)
+                self.view.details.update_details()
+
     # def update(self, subject: Subject, *args, **kwargs) -> None:
     #     if subject == bot:
     #         type = args[0]

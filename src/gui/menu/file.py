@@ -9,6 +9,7 @@ from src.common.file_setting import File_Setting
 from src.common.constants import RESOURCES_DIR
 from src.gui.interfaces import MenuBarItem
 from src.modules.bot import bot
+from src.routine.routine import routine
 
 class File(MenuBarItem):
     def __init__(self, parent, **kwargs):
@@ -81,13 +82,13 @@ class File(MenuBarItem):
     @staticmethod
     @bot_status.run_if_disabled('\n[!] Cannot create a new routine while Mars is enabled')
     def _new_routine():
-        if bot.routine.dirty:
+        if routine.dirty:
             if not askyesno(title='New Routine',
                             message='The current routine has unsaved changes. '
                                     'Would you like to proceed anyways?',
                             icon='warning'):
                 return
-        bot.routine.clear()
+        routine.clear()
 
     @staticmethod
     @bot_status.run_if_disabled('\n[!] Cannot save routines while Mars is enabled')
@@ -97,12 +98,12 @@ class File(MenuBarItem):
                                       filetypes=[('*.csv', '*.csv')],
                                       defaultextension='*.csv')
         if file_path:
-            bot.routine.save(file_path)
+            routine.save(file_path)
 
     @staticmethod
     @bot_status.run_if_disabled('\n[!] Cannot load routines while Mars is enabled')
     def _load_routine():
-        if bot.routine.dirty:
+        if routine.dirty:
             if not askyesno(title='Load Routine',
                             message='The current routine has unsaved changes. '
                                     'Would you like to proceed anyways?',
@@ -114,12 +115,12 @@ class File(MenuBarItem):
         if file_path:
             bot_settings.file_setting.routine_path = file_path
             bot_settings.file_setting.save_config()
-            bot.routine.load(file_path)
+            routine.load(file_path)
 
     @staticmethod
     @bot_status.run_if_disabled('\n[!] Cannot load command books while Mars is enabled')
     def _load_commands():
-        if bot.routine.dirty:
+        if routine.dirty:
             if not askyesno(title='Load Command Book',
                             message='Loading a new command book will discard the current routine, '
                                     'which has unsaved changes. Would you like to proceed anyways?',

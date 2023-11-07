@@ -10,7 +10,7 @@ from src.gui.edit.record import Record
 from src.gui.edit.routine import Routine
 from src.gui.edit.status import Status
 from src.gui.interfaces import Tab, Frame, LabelFrame
-
+from src.routine.routine import routine
 
 class Edit(Tab):
     def __init__(self, parent, **kwargs):
@@ -142,7 +142,7 @@ class Editor(LabelFrame):
         title.insert(0, f"Creating new ...")
         title.config(state=tk.DISABLED)
 
-        options = bot.routine.get_all_components()
+        options = routine.get_all_components()
         var = tk.StringVar(value=tuple(options.keys()))
 
         def update_search(*_):
@@ -289,8 +289,8 @@ class Editor(LabelFrame):
                 if isinstance(obj, Command):
                     if len(selects) > 0:
                         index = int(selects[0])
-                        if isinstance(bot.routine[index], Point):
-                            bot.routine.append_command(index, obj)
+                        if isinstance(routine[index], Point):
+                            routine.append_command(index, obj)
                             self.parent.routine.commands.update_display()
                             self.cancel()
                         else:
@@ -298,7 +298,7 @@ class Editor(LabelFrame):
                     else:
                         print(f"\n[!] Error while adding Command: no Point is currently selected.")
                 else:
-                    bot.routine.append_component(obj)
+                    routine.append_component(obj)
                     self.cancel()
             except (ValueError, TypeError) as e:
                 print(f"\n[!] Found invalid arguments for '{component.__name__}':")

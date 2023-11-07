@@ -1,26 +1,25 @@
 $, target=move_tolerance, value=10
-$, target=mob_name, value=Sandblade
 $, target=role_name, value=sllee
 
 @, label=Bottom mobbing
-*, x=28, y=56, frequency=1, interval=0, skip=False, adjust=False
-*, x=95, y=56, frequency=4, interval=0, skip=False, adjust=False
+*, x=28, y=56, interval=0, skip=False, tolerance=13
+*, x=95, y=56, interval=0, skip=False, tolerance=13
     ShadowVeil
-*, x=176, y=56, frequency=1, interval=0, skip=False, adjust=False
-*, x=156, y=24, frequency=10, interval=0, skip=True, adjust=False
-*, x=95, y=45, frequency=10, interval=0, skip=True, adjust=False
+*, x=176, y=56, interval=0, skip=False, tolerance=13
+*, x=156, y=24, interval=0, skip=True, tolerance=13
+*, x=95, y=45, interval=0, skip=True, tolerance=13
     TrickBlade, direction=left
 
 @, label=Summoning
-*, x=159, y=56, frequency=4, interval=0, skip=False, adjust=True
+*, x=159, y=56, interval=0, skip=False, tolerance=3
     ShadowAssault, direction=upleft, jump=True, distance=80
     SuddenRaid
-*, x=128, y=19, frequency=4, interval=0, skip=False, adjust=True
+*, x=128, y=19, interval=0, skip=False, tolerance=3
     DarkFlare, direction=left
     SuddenRaid
-*, x=90, y=12, frequency=4, interval=0, skip=False, adjust=True
+*, x=90, y=12, interval=0, skip=False, tolerance=3
     ShadowAssault, direction=left, jump=True, distance=80
-*, x=64, y=18, frequency=4, interval=0, skip=False, adjust=True
+*, x=64, y=18, interval=0, skip=False, tolerance=3
     TrickBlade, direction=left
     ErdaShower, direction=right
     TrickBlade, direction=left

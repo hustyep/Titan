@@ -2,15 +2,19 @@
 
 import threading
 import time
-import random
+from enum import Enum
+from rx.subject import Subject
 
 from src.common import utils, bot_status
 from src.modules.capture import capture
 from src.map.map import map
 from src.command.command_book import CommandBook
-from src.routine.routine import Routine
+from src.routine.routine import routine
 
-class Bot():
+class BotUpdateType(Enum):
+    command_loaded = 'command_loaded'
+
+class Bot(Subject):
     """A class that interprets and executes user-defined routines."""
     
 
@@ -19,7 +23,6 @@ class Bot():
 
         super().__init__()
         self.command_book: CommandBook = None
-        self.routine: Routine = None
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -50,10 +53,10 @@ class Bot():
         except Exception as e:
             print(e)
         else:
-            pass
+            self.on_next(BotUpdateType.command_loaded)
             # command_book.move.step_callback = self.point_check
 
     def load_routine(self, file:str):
-        self.routine = Routine(file, self.command_book)
+        routine.load(file, self.command_book)
 
 bot = Bot()

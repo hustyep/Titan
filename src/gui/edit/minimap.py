@@ -6,7 +6,7 @@ from src.routine.components import Point
 from src.gui.interfaces import LabelFrame
 from src.modules.capture import capture
 from src.modules.bot import bot
-
+from src.routine.routine import routine
 
 class Minimap(LabelFrame):
     def __init__(self, parent, **kwargs):
@@ -45,7 +45,7 @@ class Minimap(LabelFrame):
         selects = self.parent.routine.components.listbox.curselection()
         if len(selects) > 0:
             index = int(selects[0])
-            obj = bot.routine[index]
+            obj = routine[index]
             if isinstance(obj, Point):
                 self.draw_point(obj)
                 self.parent.record.clear_selection()

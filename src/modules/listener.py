@@ -9,7 +9,7 @@ from src.common.interfaces import Configurable
 from src.common import bot_status, utils
 from src.modules.capture import capture
 # from src.modules.notifier import notifier
-from src.modules.bot import bot
+from src.routine.routine import routine
 
 class Listener(Configurable):
     DEFAULT_CONFIG = {
@@ -93,7 +93,7 @@ class Listener(Configurable):
     def reload_routine(self):
         self.recalibrate_minimap()
 
-        bot.routine.load(bot.routine.path)
+        routine.load(routine.path)
 
         winsound.Beep(523, 200)     # C5
         winsound.Beep(659, 200)     # E5

@@ -24,7 +24,7 @@ class Keybindings(DefaultKeybindings):
 
 
 class Command():
-    name = 'Command Superclass'
+    id = 'Command Superclass'
     key: str = None
     cooldown: int = 0
     castedTime: float = 0
@@ -47,6 +47,7 @@ class Command():
             self.kwargs = args[0].copy()
             self.kwargs.pop('__class__')
             self.kwargs.pop('self')
+        self.id = self.__class__.__name__
 
     def __str__(self):
         variables = self.__dict__

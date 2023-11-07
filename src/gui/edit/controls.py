@@ -2,7 +2,7 @@ import tkinter as tk
 
 from src.modules.bot import bot
 from src.gui.interfaces import Frame
-
+from src.routine.routine import routine
 
 class Controls(Frame):
     def __init__(self, parent, **kwargs):
@@ -37,12 +37,12 @@ class Controls(Frame):
             if len(components) > 0:
                 p_index = int(components[0])
                 if len(commands) > 0:
-                    point = bot.routine[p_index]
+                    point = routine[p_index]
                     c_index = int(commands[0])
                     if direction == 'up':
-                        new_index = bot.routine.move_command_up(p_index, c_index)
+                        new_index = routine.move_command_up(p_index, c_index)
                     else:
-                        new_index = bot.routine.move_command_down(p_index, c_index)
+                        new_index = routine.move_command_down(p_index, c_index)
 
                     if new_index != c_index:
                         edit = self.parent.parent
@@ -53,15 +53,15 @@ class Controls(Frame):
                                                    commands.update_obj)
                 else:
                     if direction == 'up':
-                        new_index = bot.routine.move_component_up(p_index)
+                        new_index = routine.move_component_up(p_index)
                     else:
-                        new_index = bot.routine.move_component_down(p_index)
+                        new_index = routine.move_component_down(p_index)
 
                     if new_index != p_index:
                         edit = self.parent.parent
                         components = edit.routine.components
                         components.select(new_index)
-                        edit.editor.create_edit_ui(bot.routine.sequence, new_index,
+                        edit.editor.create_edit_ui(routine.sequence, new_index,
                                                    components.update_obj)
         return callback
 
@@ -72,15 +72,15 @@ class Controls(Frame):
             p_index = int(components[0])
             if len(commands) > 0:
                 c_index = int(commands[0])
-                bot.routine.delete_command(p_index, c_index)
+                routine.delete_command(p_index, c_index)
 
                 edit = self.parent.parent
                 edit.routine.commands.update_display()
                 edit.routine.commands.clear_selection()
-                edit.editor.create_edit_ui(bot.routine.sequence, p_index,
+                edit.editor.create_edit_ui(routine.sequence, p_index,
                                            edit.routine.components.update_obj)
             else:
-                bot.routine.delete_component(p_index)
+                routine.delete_component(p_index)
 
                 edit = self.parent.parent
                 edit.minimap.redraw()
@@ -92,5 +92,5 @@ class Controls(Frame):
         self.parent.parent.editor.create_add_prompt()
 
     def save(self):
-        bot.routine.save()
-        bot.routine.load(bot.routine.path)
+        routine.save()
+        routine.load(routine.path)

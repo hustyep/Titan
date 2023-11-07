@@ -12,7 +12,6 @@ CB_KEYBINDING_DIR = os.path.join('resources', 'keybindings')
 class CommandBook():
     def __init__(self, file):
         self.name = splitext(basename(file))[0]
-
         self.Move = commands.Move
         self.Walk = commands.Walk
         self.Wait = commands.Wait

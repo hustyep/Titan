@@ -9,7 +9,7 @@ import numpy as np
 
 from os.path import join, isfile, splitext, basename
 from heapq import heappush, heappop
-from src.common import constants, utils, bot_settings
+from src.common import constants
 
 class Map:
     """Uses a quadtree to represent possible player positions in a map layout."""
@@ -33,19 +33,20 @@ class Map:
         self.elite_templates = []
         self.boss_templates = []
         
-    def load_data(self):
+    def load_data(self, map_name):
         self.clear()
-        self.name = bot_settings.map_name
+        self.name = map_name
         self.load_minimap_data()
         
     def load_minimap_data(self):
         resArray=[]
         minimap_data_file = f'{get_maps_dir(self.name)}.xlsx'
+        print(f"[~] Loading map '{minimap_data_file}'")
         try:
             data = xlrd.open_workbook(minimap_data_file) #读取文件
         except Exception as e:
             data = None
-            print(f'载入地图{minimap_data_file}失败! \n{e}')
+            print(f'[!] load map: {minimap_data_file}失败! \n{e}')
         if data:
             table = data.sheet_by_index(0) #按索引获取工作表，0就是工作表1
             for i in range(1, table.nrows): #table.nrows表示总行数
@@ -53,7 +54,7 @@ class Map:
                 resArray.append(line) #将line加入到resArray中，resArray是二维list
             resArray=np.array(resArray) #将resArray从二维list变成数组
             self.minimap_data = resArray
-            
+        print(f" ~ Finished loading map '{self.name}'")
             
     def load_mob_template(self):
         try:

@@ -2,6 +2,8 @@
 
 import csv
 from os.path import splitext, basename
+from enum import Enum
+from rx.subject import Subject
 
 from src.common import bot_settings, utils
 from src.routine.components import *
@@ -9,6 +11,10 @@ from src.command.commands import Command
 from src.map.map import map
 from src.command.command_book import CommandBook
 
+class RoutineUpdateType(Enum):
+    loaded = 'routine_loaded'
+    cleared = 'routine_cleared'
+    updated = 'routine_updated'
 
 def update(func):
     """
@@ -18,6 +24,7 @@ def update(func):
 
     def f(self, *args, **kwargs):
         result = func(self, *args, **kwargs)
+        self.on_next(RoutineUpdateType.updated)
         return result
     return f
 
@@ -32,10 +39,10 @@ def dirty(func):
     return f
 
 
-class Routine():
+class Routine(Subject):
     """Describes a routine file in Mars's custom 'machine code'."""
 
-    def __init__(self, file:str, command_book: CommandBook):
+    def __init__(self):
         super().__init__()
         self.dirty = False
         self.path = ''
@@ -43,8 +50,7 @@ class Routine():
         self.index = 0
         self.sequence: list[Component] = []
         self.display = []       # Updated alongside sequence
-        self.command_book = command_book
-        self.load(file)
+        self.command_book = None
     
     @dirty
     @update
@@ -199,10 +205,13 @@ class Routine():
         self.dirty = False
         self.path = ''
         self.labels = {}
+        self.command_book = None
         map.clear()
         bot_settings.reset()
+        
+        self.on_next(RoutineUpdateType.cleared)
 
-    def load(self, file:str):
+    def load(self, file:str, command_book:CommandBook):
         """
         Attempts to load FILE into a sequence of Components. If no file path is provided, attempts to
         load the previous routine file.
@@ -228,14 +237,16 @@ class Routine():
             return False
 
         self.clear()
+        self.command_book = command_book
 
         # Compile and Link
         self.compile(file)
-        map.load_data()
+        map.load_data(basename(splitext(file)[0]))
 
         self.dirty = False
         self.path = file
 
+        self.on_next(RoutineUpdateType.loaded)
         print(f" ~  Finished loading routine '{basename(splitext(file)[0])}'.")
 
     def compile(self, file):
@@ -310,3 +321,6 @@ class Routine():
 
     def __len__(self):
         return len(self.sequence)
+    
+    
+routine = Routine()
