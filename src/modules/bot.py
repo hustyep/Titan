@@ -10,6 +10,8 @@ from src.modules.capture import capture
 from src.map.map import map
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
+from src.modules.detector import detector
+from src.common.vkeys import key_up, key_down, releaseAll
 
 class BotUpdateType(Enum):
     command_loaded = 'command_loaded'
@@ -58,5 +60,34 @@ class Bot(Subject):
 
     def load_routine(self, file:str):
         routine.load(file, self.command_book)
+
+
+    def toggle(self, enabled: bool, reason: str = ''):
+        bot_status.rune_pos = None
+        bot_status.rune_closest_pos = None
+
+        bot_status.minal_active = False
+        bot_status.minal_pos = None
+        bot_status.minal_closest_pos = None
+
+        if enabled:
+            capture.calibrated = False
+
+        if bot_status.enabled == enabled:
+            return
+
+        bot_status.enabled = enabled
+        utils.print_state()
+
+        releaseAll()
+
+    def bot_status(self, ext='') -> str:
+        message = (
+            f"bot status: {'running' if bot_status.enabled  else 'pause'}\n"
+            f"rune status: {f'{time.time() - detector.rune_active_time}s' if bot_status.rune_pos is not None else 'clear'}\n"
+            f"other players: {detector.others_count}\n"
+            f"reason: {ext}\n"
+        )
+        return message
 
 bot = Bot()

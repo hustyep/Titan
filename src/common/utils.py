@@ -8,7 +8,10 @@ import os
 import threading
 from datetime import datetime, timedelta
 from random import random
-
+import win32gui
+import win32ui
+import win32con
+import win32api
 import cv2
 import numpy as np
 
@@ -182,3 +185,32 @@ def async_callback(context, function, *args, **kwargs):
         task.start()
         context.after(100, task.process_queue(context))
     return f
+
+
+def timeStr() -> str:
+    now = datetime.utcnow() + timedelta(hours=8)
+    return now.strftime('%y%m%d%H%M%S%f')[:-3]
+    # return time.strftime("%y%m%d%H%M%S%f", time.localtime())[:-3] 
+
+def make_dir(path):
+    folder = os.path.exists(path)
+    if not folder:
+        os.makedirs(path)
+
+def save_screenshot(frame, file_path=None, compress=True):
+    if frame is None:
+        return None
+    
+    if file_path is None:
+        file_path = 'screenshot/tmp'
+    
+    make_dir(file_path)
+    
+    filename = f'{file_path}/maple_{timeStr()}'    
+    if compress:
+        threading.Timer(1, cv2.imwrite, (filename + '.png', frame)).start()
+        cv2.imwrite(filename + '.webp', frame, [int(cv2.IMWRITE_WEBP_QUALITY), 0])
+        return filename + '.webp'
+    else:
+        cv2.imwrite(filename + ".png", frame)
+        return filename + ".png"

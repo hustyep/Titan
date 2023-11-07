@@ -7,8 +7,9 @@ from datetime import datetime
 import keyboard as kb
 from src.common.interfaces import Configurable
 from src.common import bot_status, utils
+from src.common.gui_setting import gui_setting
 from src.modules.capture import capture
-# from src.modules.notifier import notifier
+from src.modules.bot import bot
 from src.routine.routine import routine
 from src.chat_bot.chat_bot_entity import ChatBotCommand
 from src.common.action_simulator import ActionSimulator
@@ -105,30 +106,29 @@ class Listener(Configurable):
         capture.calibrated = False
         while not capture.calibrated:
             time.sleep(0.01)
-        self.notify('recalibrated')
+        print('recalibrated')
 
     def record_position(self):
         pos = bot_status.player_pos
         now = datetime.now().strftime('%I:%M:%S %p')
-        self.notify('recored', pos, now)
         print(f'\n[~] Recorded position ({pos[0]}, {pos[1]}) at {now}')
         time.sleep(0.6)
 
     def on_new_command(self, command: ChatBotCommand, *args):
             match (command):
                 case ChatBotCommand.INFO:
-                    return self.bot_status(), None
+                    return bot.bot_status(), None
                 case ChatBotCommand.START:
-                    self.toggle(True)
-                    return self.bot_status(), None
+                    bot.toggle(True)
+                    return bot.bot_status(), None
                 case ChatBotCommand.PAUSE:
-                    self.toggle(False)
-                    return self.bot_status(), None
+                    bot.toggle(False)
+                    return bot.bot_status(), None
                 case ChatBotCommand.SCREENSHOT:
                     filepath = utils.save_screenshot(capture.frame)
                     return None, filepath
                 case ChatBotCommand.PRINTSCREEN:
-                    filepath = utils.save_screenshot()
+                    filepath = utils.save_screenshot(capture.camera.get_latest_frame())
                     return None, filepath
                 case ChatBotCommand.CLICK:
                     ActionSimulator.click_key(args[0])
@@ -136,8 +136,8 @@ class Listener(Configurable):
                     return "done", filepath
                 case ChatBotCommand.LEVEL:
                     level = int(args[0])
-                    # bot_status.notice_level = level
-                    self.notify('notice_level', level)
+                    gui_setting.notification.set('notice_level', level)
+                    #  TODO update UI
                     return "done", None
                 case ChatBotCommand.SAY:
                     ActionSimulator.say_to_all(args[0])
