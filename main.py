@@ -4,6 +4,7 @@ import platform
 from src.modules.bot import bot
 from src.common.dll_helper import dll_helper
 from src.modules.capture import capture
+from src.modules.detector import detector
 from src.modules.bot import bot
 from src.modules.gui import GUI
 
@@ -15,6 +16,10 @@ while not dll_helper.ready:
 
 capture.start()
 while not capture.ready:
+    time.sleep(0.01)
+
+detector.start()
+while not detector.ready:
     time.sleep(0.01)
 
 bot.start()
