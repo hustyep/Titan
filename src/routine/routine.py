@@ -30,7 +30,7 @@ def update(func):
 
     def f(self, *args, **kwargs):
         result = func(self, *args, **kwargs)
-        self.on_next(RoutineUpdateType.updated)
+        self.on_next((RoutineUpdateType.updated, ))
         return result
     return f
 
@@ -215,7 +215,7 @@ class Routine(Subject):
         map.clear()
         bot_settings.reset()
 
-        self.on_next(RoutineUpdateType.cleared)
+        self.on_next((RoutineUpdateType.cleared, ))
 
     def load(self, file: str, command_book: CommandBook):
         """
@@ -254,7 +254,7 @@ class Routine(Subject):
         self.dirty = False
         self.path = file
 
-        self.on_next(RoutineUpdateType.loaded)
+        self.on_next((RoutineUpdateType.loaded, ))
         print(f" ~  Finished loading routine '{basename(splitext(file)[0])}'.")
 
     def compile(self, file):

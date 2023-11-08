@@ -62,6 +62,8 @@ class Detector(Subject):
         self.exception_thread.start()
         self.event_thread.start()
 
+        routine.subscribe(lambda i:self.on_event(i))
+
         self.ready = True
 
     def _main_fetal(self):
@@ -95,6 +97,12 @@ class Detector(Subject):
                 self.check_mineral(frame, minimap)
             time.sleep(0.2)
 
+    def on_event(self, args):
+        event = args[0]
+        if event == BotInfo.RUNE_LIBERATED:
+            self.rune_active_time = 0
+            bot_status.rune_pos = None
+        
     # check white room
     def check_fetal(self, frame):
         if frame is None:

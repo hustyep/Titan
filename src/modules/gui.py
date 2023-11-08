@@ -105,8 +105,8 @@ class GUI():
                 self.menu.file.enable_routine_state()
                 self.view.status.set_cb(bot.command_book.name)
 
-    def on_routine_update(self, type: RoutineUpdateType):
-        match (type):
+    def on_routine_update(self, args):
+        match (args[0]):
             case (RoutineUpdateType.loaded):
                 self.view.status.set_routine(basename(routine.path))
                 self.edit.minimap.draw_default()

@@ -15,6 +15,7 @@ from src.common.constants import *
 from src.modules.chat_bot import chat_bot
 from src.modules.capture import capture
 from src.modules.detector import detector
+from src.routine.routine import routine
 
 class Notifier(Subject):
     ALERTS_DIR = os.path.join('assets', 'alerts')
@@ -33,12 +34,13 @@ class Notifier(Subject):
         """Starts this Notifier's thread."""
         capture.subscribe(lambda e: self.on_event(e))
         detector.subscribe(lambda e: self.on_event(e))
+        routine.subscribe(lambda e: self.on_event(e))
         
         print('\n[~] Started notifier')
 
     def on_event(self, args):
         event = args[0]
-        info = args[1]
+        info = args[1] if len(args) > 1 else None
         self._notify(event, info)
 
     def _notify(self, event: Enum, info) -> None:
@@ -46,7 +48,7 @@ class Notifier(Subject):
         now = time.time()
         noticed_time = self.notice_time_record.get(event, 0)
 
-        if noticed_time == 0 or now - noticed_time >= 30:
+        if noticed_time == 0 or now - noticed_time >= 8:
             self.notice_time_record[event] = now
             event_type = type(event)
             if event_type == BotFatal:
@@ -63,12 +65,15 @@ class Notifier(Subject):
                 image_path = utils.save_screenshot()
                 self.send_message(text=text, image_path=image_path)
             elif event_type == BotWarnning:
+                if event == BotWarnning.RUNE_FAILED:
+                    info = f'{detector.rune_active_time - time.time()}s'
+                
                 if gui_setting.notification.get('notice_level') < 3:
                     return
                 text = f'⚠️[{event.value}] {info}'
                 image_path = utils.save_screenshot(frame=capture.frame)
                 self.send_message(text=text, image_path=image_path)
-            elif event_type == BotInfo:
+            elif event_type == BotInfo:                
                 if gui_setting.notification.get('notice_level') < 4:
                     return
                 text = f'💡[{event.value}] {info}'
