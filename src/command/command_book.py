@@ -17,12 +17,13 @@ class CommandBook():
         self.Wait = commands.Wait
         self.ErdaShower = commands.ErdaShower
         self.SolveRune = commands.SolveRune
+        self.Mining = commands.Mining
         self.FeedPet = commands.FeedPet
 
         self.Summon = commands.Summon
         self.DotAoe = commands.DotAoe
         self.Buff = commands.Buff
-        # self.Potion = commands.Potion
+        self.Potion = commands.Potion
 
         self.step = commands.step
 
@@ -93,7 +94,7 @@ class CommandBook():
 
         # Check if required commands have been implemented and overridden
         required_command_found = True
-        for command in [commands.Buff]:
+        for command in [commands.Buff, commands.Attack]:
             name = command.__name__.lower()
             if name not in new_cb:
                 required_command_found = False

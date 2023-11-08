@@ -4,9 +4,11 @@ import time
 from src.command.commands import Command, Move
 from src.common import utils, bot_settings, bot_status
 
+
 class Component:
     id = 'Routine Component'
     PRIMITIVES = {int, str, bool, float}
+    complete_callback = None
 
     def __init__(self, *args, **kwargs):
         if len(args) > 1:
@@ -55,58 +57,11 @@ class Component:
             if key != 'id' and type(self.kwargs[key]) in Component.PRIMITIVES:
                 arr.append(f'{key}={value}')
         return ', '.join(arr)
-    
+
 
 #################################
 #       Routine Components      #
 #################################
-
-
-class Point(Component):
-    """Represents a location in a user-defined routine."""
-
-    id = '*'
-
-    def __init__(self, x, y, interval=0, tolerance=13, skip='False') -> None:
-        super().__init__(locals())
-        self.x = int(x)
-        self.y = int(y)
-        self.location = (self.x, self.y)
-        self.interval = bot_settings.validate_nonnegative_int(interval)
-        self.tolerance = bot_settings.move_tolerance if int(tolerance) == 0 else int(tolerance)
-        self.skip = bot_settings.validate_boolean(skip)
-        self.last_execute_time = 0
-        if not hasattr(self, 'commands'):       # Updating Point should not clear commands
-            self.commands: list[Command] = []
-
-    def main(self):
-        """Executes the set of actions associated with this Point."""
-        # self.print_debug_info()
-
-        if self.interval > 0:
-            now = time.time()
-            if self.skip and self.last_execute_time == 0:
-                self.last_execute_time = now
-            if now - self.last_execute_time >= self.interval:
-                self._main()
-        else:
-            self._main()
-            
-    def _main(self):
-        self.last_execute_time = time.time()
-        Move(self.x, self.y, self.tolerance).execute()
-        for command in self.commands:
-            command.execute()
-
-    def info(self):
-        curr = super().info()
-        curr['vars'].pop('location', None)
-        curr['vars']['commands'] = ', '.join([c.id for c in self.commands])
-        return curr
-
-    def __str__(self):
-        return f'  * {self.location}'
-
 
 class Label(Component):
     id = '@'
@@ -115,7 +70,7 @@ class Label(Component):
         super().__init__(locals())
         self.label = str(label)
         self.index = None
-            
+
     def _main(self):
         for component in self.series:
             component.execute()
@@ -135,18 +90,67 @@ class Label(Component):
         return f'{self.label}:'
 
 
+class Point(Component):
+    """Represents a location in a user-defined routine."""
+
+    id = '*'
+
+    def __init__(self, x, y, interval=0, tolerance=13, skip='False') -> None:
+        super().__init__(locals())
+        self.x = int(x)
+        self.y = int(y)
+        self.location = (self.x, self.y)
+        self.interval = bot_settings.validate_nonnegative_int(interval)
+        self.tolerance = bot_settings.move_tolerance if int(
+            tolerance) == 0 else int(tolerance)
+        self.skip = bot_settings.validate_boolean(skip)
+        self.last_execute_time = 0
+        self.parent: Component = None
+        if not hasattr(self, 'commands'):       # Updating Point should not clear commands
+            self.commands: list[Command] = []
+
+    def main(self):
+        """Executes the set of actions associated with this Point."""
+        # self.print_debug_info()
+
+        if self.interval > 0:
+            now = time.time()
+            if self.skip and self.last_execute_time == 0:
+                self.last_execute_time = now
+            if now - self.last_execute_time >= self.interval:
+                self._main()
+        else:
+            self._main()
+
+    def _main(self):
+        Move(self.x, self.y, self.tolerance).execute()
+        for command in self.commands:
+            command.execute()
+        self.last_execute_time = time.time()
+        Component.complete_callback(self)
+
+    def info(self):
+        curr = super().info()
+        curr['vars'].pop('location', None)
+        curr['vars']['commands'] = ', '.join([c.id for c in self.commands])
+        return curr
+
+    def __str__(self):
+        return f'  * {self.location}'
+
+
 class Sequence(Component):
     """A series of actions."""
-    
+
     id = '~'
-    
+
     def __init__(self, label, interval, skip=False):
         super().__init__(locals())
         self.label = str(label)
         self.interval = bot_settings.validate_nonnegative_int(interval)
         self.skip = bot_settings.validate_boolean(skip)
 
-        self.last_execute_time = time.time() + self.interval if skip else 0
+        self.last_execute_time = 0
         self.path: list[Point] = []
         self.index = None
 
@@ -154,14 +158,19 @@ class Sequence(Component):
         """Executes the series of actions associated with this Sequence."""
 
         if self.interval > 0:
-            if time.time() - self.last_execute_time >= self.interval:
+            now = time.time()
+            if self.skip and self.last_execute_time == 0:
+                self.last_execute_time = now
+            if now - self.last_execute_time >= self.interval:
                 self._main()
         else:
             self._main()
-            
+
     def _main(self):
         for point in self.path:
             point.execute()
+        self.last_execute_time = time.time()
+        Component.complete_callback(self)
 
     def add_component(self, component: Point):
         self.path.append(component)
@@ -186,6 +195,7 @@ class Sequence(Component):
     def __str__(self):
         return f'{self.label}:'
 
+
 class Setting(Component):
     """Changes the value of the given setting variable."""
 
@@ -207,7 +217,8 @@ class Setting(Component):
 
 class End(Component):
     id = '#'
-    
+
+
 SYMBOLS = {
     '*': Point,
     '@': Label,

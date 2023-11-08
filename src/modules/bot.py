@@ -51,7 +51,10 @@ class Bot(Subject):
 
         self.ready = True
         while True:
-            time.sleep(0.01)
+            if bot_status.enabled and len(routine) > 0:
+                routine.step()
+            else:
+                time.sleep(0.01)
 
     def load_commands(self, file):
         try:

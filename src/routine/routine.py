@@ -5,16 +5,22 @@ from os.path import splitext, basename
 from enum import Enum
 from rx.subject import Subject
 
+from src.rune import rune
+from src.common.constants import *
 from src.common import bot_settings, utils
 from src.routine.components import *
 from src.command.commands import Command
 from src.map.map import map
 from src.command.command_book import CommandBook
+from src.common.action_simulator import *
+
 
 class RoutineUpdateType(Enum):
     loaded = 'routine_loaded'
     cleared = 'routine_cleared'
     updated = 'routine_updated'
+    selected = 'routine_selected'
+
 
 def update(func):
     """
@@ -51,7 +57,7 @@ class Routine(Subject):
         self.sequence: list[Component] = []
         self.display = []       # Updated alongside sequence
         self.command_book = None
-    
+
     @dirty
     @update
     def set(self, arr):
@@ -176,7 +182,7 @@ class Routine(Subject):
     @bot_status.run_if_enabled
     def step(self):
         """Increments config.seq_index and wraps back to 0 at the end of config.sequence."""
-
+        self._run()
         self.index = (self.index + 1) % len(self.sequence)
 
     def save(self, file_path=None):
@@ -208,10 +214,10 @@ class Routine(Subject):
         self.command_book = None
         map.clear()
         bot_settings.reset()
-        
+
         self.on_next(RoutineUpdateType.cleared)
 
-    def load(self, file:str, command_book:CommandBook):
+    def load(self, file: str, command_book: CommandBook):
         """
         Attempts to load FILE into a sequence of Components. If no file path is provided, attempts to
         load the previous routine file.
@@ -238,6 +244,8 @@ class Routine(Subject):
 
         self.clear()
         self.command_book = command_book
+        Command.complete_callback = self._on_command_complete
+        Component.complete_callback = self._on_component_complete
 
         # Compile and Link
         self.compile(file)
@@ -321,6 +329,81 @@ class Routine(Subject):
 
     def __len__(self):
         return len(self.sequence)
-    
-    
+
+    @bot_status.run_if_enabled
+    def _run(self):
+        # current element
+        element = self.current_step()
+
+        # Highlight the current Point
+        self.on_next((RoutineUpdateType.selected, element))
+
+        if isinstance(element, Point):
+            new_direction = 'right' if element.location[0] > bot_status.player_pos[0] else 'left'
+            if new_direction == bot_status.player_direction:
+                # Feed Pet
+                self.command_book.FeedPet.execute()
+
+                # Use Buff and Potion
+                self.command_book.Potion.execute()
+                self.command_book.Buff().execute()
+
+        # Execute next Point in the routine
+        element.execute()
+
+    def _on_command_complete(self, c: Command):
+        if isinstance(c, Move) and not is_adjacent_point(bot_status.player_pos, c.target, tolerance=c.tolerance):
+            self.check_point(bot_status.player_pos, c.tolerance)
+
+    def _on_component_complete(self, c: Component):
+        if isinstance(c, Point):
+            self.check_point(c.location, c.tolerance)
+
+    @bot_status.run_if_enabled
+    def check_point(self, p, tolorence):
+        if bot_status.point_checking:
+            return
+        bot_status.point_checking = True
+        if bot_status.rune_pos is not None \
+                and (is_adjacent_point(p, bot_status.rune_pos, tolorence) or p == bot_status.rune_closest_pos):
+            result, frame = self.command_book.SolveRune(
+                bot_status.rune_pos).execute()
+            self.solve_rune_callback(result, frame)
+        if bot_status.minal_pos \
+                and (is_adjacent_point(p, bot_status.minal_pos, tolorence) or p == bot_status.minal_closest_pos):
+            self.command_book.Mining(bot_status.minal_pos).execute()
+        bot_status.point_checking = False
+
+    def solve_rune_callback(self, result, frame):
+        if result == 1:
+            self.check_rune_solve_result(frame)
+        elif result == 0:
+            self.on_next((BotWarnning.RUNE_INTERACT_FAILED, ))
+        elif result == -1 and frame is not None:
+            self.notify_rune_failed(frame)
+
+    def check_rune_solve_result(self, used_frame):
+        for _ in range(4):
+            rune_type = rune.rune_liberate_result(used_frame)
+            if rune_type is not None:
+                break
+            time.sleep(0.1)
+        if rune_type is None:
+            self.notify_rune_failed(used_frame)
+        else:
+            self.on_next((BotInfo.RUNE_LIBERATED, rune_type))
+            if rune_type == 'Rune of Might':
+                ActionSimulator.cancel_rune_buff()
+
+    def notify_rune_failed(self, used_frame):
+        self.on_next((BotWarnning.RUNE_FAILED, ))
+        file_path = 'screenshot/rune_failed'
+        utils.save_screenshot(
+            frame=used_frame, file_path=file_path, compress=False)
+
+
+def is_adjacent_point(p1, p2, tolerance=bot_settings.move_tolerance):
+    return utils.distance(p1, p2) <= tolerance
+
+
 routine = Routine()

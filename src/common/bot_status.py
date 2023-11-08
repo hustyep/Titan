@@ -22,6 +22,7 @@ stage_fright = False
 elite_boss_detected = False
 
 lost_minimap = False
+point_checking = False
 
 # Rune status
 rune_pos = None
