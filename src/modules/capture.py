@@ -11,6 +11,7 @@ from rx.subject import Subject
 from src.common.dll_helper import dll_helper
 from src.common.image_template import MM_TL_BMP, MM_BR_BMP, PLAYER_TEMPLATE, PLAYER_TEMPLATE_L, PLAYER_TEMPLATE_R
 from src.common import utils, bot_status
+from src.common.constants import *
 
 user32 = ctypes.windll.user32
 user32.SetProcessDPIAware()
@@ -25,7 +26,7 @@ class CaptureExceptionType(Enum):
 class CaptureException(Exception):
     def __init__(self, type: CaptureExceptionType, last: int):
         super().__init__(locals())
-        
+
         self.type = type
         self.last = last
 
@@ -34,7 +35,7 @@ class Capture(Subject):
 
     def __init__(self):
         super().__init__()
-        
+
         self.camera = dxcam.create(output_idx=0, output_color="BGR")
         self.calibrated = False
         self.hwnd = None
@@ -47,10 +48,12 @@ class Capture(Subject):
             'width': 1366,
             'height': 768
         }
-        
+
         self.lost_window_time = 0
         self.lost_minimap_time = 0
         self.lost_player_time = 0
+
+        self.lost_time_threshold = 3
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -85,8 +88,7 @@ class Capture(Subject):
             now = time.time()
             if self.lost_window_time == 0:
                 self.lost_window_time = now
-            self.on_error(CaptureException(
-                CaptureExceptionType.LOST_WINDOW, now - self.lost_window_time))
+            self.on_next((BotError.LOST_WINDOW, now - self.lost_window_time))
             return False
 
         self.lost_window_time = 0
@@ -103,13 +105,18 @@ class Capture(Subject):
             br = dll_helper.screenSearch(MM_BR_BMP,  x1, y1, x2, y2)
 
         if tl == None or br == None:
-            now = time.time()
-            if self.lost_minimap_time == 0:
-                self.lost_minimap_time = now
-            self.on_error(CaptureException(
-                CaptureExceptionType.LOST_MINI_MAP, now - self.lost_minimap_time))
+            bot_status.lost_minimap = True
+            if bot_status.enabled:
+                now = time.time()
+                if self.lost_minimap_time == 0:
+                    self.lost_minimap_time = now
+                if now - self.lost_minimap_time >= self.lost_time_threshold:
+                    self.on_next((BotError.LOST_MINI_MAP,
+                                  now - self.lost_minimap_time))
+
             return False
 
+        bot_status.lost_minimap = False
         self.lost_minimap_time = 0
         mm_tl = (
             tl[0] - x1 - 2,
@@ -122,7 +129,7 @@ class Capture(Subject):
 
         if operator.eq(mm_tl, self.mm_tl) and operator.eq(mm_br, self.mm_br):
             return True
-        
+
         self.mm_tl = mm_tl
         self.mm_br = mm_br
 
@@ -132,16 +139,16 @@ class Capture(Subject):
         frame = self.camera.get_latest_frame()
         if frame is None:
             return
-        
+
         top = self.window['top']
         left = self.window['left']
         width = self.window['width']
         height = self.window['height']
         self.frame = frame[top:top+height, left:left+width]
         self.on_next(self.frame)
-        
+
         # Crop the frame to only show the minimap
-        minimap = self.frame[self.mm_tl[1]:self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+        minimap = self.frame[self.mm_tl[1]                             :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
         if self.minimap_sample is None:
             self.minimap_sample = minimap
         self.minimap = minimap
@@ -169,11 +176,13 @@ class Capture(Subject):
             bot_status.player_pos = player[0]
             self.lost_player_time = 0
             self.on_next(player[0])
-        else:
+        elif bot_status.enabled:
             now = time.time()
             if self.lost_player_time == 0:
                 self.lost_player_time = now
-            self.on_error(CaptureException(
-                CaptureExceptionType.LOST_PLAYER, now - self.lost_player_time))
+            if now - self.lost_player_time >= self.lost_time_threshold:
+                self.on_next(
+                    (BotError.LOST_PLAYER, now - self.lost_player_time))
+
 
 capture = Capture()

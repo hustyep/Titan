@@ -23,9 +23,8 @@ from src.common.constants import *
 from src.common.hid import hid
 from src.modules.capture import capture
 
-class Detector(Subject):
 
-    ALERTS_DIR = os.path.join('assets', 'alerts')
+class Detector(Subject):
 
     def __init__(self):
         """Initializes this Detector object's main thread."""
@@ -62,7 +61,7 @@ class Detector(Subject):
         self.fetal_thread.start()
         self.exception_thread.start()
         self.event_thread.start()
-        
+
         self.ready = True
 
     def _main_fetal(self):
@@ -258,10 +257,12 @@ class Detector(Subject):
             bot_status.rune_pos = None
             self.rune_active_time = 0
             return
-        
-        rune_buff = utils.multi_match(frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
+
+        rune_buff = utils.multi_match(
+            frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
         if len(rune_buff) == 0:
-            rune_buff = utils.multi_match(frame[:200, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
+            rune_buff = utils.multi_match(
+                frame[:200, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
         if len(rune_buff) > 0:
             return
 
@@ -269,8 +270,8 @@ class Detector(Subject):
         matches = utils.multi_match(filtered, RUNE_TEMPLATE, threshold=0.9)
         if len(matches) == 0:
             return
-              
-        now = time.time()  
+
+        now = time.time()
         if self.rune_active_time == 0:
             self.rune_active_time = now
             self.on_next((BotInfo.RUNE_ACTIVE, ))
@@ -285,7 +286,6 @@ class Detector(Subject):
         elif now - self.rune_active_time > self.rune_alert_delay:
             pass
             # self.notifyRuneError(now - self.rune_active_time)
-            
 
     def check_mineral(self, frame, minimap):
         if not bot_status.mining_enable:
@@ -345,7 +345,9 @@ class Detector(Subject):
                 index = np.argmin(distances)
                 bot_status.minal_closest_pos = routine[index].location
 
+
 detector = Detector()
+
 
 def exception_hook(exc_type, exc_value, tb):
     print('Traceback:')
@@ -370,9 +372,6 @@ sys.excepthook = exception_hook
 #       Helper Functions        #
 #################################
 
-def get_alert_path(name):
-    return os.path.join(Detector.ALERTS_DIR, f'{name}.mp3')
-
 
 def distance_to_rune(point):
     """
@@ -384,6 +383,7 @@ def distance_to_rune(point):
     if isinstance(point, Point) and point.interval == 0:
         return utils.distance(bot_status.rune_pos, point.location)
     return float('inf')
+
 
 def distance_to_minal(point):
     """

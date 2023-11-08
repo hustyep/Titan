@@ -19,6 +19,9 @@ path = []
 
 invisible = False
 stage_fright = False
+elite_boss_detected = False
+
+lost_minimap = False
 
 # Rune status
 rune_pos = None

@@ -7,6 +7,7 @@ from src.modules.capture import capture
 from src.modules.detector import detector
 from src.modules.listener import listener
 from src.modules.chat_bot import chat_bot
+from src.modules.notifier import notifier
 from src.modules.bot import bot
 from src.modules.gui import GUI
 
@@ -29,6 +30,8 @@ while not listener.ready:
     time.sleep(0.01)
     
 chat_bot.start(command_handler=listener.on_new_command)
+
+notifier.start()
 
 bot.start()
 while not bot.ready:

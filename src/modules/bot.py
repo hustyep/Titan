@@ -6,19 +6,23 @@ from enum import Enum
 from rx.subject import Subject
 
 from src.common import utils, bot_status
+from src.common.constants import *
+from src.common.action_simulator import *
+from src.common.vkeys import key_up, key_down, releaseAll
 from src.modules.capture import capture
-from src.map.map import map
+from src.modules.notifier import notifier
+from src.modules.detector import detector
+from src.modules.chat_bot import chat_bot
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
-from src.modules.detector import detector
-from src.common.vkeys import key_up, key_down, releaseAll
+
 
 class BotUpdateType(Enum):
     command_loaded = 'command_loaded'
 
+
 class Bot(Subject):
     """A class that interprets and executes user-defined routines."""
-    
 
     def __init__(self):
         """Loads a user-defined routine on start up and initializes this Bot's main thread."""
@@ -35,7 +39,7 @@ class Bot(Subject):
         Starts this Bot object's thread.
         :return:    None
         """
-
+        notifier.subscribe(lambda e: self.on_event(e))
         print('\n[~] Started main bot loop')
         self.thread.start()
 
@@ -58,9 +62,8 @@ class Bot(Subject):
             self.on_next(BotUpdateType.command_loaded)
             # command_book.move.step_callback = self.point_check
 
-    def load_routine(self, file:str):
+    def load_routine(self, file: str):
         routine.load(file, self.command_book)
-
 
     def toggle(self, enabled: bool, reason: str = ''):
         bot_status.rune_pos = None
@@ -81,6 +84,49 @@ class Bot(Subject):
 
         releaseAll()
 
+    def on_event(self, args):
+        event_type = args[0]
+        if len(args) > 1:
+            arg = args[1]
+        else:
+            arg = 0
+        if isinstance(event_type, BotFatal):
+            self.toggle(False, event_type.value)
+            chat_bot.voice_call()
+
+        elif isinstance(event_type, BotError):
+            chat_bot.voice_call()
+            match (event_type):
+                case BotError.OTHERS_STAY_OVER_120S:
+                    ActionSimulator.go_home()
+                case (_):
+                    self.toggle(False, event_type.value)
+            # end match
+        elif isinstance(event_type, BotWarnning):
+            match event_type:
+                case BotWarnning.NO_MOVEMENT:
+                    ActionSimulator.jump_down()
+                case BotWarnning.OTHERS_STAY_OVER_30S:
+                    words = ['cc pls', 'cc pls ', ' cc pls']
+                    random_word = random.choice(words)
+                    ActionSimulator.say_to_all(random_word)
+                case BotWarnning.OTHERS_STAY_OVER_60S:
+                    words = ['??', 'hello?', ' cc pls', 'bro?']
+                    random_word = random.choice(words)
+                    ActionSimulator.say_to_all(random_word)
+                case BotWarnning.OTHERS_COMMING:
+                    pass
+        elif isinstance(event_type, BotInfo):
+            match event_type:
+                case BotInfo.RUNE_ACTIVE:
+                    pass
+        elif isinstance(event_type, BotVerbose):
+            match event_type:
+                case BotVerbose.BOSS_APPEAR:
+                    threading.Timer(180, ActionSimulator.open_boss_box).start()
+        elif isinstance(event_type, BotDebug):
+            pass
+
     def bot_status(self, ext='') -> str:
         message = (
             f"bot status: {'running' if bot_status.enabled  else 'pause'}\n"
@@ -89,5 +135,6 @@ class Bot(Subject):
             f"reason: {ext}\n"
         )
         return message
+
 
 bot = Bot()
