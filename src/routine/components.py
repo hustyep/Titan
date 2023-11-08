@@ -87,7 +87,7 @@ class Label(Component):
         return curr
 
     def __str__(self):
-        return f'{self.label}:'
+        return f'{self.id}{self.label}:'
 
 
 class Point(Component):
@@ -106,6 +106,7 @@ class Point(Component):
         self.skip = bot_settings.validate_boolean(skip)
         self.last_execute_time = 0
         self.parent: Component = None
+        self.index = 0
         if not hasattr(self, 'commands'):       # Updating Point should not clear commands
             self.commands: list[Command] = []
 
@@ -144,7 +145,7 @@ class Sequence(Component):
 
     id = '~'
 
-    def __init__(self, label, interval, skip=False):
+    def __init__(self, label, interval=0, skip=False):
         super().__init__(locals())
         self.label = str(label)
         self.interval = bot_settings.validate_nonnegative_int(interval)
@@ -173,6 +174,8 @@ class Sequence(Component):
         Component.complete_callback(self)
 
     def add_component(self, component: Point):
+        component.parent = self
+        component.index = len(self.path)
         self.path.append(component)
 
     def set_index(self, i):
@@ -193,7 +196,7 @@ class Sequence(Component):
         # routine.labels.pop(self.label)
 
     def __str__(self):
-        return f'{self.label}:'
+        return f'{self.id}{self.label}:'
 
 
 class Setting(Component):
@@ -218,6 +221,8 @@ class Setting(Component):
 class End(Component):
     id = '#'
 
+    def __str__(self):
+        return self.id
 
 SYMBOLS = {
     '*': Point,

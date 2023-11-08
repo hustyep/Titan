@@ -183,7 +183,13 @@ class Routine(Subject):
     def step(self):
         """Increments config.seq_index and wraps back to 0 at the end of config.sequence."""
         self._run()
-        self.index = (self.index + 1) % len(self.sequence)
+        add = 1
+        element = self.current_step()
+        if isinstance(element, Sequence):
+            add += len(element.path)
+        elif isinstance(element, Point) and element.parent:
+            add = add - element.index - 2 + len(element.parent.path)
+        self.index = (self.index + add) % len(self.sequence)
 
     def save(self, file_path=None):
         """Encodes and saves the current Routine at location PATH."""
@@ -217,13 +223,18 @@ class Routine(Subject):
 
         self.on_next((RoutineUpdateType.cleared, ))
 
-    def load(self, file: str, command_book: CommandBook):
+    def load(self, file: str, command_book: CommandBook=None):
         """
         Attempts to load FILE into a sequence of Components. If no file path is provided, attempts to
         load the previous routine file.
         :param file:    The file's path.
         :return:        None
         """
+        if command_book is None:
+            if self.command_book is None:
+                raise ValueError(" ! No Command Book")
+            else:
+                command_book = self.command_book
 
         utils.print_separator()
         print(f"[~] Loading routine '{basename(file)}':")
@@ -277,10 +288,10 @@ class Routine(Subject):
                         curr_point = result
                         if curr_sequence:
                             curr_sequence.add_component(result)
-                        else:
-                            self.append_component(result)
+                        self.append_component(result)
                     elif isinstance(result, End):
                         curr_sequence = None
+                        self.append_component(result)
                     else:
                         self.append_component(result)
                 line += 1

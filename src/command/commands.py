@@ -36,6 +36,8 @@ class Keybindings(DefaultKeybindings):
 
 class Command():
     id = 'Command Superclass'
+    PRIMITIVES = {int, str, bool, float}
+    
     key: str = None
     cooldown: int = 0
     castedTime: float = 0
@@ -70,6 +72,14 @@ class Command():
             if key != 'id':
                 result += f'\n        {key}={value}'
         return result
+    
+    def encode(self):
+        """Encodes an object using its ID and its __init__ arguments."""
+        arr = [self.id]
+        for key, value in self.kwargs.items():
+            if key != 'id' and type(self.kwargs[key]) in Command.PRIMITIVES:
+                arr.append(f'{key}={value}')
+        return ', '.join(arr)
 
     @bot_status.run_if_enabled
     def execute(self):

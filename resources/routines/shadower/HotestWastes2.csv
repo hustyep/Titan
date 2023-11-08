@@ -2,26 +2,32 @@ $, target=move_tolerance, value=10
 $, target=role_name, value=sllee
 
 @, label=Bottom mobbing
-*, x=28, y=56, interval=0, skip=False, tolerance=13
-*, x=95, y=56, interval=0, skip=False, tolerance=13
+*, x=28, y=56, interval=0, tolerance=13, skip=False
+*, x=95, y=56, interval=0, tolerance=13, skip=False
     ShadowVeil
-*, x=176, y=56, interval=0, skip=False, tolerance=13
-*, x=156, y=24, interval=0, skip=True, tolerance=13
-*, x=95, y=45, interval=0, skip=True, tolerance=13
+*, x=176, y=56, interval=0, tolerance=13, skip=False
+*, x=156, y=24, interval=0, tolerance=13, skip=True
+*, x=95, y=45, interval=0, tolerance=13, skip=True
     TrickBlade, direction=left
 
 @, label=Summoning
-*, x=159, y=56, interval=0, skip=False, tolerance=3
+*, x=159, y=56, interval=0, tolerance=3, skip=False
     ShadowAssault, direction=upleft, jump=True, distance=80
     SuddenRaid
-*, x=128, y=19, interval=0, skip=False, tolerance=3
+*, x=128, y=19, interval=0, tolerance=3, skip=False
     DarkFlare, direction=left
     SuddenRaid
-*, x=90, y=12, interval=0, skip=False, tolerance=3
+*, x=90, y=12, interval=0, tolerance=3, skip=False
     ShadowAssault, direction=left, jump=True, distance=80
-*, x=64, y=18, interval=0, skip=False, tolerance=3
+*, x=64, y=18, interval=0, tolerance=3, skip=False
     TrickBlade, direction=left
     ErdaShower, direction=right
     TrickBlade, direction=left
     Arachnid
     ShadowAssault, direction=downleft, jump=True, distance=80
+
+~, label=123, interval=0, skip=False
+*, x=1, y=1, interval=0, tolerance=13, skip=False
+*, x=1, y=1, interval=0, tolerance=13, skip=False
+    Attack
+#

@@ -52,7 +52,7 @@ class Listener(Configurable):
         while True:
             if self.enabled:
                 if len(self.config['Start/stop']) > 0 and kb.is_pressed(self.config['Start/stop']):
-                    Listener.toggle_enabled()
+                    self.toggle_enabled()
                 elif len(self.config['Reload routine']) > 0 and kb.is_pressed(self.config['Reload routine']):
                     self.reload_routine()
                 elif self.restricted_pressed('Record position'):
@@ -71,15 +71,14 @@ class Listener(Configurable):
                 self.block_time = now
         return False
 
-    @staticmethod
-    def toggle_enabled():
+    def toggle_enabled(self):
         """Resumes or pauses the current routine. Plays a sound to notify the user."""
 
         # bot_status.rune_pos = None
         # notifier.notice_time_record.clear()
 
         if not bot_status.enabled:
-            Listener.recalibrate_minimap()      # Recalibrate only when being enabled.
+            self.recalibrate_minimap()      # Recalibrate only when being enabled.
             bot_status.started_time = time.time()
         else:
             bot_status.started_time = None
