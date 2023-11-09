@@ -10,6 +10,7 @@ from src.modules.capture import capture
 from src.common.image_template import *
 from src.common.constants import *
 
+
 class DefaultKeybindings:
     INTERACT = 'space'
     FEED_PET = 'L'
@@ -19,7 +20,7 @@ class DefaultKeybindings:
     FLASH_JUMP = ';'
     ROPE_LIFT = 'b'
     ERDA_SHOWER = '~'
-    
+
     # Potion
     EXP_POTION = '0'
     WEALTH_POTION = "-"
@@ -37,7 +38,7 @@ class Keybindings(DefaultKeybindings):
 class Command():
     id = 'Command Superclass'
     PRIMITIVES = {int, str, bool, float}
-    
+
     key: str = None
     cooldown: int = 0
     castedTime: float = 0
@@ -72,7 +73,7 @@ class Command():
             if key != 'id':
                 result += f'\n        {key}={value}'
         return result
-    
+
     def encode(self):
         """Encodes an object using its ID and its __init__ arguments."""
         arr = [self.id]
@@ -102,7 +103,6 @@ class Command():
         if len(self.__class__.key) == 0:
             return False
 
-        super().main()
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
@@ -113,7 +113,7 @@ class Move(Command):
 
     def __init__(self, x, y, tolerance, step=1, max_steps=15):
         super().__init__(locals())
-        self.target = (int(x), int(y))
+        self.target = map.platform_point((int(x), int(y)))
         self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
         self.step = bot_settings.validate_nonnegative_int(step)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
@@ -122,24 +122,11 @@ class Move(Command):
         if self.step > self.max_steps:
             return
 
-        distance = utils.distance(bot_status.player_pos, self.target)
-        if distance <= self.tolerance:
+        if bot_status.player_pos[1] == self.target[1] and abs(bot_status.player_pos[0] - self.target[0] <= self.tolerance):
             return
 
         bot_status.path = [bot_status.player_pos, self.target]
-        threshold = self.tolerance / math.sqrt(2)
-        d_x = self.target[0] - bot_status.player_pos[0]
-        d_y = self.target[1] - bot_status.player_pos[1]
-        direction = None
-        if abs(d_x) <= threshold:
-            direction = 'up' if d_y < 0 else 'down'
-        elif abs(d_y) <= threshold:
-            direction = 'left' if d_x < 0 else 'right'
-        elif utils.bernoulli(0.7):
-            direction = 'left' if d_x < 0 else 'right'
-        else:
-            direction = 'up' if d_y < 0 else 'down'
-        step(direction, self.target)
+        step(self.target, self.tolerance)
         Command.complete_callback(self)
 
         Move(self.target[0], self.target[1],
@@ -150,7 +137,7 @@ class Move(Command):
 #      Shared Functions     #
 #############################
 
-def step(direction, target):
+def step(target, tolerance):
     """
     The default 'step' function. If not overridden, immediately stops the bot.
     :param direction:   The direction in which to move.
@@ -162,8 +149,71 @@ def step(direction, target):
     bot_status.enabled = False
 
 
-def sleep_in_the_air():
-    pass
+def sleep_while_move_y(interval=0.02, n=15):
+    player_y = bot_status.player_pos[1]
+    count = 0
+    while True:
+        time.sleep(interval)
+        if player_y == bot_status.player_pos[1]:
+            count += 1
+        else:
+            count = 0
+            player_y = bot_status.player_pos[1]
+        if count == n:
+            break
+
+
+def sleep_in_the_air(interval=0.02, n=15):
+    if not map.minimap_data:
+        sleep_while_move_y(interval, n)
+        return
+    count = 0
+    step = 0
+    while True:
+        value = map.minimap_data[bot_status.player_pos[0]
+                                 ][bot_status.player_pos[1]+7]
+        if value != 1 and value != 3:
+            count += 1
+        else:
+            count = 0
+        if count == n:
+            break
+        step += 1
+        if step >= 250:
+            break
+        time.sleep(interval)
+
+
+def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
+
+    if target[1] == tolerance[1] and utils.distance(start, target) <= tolerance:
+        return
+
+    d_x = target[0] - start[0]
+    if abs(d_x) <= tolerance:
+        return target
+    else:
+        tmp_x = (target[0], start[1])
+        if map.on_the_platform(tmp_x):
+            return tmp_x
+        tmp_y = (start[0], target[1])
+        if map.on_the_platform(tmp_y):
+            return tmp_y
+        p = map.platform_point(tmp_x)
+        return p
+
+
+def evade_rope(target):
+    if target is None:
+        return
+
+    if map.near_rope(bot_status.player_pos):
+        target_l = (target[0] - 3, target[1])
+        target_r = (target[0] + 3, target[1])
+        if map.on_the_platform(target_l):
+            Walk(target_l[0], tolerance=1).execute()
+        elif map.on_the_platform(target_r):
+            Walk(target_r[0], tolerance=1).execute()
 
 
 class MobType(Enum):
@@ -383,6 +433,7 @@ class SolveRune(Command):
 
         return 1 if find_solution else -1, used_frame
 
+
 class Mining(Command):
     """
     Moves to the position of the rune and solves the arrow-key puzzle.
@@ -395,7 +446,7 @@ class Mining(Command):
         super().__init__(locals())
         self.target = target
         self.attempts = attempts
-        
+
     def main(self):
         if bot_status.invisible:
             return
@@ -463,6 +514,7 @@ class Mining(Command):
         bot_status.minal_pos = None
         bot_status.minal_closest_pos = None
 
+
 class Summon(Command):
     """'Summon' command for the default command book."""
 
@@ -476,6 +528,7 @@ class DotAoe(Command):
     def canUse(self, next_t: float = 0) -> bool:
         return False
 
+
 class Attack(Command):
     """Undefined 'Attack' command for the default command book."""
 
@@ -483,6 +536,7 @@ class Attack(Command):
         print(
             "\n[!] 'Attack' command not implemented in current command book, aborting process.")
         bot_status.enabled = False
+
 
 class Buff(Command):
     """Undefined 'buff' command for the default command book."""

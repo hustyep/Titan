@@ -74,7 +74,7 @@ class Listener(Configurable):
     def toggle_enabled(self):
         """Resumes or pauses the current routine. Plays a sound to notify the user."""
 
-        # bot_status.rune_pos = None
+        bot_status.reset()
         # notifier.notice_time_record.clear()
 
         if not bot_status.enabled:

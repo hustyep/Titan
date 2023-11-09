@@ -27,13 +27,21 @@ point_checking = False
 # Rune status
 rune_pos = None
 rune_closest_pos = None
-free = True
 
 # Minal status
-mining_enable = False
 minal_pos = None
 minal_closest_pos = None
 mineral_type = None
+
+def reset():
+    global rune_pos, rune_closest_pos, minal_pos, minal_closest_pos, mineral_type
+
+    rune_pos = None
+    rune_closest_pos = None
+    
+    minal_pos = None
+    minal_closest_pos = None
+    mineral_type = None
 
 def run_if_enabled(function):
     """

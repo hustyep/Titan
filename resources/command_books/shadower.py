@@ -1,14 +1,15 @@
 """A collection of all commands that Shadower can use to interact with the game. 	"""
 
-from src.common import bot_status, bot_settings, utils
 import time
 import math
-import threading
 from src.command.commands import *
 from src.map.map import map
 from src.common.vkeys import *
+from src.common import bot_status, bot_settings, utils
 
 # List of key mappings
+
+
 class Keybindings(DefaultKeybindings):
     # Movement
     JUMP = 's'
@@ -51,37 +52,49 @@ class Keybindings(DefaultKeybindings):
 #########################
 #       Commands        #
 #########################
-def step(direction, target):
+def step(target, tolerance):
     """
     Performs one movement step in the given DIRECTION towards TARGET.
     Should not press any arrow keys, as those are handled by Mars.
     """
+    
+    if abs(target[0] - bot_status.player_pos[0]) > 20 and abs(target[1] - bot_status.player_pos[1]) > 20 and ShadowAssault.usable_count() > 2:
+        ShadowAssault(target=target).execute()
+        return
+    
+    next_p = find_next_point(bot_status.player_pos, target)
+    if not next_p:
+        return
+
+    d_x = next_p[0] - bot_status.player_pos[0]
+    d_y = next_p[1] - bot_status.player_pos[1]
+
+    direction = None
+    if abs(d_x) > tolerance:
+        direction = 'right' if d_x > 0 else 'left'
+    else:
+        direction = 'down' if d_y > 0 else 'up'
         
-    if bot_status.stage_fright and direction != 'up' and utils.bernoulli(0.75):
-        time.sleep(utils.rand_float(0.1, 0.3))
-    d_x = target[0] - bot_status.player_pos[0]
-    d_y = target[1] - bot_status.player_pos[1]
     if direction == "up":
-        MoveUp(dy=abs(d_y)).execute()
+        move_up(next_p)
     elif direction == "down":
-        MoveDown(dy=abs(d_y)).execute()
-    elif abs(d_y) >= 26 and abs(d_x) >= 24 and ShadowAssault.usable_count() > 2:
-        ShadowAssault(dx=d_x, dy=d_y).execute()
+        move_down(next_p)
     elif abs(d_x) >= 26:
         HitAndRun(direction, target).execute()
     else:
-        Walk(target_x=target[0]).execute()
-        
+        Walk(target_x=target[0], tolerance=tolerance).execute()
+
     if edge_reached():
         print("edge reached")
         key_up(direction)
         if bot_status.player_direction == 'left':
-            has_elite = detect_mobs(top=100,bottom=80,left=300,right=0)
+            has_elite = detect_mobs(top=100, bottom=80, left=300, right=0)
         else:
-            has_elite = detect_mobs(top=100,bottom=80,left=0,right=300)
+            has_elite = detect_mobs(top=100, bottom=80, left=0, right=300)
         if has_elite is not None and len(has_elite) > 0:
             CruelStabRandomDirection().execute()
-            
+
+
 class HitAndRun(Command):
     def __init__(self, direction, target):
         super().__init__(locals())
@@ -93,7 +106,7 @@ class HitAndRun(Command):
         if bot_settings.mob_detect:
             if direction_changed():
                 print("direction_changed")
-                
+
                 if time.time() - ErdaShower.castedTime > 5:
                     time.sleep(0.08)
                     key_up(self.direction)
@@ -102,14 +115,16 @@ class HitAndRun(Command):
                     count = 0
                     while count < 80:
                         count += 1
-                        has_boss = detect_mobs(top=180,bottom=-20,left=300,right=300,type=MobType.BOSS)
+                        has_boss = detect_mobs(
+                            top=180, bottom=-20, left=300, right=300, type=MobType.BOSS)
                         if has_boss is not None and len(has_boss) > 0:
                             SonicBlow().execute()
-                        mobs = detect_mobs(top=350,bottom=50,left=1100,right=1100)
+                        mobs = detect_mobs(
+                            top=350, bottom=50, left=1100, right=1100)
                         if mobs is not None and len(mobs) >= 2:
                             break
-                    key_down(self.direction)                
-            
+                    key_down(self.direction)
+
             # threading.Thread(target=pre_detect, args=(self.direction,)).start()
             FlashJump(dx=abs(d_x)).execute()
             CruelStabRandomDirection().execute()
@@ -122,76 +137,59 @@ class HitAndRun(Command):
             CruelStabRandomDirection().execute()
             # sleep_before_y(target_y=self.target[1])
             sleep_in_the_air(interval=0.018, n=5)
-            
-            
+
+
 #########################
 #        Y轴移动         #
 #########################
 
-class MoveUp(Command):
-    def __init__(self, dy: int = 20):
-        super().__init__(locals())
-        self.dy = abs(dy)
-
-    def main(self):
-        print(f"moveup dy={self.dy}")
-        self.print_debug_info()
-
-        if self.dy <= 6:
-            press(Keybindings.JUMP)
-            sleep_in_the_air()
-        elif self.dy <= 24:
-            JumpUp(dy=self.dy).execute()
-        elif self.dy <= 40 and ShadowAssault().canUse():
-            ShadowAssault('up', jump='True', distance=self.dy).execute()
-        else:
-            RopeLift(dy=self.dy).execute()
+def move_up(target):
+    p = bot_status.player_pos
+    dy = p[1] - target[1]
+    if dy <= 0:
+        return
+    elif dy <= 7:
+        press(Keybindings.JUMP)
+        sleep_in_the_air()
+    elif dy <= 24:
+        JumpUp(target).execute()
+    elif dy <= 40 and ShadowAssault().canUse():
+        ShadowAssault('up', jump='True', distance=dy).execute()
+    else:
+        RopeLift(dy).execute()
 
 
-class MoveDown(Command):
-    def __init__(self, dy: int = 20):
-        super().__init__(locals())
-        self.dy = abs(dy)
-
-    def main(self):
-        self.print_debug_info()
-
-        if self.dy >= 25 and ShadowAssault.usable_count() >= 3:
-            ShadowAssault(direction='down', jump='True',
-                          distance=self.dy).execute()
-        else:
-            time.sleep(0.2)
-            key_down('down')
-            press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.5)
-            sleep_in_the_air()
-            key_up('down')
-            # time.sleep(0.8 if self.dy >= 15 else 0.7)
+def move_down(target):
+    p = bot_status.player_pos
+    dy = p[1] - target[1]
+    if dy >= 24 and ShadowAssault.usable_count() >= 3:
+        ShadowAssault(direction='down', jump='True',
+                      distance=dy).execute()
+    else:
+        time.sleep(0.2)
+        key_down('down')
+        press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.2)
+        key_up('down')
+        sleep_in_the_air()
 
 
 class JumpUp(Command):
-    def __init__(self, dy: int = 20):
+    def __init__(self, target):
         super().__init__(locals())
-        self.dy = abs(dy)
+        self.target = target
 
     def main(self):
-        self.print_debug_info()
-
+        # TODO too long
         time.sleep(0.5)
-        
-        evadeRope().execute()
-        
+        evade_rope(self.target)
+
         press(Keybindings.JUMP)
         key_down('up')
         time.sleep(0.06 if self.dy >= 20 else 0.1)
         press(Keybindings.FLASH_JUMP, 1)
         key_up('up')
         sleep_in_the_air()
-        # time.sleep(1.5)
-        if map.on_the_rope(bot_status.player_pos):
-            key_down('left')
-            time.sleep(0.05)
-            press(Keybindings.JUMP)
-            key_up('left')
+
 
 class FlashJump(Command):
     """Performs a flash jump in the given direction."""
@@ -205,13 +203,12 @@ class FlashJump(Command):
             self.time = time
 
     def main(self):
-        self.print_debug_info()
-
         if self.time == 1:
             press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
         else:
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
         press(Keybindings.FLASH_JUMP, self.time, down_time=0.03, up_time=0.03)
+
 
 class ShadowAssault(Command):
     """
@@ -223,13 +220,16 @@ class ShadowAssault(Command):
     usable_times = 4
     cooldown = 60
 
-    def __init__(self, direction='up', jump='True', distance=80, dx=None, dy=None):
+    def __init__(self, direction='up', jump='True', distance=80, target=None):
         super().__init__(locals())
-        if dx is None or dy is None:
+        self.target = target
+        if target is None:
             self.direction = direction
             self.jump = bot_settings.validate_boolean(jump)
             self.distance = bot_settings.validate_nonnegative_int(distance)
         else:
+            dx = target[0] - bot_status.player_pos[0]
+            dy = target[1] - bot_status.player_pos[1]
             if dy < 0 and dx < 0:
                 self.direction = 'upleft'
                 self.jump = True
@@ -272,8 +272,6 @@ class ShadowAssault(Command):
         return False
 
     def main(self):
-        self.print_debug_info()
-
         if self.distance == 0:
             return
 
@@ -286,8 +284,8 @@ class ShadowAssault(Command):
             if bot_status.player_direction != 'right':
                 press("right", down_time=0.1)
         elif self.direction == 'up':
-            evadeRope().execute()
-                
+            evade_rope(self.target)
+
         if self.jump:
             if self.direction.startswith('down'):
                 key_down('down')
@@ -311,7 +309,7 @@ class ShadowAssault(Command):
         time.sleep(self.backswing)
         sleep_in_the_air()
         # MesoExplosion().execute()
-        
+
         # if bot_settings.record_layout:
         #     layout.add(*bot_status.player_pos)
 
@@ -326,7 +324,6 @@ class RopeLift(Command):
         self.dy = abs(dy)
 
     def main(self):
-        self.print_debug_info()
 
         if self.dy >= 45:
             press(Keybindings.JUMP, up_time=0.2)
@@ -334,9 +331,6 @@ class RopeLift(Command):
             press(Keybindings.JUMP, up_time=0.1)
         press(self.__class__.key)
         sleep_in_the_air()
-        # press(self.__class__.key, up_time=self.dy * 0.07)
-        # if self.dy >= 32:
-        #     time.sleep((self.dy - 32) * 0.01)
 
 
 class CruelStab(Command):
@@ -349,8 +343,6 @@ class CruelStab(Command):
         self.repetitions = int(repetitions)
 
     def main(self):
-        self.print_debug_info()
-
         time.sleep(0.05)
         key_down(self.direction)
         time.sleep(0.05)
@@ -365,14 +357,10 @@ class CruelStab(Command):
             time.sleep(0.2)
 
 
-class evadeRope(Command):
-    def main(self):
-        if map.near_rope(bot_status.player_pos):
-            press(bot_status.player_direction, down_time=0.5)
-
 #########################
 #         Skills        #
 #########################
+
 
 class MesoExplosion(Command):
     """Uses 'MesoExplosion' once."""
@@ -408,8 +396,6 @@ class DarkFlare(Command):
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        self.print_debug_info()
-        
         while not self.canUse():
             time.sleep(0.1)
         if self.direction is not None:
@@ -431,7 +417,6 @@ class ShadowVeil(Command):
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        self.print_debug_info()
         if self.direction is not None:
             press(self.direction)
         super().main()
@@ -452,7 +437,6 @@ class ErdaShower(Command):
     def main(self):
         while not self.canUse():
             time.sleep(0.1)
-        self.print_debug_info()
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.1)
         key_down('down')
@@ -460,7 +444,7 @@ class ErdaShower(Command):
         key_up('down')
         self.__class__.castedTime = time.time()
         time.sleep(self.__class__.backswing)
-        
+
 
 class SuddenRaid(Command):
     key = Keybindings.SUDDEN_RAID
@@ -470,16 +454,18 @@ class SuddenRaid(Command):
     def canUse(self, next_t: float = 0) -> bool:
         usable = super().canUse(next_t)
         if usable:
-            mobs = detect_mobs(top=500,bottom=500,left=500,right=500,debug=False)
+            mobs = detect_mobs(top=500, bottom=500, left=500,
+                               right=500, debug=False)
             return mobs is None or len(mobs) > 0
         else:
             return False
-            
+
     # def main(self):
     #     used = super().main()
     #     if used:
     #         MesoExplosion().execute()
     #     return used
+
 
 class Arachnid(Command):
     key = Keybindings.ARACHNID
@@ -498,15 +484,15 @@ class TrickBlade(Command):
             self.direction = direction
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
-            
+
     def canUse(self, next_t: float = 0) -> bool:
         usable = super().canUse(next_t)
         if usable:
-            mobs = detect_mobs(top=200,bottom=150,left=400,right=400)
+            mobs = detect_mobs(top=200, bottom=150, left=400, right=400)
             return mobs is None or len(mobs) > 0
         else:
             return False
-    
+
     # def main(self):
     #     used = super().main()
     #     if used:
@@ -519,11 +505,13 @@ class SlashShadowFormation(Command):
     cooldown = 90
     backswing = 0.8
 
+
 class SonicBlow(Command):
     key = Keybindings.SONIC_BLOW
     cooldown = 45
     precast = 0.1
     backswing = 3
+
 
 class PhaseDash(Command):
     key = 't'
@@ -599,7 +587,8 @@ class FOR_THE_GUILD(Command):
     backswing = 0.1
 
     def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui_bot_settings.buffs.buff_bot_settings.get('Guild Buff')
+        enabled = bot_status.gui_bot_settings.buffs.buff_bot_settings.get(
+            'Guild Buff')
         if not enabled:
             return False
 
@@ -615,7 +604,8 @@ class HARD_HITTER(Command):
     backswing = 0.1
 
     def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui_bot_settings.buffs.buff_bot_settings.get('Guild Buff')
+        enabled = bot_status.gui_bot_settings.buffs.buff_bot_settings.get(
+            'Guild Buff')
         if not enabled:
             return False
 
@@ -623,5 +613,3 @@ class HARD_HITTER(Command):
             return False
 
         return super().canUse(next_t)
-
-
