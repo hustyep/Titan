@@ -2,8 +2,8 @@
 
 import time
 import math
+from src.common.interfaces import AsyncTask
 from src.command.commands import *
-from src.map.map import map
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils
 
@@ -57,11 +57,15 @@ def step(target, tolerance):
     Performs one movement step in the given DIRECTION towards TARGET.
     Should not press any arrow keys, as those are handled by Mars.
     """
-    
-    if abs(target[0] - bot_status.player_pos[0]) > 20 and abs(target[1] - bot_status.player_pos[1]) > 20 and ShadowAssault.usable_count() > 2:
-        ShadowAssault(target=target).execute()
+
+    if abs(target[0] - bot_status.player_pos[0]) > 20 and abs(target[1] - bot_status.player_pos[1]) > 20:
+        if ShadowAssault.usable_count() > 2:
+            ShadowAssault(target=target).execute()
+            return
+    elif abs(target[0] - bot_status.player_pos[0]) > 10 and abs(target[1] - bot_status.player_pos[1]) > 10:
+        FlashJump(target=target).execute()
         return
-    
+
     next_p = find_next_point(bot_status.player_pos, target)
     if not next_p:
         return
@@ -74,75 +78,73 @@ def step(target, tolerance):
         direction = 'right' if d_x > 0 else 'left'
     else:
         direction = 'down' if d_y > 0 else 'up'
-        
+
     if direction == "up":
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
     elif abs(d_x) >= 26:
-        HitAndRun(direction, target).execute()
+        hit_and_run(direction, target)
     else:
         Walk(target_x=target[0], tolerance=tolerance).execute()
 
-    if edge_reached():
-        print("edge reached")
-        key_up(direction)
-        if bot_status.player_direction == 'left':
-            has_elite = detect_mobs(top=100, bottom=80, left=300, right=0)
-        else:
-            has_elite = detect_mobs(top=100, bottom=80, left=0, right=300)
-        if has_elite is not None and len(has_elite) > 0:
-            CruelStabRandomDirection().execute()
+
+def pre_detect(direction):
+    result = detect_next_mob(direction, MobType.ELITE)
+    if not result:
+        result = detect_next_mob(direction, MobType.BOSS)
+    return result
 
 
-class HitAndRun(Command):
-    def __init__(self, direction, target):
-        super().__init__(locals())
-        self.direction = direction
-        self.target = target
+def detect_next_mob(direction, type):
+    pos = map.minimap_to_window(bot_status.player_pos)
+    if direction == 'right':
+        has_elite = detect_mobs(
+            anchor=pos, top=180, bottom=-20, left=-600, right=1000, type=type)
+    else:
+        has_elite = detect_mobs(
+            anchor=pos, top=180, bottom=-20, left=1000, right=-600, type=type)
+    return len(has_elite) > 0
 
-    def main(self):
-        d_x = self.target[0] - bot_status.player_pos[0]
-        if bot_settings.mob_detect:
-            if direction_changed():
-                print("direction_changed")
 
-                if time.time() - ErdaShower.castedTime > 5:
-                    time.sleep(0.08)
-                    key_up(self.direction)
-                    time.sleep(0.5)
-                    SlashShadowFormation().execute()
-                    count = 0
-                    while count < 80:
-                        count += 1
-                        has_boss = detect_mobs(
-                            top=180, bottom=-20, left=300, right=300, type=MobType.BOSS)
-                        if has_boss is not None and len(has_boss) > 0:
-                            SonicBlow().execute()
-                        mobs = detect_mobs(
-                            top=350, bottom=50, left=1100, right=1100)
-                        if mobs is not None and len(mobs) >= 2:
-                            break
-                    key_down(self.direction)
-
-            # threading.Thread(target=pre_detect, args=(self.direction,)).start()
-            FlashJump(dx=abs(d_x)).execute()
-            CruelStabRandomDirection().execute()
-            sleep_in_the_air()
-            # if config.elite_detected:
-            #     SonicBlow().execute()
-            #     config.elite_detected = False
-        else:
-            FlashJump(dx=abs(d_x)).execute()
-            CruelStabRandomDirection().execute()
-            # sleep_before_y(target_y=self.target[1])
-            sleep_in_the_air(interval=0.018, n=5)
+@bot_status.run_if_enabled
+def hit_and_run(direction, target):
+    if bot_settings.mob_detect:
+        if direction_changed() and time.time() - ErdaShower.castedTime > 5:
+            print("direction_changed")
+            key_down(direction)
+            time.sleep(0.05)
+            key_up(direction)
+            time.sleep(0.5)
+            # SlashShadowFormation().execute()
+            count = 0
+            while count < 80:
+                count += 1
+                pos = map.minimap_to_window(bot_status.player_pos)
+                has_boss = detect_mobs(top=180, bottom=-20, left=300, right=300,
+                                       anchor=pos,
+                                       type=MobType.BOSS)
+                if len(has_boss) > 0:
+                    SonicBlow().execute()
+                mobs = detect_mobs(top=350, bottom=50, left=1100, right=1100,
+                                   anchor=pos)
+                if len(mobs) >= 2:
+                    break
+        t = AsyncTask(target=pre_detect, args=(direction,))
+        t.start()
+        FlashJump(target=target, attack_if_needed=True).execute()
+        elite_detected = t.join()
+        if elite_detected:
+            SonicBlow().execute()
+    else:
+        FlashJump(target=target, attack_if_needed=True).execute()
 
 
 #########################
 #        Y轴移动         #
 #########################
 
+@bot_status.run_if_enabled
 def move_up(target):
     p = bot_status.player_pos
     dy = p[1] - target[1]
@@ -159,6 +161,7 @@ def move_up(target):
         RopeLift(dy).execute()
 
 
+@bot_status.run_if_enabled
 def move_down(target):
     p = bot_status.player_pos
     dy = p[1] - target[1]
@@ -166,11 +169,7 @@ def move_down(target):
         ShadowAssault(direction='down', jump='True',
                       distance=dy).execute()
     else:
-        time.sleep(0.2)
-        key_down('down')
-        press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.2)
-        key_up('down')
-        sleep_in_the_air()
+        Fall().execute()
 
 
 class JumpUp(Command):
@@ -194,20 +193,49 @@ class JumpUp(Command):
 class FlashJump(Command):
     """Performs a flash jump in the given direction."""
 
-    def __init__(self, time=1, dx=None):
+    def __init__(self, target: tuple[int, int], attack_if_needed=False):
         super().__init__(locals())
 
-        if dx is not None:
-            self.time = 2 if dx <= 32 else 2
+        self.target = target
+        self.attack_if_needed = attack_if_needed
+
+    def detect_mob(self, direction):
+        player_pos = map.minimap_to_window(bot_status.player_pos)
+        mobs = []
+        if direction == 'left':
+            mobs = detect_mobs(anchor=player_pos, top=200,
+                               left=600, right=0, bottom=100)
         else:
-            self.time = time
+            mobs = detect_mobs(anchor=player_pos, top=200,
+                               left=0, right=600, bottom=100)
+        return mobs
 
     def main(self):
-        if self.time == 1:
+        dx = self.target[0] - bot_status.player_pos[0]
+        dy = self.target[1] - bot_status.player_pos[1]
+        direction = 'left' if dx < 0 else 'right'
+
+        key_down(direction)
+        if self.attack_if_needed:
+            detect = AsyncTask(
+                target=self.detect_mob, args=(direction, ))
+            detect.start()
             press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
+            mobs_detected = detect.join()
+            time = 2 if mobs_detected else 1
+            press(Keybindings.FLASH_JUMP, time, down_time=0.03, up_time=0.03)
+            if mobs_detected:
+                CruelStab().execute()
         else:
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-        press(Keybindings.FLASH_JUMP, self.time, down_time=0.03, up_time=0.03)
+            time = 2 if abs(dx) >= 32 else 1
+            if dy < 0:
+                press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
+            else:
+                press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+            press(Keybindings.FLASH_JUMP, time, down_time=0.03, up_time=0.03)
+
+        key_up(direction)
+        sleep_in_the_air()
 
 
 class ShadowAssault(Command):
@@ -308,7 +336,7 @@ class ShadowAssault(Command):
         key_up(self.direction)
         time.sleep(self.backswing)
         sleep_in_the_air()
-        # MesoExplosion().execute()
+        MesoExplosion().execute()
 
         # if bot_settings.record_layout:
         #     layout.add(*bot_status.player_pos)
@@ -333,43 +361,16 @@ class RopeLift(Command):
         sleep_in_the_air()
 
 
-class CruelStab(Command):
-    """Attacks using 'CruelStab' in a given direction."""
-
-    def __init__(self, direction, attacks=2, repetitions=1):
-        super().__init__(locals())
-        self.direction = bot_settings.validate_horizontal_arrows(direction)
-        self.attacks = int(attacks)
-        self.repetitions = int(repetitions)
-
-    def main(self):
-        time.sleep(0.05)
-        key_down(self.direction)
-        time.sleep(0.05)
-        if bot_status.stage_fright and utils.bernoulli(0.7):
-            time.sleep(utils.rand_float(0.1, 0.3))
-        for _ in range(self.repetitions):
-            press(Keybindings.CRUEL_STAB, self.attacks, up_time=0.05)
-        key_up(self.direction)
-        if self.attacks > 2:
-            time.sleep(0.3)
-        else:
-            time.sleep(0.2)
-
-
 #########################
 #         Skills        #
 #########################
 
-
-class MesoExplosion(Command):
-    """Uses 'MesoExplosion' once."""
-
+class Attack(Command):
     def main(self):
-        press(Keybindings.MESO_EXPLOSION)
+        CruelStab().execute()
 
 
-class CruelStabRandomDirection(Command):
+class CruelStab(Command):
     """Uses 'CruelStab' once."""
     backswing = 0.1
 
@@ -377,6 +378,13 @@ class CruelStabRandomDirection(Command):
         press(Keybindings.CRUEL_STAB, 1, up_time=0.2)
         MesoExplosion().execute()
         time.sleep(self.backswing)
+
+
+class MesoExplosion(Command):
+    """Uses 'MesoExplosion' once."""
+
+    def main(self):
+        press(Keybindings.MESO_EXPLOSION, down_time=0.01, up_time=0.01)
 
 
 class DarkFlare(Command):

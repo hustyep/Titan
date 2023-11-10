@@ -38,9 +38,6 @@ class Detector(Subject):
         self.others_detect_count = 0
         self.others_no_detect_count = 0
 
-        self.rune_active_time = 0
-        self.rune_alert_delay = 300         # 5 minutes
-
         self.black_screen_threshold = 0.9
         self.white_room_threshold = 0.55
 
@@ -266,39 +263,23 @@ class Detector(Subject):
             self.rune_active_time = 0
             return
 
-        rune_buff = utils.multi_match(
-            frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
-        if len(rune_buff) == 0:
-            rune_buff = utils.multi_match(
-                frame[:200, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
-        if len(rune_buff) > 0:
-            return
-
         filtered = utils.filter_color(minimap, RUNE_RANGES)
         matches = utils.multi_match(filtered, RUNE_TEMPLATE, threshold=0.9)
         if len(matches) == 0:
             return
 
-        now = time.time()
-        if self.rune_active_time == 0:
-            self.rune_active_time = now
-            self.on_next((BotInfo.RUNE_ACTIVE, ))
-            if routine.sequence:
-                abs_rune_pos = (matches[0][0], matches[0][1])
+        if routine.sequence:
+            old_pos = bot_status.rune_pos
+            abs_rune_pos = (matches[0][0], matches[0][1])
+            if old_pos != abs_rune_pos:
                 bot_status.rune_pos = abs_rune_pos
                 distances = list(
                     map(distance_to_rune, routine.sequence))
                 index = np.argmin(distances)
                 bot_status.rune_closest_pos = routine[index].location
-        # Alert if rune hasn't been solved
-        elif now - self.rune_active_time > self.rune_alert_delay:
-            pass
-            # self.notifyRuneError(now - self.rune_active_time)
+                self.on_next((BotInfo.RUNE_ACTIVE, ))
 
     def check_mineral(self, frame, minimap):
-        if not bot_status.mining_enable:
-            return
-
         if frame is None or minimap is None:
             return
 

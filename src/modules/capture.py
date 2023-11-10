@@ -93,6 +93,11 @@ class Capture(Subject):
 
         self.lost_window_time = 0
         x1, y1, x2, y2 = win32gui.GetWindowRect(self.hwnd)  # 获取当前窗口大小
+        if x1 != 0:
+            x1 += window_cap_horiz
+            x2 -= window_cap_horiz
+            y1 += window_cap_top
+            y2 -= window_cap_botton
 
         self.window['left'] = x1
         self.window['top'] = y1
@@ -148,7 +153,7 @@ class Capture(Subject):
         self.on_next(self.frame)
 
         # Crop the frame to only show the minimap
-        minimap = self.frame[self.mm_tl[1]                             :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+        minimap = self.frame[self.mm_tl[1]:self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
         if self.minimap_sample is None:
             self.minimap_sample = minimap
         self.minimap = minimap

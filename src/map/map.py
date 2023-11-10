@@ -9,7 +9,8 @@ import numpy as np
 
 from os.path import join, isfile, splitext, basename
 from heapq import heappush, heappop
-from src.common import constants
+from src.common.constants import *
+from src.modules.capture import capture
 
 
 class Map:
@@ -94,7 +95,7 @@ class Map:
                         return True
         return False
 
-    def on_the_rope(self, location:tuple[int, int]):
+    def on_the_rope(self, location: tuple[int, int]):
         if len(self.minimap_data) > 0:
             value = self.minimap_data[location[0]][location[1] + 7]
             if value == 1 or value == 3:
@@ -103,13 +104,13 @@ class Map:
                 return self.minimap_data[location[0]][location[1]] == 2
         return False
 
-    def on_the_platform(self, location):
+    def on_the_platform(self, location: tuple[int, int]):
         x = location[0]
         y = location[1] - 7
-        value: int = self.minimap_data[x][y]
+        value = int(self.minimap_data[x][y])
         return value == 1 or value == 3
 
-    def platform_point(target:tuple[int, int]):
+    def platform_point(target: tuple[int, int]):
         if map.minimap_data:
             height, _ = map.minimap_data.shape
             for y in range(target[1], height - 1):
@@ -119,8 +120,50 @@ class Map:
 
         return target
 
+    def minimap_to_window(self, point: tuple[int, int]):
+        '''convent the minimap point to the screen point'''
+        window_width = capture.window['width']
+        window_height = capture.window['height']
+
+        mini_height, mini_width = capture.minimap.shape
+
+        map_width = mini_width * MINIMAP_SCALE
+        map_height = mini_height * MINIMAP_SCALE
+
+        map_x = point[0] * MINIMAP_SCALE
+        map_y = point[1] * MINIMAP_SCALE
+
+        if map_x < window_width // 2:
+            x = map_x
+        elif map_width - map_x < window_width // 2:
+            x = map_x - (map_width - window_width)
+        else:
+            x = window_width // 2
+
+        if map_y < window_height // 2:
+            y = map_y
+        elif map_height - map_y < window_height // 2:
+            y = map_y - (map_height - window_height)
+        else:
+            y = window_height // 2
+        return (int(x), int(y))
+
+
 def get_maps_dir(name):
-    return os.path.join(constants.RESOURCES_DIR, 'maps', name)
+    return os.path.join(RESOURCES_DIR, 'maps', name)
+
+
+def run_if_map_available(function):
+    """
+    Decorator for functions that should only run if the bot is enabled.
+    :param function:    The function to decorate.
+    :return:            The decorated function.
+    """
+
+    def helper(*args, **kwargs):
+        if map.minimap_data:
+            return function(*args, **kwargs)
+    return helper
 
 
 map = Map()

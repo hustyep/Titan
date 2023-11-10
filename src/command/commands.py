@@ -4,7 +4,7 @@ from enum import Enum
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils
 from src.common.gui_setting import gui_setting
-from src.map.map import map
+from src.map.map import map, run_if_map_available
 from src.rune import rune
 from src.modules.capture import capture
 from src.common.image_template import *
@@ -84,6 +84,8 @@ class Command():
 
     @bot_status.run_if_enabled
     def execute(self):
+        if gui_setting.notification.get('notice_level') >= 5:
+            print(str(self))
         self.main()
 
     def canUse(self, next_t: float = 0) -> bool:
@@ -122,11 +124,31 @@ class Move(Command):
         if self.step > self.max_steps:
             return
 
-        if bot_status.player_pos[1] == self.target[1] and abs(bot_status.player_pos[0] - self.target[0] <= self.tolerance):
+        if map.minimap_data:
+            if bot_status.player_pos[1] == self.target[1] and abs(bot_status.player_pos[0] - self.target[0] <= self.tolerance):
+                return
+        elif utils.distance(bot_status.player_pos, self.target) <= self.tolerance:
             return
+
+        if map.on_the_rope(bot_status.player_pos):
+            climb_rope()
 
         bot_status.path = [bot_status.player_pos, self.target]
         step(self.target, self.tolerance)
+        
+        if edge_reached():
+            print("edge reached")
+            pos = map.minimap_to_window(bot_status.player_pos)
+            key_up(bot_status.player_directio)
+            if bot_status.player_direction == 'left':
+                mobs = detect_mobs(
+                    anchor=pos, top=100, bottom=80, left=300, right=0)
+            else:
+                mobs = detect_mobs(
+                    anchor=pos, top=100, bottom=80, left=0, right=300)
+            if mobs:
+                Attack().execute()
+        
         Command.complete_callback(self)
 
         Move(self.target[0], self.target[1],
@@ -149,6 +171,18 @@ def step(target, tolerance):
     bot_status.enabled = False
 
 
+@run_if_map_available
+def climb_rope():
+    step = 0
+    while not map.on_the_platform(bot_status.player_pos):
+        key_down('up')
+        time.sleep(0.1)
+        key_up('up')
+        step += 1
+        if step > 50:
+            break
+
+
 def sleep_while_move_y(interval=0.02, n=15):
     player_y = bot_status.player_pos[1]
     count = 0
@@ -163,7 +197,7 @@ def sleep_while_move_y(interval=0.02, n=15):
             break
 
 
-def sleep_in_the_air(interval=0.02, n=15):
+def sleep_in_the_air(interval=0.02, n=5):
     if not map.minimap_data:
         sleep_while_move_y(interval, n)
         return
@@ -186,6 +220,9 @@ def sleep_in_the_air(interval=0.02, n=15):
 
 def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
 
+    if not map.minimap_data:
+        return target
+
     if target[1] == tolerance[1] and utils.distance(start, target) <= tolerance:
         return
 
@@ -199,10 +236,10 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         tmp_y = (start[0], target[1])
         if map.on_the_platform(tmp_y):
             return tmp_y
-        p = map.platform_point(tmp_x)
-        return p
+        return map.platform_point(tmp_x)
 
 
+@run_if_map_available
 def evade_rope(target):
     if target is None:
         return
@@ -222,7 +259,7 @@ class MobType(Enum):
     BOSS = 'boss mob'
 
 
-def detect_mobs(top=0, left=0, right=0, bottom=0, type: MobType = MobType.NORMAL, debug=False):
+def detect_mobs(top=0, left=0, right=0, bottom=0, anchor: tuple[int, int] = None, type: MobType = MobType.NORMAL, debug=False):
     frame = capture.frame
     minimap = capture.minimap
 
@@ -240,23 +277,28 @@ def detect_mobs(top=0, left=0, right=0, bottom=0, type: MobType = MobType.NORMAL
     if len(mob_templates) == 0:
         raise ValueError(f"Missing {type.value} template")
 
-    if bot_settings.role_template is None:
-        raise ValueError('Missing Role template')
-
-    player_match = utils.multi_match(
-        capture.frame, bot_settings.role_template, threshold=0.9)
-    if len(player_match) == 0:
-        # print("lost player")
-        if type != MobType.NORMAL or abs(left) <= 300 and abs(right) <= 300:
-            return []
-        else:
-            crop = frame[50:-100,]
+    crop = None
+    if anchor:
+        crop = frame[max(0, anchor[1]-top):anchor[1] +
+                     bottom, max(0, anchor[0]-left):anchor[0]+right]
     else:
-        player_pos = (player_match[0][0] - 5, player_match[0][1] - 55)
-        y_start = max(0, player_pos[1]-top)
-        x_start = max(0, player_pos[0]-left)
-        crop = frame[y_start:player_pos[1]+bottom,
-                     x_start:player_pos[0]+right]
+        if bot_settings.role_template is None:
+            raise ValueError('Missing Role template')
+
+        player_match = utils.multi_match(
+            capture.frame, bot_settings.role_template, threshold=0.9)
+        if len(player_match) == 0:
+            # print("lost player")
+            if type != MobType.NORMAL or abs(left) <= 300 and abs(right) <= 300:
+                return []
+            else:
+                crop = frame[50:-100,]
+        else:
+            player_pos = (player_match[0][0] - 5, player_match[0][1] - 55)
+            y_start = max(0, player_pos[1]-top)
+            x_start = max(0, player_pos[0]-left)
+            crop = frame[y_start:player_pos[1]+bottom,
+                         x_start:player_pos[0]+right]
 
     mobs = []
     for mob_template in mob_templates:
@@ -372,6 +414,22 @@ class FeedPet(Command):
         return super().canUse(next_t)
 
 
+class Fall(Command):
+    """
+    Performs a down-jump and then free-falls until the player exceeds a given distance
+    from their starting position.
+    """
+
+    def main(self):
+        print("fall")
+
+        key_down('down')
+        time.sleep(0.03)
+        press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.1)
+        key_up('down')
+        sleep_in_the_air()
+
+
 class SolveRune(Command):
     """
     Moves to the position of the rune and solves the arrow-key puzzle.
@@ -387,6 +445,16 @@ class SolveRune(Command):
         self.attempts = attempts
 
     def canUse(self, next_t: float = 0) -> bool:
+        frame = capture.frame
+        if frame is None:
+            return False
+        rune_buff = utils.multi_match(
+            frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
+        if len(rune_buff) == 0:
+            rune_buff = utils.multi_match(
+                frame[:200, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
+        if len(rune_buff) > 0:
+            return False
         return super().canUse(next_t) and bot_status.rune_pos is not None
 
     def main(self):
@@ -406,7 +474,7 @@ class SolveRune(Command):
                 time.sleep(0.2)
 
         if interact_result:
-            self.__class__.castedTime = time.time()
+            pass
         elif self.attempts < 2:
             return SolveRune(target=self.target, attempts=self.attempts+1).execute()
         else:
@@ -427,6 +495,7 @@ class SolveRune(Command):
                 find_solution = True
                 for arrow in solution:
                     press(arrow, 1, down_time=0.1)
+                self.__class__.castedTime = time.time()
                 break
             time.sleep(0.1)
         time.sleep(0.2)

@@ -1,10 +1,17 @@
 from enum import Enum, auto
+from typing import TypeVar
 
 #########################
 #       Constants       #
 #########################
 
 RESOURCES_DIR = 'resources'
+
+MINIMAP_SCALE = 15
+
+window_cap_top = 31
+window_cap_botton = 8
+window_cap_horiz = 8
 
 ################################
 #       Bot Notification       #

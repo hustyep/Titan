@@ -1,7 +1,6 @@
 import ctypes
 from ctypes import *
 from ctypes import wintypes
-import time
 from src.common.hid import hid
 import threading
 
