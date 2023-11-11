@@ -93,6 +93,25 @@ def filter_color(img, ranges):
     result[color_mask] = img[color_mask]
     return result
 
+def trans_point(point:tuple[int, int], ratio:float):
+    return int(point[0] * ratio), int(point[1] * ratio)
+
+def draw_location(minimap, pos:tuple[int, int], ratio: float, color, tolerance):
+    """
+    Draws a visual representation of POINT onto MINIMAP. The radius of the circle represents
+    the allowed error when moving towards POINT.
+    :param minimap:     The image on which to draw.
+    :param pos:         The location (as a tuple) to depict.
+    :param color:       The color of the circle.
+    :return:            None
+    """
+
+    # center = convert_to_absolute(pos, minimap)
+    cv2.circle(minimap,
+               trans_point(pos, ratio),
+               round(tolerance * ratio),
+               color,
+               1)
 
 def distance(a, b):
     """

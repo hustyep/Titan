@@ -47,10 +47,12 @@ class BotVerbose(Enum):
     MINE_ACTIVE = 'Mine Active'
     BOSS_APPEAR = 'Boss Appear'
     BLIND = 'Blind'
+    CALIBRATED = 'calibrated'
+    NEW_FRAME = 'New Frame'
+
     
 class BotDebug(Enum):
     SCREENSHOT_FAILED = 'Screenshot Failed'
-    CALIBRATED = auto()
     PLAYER_LOCATION_UPDATE = auto()
     
 #############################

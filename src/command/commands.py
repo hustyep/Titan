@@ -72,6 +72,7 @@ class Command():
         for key, value in variables.items():
             if key != 'id':
                 result += f'\n        {key}={value}'
+        result += f'\n        pos={bot_status.player_pos}'
         return result
 
     def encode(self):
@@ -86,7 +87,7 @@ class Command():
     def execute(self):
         if gui_setting.notification.get('notice_level') >= 5:
             print(str(self))
-        self.main()
+        return self.main()
 
     def canUse(self, next_t: float = 0) -> bool:
         if self.__class__.cooldown is None:
@@ -124,8 +125,8 @@ class Move(Command):
         if self.step > self.max_steps:
             return
 
-        if map.minimap_data:
-            if bot_status.player_pos[1] == self.target[1] and abs(bot_status.player_pos[0] - self.target[0] <= self.tolerance):
+        if map.minimap_data.any:
+            if bot_status.player_pos[1] == self.target[1] and abs(bot_status.player_pos[0] - self.target[0]) <= self.tolerance:
                 return
         elif utils.distance(bot_status.player_pos, self.target) <= self.tolerance:
             return
@@ -135,11 +136,11 @@ class Move(Command):
 
         bot_status.path = [bot_status.player_pos, self.target]
         step(self.target, self.tolerance)
-        
+
         if edge_reached():
             print("edge reached")
             pos = map.minimap_to_window(bot_status.player_pos)
-            key_up(bot_status.player_directio)
+            key_up(bot_status.player_direction)
             if bot_status.player_direction == 'left':
                 mobs = detect_mobs(
                     anchor=pos, top=100, bottom=80, left=300, right=0)
@@ -148,7 +149,7 @@ class Move(Command):
                     anchor=pos, top=100, bottom=80, left=0, right=300)
             if mobs:
                 Attack().execute()
-        
+
         Command.complete_callback(self)
 
         Move(self.target[0], self.target[1],
@@ -197,33 +198,36 @@ def sleep_while_move_y(interval=0.02, n=15):
             break
 
 
-def sleep_in_the_air(interval=0.02, n=5):
-    if not map.minimap_data:
+def sleep_in_the_air(interval=0.02, n=2):
+    if len(map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
         return
+    print("sleep_in_the_air")
     count = 0
     step = 0
     while True:
-        value = map.minimap_data[bot_status.player_pos[0]
-                                 ][bot_status.player_pos[1]+7]
+        y = bot_status.player_pos[1] + 7
+        x = bot_status.player_pos[0]
+        value = map.minimap_data[y][x]
         if value != 1 and value != 3:
-            count += 1
-        else:
             count = 0
+        else:
+            count += 1
         if count == n:
             break
         step += 1
         if step >= 250:
             break
         time.sleep(interval)
+    print("on the floor")
 
 
 def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
 
-    if not map.minimap_data:
+    if len(map.minimap_data) == 0:
         return target
 
-    if target[1] == tolerance[1] and utils.distance(start, target) <= tolerance:
+    if target[1] == start[1] and utils.distance(start, target) <= tolerance:
         return
 
     d_x = target[0] - start[0]
@@ -268,11 +272,11 @@ def detect_mobs(top=0, left=0, right=0, bottom=0, anchor: tuple[int, int] = None
 
     match (type):
         case (MobType.BOSS):
-            mob_templates = map.boss_template
+            mob_templates = map.boss_templates
         case (MobType.ELITE):
-            mob_templates = map.elite_template
+            mob_templates = map.elite_templates
         case (_):
-            mob_templates = map.mob_template
+            mob_templates = map.mob_templates
 
     if len(mob_templates) == 0:
         raise ValueError(f"Missing {type.value} template")
@@ -313,18 +317,18 @@ def detect_mobs(top=0, left=0, right=0, bottom=0, anchor: tuple[int, int] = None
 
 def direction_changed() -> bool:
     if bot_status.player_direction == 'left':
-        return abs(bot_settings.guard_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+        return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
     else:
-        return abs(bot_settings.guard_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+        return abs(bot_settings.boundary_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
 
 
 def edge_reached() -> bool:
-    if abs(bot_settings.guard_point_l[1] - bot_status.player_pos[1]) > 1:
+    if abs(bot_settings.boundary_point_l[1] - bot_status.player_pos[1]) > 1:
         return
     if bot_status.player_direction == 'left':
-        return abs(bot_settings.guard_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+        return abs(bot_settings.boundary_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
     else:
-        return abs(bot_settings.guard_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+        return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
 
 
 #############################
@@ -403,12 +407,13 @@ class FeedPet(Command):
     key = Keybindings.FEED_PET
 
     def canUse(self, next_t: float = 0) -> bool:
-        pet_settings = bot_settings.pets
-        auto_feed = pet_settings.auto_feed.get()
+        pet_settings = gui_setting.pet
+
+        auto_feed = pet_settings.get('Auto-feed')
         if not auto_feed:
             return False
 
-        num_pets = pet_settings.num_pets.get()
+        num_pets = pet_settings.get('Num pets')
         self.__class__.cooldown = 600 // num_pets
 
         return super().canUse(next_t)
@@ -421,7 +426,7 @@ class Fall(Command):
     """
 
     def main(self):
-        print("fall")
+        # print("fall")
 
         key_down('down')
         time.sleep(0.03)

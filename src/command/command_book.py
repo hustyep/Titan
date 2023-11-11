@@ -106,6 +106,8 @@ class CommandBook():
             # self.Potion = commands.Potion
 
             self.step = new_func['step']
+            commands.step = self.step
+            commands.Attack = new_cb["attack"]
 
             for command in (commands.Summon, commands.DotAoe):
                 name = command.__name__

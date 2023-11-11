@@ -10,25 +10,11 @@ from rx.subject import Subject
 
 from src.common.dll_helper import dll_helper
 from src.common.image_template import MM_TL_BMP, MM_BR_BMP, PLAYER_TEMPLATE, PLAYER_TEMPLATE_L, PLAYER_TEMPLATE_R
-from src.common import utils, bot_status
+from src.common import utils, bot_status, bot_settings
 from src.common.constants import *
 
 user32 = ctypes.windll.user32
 user32.SetProcessDPIAware()
-
-
-class CaptureExceptionType(Enum):
-    LOST_PLAYER = 'Lost Player'
-    LOST_WINDOW = 'Lost Window'
-    LOST_MINI_MAP = 'Lost Minimap'
-
-
-class CaptureException(Exception):
-    def __init__(self, type: CaptureExceptionType, last: int):
-        super().__init__(locals())
-
-        self.type = type
-        self.last = last
 
 
 class Capture(Subject):
@@ -48,6 +34,8 @@ class Capture(Subject):
             'width': 1366,
             'height': 768
         }
+        self.mm_tl = None
+        self.mm_br = None
 
         self.lost_window_time = 0
         self.lost_minimap_time = 0
@@ -83,8 +71,11 @@ class Capture(Subject):
 
     def calibrate(self):
         ''' Calibrate screen capture'''
+        if not bot_status.enabled:
+            return
         self.hwnd = win32gui.FindWindow(None, "MapleStory")
         if (self.hwnd == 0):
+
             now = time.time()
             if self.lost_window_time == 0:
                 self.lost_window_time = now
@@ -124,11 +115,11 @@ class Capture(Subject):
         bot_status.lost_minimap = False
         self.lost_minimap_time = 0
         mm_tl = (
-            tl[0] - x1 - 2,
+            tl[0] - x1 - 2 + bot_settings.mini_margin,
             tl[1] - y1 + 2
         )
         mm_br = (
-            br[0] - x1 + 16,
+            br[0] - x1 + 16 - bot_settings.mini_margin,
             br[1] - y1
         )
 
@@ -140,7 +131,7 @@ class Capture(Subject):
 
         return True
 
-    def locatePlayer(self, frame):
+    def locatePlayer(self):
         frame = self.camera.get_latest_frame()
         if frame is None:
             return
@@ -150,10 +141,11 @@ class Capture(Subject):
         width = self.window['width']
         height = self.window['height']
         self.frame = frame[top:top+height, left:left+width]
-        self.on_next(self.frame)
+        self.on_next((BotVerbose.NEW_FRAME, self.frame))
 
         # Crop the frame to only show the minimap
-        minimap = self.frame[self.mm_tl[1]:self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+        minimap = self.frame[self.mm_tl[1]
+            :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
         if self.minimap_sample is None:
             self.minimap_sample = minimap
         self.minimap = minimap

@@ -137,7 +137,7 @@ class Detector(Subject):
             hid.key_press('esc')
             time.sleep(0.1)
 
-    def check_forground():
+    def check_forground(self):
         '''Check if window is forground'''
         if capture.hwnd and capture.hwnd != win32gui.GetForegroundWindow():
             try:
@@ -355,7 +355,7 @@ def exception_hook(exc_type, exc_value, tb):
     print(f"{exc_type.__name__}, Message: {exc_value}")
 
 
-sys.excepthook = exception_hook
+# sys.excepthook = exception_hook
 
 #################################
 #       Helper Functions        #

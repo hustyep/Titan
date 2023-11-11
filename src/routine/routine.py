@@ -57,6 +57,7 @@ class Routine(Subject):
         self.sequence: list[Component] = []
         self.display = []       # Updated alongside sequence
         self.command_book = None
+        self.settings: list[Setting] = []
 
     @dirty
     @update
@@ -289,6 +290,7 @@ class Routine(Subject):
                         if curr_sequence:
                             curr_sequence.add_component(result)
                         self.append_component(result)
+                        self.update_boundary_point(result)
                     elif isinstance(result, End):
                         curr_sequence = None
                         self.append_component(result)
@@ -315,6 +317,9 @@ class Routine(Subject):
                 if isinstance(obj, Label):
                     obj.set_index(len(self))
                     self.labels[obj.label] = obj
+                elif isinstance(obj, Setting):
+                    self.settings.append(obj)
+                    obj.main()
                 return obj
             except (ValueError, TypeError) as e:
                 print(line_error +
@@ -349,15 +354,15 @@ class Routine(Subject):
         # Highlight the current Point
         self.on_next((RoutineUpdateType.selected, element))
 
-        if isinstance(element, Point):
-            new_direction = 'right' if element.location[0] > bot_status.player_pos[0] else 'left'
-            if new_direction == bot_status.player_direction:
-                # Feed Pet
-                self.command_book.FeedPet.execute()
+        # if isinstance(element, Point):
+        #     new_direction = 'right' if element.location[0] > bot_status.player_pos[0] else 'left'
+        #     if new_direction == bot_status.player_direction:
+        #         # Feed Pet
+        #         self.command_book.FeedPet().execute()
 
-                # Use Buff and Potion
-                self.command_book.Potion.execute()
-                self.command_book.Buff().execute()
+        #         # Use Buff and Potion
+        #         self.command_book.Potion().execute()
+        #         self.command_book.Buff().execute()
 
         # Execute next Point in the routine
         element.execute()
@@ -377,9 +382,9 @@ class Routine(Subject):
         bot_status.point_checking = True
         if bot_status.rune_pos is not None \
                 and (is_adjacent_point(p, bot_status.rune_pos, tolorence) or p == bot_status.rune_closest_pos):
-            result, frame = self.command_book.SolveRune(
+            result = self.command_book.SolveRune(
                 bot_status.rune_pos).execute()
-            self.solve_rune_callback(result, frame)
+            # self.solve_rune_callback(result, frame)
         if bot_status.minal_pos \
                 and (is_adjacent_point(p, bot_status.minal_pos, tolorence) or p == bot_status.minal_closest_pos):
             self.command_book.Mining(bot_status.minal_pos).execute()

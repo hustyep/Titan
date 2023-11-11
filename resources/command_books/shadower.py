@@ -66,7 +66,7 @@ def step(target, tolerance):
         FlashJump(target=target).execute()
         return
 
-    next_p = find_next_point(bot_status.player_pos, target)
+    next_p = find_next_point(bot_status.player_pos, target, tolerance)
     if not next_p:
         return
 
@@ -217,11 +217,12 @@ class FlashJump(Command):
 
         key_down(direction)
         if self.attack_if_needed:
-            detect = AsyncTask(
-                target=self.detect_mob, args=(direction, ))
-            detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
-            mobs_detected = detect.join()
+            # detect = AsyncTask(
+            #     target=self.detect_mob, args=(direction, ))
+            # detect.start()
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+            # mobs_detected = detect.join()
+            mobs_detected = True
             time = 2 if mobs_detected else 1
             press(Keybindings.FLASH_JUMP, time, down_time=0.03, up_time=0.03)
             if mobs_detected:
@@ -595,8 +596,7 @@ class FOR_THE_GUILD(Command):
     backswing = 0.1
 
     def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui_bot_settings.buffs.buff_bot_settings.get(
-            'Guild Buff')
+        enabled = gui_setting.buff.get('Guild Buff')
         if not enabled:
             return False
 
@@ -612,8 +612,7 @@ class HARD_HITTER(Command):
     backswing = 0.1
 
     def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui_bot_settings.buffs.buff_bot_settings.get(
-            'Guild Buff')
+        enabled = gui_setting.buff.get('Guild Buff')
         if not enabled:
             return False
 

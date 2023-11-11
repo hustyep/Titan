@@ -72,7 +72,7 @@ class Minimap(LabelFrame):
                                         p.location,
                                         ratio,
                                         (0, 255, 0) if bot_status.enabled else (255, 0, 0),
-                                        p.adjust)
+                                        p.tolerance)
 
             # Display the current Layout
             # if layout:

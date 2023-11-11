@@ -51,7 +51,7 @@ class Bot(Subject):
 
         self.ready = True
         while True:
-            if bot_status.enabled and len(routine) > 0:
+            if bot_status.enabled and len(routine) > 0 and bot_status.player_pos != (0, 0):
                 routine.step()
             else:
                 time.sleep(0.01)
@@ -83,7 +83,7 @@ class Bot(Subject):
             return
 
         bot_status.enabled = enabled
-        utils.print_state()
+        utils.print_state(enabled)
 
         releaseAll()
 

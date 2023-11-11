@@ -47,7 +47,7 @@ class Listener(Configurable):
         Constantly listens for user inputs and updates variables in config accordingly.
         :return:    None
         """
-
+    
         self.ready = True
         while True:
             if self.enabled:
@@ -103,9 +103,9 @@ class Listener(Configurable):
 
     def recalibrate_minimap(self):
         capture.calibrated = False
-        while not capture.calibrated:
-            time.sleep(0.01)
-        print('recalibrated')
+        # while not capture.calibrated:
+        #     time.sleep(0.01)
+        # print('recalibrated')
 
     def record_position(self):
         pos = bot_status.player_pos

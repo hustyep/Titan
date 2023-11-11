@@ -111,13 +111,13 @@ class WechatBot:
     def start_command(self):
         bot_status.enabled = True
         time.sleep(0.5)
-        utils.print_state()
+        utils.print_state(True)
         self.info_command()
     
     def pause_command(self):
         bot_status.enabled = False
         time.sleep(0.5)
-        utils.print_state()
+        utils.print_state(False)
         self.info_command()
     
     def screenshot_command(self):

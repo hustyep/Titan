@@ -13,6 +13,13 @@ from src.common.constants import *
 from src.modules.capture import capture
 
 
+class MapPointType(Enum):
+    Air = 0
+    Floor = 1
+    Rope = 2
+    FloorRope = 3
+
+
 class Map:
     """Uses a quadtree to represent possible player positions in a map layout."""
 
@@ -39,6 +46,7 @@ class Map:
         self.clear()
         self.name = map_name
         self.load_minimap_data()
+        self.load_mob_template()
 
     def load_minimap_data(self):
         resArray = []
@@ -72,7 +80,7 @@ class Map:
         if elite_template is not None:
             self.elite_templates = [
                 elite_template, cv2.flip(elite_template, 1)]
-        elif mob_template:
+        elif mob_template is not None:
             elite_template = cv2.resize(mob_template, None, fx=2, fy=2)
             self.elite_templates = [
                 elite_template, cv2.flip(elite_template, 1)]
@@ -80,9 +88,13 @@ class Map:
         if boss_template is not None:
             self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
 
-    def near_rope(location):
-        if map.minimap_data:
-            height, width = map.minimap_data.shape
+    def point_type(self, point: tuple[int, int]):
+        value = self.minimap_data[point[1]][point[0]]
+        return MapPointType(value)
+
+    def near_rope(self, location: tuple[int, int]):
+        if self.minimap_data.any:
+            height, width = self.minimap_data.shape
             cur_x = location[0]
             cur_y = location[1]
             start_x = max(0, cur_x - 3)
@@ -91,27 +103,27 @@ class Map:
             end_y = min(height - 1, cur_y + 5)
             for x in range(start_x, end_x):
                 for y in range(start_y, end_y):
-                    if map.minimap_data[x][y] == 2:
+                    if self.minimap_data[y][x] == 2:
                         return True
         return False
 
     def on_the_rope(self, location: tuple[int, int]):
-        if len(self.minimap_data) > 0:
-            value = self.minimap_data[location[0]][location[1] + 7]
-            if value == 1 or value == 3:
+        if self.minimap_data.any:
+            point_type = self.point_type((location[0], location[1] + 7))
+            if point_type == MapPointType.Floor or point_type == MapPointType.FloorRope:
                 return False
             else:
-                return self.minimap_data[location[0]][location[1]] == 2
+                return self.point_type((location[0], location[1] + 3)) == MapPointType.Rope
         return False
 
     def on_the_platform(self, location: tuple[int, int]):
         x = location[0]
-        y = location[1] - 7
-        value = int(self.minimap_data[x][y])
-        return value == 1 or value == 3
+        y = location[1] + 7
+        value = self.point_type((x, y))
+        return value == MapPointType.Floor or value == MapPointType.FloorRope
 
-    def platform_point(target: tuple[int, int]):
-        if map.minimap_data:
+    def platform_point(self, target: tuple[int, int]):
+        if map.minimap_data is not None:
             height, _ = map.minimap_data.shape
             for y in range(target[1], height - 1):
                 p = (target[0], y)
@@ -125,7 +137,7 @@ class Map:
         window_width = capture.window['width']
         window_height = capture.window['height']
 
-        mini_height, mini_width = capture.minimap.shape
+        mini_height, mini_width, _ = capture.minimap.shape
 
         map_width = mini_width * MINIMAP_SCALE
         map_height = mini_height * MINIMAP_SCALE

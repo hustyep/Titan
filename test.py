@@ -10,6 +10,8 @@ from rx.subject import Subject, BehaviorSubject
 from src.common.constants import *
 from src.common.dll_helper import dll_helper
 from src.common.image_template import *
+from src.chat_bot.wechat_bot import WechatBot
+from src.common import utils
  
 # debounce操作符，仅在时间间隔之外的可以发射
 
@@ -73,7 +75,7 @@ def subject_test():
 
 def minimap_to_window_test():
     '''convent the minimap point to the screen point'''
-    image_path = ".test/maple_231015185516027.png"
+    image_path = ".test/maple_230828224432541.png"
     frame = cv2.imread(image_path)
     frame = frame[window_cap_top:-window_cap_botton, window_cap_horiz:-window_cap_horiz]
 
@@ -88,17 +90,20 @@ def minimap_to_window_test():
     br = dll_helper.screenSearch(MM_BR_BMP, 0, 0, 300, 300, frame=c_frame)
 
     mm_tl = (
-        tl[0] - x1 - 2 - window_cap_horiz,
+        tl[0] - x1 - 2 - window_cap_horiz + 20,
         tl[1] - y1 + 2 - window_cap_top
     )
     mm_br = (
-        br[0] - x1 + 16 - window_cap_horiz,
+        br[0] - x1 + 16 - window_cap_horiz - 20,
         br[1] - y1 - window_cap_top
     )
     minimap = frame[mm_tl[1]:mm_br[1], mm_tl[0]:mm_br[0]]
     player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
     point = player[0]
-    
+
+    # cv2.imshow('', minimap)
+    # cv2.waitKey()
+
     mini_height, mini_width, _ = minimap.shape
 
     map_width = mini_width * MINIMAP_SCALE
@@ -121,7 +126,7 @@ def minimap_to_window_test():
     else:
         y = window_height // 2
         
-    crop = frame[y:y+200, x:x+600]
+    crop = frame[y:y+200, x:x+300]
     MOB_TEMPLATE_L = cv2.imread('assets/mobs/Sandblade.png', 0)
     MOB_TEMPLATE_R = cv2.flip(MOB_TEMPLATE_L, 1)
     start = time.time()
@@ -129,10 +134,41 @@ def minimap_to_window_test():
     mobs = utils.multi_match(crop, MOB_TEMPLATE_R, threshold=0.95)
     print(f'{time.time() - start}')
     
-    # cv2.circle(frame, (x, y), 10, (0, 255, 0), 2)    
+    cv2.circle(frame, (x, y), 10, (0, 255, 0), 2)    
+    cv2.imshow('', frame)
+    cv2.waitKey()
+
+def wechat_test():
+    dll_helper.start()
+    while not dll_helper.ready:
+        time.sleep(0.01)
+    
+    chat_bot = WechatBot("yep")
+    chat_bot.run()
+    chat_bot.send_message("test")
+    
+
+def mob_detect_test():
+    frame = cv2.imread(".test/maple_230828224432541.png")
+    
+    # PLAYER_SLLEE_TEMPLATE = cv2.imread('assets/roles/player_sllee_template.png', 0)
+    # player_match = utils.multi_match(frame, PLAYER_SLLEE_TEMPLATE, threshold=0.9)
+    # player_pos = (player_match[0][0] - 5, player_match[0][1] - 55)
+    # crop = frame[player_pos[1]-180:player_pos[1]-20, player_pos[0]-300:player_pos[0]+300]
     # cv2.imshow('', crop)
     # cv2.waitKey()
+    
+    MOB_TEMPLATE_L = cv2.imread('assets/mobs/Seeker T-Drone Model A.png', 0)
+    MOB_TEMPLATE_R = cv2.flip(MOB_TEMPLATE_L, 1)
+    # h, w = MOB_TEMPLATE_L.shape
+    # MOB_TEMPLATE_ELITE = cv2.resize(MOB_TEMPLATE_L, (w * 2, h * 2))
+    start = time.time()
+    mobs = utils.multi_match(frame, MOB_TEMPLATE_L, threshold=0.95, debug=False)
+    mobs = utils.multi_match(frame, MOB_TEMPLATE_R, threshold=0.95, debug=False)
+    print(f'{time.time() - start}')
 
 if __name__ == "__main__":
     # subject_test()
-    thread_test()
+    minimap_to_window_test()
+    # wechat_test()
+    # mob_detect_test()

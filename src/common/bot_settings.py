@@ -86,14 +86,16 @@ SETTING_VALIDATORS = {
     'adjust_tolerance': int,
     'record_layout': validate_boolean,
     'buff_cooldown': validate_nonnegative_int,
+    'map_name': str,
     'role_name': str,
+    'mini_margin': int,
 }
 
 
 def reset():
     """Resets all settings to their default values."""
 
-    global move_tolerance, adjust_tolerance, record_layout, buff_cooldown, role_name, map_name, class_name
+    global move_tolerance, adjust_tolerance, record_layout, buff_cooldown, role_name, map_name, class_name, mini_margin
     global role_template, boundary_point_l, boundary_point_r
 
     move_tolerance = 13
@@ -101,6 +103,7 @@ def reset():
     record_layout = False
     buff_cooldown = 180
     role_name = ''
+    mini_margin = 0
     map_name = ''
     class_name = ''
 
@@ -132,6 +135,8 @@ record_layout = False
 
 # The amount of time (in seconds) to wait between each call to the 'buff' command
 buff_cooldown = 180
+
+mini_margin = 0
 
 class_name = ''
 

@@ -1,0 +1,9 @@
+$, target=map_name, value=T-Boy's ResarchTrain 1
+$, target=role_name, value=sllee
+$, target=mini_margin, value=20
+
+
+@, label=Bottom mobbing
+*, x=3, y=38, interval=0, tolerance=13
+*, x=56, y=38, interval=0, tolerance=13
+*, x=145, y=38, interval=0, tolerance=13
