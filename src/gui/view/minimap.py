@@ -2,7 +2,7 @@ import cv2
 import tkinter as tk
 from PIL import ImageTk, Image
 from src.gui.interfaces import LabelFrame
-from src.common import bot_status, utils
+from src.common import bot_status, utils, bot_settings
 from src.routine.components import Point
 from src.modules.capture import capture
 from src.routine.routine import routine
@@ -23,11 +23,12 @@ class Minimap(LabelFrame):
     def display_minimap(self):
         """Updates the Main page with the current minimap."""
 
-        minimap = capture.minimap
+        minimap = capture.minimap_display
         if minimap is not None:
-            rune_pos = bot_status.rune_pos
-            path = bot_status.path
-            player_pos = bot_status.player_pos
+            rune_pos = capture.point_2_minimap(bot_status.rune_pos)
+            minal_pos = capture.point_2_minimap(bot_status.minal_pos)
+            path = [capture.point_2_minimap(p) for p in bot_status.path]
+            player_pos = capture.point_2_minimap(bot_status.player_pos)
             minimap_img = minimap
             
             height, width, _ = minimap_img.shape
@@ -44,14 +45,14 @@ class Minimap(LabelFrame):
                 img = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_AREA)
 
             # Mark the position of the active rune
-            if rune_pos is not None:
+            if rune_pos:
                 cv2.circle(img,
                            utils.trans_point(rune_pos, ratio),
                            3,
                            (128, 0, 128),
                            1)
 
-            if bot_status.minal_pos is not None:
+            if minal_pos:
                 cv2.circle(img,
                            utils.trans_point(bot_status.minal_pos, ratio),
                            3,
@@ -69,7 +70,7 @@ class Minimap(LabelFrame):
             for p in routine.sequence:
                 if isinstance(p, Point):
                     utils.draw_location(img,
-                                        p.location,
+                                        capture.point_2_minimap(p.location),
                                         ratio,
                                         (0, 255, 0) if bot_status.enabled else (255, 0, 0),
                                         p.tolerance)

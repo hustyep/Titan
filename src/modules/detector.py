@@ -73,21 +73,20 @@ class Detector(Subject):
     def _main_exception(self):
         while True:
             frame = capture.frame
-            minimap = capture.minimap
 
-            if bot_status.enabled and frame is not None and minimap is not None:
+            if bot_status.enabled and frame is not None:
                 self.check_boss(frame)
                 self.check_binded(frame)
                 self.check_dead(frame)
                 self.check_no_movement()
-                self.check_others(minimap)
+                self.check_others()
                 self.check_forground()
             time.sleep(0.2)
 
     def _main_event(self):
         while True:
             frame = capture.frame
-            minimap = capture.minimap
+            minimap = capture.minimap_actual
 
             if bot_status.enabled and frame is not None and minimap is not None:
                 self.check_rune_status(frame, minimap)
@@ -214,7 +213,8 @@ class Detector(Subject):
                 time.sleep(1)
                 hid.mouse_left_click()
 
-    def check_others(self, minimap):
+    def check_others(self):
+        minimap = capture.minimap_display
         filtered = utils.filter_color(minimap, OTHER_RANGES)
         others = len(utils.multi_match(
             filtered, OTHER_TEMPLATE, threshold=0.7))

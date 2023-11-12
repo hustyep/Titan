@@ -27,7 +27,8 @@ class Capture(Subject):
         self.hwnd = None
         self.frame = None
         self.minimap_sample = None
-        self.minimap = None
+        self.minimap_actual = None
+        self.minimap_display = None
         self.window = {
             'left': 0,
             'top': 0,
@@ -115,11 +116,11 @@ class Capture(Subject):
         bot_status.lost_minimap = False
         self.lost_minimap_time = 0
         mm_tl = (
-            tl[0] - x1 - 2 + bot_settings.mini_margin,
+            tl[0] - x1 - 2,
             tl[1] - y1 + 2
         )
         mm_br = (
-            br[0] - x1 + 16 - bot_settings.mini_margin,
+            br[0] - x1 + 16,
             br[1] - y1
         )
 
@@ -146,10 +147,11 @@ class Capture(Subject):
         # Crop the frame to only show the minimap
         minimap = self.frame[self.mm_tl[1]
             :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+        self.minimap_display = minimap
+        self.minimap_actual = minimap[:, bot_settings.mini_margin:-bot_settings.mini_margin]
         if self.minimap_sample is None:
             self.minimap_sample = minimap
-        self.minimap = minimap
-
+            
         # Determine the player's position
         player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
         if len(player) == 0:
@@ -170,7 +172,7 @@ class Capture(Subject):
         if player:
             # h, w, _ = minimap.shape
             # print(f"{player[0]} | {w}")
-            bot_status.player_pos = player[0]
+            bot_status.player_pos = self.fix_minimap_point(player[0])
             self.lost_player_time = 0
             self.on_next(player[0])
         elif bot_status.enabled:
@@ -181,5 +183,12 @@ class Capture(Subject):
                 self.on_next(
                     (BotError.LOST_PLAYER, now - self.lost_player_time))
 
-
+    def fix_minimap_point(self, pos:tuple[int, int]):
+        return (pos[0] - bot_settings.mini_margin, pos[1])
+    
+    def point_2_minimap(self, pos:tuple[int, int]):
+        if not pos:
+            return None
+        return (pos[0] + bot_settings.mini_margin, pos[1])
+    
 capture = Capture()

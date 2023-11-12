@@ -70,8 +70,9 @@ class Command():
         if len(variables) - 1 > 0:
             result += ':'
         for key, value in variables.items():
-            if key != 'id':
+            if key != 'id=':
                 result += f'\n        {key}={value}'
+        # result += f'\n        kwargs={self.kwargs}'
         result += f'\n        pos={bot_status.player_pos}'
         return result
 
@@ -138,17 +139,17 @@ class Move(Command):
         step(self.target, self.tolerance)
 
         if edge_reached():
-            print("edge reached")
-            pos = map.minimap_to_window(bot_status.player_pos)
-            key_up(bot_status.player_direction)
-            if bot_status.player_direction == 'left':
-                mobs = detect_mobs(
-                    anchor=pos, top=100, bottom=80, left=300, right=0)
-            else:
-                mobs = detect_mobs(
-                    anchor=pos, top=100, bottom=80, left=0, right=300)
-            if mobs:
-                Attack().execute()
+            print("-----------------------edge reached")
+            # pos = map.minimap_to_window(bot_status.player_pos)
+            # key_up(bot_status.player_direction)
+            # if bot_status.player_direction == 'left':
+            #     mobs = detect_mobs(
+            #         anchor=pos, top=100, bottom=80, left=300, right=0)
+            # else:
+            #     mobs = detect_mobs(
+            #         anchor=pos, top=100, bottom=80, left=0, right=300)
+            # if mobs:
+            #     Attack().execute()
 
         Command.complete_callback(self)
 
@@ -198,11 +199,10 @@ def sleep_while_move_y(interval=0.02, n=15):
             break
 
 
-def sleep_in_the_air(interval=0.02, n=2):
+def sleep_in_the_air(interval=0.02, n=3):
     if len(map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
         return
-    print("sleep_in_the_air")
     count = 0
     step = 0
     while True:
@@ -219,7 +219,6 @@ def sleep_in_the_air(interval=0.02, n=2):
         if step >= 250:
             break
         time.sleep(interval)
-    print("on the floor")
 
 
 def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
@@ -265,9 +264,8 @@ class MobType(Enum):
 
 def detect_mobs(top=0, left=0, right=0, bottom=0, anchor: tuple[int, int] = None, type: MobType = MobType.NORMAL, debug=False):
     frame = capture.frame
-    minimap = capture.minimap
 
-    if frame is None or minimap is None:
+    if frame is None:
         return []
 
     match (type):
@@ -364,11 +362,11 @@ class Walk(Command):
 
     def __init__(self, target_x, tolerance=5, interval=0.005, max_steps=600):
         super().__init__(locals())
-        self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
         self.target_x = bot_settings.validate_nonnegative_int(target_x)
         self.interval = bot_settings.validate_nonnegative_float(interval)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
-
+        self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
+            
     def main(self):
         d_x = self.target_x - bot_status.player_pos[0]
         if abs(d_x) <= self.tolerance:

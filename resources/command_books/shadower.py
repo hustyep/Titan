@@ -58,13 +58,18 @@ def step(target, tolerance):
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    if abs(target[0] - bot_status.player_pos[0]) > 20 and abs(target[1] - bot_status.player_pos[1]) > 20:
+    d_x = target[0] - bot_status.player_pos[0]
+    d_y = target[1] - bot_status.player_pos[1]
+    if abs(d_x) in range(20, 28) and -d_y in range(25, 35):
         if ShadowAssault.usable_count() > 2:
             ShadowAssault(target=target).execute()
             return
-    elif abs(target[0] - bot_status.player_pos[0]) > 10 and abs(target[1] - bot_status.player_pos[1]) > 10:
-        FlashJump(target=target).execute()
-        return
+    if d_y in range(25, 35):
+        if ShadowAssault.usable_count() > 2:
+            ShadowAssault(target=target).execute()
+            return    # elif abs(target[0] - bot_status.player_pos[0]) > 10 and abs(target[1] - bot_status.player_pos[1]) > 10:
+    #     FlashJump(target=target).execute()
+    #     return
 
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
     if not next_p:
@@ -156,7 +161,7 @@ def move_up(target):
     elif dy <= 24:
         JumpUp(target).execute()
     elif dy <= 40 and ShadowAssault().canUse():
-        ShadowAssault('up', jump='True', distance=dy).execute()
+        ShadowAssault(target=target).execute()
     else:
         RopeLift(dy).execute()
 
@@ -169,8 +174,24 @@ def move_down(target):
         ShadowAssault(direction='down', jump='True',
                       distance=dy).execute()
     else:
-        Fall().execute()
+        sleep_in_the_air(n=1)
+        if target[1] > bot_status.player_pos[1]:
+            Fall().execute()
 
+class Fall(Command):
+    """
+    Performs a down-jump and then free-falls until the player exceeds a given distance
+    from their starting position.
+    """
+
+    def main(self):
+        # print("fall")
+
+        key_down('down')
+        time.sleep(0.03)
+        press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.1)
+        key_up('down')
+        sleep_in_the_air()
 
 class JumpUp(Command):
     def __init__(self, target):
@@ -182,9 +203,10 @@ class JumpUp(Command):
         time.sleep(0.5)
         evade_rope(self.target)
 
+        dy = bot_status.player_pos[1] - self.target[1]
         press(Keybindings.JUMP)
         key_down('up')
-        time.sleep(0.06 if self.dy >= 20 else 0.1)
+        time.sleep(0.06 if dy >= 20 else 0.1)
         press(Keybindings.FLASH_JUMP, 1)
         key_up('up')
         sleep_in_the_air()
@@ -226,7 +248,7 @@ class FlashJump(Command):
             time = 2 if mobs_detected else 1
             press(Keybindings.FLASH_JUMP, time, down_time=0.03, up_time=0.03)
             if mobs_detected:
-                CruelStab().execute()
+                CruelStab(True).execute()
         else:
             time = 2 if abs(dx) >= 32 else 1
             if dy < 0:
@@ -236,7 +258,7 @@ class FlashJump(Command):
             press(Keybindings.FLASH_JUMP, time, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        sleep_in_the_air()
+        sleep_in_the_air(n=1)
 
 
 class ShadowAssault(Command):
@@ -245,7 +267,7 @@ class ShadowAssault(Command):
     to the current Layout if necessary.
     """
 
-    backswing = 0.15
+    backswing = 0.3
     usable_times = 4
     cooldown = 60
 
@@ -259,27 +281,18 @@ class ShadowAssault(Command):
         else:
             dx = target[0] - bot_status.player_pos[0]
             dy = target[1] - bot_status.player_pos[1]
-            if dy < 0 and dx < 0:
-                self.direction = 'upleft'
+            if dy < 0 and abs(dx) >= 20:
+                self.direction = 'upright' if dx > 0 else 'upleft'
                 self.jump = True
-            elif dy < 0 and dx > 0:
-                self.direction = 'upright'
+            elif dy > 0 and abs(dx) >= 20:
+                self.direction = 'downright' if dx > 0 else 'downleft'
                 self.jump = True
-            elif dy > 0 and dx < 0:
-                self.direction = 'downleft'
-                self.jump = True
-            elif dy > 0 and dx > 0:
-                self.direction = 'downright'
-                self.jump = True
-            elif dy != 0:
-                self.direction = 'up' if dy < 0 else 'down'
-                self.jump = True
-            elif dx != 0:
+            elif dy == 0:
                 self.direction = 'left' if dx < 0 else 'right'
                 self.jump = False
             else:
-                self.direction = direction
-                self.jump = bot_settings.validate_boolean(jump)
+                self.direction = 'up' if dy < 0 else 'down'
+                self.jump = True
             self.distance = math.sqrt(dx ** 2 + dy ** 2)
 
     @staticmethod
@@ -313,6 +326,7 @@ class ShadowAssault(Command):
             if bot_status.player_direction != 'right':
                 press("right", down_time=0.1)
         elif self.direction == 'up':
+            time.sleep(0.2)
             evade_rope(self.target)
 
         if self.jump:
@@ -325,7 +339,7 @@ class ShadowAssault(Command):
                 time.sleep(0.1 if self.distance > 32 else 0.4)
 
         key_down(self.direction)
-        time.sleep(0.05)
+        time.sleep(0.03)
 
         cur_time = time.time()
         if (cur_time - self.__class__.castedTime) > self.__class__.cooldown + self.__class__.backswing:
@@ -335,9 +349,9 @@ class ShadowAssault(Command):
             self.__class__.usable_times -= 1
         press(Keybindings.SHADOW_ASSAULT)
         key_up(self.direction)
-        time.sleep(self.backswing)
         sleep_in_the_air()
         MesoExplosion().execute()
+        time.sleep(self.backswing)
 
         # if bot_settings.record_layout:
         #     layout.add(*bot_status.player_pos)
@@ -359,7 +373,7 @@ class RopeLift(Command):
         elif self.dy >= 32:
             press(Keybindings.JUMP, up_time=0.1)
         press(self.__class__.key)
-        sleep_in_the_air()
+        sleep_in_the_air(n=10)
 
 
 #########################
@@ -374,11 +388,15 @@ class Attack(Command):
 class CruelStab(Command):
     """Uses 'CruelStab' once."""
     backswing = 0.1
-
+    
+    def __init__(self, jumped=False):
+        super().__init__(locals())
+        self.jumped = jumped   
+        
     def main(self):
         press(Keybindings.CRUEL_STAB, 1, up_time=0.2)
         MesoExplosion().execute()
-        time.sleep(self.backswing)
+        time.sleep(0.5 if not self.jumped else self.backswing)
 
 
 class MesoExplosion(Command):

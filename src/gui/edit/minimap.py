@@ -28,7 +28,7 @@ class Minimap(LabelFrame):
         if capture.minimap_sample is not None:
             minimap = cv2.cvtColor(capture.minimap_sample, cv2.COLOR_BGR2RGB)
             img, ratio = self.resize_to_fit(minimap)
-            utils.draw_location(img, pos.location, ratio, (0, 255, 0), pos.adjust)
+            utils.draw_location(img, capture.point_2_minimap(pos.location), ratio, (0, 255, 0), pos.tolerance)
             self.draw(img)
 
     def draw_default(self):

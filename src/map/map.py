@@ -63,7 +63,7 @@ class Map:
                 line = table.row_values(i)[1:]  # 读取每行数据，保存在line里面，line是list
                 resArray.append(line)  # 将line加入到resArray中，resArray是二维list
             resArray = np.array(resArray)  # 将resArray从二维list变成数组
-            self.minimap_data = resArray
+            self.minimap_data = resArray.astype(int)
         print(f" ~ Finished loading map '{self.name}'")
 
     def load_mob_template(self):
@@ -123,9 +123,9 @@ class Map:
         return value == MapPointType.Floor or value == MapPointType.FloorRope
 
     def platform_point(self, target: tuple[int, int]):
-        if map.minimap_data is not None:
+        if map.minimap_data.any:
             height, _ = map.minimap_data.shape
-            for y in range(target[1], height - 1):
+            for y in range(target[1] - 7, height - 1):
                 p = (target[0], y)
                 if map.on_the_platform(p):
                     return p
@@ -137,7 +137,7 @@ class Map:
         window_width = capture.window['width']
         window_height = capture.window['height']
 
-        mini_height, mini_width, _ = capture.minimap.shape
+        mini_height, mini_width, _ = capture.minimap_actual.shape
 
         map_width = mini_width * MINIMAP_SCALE
         map_height = mini_height * MINIMAP_SCALE
@@ -173,7 +173,7 @@ def run_if_map_available(function):
     """
 
     def helper(*args, **kwargs):
-        if map.minimap_data:
+        if map.minimap_data.any:
             return function(*args, **kwargs)
     return helper
 
