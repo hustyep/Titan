@@ -52,6 +52,7 @@ class GUI():
 
         bot.subscribe(lambda i: self.on_bot_update(i))
         routine.subscribe(lambda i: self.on_routine_update(i))
+        listener.subscribe(lambda i: self.on_listener(i))
 
     def set_routine(self, arr):
         self.routine_var.set(arr)
@@ -116,36 +117,12 @@ class GUI():
                 self.set_routine(routine.display)
                 self.view.details.update_details()
 
-    # def update(self, subject: Subject, *args, **kwargs) -> None:
-    #     if subject == bot:
-    #         type = args[0]
-    #         if type == 'notify_level':
-    #             self.settings.notification.notice_level.set(args[1])
-    #             self.settings.notification.notification_settings.save_config()
-    #         else:
-    #             index = args[1]
-    #             self.view.routine.select(index)
-    #             self.view.details.display_info(index)
-    #     elif subject == command_book:
-    #         self.settings.update_class_bindings()
-    #         self.menu.file.enable_routine_state()
-    #         self.view.status.set_cb(command_book.name)
-    #     elif subject == routine:
-    #         match (args[0]):
-    #             case 'clear':
-    #                 self.clear_routine_info()
-    #             case 'update':
-    #                 self.set_routine(routine.display)
-    #                 self.view.details.update_details()
-    #             case 'load':
-    #                 self.view.status.set_routine(basename(routine.path))
-    #                 self.edit.minimap.draw_default()
-    #     elif subject == listener:
-    #         match (args[0]):
-    #             case 'recalibrated':
-    #                 self.edit.minimap.redraw()
-    #             case 'record':
-    #                 self.edit.record.add_entry(args[2], args[1])
+    def on_listener(self, args):
+        match (args[0]):
+            case 'recalibrated':
+                self.edit.minimap.redraw()
+            case 'record':
+                self.edit.record.add_entry(args[2], args[1])
 
 
 if __name__ == '__main__':

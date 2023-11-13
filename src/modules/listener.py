@@ -13,8 +13,9 @@ from src.modules.bot import bot
 from src.routine.routine import routine
 from src.chat_bot.chat_bot_entity import ChatBotCommand
 from src.common.action_simulator import ActionSimulator
+from rx.subject import Subject
 
-class Listener(Configurable):
+class Listener(Configurable, Subject):
     DEFAULT_CONFIG = {
         'Start/stop': 'tab',
         'Reload routine': 'page up',
@@ -103,13 +104,14 @@ class Listener(Configurable):
 
     def recalibrate_minimap(self):
         capture.calibrated = False
-        # while not capture.calibrated:
-        #     time.sleep(0.01)
-        # print('recalibrated')
+        while not capture.calibrated:
+            time.sleep(0.01)
+        self.on_next('calibrated')
 
     def record_position(self):
         pos = bot_status.player_pos
         now = datetime.now().strftime('%I:%M:%S %p')
+        self.on_next(('recored', pos, now))
         print(f'\n[~] Recorded position ({pos[0]}, {pos[1]}) at {now}')
         time.sleep(0.6)
 

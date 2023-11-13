@@ -73,6 +73,8 @@ def step(target, tolerance):
     if not next_p:
         return
 
+    bot_status.path = [bot_status.player_pos, next_p, target]
+
     d_x = next_p[0] - bot_status.player_pos[0]
     d_y = next_p[1] - bot_status.player_pos[1]
 
