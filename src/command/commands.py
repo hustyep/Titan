@@ -4,7 +4,7 @@ from enum import Enum
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils
 from src.common.gui_setting import gui_setting
-from src.map.map import map, run_if_map_available
+from src.map.map import map, run_if_map_available, MapPointType
 from src.rune import rune
 from src.modules.capture import capture
 from src.common.image_template import *
@@ -133,7 +133,7 @@ class Move(Command):
             return
 
         if map.on_the_rope(bot_status.player_pos):
-            climb_rope()
+            climb_rope(self.target[1] < bot_status.player_pos[1])
 
         bot_status.path = [bot_status.player_pos, self.target]
         step(self.target, self.tolerance)
@@ -174,12 +174,13 @@ def step(target, tolerance):
 
 
 @run_if_map_available
-def climb_rope():
+def climb_rope(isUP=True):
     step = 0
+    key = 'up' if isUP else 'down'
     while not map.on_the_platform(bot_status.player_pos):
-        key_down('up')
+        key_down(key)
         time.sleep(0.1)
-        key_up('up')
+        key_up(key)
         step += 1
         if step > 50:
             break
@@ -230,26 +231,54 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         return
 
     d_x = target[0] - start[0]
+    d_y = target[1] - start[1]
     if abs(d_x) <= tolerance:
         return target
-    else:
+    elif d_y < 0:
         tmp_x = (target[0], start[1])
         if map.on_the_platform(tmp_x):
             return tmp_x
         tmp_y = (start[0], target[1])
-        if map.on_the_platform(tmp_y):
+        if map.is_continuous(tmp_y, target):
             return tmp_y
         return map.platform_point(tmp_x)
+    else:
+        if abs(d_x) >= 20 and abs(d_y) >= 20:
+            p = (start[0] + (20 if d_x > 0 else -20), target[1])
+            if map.on_the_platform(p):
+                return p
+        tmp_x = (target[0], start[1])
+        if map.is_continuous(tmp_x, target):
+            return tmp_x
+        tmp_y = (start[0], target[1])
+        if map.on_the_platform(tmp_y):
+            return tmp_y
+        return map.platform_point(tmp_y)
 
 
 @run_if_map_available
-def evade_rope(target):
+def evade_rope(target:tuple[int, int] = None):
     if target is None:
+        pos = bot_status.player_pos
+        left = max(0, pos[0] - 1)
+        right = min(pos[1] + 1, map.minimap_data.shape[1] - 1)
+        has_rope = False
+        for x in range(left, right + 1):
+            if map.point_type((x, pos[1] + 7)) == MapPointType.FloorRope:
+                has_rope = True
+                break
+        if has_rope:
+            target_l = map.valid_point((pos[0] - 3, pos[1]))
+            target_r = map.valid_point((pos[0] + 3, pos[1]))
+            if map.on_the_platform(target_l):
+                Walk(target_l[0], tolerance=1).execute()
+            elif map.on_the_platform(target_r):
+                Walk(target_r[0], tolerance=1).execute()
         return
 
     if map.near_rope(bot_status.player_pos):
-        target_l = (target[0] - 3, target[1])
-        target_r = (target[0] + 3, target[1])
+        target_l = map.valid_point((target[0] - 3, target[1]))
+        target_r = map.valid_point((target[0] + 3, target[1]))
         if map.on_the_platform(target_l):
             Walk(target_l[0], tolerance=1).execute()
         elif map.on_the_platform(target_r):
@@ -424,8 +453,7 @@ class Fall(Command):
     """
 
     def main(self):
-        # print("fall")
-
+        evade_rope()
         key_down('down')
         time.sleep(0.03)
         press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.1)

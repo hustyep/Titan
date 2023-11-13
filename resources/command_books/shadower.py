@@ -61,15 +61,13 @@ def step(target, tolerance):
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
     if abs(d_x) in range(20, 28) and -d_y in range(25, 35):
-        if ShadowAssault.usable_count() > 2:
+        if ShadowAssault.usable_count() >= 2:
             ShadowAssault(target=target).execute()
             return
     if d_y in range(25, 35):
-        if ShadowAssault.usable_count() > 2:
+        if ShadowAssault.usable_count() >= 2:
             ShadowAssault(target=target).execute()
-            return    # elif abs(target[0] - bot_status.player_pos[0]) > 10 and abs(target[1] - bot_status.player_pos[1]) > 10:
-    #     FlashJump(target=target).execute()
-    #     return
+            return
 
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
     if not next_p:
@@ -178,20 +176,6 @@ def move_down(target):
         if target[1] > bot_status.player_pos[1]:
             Fall().execute()
 
-class Fall(Command):
-    """
-    Performs a down-jump and then free-falls until the player exceeds a given distance
-    from their starting position.
-    """
-
-    def main(self):
-        # print("fall")
-
-        key_down('down')
-        time.sleep(0.03)
-        press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.1)
-        key_up('down')
-        sleep_in_the_air()
 
 class JumpUp(Command):
     def __init__(self, target):
@@ -388,11 +372,11 @@ class Attack(Command):
 class CruelStab(Command):
     """Uses 'CruelStab' once."""
     backswing = 0.1
-    
+
     def __init__(self, jumped=False):
         super().__init__(locals())
-        self.jumped = jumped   
-        
+        self.jumped = jumped
+
     def main(self):
         press(Keybindings.CRUEL_STAB, 1, up_time=0.2)
         MesoExplosion().execute()

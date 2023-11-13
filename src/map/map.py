@@ -132,6 +132,29 @@ class Map:
 
         return target
 
+    def valid_point(self, p: tuple[int, int]):
+        height, width = self.minimap_data.shape
+        x = min(max(0, p[0]), width - 1)
+        y = min(max(0, p[1]), height - 1)
+        return (x, y)
+
+    def is_continuous(self, p1, p2, max_gap=10):
+        if p1[1] != p2[1]:
+            return False
+        if not self.on_the_platform(p1) or not self.on_the_platform(p2):
+            return False
+        gap = 0
+        y = p1[1]
+        for x in range(p1[0], p2[0]):
+            if self.on_the_platform((x, y)):
+                gap = 0
+            else:
+                gap += 1
+            if gap > max_gap:
+                return False
+
+        return True
+
     def minimap_to_window(self, point: tuple[int, int]):
         '''convent the minimap point to the screen point'''
         window_width = capture.window['width']
