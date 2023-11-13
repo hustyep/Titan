@@ -369,24 +369,24 @@ class Routine(Subject):
 
     def _on_command_complete(self, c: Command):
         if isinstance(c, Move) and not is_adjacent_point(bot_status.player_pos, c.target, tolerance=c.tolerance):
-            self.check_point(bot_status.player_pos, c.tolerance)
+            self.check_point(bot_status.player_pos)
 
     def _on_component_complete(self, c: Component):
         if isinstance(c, Point):
-            self.check_point(c.location, c.tolerance)
+            self.check_point(c.location)
 
     @bot_status.run_if_enabled
-    def check_point(self, p, tolorence):
+    def check_point(self, p):
         if bot_status.point_checking:
             return
         bot_status.point_checking = True
         if bot_status.rune_pos is not None \
-                and (is_adjacent_point(p, bot_status.rune_pos, tolorence) or p == bot_status.rune_closest_pos):
-            result = self.command_book.SolveRune(
+                and (utils.distance(p, bot_status.rune_pos) <= 20 or p == bot_status.rune_closest_pos):
+            result, frame = self.command_book.SolveRune(
                 bot_status.rune_pos).execute()
-            # self.solve_rune_callback(result, frame)
+            self.solve_rune_callback(result, frame)
         if bot_status.minal_pos \
-                and (is_adjacent_point(p, bot_status.minal_pos, tolorence) or p == bot_status.minal_closest_pos):
+                and (utils.distance(p, bot_status.minal_pos) <= 20 or p == bot_status.minal_closest_pos):
             self.command_book.Mining(bot_status.minal_pos).execute()
         bot_status.point_checking = False
 
@@ -419,7 +419,7 @@ class Routine(Subject):
 
 
 def is_adjacent_point(p1, p2, tolerance=bot_settings.move_tolerance):
-    return utils.distance(p1, p2) <= tolerance
+    return p1[1] == p2[1] and abs(p1[0] - p2[0]) <= tolerance
 
 
 routine = Routine()

@@ -88,7 +88,10 @@ class Command():
     def execute(self):
         if gui_setting.notification.get('notice_level') >= 5:
             print(str(self))
-        return self.main()
+        result = self.main()
+        # if self.__class__.complete_callback:
+        #     self.__class__.complete_callback(self)
+        return result
 
     def canUse(self, next_t: float = 0) -> bool:
         if self.__class__.cooldown is None:
@@ -492,6 +495,7 @@ class SolveRune(Command):
         if not self.canUse():
             return -1, None
 
+        bot_status.rune_solving = True
         Move(x=self.target[0], y=self.target[1], tolerance=1).execute()
         time.sleep(0.5)
         # Inherited from Configurable
@@ -509,6 +513,7 @@ class SolveRune(Command):
         elif self.attempts < 2:
             return SolveRune(target=self.target, attempts=self.attempts+1).execute()
         else:
+            bot_status.rune_solving = False
             return 0, None
 
         print('\nSolving rune:')
@@ -531,6 +536,7 @@ class SolveRune(Command):
             time.sleep(0.1)
         time.sleep(0.2)
 
+        bot_status.rune_solving = False
         return 1 if find_solution else -1, used_frame
 
 

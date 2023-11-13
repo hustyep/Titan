@@ -147,6 +147,13 @@ def wechat_test():
     chat_bot.run()
     chat_bot.send_message("test")
     
+def rune_test():
+    frame = cv2.imread(".test/maple_230829030838303.png")
+    rune_buff = utils.multi_match(
+            frame[:150, :], RUNE_BUFF_TEMPLATE, threshold=0.9, debug=True)
+    if len(rune_buff) == 0:
+        rune_buff = utils.multi_match(
+            frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9, debug=True)
 
 def mob_detect_test():
     frame = cv2.imread(".test/maple_230828224432541.png")
@@ -169,6 +176,7 @@ def mob_detect_test():
 
 if __name__ == "__main__":
     # subject_test()
-    minimap_to_window_test()
+    # minimap_to_window_test()
     # wechat_test()
     # mob_detect_test()
+    rune_test()

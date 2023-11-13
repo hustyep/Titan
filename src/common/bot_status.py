@@ -27,6 +27,7 @@ point_checking = False
 # Rune status
 rune_pos = None
 rune_closest_pos = None
+rune_solving = False
 
 # Minal status
 minal_pos = None

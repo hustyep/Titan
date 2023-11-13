@@ -4,8 +4,6 @@ import time
 import threading
 import operator
 import numpy as np
-import os
-import sys
 import win32gui
 import win32con
 import win32com.client as client
@@ -22,6 +20,7 @@ from src.common.image_template import *
 from src.common.constants import *
 from src.common.hid import hid
 from src.modules.capture import capture
+from src.map.map import map
 
 
 class Detector(Subject):
@@ -59,7 +58,7 @@ class Detector(Subject):
         self.exception_thread.start()
         self.event_thread.start()
 
-        routine.subscribe(lambda i:self.on_event(i))
+        routine.subscribe(lambda i: self.on_event(i))
 
         self.ready = True
 
@@ -96,9 +95,9 @@ class Detector(Subject):
     def on_event(self, args):
         event = args[0]
         if event == BotInfo.RUNE_LIBERATED:
-            self.rune_active_time = 0
             bot_status.rune_pos = None
-        
+            bot_status.rune_closest_pos = None
+
     # check white room
     def check_fetal(self, frame):
         if frame is None:
@@ -258,19 +257,34 @@ class Detector(Subject):
             self.on_next((BotWarnning.OTHERS_COMMING, duration))
 
     def check_rune_status(self, frame, minimap):
+        if bot_status.rune_solving:
+            return
+
         if frame is None or minimap is None:
             bot_status.rune_pos = None
-            self.rune_active_time = 0
+            bot_status.rune_closest_pos = None
             return
 
         filtered = utils.filter_color(minimap, RUNE_RANGES)
         matches = utils.multi_match(filtered, RUNE_TEMPLATE, threshold=0.9)
         if len(matches) == 0:
+            bot_status.rune_pos = None
+            bot_status.rune_closest_pos = None
+            return
+
+        rune_buff = utils.multi_match(
+            frame[:150, :], RUNE_BUFF_TEMPLATE, threshold=0.9, debug=True)
+        if len(rune_buff) == 0:
+            rune_buff = utils.multi_match(
+                frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9, debug=True)
+        if rune_buff:
+            bot_status.rune_pos = None
+            bot_status.rune_closest_pos = None
             return
 
         if routine.sequence:
             old_pos = bot_status.rune_pos
-            abs_rune_pos = (matches[0][0], matches[0][1])
+            abs_rune_pos = map.platform_point((matches[0][0], matches[0][1]))
             if old_pos != abs_rune_pos:
                 bot_status.rune_pos = abs_rune_pos
                 distances = list(
