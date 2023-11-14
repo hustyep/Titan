@@ -9,7 +9,7 @@ from src.rune import rune
 from src.common.constants import *
 from src.common import bot_settings, utils
 from src.routine.components import *
-from src.command.commands import Command
+from src.command.commands import Command, target_reached
 from src.map.map import map
 from src.command.command_book import CommandBook
 from src.common.action_simulator import *
@@ -368,7 +368,7 @@ class Routine(Subject):
         element.execute()
 
     def _on_command_complete(self, c: Command):
-        if isinstance(c, Move) and not is_adjacent_point(bot_status.player_pos, c.target, tolerance=c.tolerance):
+        if isinstance(c, Move) and not target_reached(c.target, tolerance=c.tolerance):
             self.check_point(bot_status.player_pos)
 
     def _on_component_complete(self, c: Component):
@@ -400,7 +400,7 @@ class Routine(Subject):
 
     def check_rune_solve_result(self, used_frame):
         for _ in range(4):
-            rune_type = rune.rune_liberate_result(used_frame)
+            rune_type = rune.rune_liberate_result(capture.frame)
             if rune_type is not None:
                 break
             time.sleep(0.1)
@@ -416,10 +416,6 @@ class Routine(Subject):
         file_path = 'screenshot/rune_failed'
         utils.save_screenshot(
             frame=used_frame, file_path=file_path, compress=False)
-
-
-def is_adjacent_point(p1, p2, tolerance=bot_settings.move_tolerance):
-    return p1[1] == p2[1] and abs(p1[0] - p2[0]) <= tolerance
 
 
 routine = Routine()

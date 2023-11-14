@@ -32,8 +32,13 @@ class Listener(Configurable, Subject):
         self.block_time = 0
         self.thread = threading.Thread(target=self._main)
         self.thread.daemon = True
-        self._observers = []
-
+        
+        self.is_disposed = False
+        self.exception = None
+        self.observers = []
+        self.lock = threading.RLock()
+        self.is_stopped = False
+        
     def start(self):
         """
         Starts listening to user inputs.
@@ -104,14 +109,14 @@ class Listener(Configurable, Subject):
 
     def recalibrate_minimap(self):
         capture.calibrated = False
-        while not capture.calibrated:
-            time.sleep(0.01)
-        self.on_next('calibrated')
+        # while not capture.calibrated:
+        #     time.sleep(0.01)
+        # self.on_next('calibrated')
 
     def record_position(self):
         pos = bot_status.player_pos
         now = datetime.now().strftime('%I:%M:%S %p')
-        self.on_next(('recored', pos, now))
+        self.on_next(('record', pos, now))
         print(f'\n[~] Recorded position ({pos[0]}, {pos[1]}) at {now}')
         time.sleep(0.6)
 

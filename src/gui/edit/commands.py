@@ -36,17 +36,17 @@ class Commands(Frame):
         self.listbox.bind('<<ListboxSelect>>', lambda e: 'break')
 
     def on_select(self, e):
-        routine = self.parent.parent
+        routine_ui = self.parent.parent
 
         selections = e.widget.curselection()
-        pt_selects = routine.components.listbox.curselection()
+        pt_selects = routine_ui.components.listbox.curselection()
         if len(selections) > 0 and len(pt_selects) > 0:
             c_index = int(selections[0])
             pt_index = int(pt_selects[0])
-            routine.parent.editor.create_edit_ui(routine[pt_index].commands,
+            routine_ui.parent.editor.create_edit_ui(routine[pt_index].commands,
                                                  c_index, self.update_obj)
         else:
-            routine.parent.editor.reset()
+            routine_ui.parent.editor.reset()
 
     def update_obj(self, arr, i, stringvars):
         def f():

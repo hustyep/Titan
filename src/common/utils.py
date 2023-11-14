@@ -14,7 +14,7 @@ import win32con
 import win32api
 import cv2
 import numpy as np
-
+from PIL import Image, ImageDraw
 
 def single_match(frame, template):
     """
@@ -93,10 +93,22 @@ def filter_color(img, ranges):
     result[color_mask] = img[color_mask]
     return result
 
-def trans_point(point:tuple[int, int], ratio:float):
+
+def add_mask(img, pos, **kwargs):
+    transp = Image.new('RGBA', img.size, (0,0,0,0))
+    draw = ImageDraw.Draw(transp, "RGBA")
+    draw.rectangle(pos, **kwargs)
+    new_img = Image.alpha_composite(img, transp).convert('RGB')
+    open_cv_image = np.array(new_img) 
+    # Convert RGB to BGR 
+    open_cv_image = open_cv_image[:, :, ::-1].copy() 
+    return open_cv_image
+
+def trans_point(point: tuple[int, int], ratio: float):
     return int(point[0] * ratio), int(point[1] * ratio)
 
-def draw_location(minimap, pos:tuple[int, int], ratio: float, color, tolerance):
+
+def draw_location(minimap, pos: tuple[int, int], ratio: float, color, tolerance):
     """
     Draws a visual representation of POINT onto MINIMAP. The radius of the circle represents
     the allowed error when moving towards POINT.
@@ -113,6 +125,7 @@ def draw_location(minimap, pos:tuple[int, int], ratio: float, color, tolerance):
                color,
                1)
 
+
 def distance(a, b):
     """
     Applies the distance formula to two points.
@@ -122,7 +135,7 @@ def distance(a, b):
     """
 
     return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
-    
+
 
 def separate_args(arguments):
     """
@@ -161,6 +174,7 @@ def print_separator():
 
     print('\n')
 
+
 def print_tag(tag):
     print_separator()
     print('#' * (10 + len(tag)))
@@ -171,10 +185,12 @@ def print_tag(tag):
 def print_state(enabled):
     """Prints whether Mars is currently enabled or disabled."""
     print_tag('ENABLED ' if enabled else 'DISABLED')
-    
+
 ##########################
 #       Threading        #
 ##########################
+
+
 class Async(threading.Thread):
     def __init__(self, function, *args, **kwargs):
         super().__init__()
@@ -209,40 +225,45 @@ def async_callback(context, function, *args, **kwargs):
 def timeStr() -> str:
     now = datetime.utcnow() + timedelta(hours=8)
     return now.strftime('%y%m%d%H%M%S%f')[:-3]
-    # return time.strftime("%y%m%d%H%M%S%f", time.localtime())[:-3] 
+    # return time.strftime("%y%m%d%H%M%S%f", time.localtime())[:-3]
+
 
 def make_dir(path):
     folder = os.path.exists(path)
     if not folder:
         os.makedirs(path)
 
+
 def save_screenshot(frame, file_path=None, compress=True):
     if frame is None:
         return None
-    
+
     if file_path is None:
         file_path = 'screenshot/tmp'
-    
+
     make_dir(file_path)
-    
-    filename = f'{file_path}/maple_{timeStr()}'    
+
+    filename = f'{file_path}/maple_{timeStr()}'
     if compress:
         threading.Timer(1, cv2.imwrite, (filename + '.png', frame)).start()
-        cv2.imwrite(filename + '.webp', frame, [int(cv2.IMWRITE_WEBP_QUALITY), 0])
+        cv2.imwrite(filename + '.webp', frame,
+                    [int(cv2.IMWRITE_WEBP_QUALITY), 0])
         return filename + '.webp'
     else:
         cv2.imwrite(filename + ".png", frame)
         return filename + ".png"
-    
+
 #########################
 #        Capture        #
 #########################
 
 # 通过窗口句柄截取当前句柄图片 返回cv2格式的Mat数据
+
+
 def window_capture(hwnd, picture_name=None):
     if not hwnd:
         return None
-    
+
     x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)  # 获取当前窗口大小
     hwndDC = win32gui.GetWindowDC(hwnd)  # 通过应用窗口句柄获得窗口DC
     # 通过hwndDC获得mfcDC(注意主窗口用的是win32gui库，操作位图截图是用win32ui库)
@@ -252,7 +273,7 @@ def window_capture(hwnd, picture_name=None):
     savebitmap = win32ui.CreateBitmap()  # 创建位图
     width = x2 - x1
     height = y2 - y1
-    try: 
+    try:
         savebitmap.CreateCompatibleBitmap(mfcDC, width, height)  # 设置位图的大小以及内容
     except Exception as e:
         print(e)
@@ -283,7 +304,7 @@ def window_capture(hwnd, picture_name=None):
 
 def maple_screenshot():
     hwnd = win32gui.FindWindow(None, "MapleStory")
-    if hwnd != 0 :
+    if hwnd != 0:
         img_name = f"maple_{int(time.time() * 1000)}.png"
         img = window_capture(hwnd, img_name)
         return img

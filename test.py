@@ -12,7 +12,8 @@ from src.common.dll_helper import dll_helper
 from src.common.image_template import *
 from src.chat_bot.wechat_bot import WechatBot
 from src.common import utils
- 
+from PIL import Image
+
 # debounce操作符，仅在时间间隔之外的可以发射
 
 def thread_test():
@@ -174,9 +175,24 @@ def mob_detect_test():
     mobs = utils.multi_match(frame, MOB_TEMPLATE_R, threshold=0.95, debug=False)
     print(f'{time.time() - start}')
 
+def buff_test():
+    frame = cv2.imread(".test/maple_230829030838303.png")
+    template = cv2.imread('assets/skills/MapleWarrior.png', 0)
+    # ShadowWalker
+    # template =Image.open('assets/skills/shadower/ShadowWalker.png').convert('RGBA')ErdaShower
+    # template = utils.add_mask(template, (0,0,28,28), fill=(0,0,0,int(0.0*255)))
+
+    template = template[8:,]
+    rune_buff = utils.multi_match(
+            frame[-200:, -600:], template, threshold=0.99, debug=True)
+    # rune_buff = utils.multi_match(
+    #         frame[-200:, -600:], template, threshold=0.9, debug=True)
+    # cv2.imshow('', template)
+    # cv2.waitKey()
+
 if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
     # wechat_test()
     # mob_detect_test()
-    rune_test()
+    buff_test()

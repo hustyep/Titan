@@ -21,11 +21,11 @@ class Keybindings(DefaultKeybindings):
     GODDESS_BLESSING = '1'
     EPIC_ADVENTURE = ''
     LAST_RESORT = '2'
-    MAPLE_WARRIOR = '3'
     SHADOW_WALKER = 'shift'
     THROW_BLASTING = 'v'
     FOR_THE_GUILD = '7'
     HARD_HITTER = '8'
+    PICK_POCKET = 'f1'
 
     # Potion
     EXP_POTION = '0'
@@ -43,7 +43,6 @@ class Keybindings(DefaultKeybindings):
     DARK_FLARE = 'w'
     SHADOW_VEIL = 'x'
     ARACHNID = 'j'
-    ERDA_SHOWER = '`'
     TRICKBLADE = 'a'
     SLASH_SHADOW_FORMATION = 'c'
     SONIC_BLOW = 'z'
@@ -160,7 +159,7 @@ def move_up(target):
         sleep_in_the_air()
     elif dy <= 24:
         JumpUp(target).execute()
-    elif dy <= 40 and ShadowAssault().canUse():
+    elif dy <= 40 and ShadowAssault.canUse():
         ShadowAssault(target=target).execute()
     else:
         RopeLift(dy).execute()
@@ -171,8 +170,7 @@ def move_down(target):
     p = bot_status.player_pos
     dy = p[1] - target[1]
     if dy >= 24 and ShadowAssault.usable_count() >= 3:
-        ShadowAssault(direction='down', jump='True',
-                      distance=dy).execute()
+        ShadowAssault(target=target).execute()
     else:
         sleep_in_the_air(n=1)
         if target[1] > bot_status.player_pos[1]:
@@ -180,6 +178,9 @@ def move_down(target):
 
 
 class JumpUp(Command):
+    key = Keybindings.FLASH_JUMP
+    type = SkillType.Move
+
     def __init__(self, target):
         super().__init__(locals())
         self.target = target
@@ -193,13 +194,16 @@ class JumpUp(Command):
         press(Keybindings.JUMP)
         key_down('up')
         time.sleep(0.06 if dy >= 20 else 0.1)
-        press(Keybindings.FLASH_JUMP, 1)
+        press(self.key, 1)
         key_up('up')
         sleep_in_the_air()
 
 
-class FlashJump(Command):
+class FlashJump(Skill):
     """Performs a flash jump in the given direction."""
+    key = Keybindings.FLASH_JUMP
+    type = SkillType.Move
+    cooldown = 0.3
 
     def __init__(self, target: tuple[int, int], attack_if_needed=False):
         super().__init__(locals())
@@ -216,13 +220,17 @@ class FlashJump(Command):
         else:
             mobs = detect_mobs(anchor=player_pos, top=200,
                                left=0, right=600, bottom=100)
+            time.time()
         return mobs
 
     def main(self):
+        while not self.canUse():
+            time.sleep(0.1)
         dx = self.target[0] - bot_status.player_pos[0]
         dy = self.target[1] - bot_status.player_pos[1]
         direction = 'left' if dx < 0 else 'right'
 
+        self.__class__.castedTime = time.time()
         key_down(direction)
         if self.attack_if_needed:
             # detect = AsyncTask(
@@ -231,28 +239,29 @@ class FlashJump(Command):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             # mobs_detected = detect.join()
             mobs_detected = True
-            time = 2 if mobs_detected else 1
-            press(Keybindings.FLASH_JUMP, time, down_time=0.03, up_time=0.03)
+            times = 2 if mobs_detected else 1
+            press(self.key, times, down_time=0.03, up_time=0.03)
             if mobs_detected:
                 CruelStab(True).execute()
         else:
-            time = 2 if abs(dx) >= 32 else 1
+            times = 2 if abs(dx) >= 32 else 1
             if dy < 0:
                 press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
             else:
                 press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-            press(Keybindings.FLASH_JUMP, time, down_time=0.03, up_time=0.03)
+            press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
         sleep_in_the_air(n=1)
 
 
-class ShadowAssault(Command):
+class ShadowAssault(Skill):
     """
     ShadowAssault in a given direction, jumping if specified. Adds the player's position
     to the current Layout if necessary.
     """
-
+    key = Keybindings.SHADOW_ASSAULT
+    type = SkillType.Move
     backswing = 0.3
     usable_times = 4
     cooldown = 60
@@ -288,19 +297,24 @@ class ShadowAssault(Command):
         else:
             return ShadowAssault.usable_times
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
 
-        if self.__class__.usable_times > 0:
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[8:, ], threshold=0.99)
+        if matchs:
             return True
-
-        cur_time = time.time()
-        if (cur_time + next_t - self.__class__.castedTime) > self.__class__.cooldown + self.__class__.backswing:
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
+        if matchs:
             return True
-
         return False
 
     def main(self):
         if self.distance == 0:
+            return
+
+        if not self.canUse:
             return
 
         # time.sleep(0.2)
@@ -311,7 +325,7 @@ class ShadowAssault(Command):
         elif self.direction.endswith("right"):
             if bot_status.player_direction != 'right':
                 press("right", down_time=0.1)
-        elif self.direction == 'up':
+        elif self.direction == 'up' or self.direction == 'down':
             time.sleep(0.2)
             evade_rope(self.target)
 
@@ -333,7 +347,7 @@ class ShadowAssault(Command):
             self.__class__.usable_times = 3
         else:
             self.__class__.usable_times -= 1
-        press(Keybindings.SHADOW_ASSAULT)
+        press(self.key)
         key_up(self.direction)
         sleep_in_the_air()
         MesoExplosion().execute()
@@ -344,8 +358,9 @@ class ShadowAssault(Command):
 
 
 # 绳索
-class RopeLift(Command):
+class RopeLift(Skill):
     key = Keybindings.ROPE_LIFT
+    type = SkillType.Move
     cooldown = 3
 
     def __init__(self, dy: int = 20):
@@ -367,12 +382,19 @@ class RopeLift(Command):
 #########################
 
 class Attack(Command):
+    key = Keybindings.CRUEL_STAB
+    type = SkillType.Attack
+    backswing = 0.1
+
     def main(self):
         CruelStab().execute()
 
 
-class CruelStab(Command):
+class CruelStab(Skill):
     """Uses 'CruelStab' once."""
+    key = Keybindings.CRUEL_STAB
+    type = SkillType.Attack
+    cooldown = 0.5
     backswing = 0.1
 
     def __init__(self, jumped=False):
@@ -380,26 +402,33 @@ class CruelStab(Command):
         self.jumped = jumped
 
     def main(self):
-        press(Keybindings.CRUEL_STAB, 1, up_time=0.2)
+        if not self.canUse():
+            return
+        self.__class__.castedTime = time.time()
+        press(self.key, 1, up_time=0.2)
         MesoExplosion().execute()
         time.sleep(0.5 if not self.jumped else self.backswing)
 
 
-class MesoExplosion(Command):
+class MesoExplosion(Skill):
     """Uses 'MesoExplosion' once."""
+    key = Keybindings.MESO_EXPLOSION
+    type = SkillType.Attack
 
     def main(self):
-        press(Keybindings.MESO_EXPLOSION, down_time=0.01, up_time=0.01)
+        press(self.key, down_time=0.01, up_time=0.01)
 
 
-class DarkFlare(Command):
+class DarkFlare(Skill):
     """
     Uses 'DarkFlare' in a given direction, or towards the center of the map if
     no direction is specified.
     """
+    key = Keybindings.DARK_FLARE
+    type = SkillType.Summon
     cooldown = 57
     backswing = 0.8
-    key = Keybindings.DARK_FLARE
+    duration = 60
 
     def __init__(self, direction=None):
         super().__init__(locals())
@@ -416,11 +445,13 @@ class DarkFlare(Command):
         super().main()
 
 
-class ShadowVeil(Command):
+class ShadowVeil(Skill):
     key = Keybindings.SHADOW_VEIL
+    type = SkillType.Summon
     cooldown = 57
     precast = 0.3
     backswing = 0.9
+    duration = 12
 
     def __init__(self, direction=None):
         super().__init__(locals())
@@ -435,34 +466,11 @@ class ShadowVeil(Command):
         super().main()
 
 
-class ErdaShower(Command):
-    key = Keybindings.ERDA_SHOWER
-    cooldown = 57
-    backswing = 0.7
-
-    def __init__(self, direction=None):
-        super().__init__(locals())
-        if direction is None:
-            self.direction = direction
-        else:
-            self.direction = bot_settings.validate_horizontal_arrows(direction)
-
-    def main(self):
-        while not self.canUse():
-            time.sleep(0.1)
-        if self.direction:
-            press_acc(self.direction, down_time=0.03, up_time=0.1)
-        key_down('down')
-        press(Keybindings.ERDA_SHOWER)
-        key_up('down')
-        self.__class__.castedTime = time.time()
-        time.sleep(self.__class__.backswing)
-
-
-class SuddenRaid(Command):
+class SuddenRaid(Skill):
     key = Keybindings.SUDDEN_RAID
     cooldown = 30
     backswing = 0.75
+    type = SkillType.Attack
 
     def canUse(self, next_t: float = 0) -> bool:
         usable = super().canUse(next_t)
@@ -480,16 +488,11 @@ class SuddenRaid(Command):
     #     return used
 
 
-class Arachnid(Command):
-    key = Keybindings.ARACHNID
-    cooldown = 250
-    backswing = 0.9
-
-
-class TrickBlade(Command):
+class TrickBlade(Skill):
     key = Keybindings.TRICKBLADE
     cooldown = 14
     backswing = 0.7
+    type = SkillType.Attack
 
     def __init__(self, direction=None):
         super().__init__(locals())
@@ -513,93 +516,102 @@ class TrickBlade(Command):
     #     return used
 
 
-class SlashShadowFormation(Command):
+class SlashShadowFormation(Skill):
     key = Keybindings.SLASH_SHADOW_FORMATION
     cooldown = 90
     backswing = 0.8
+    type = SkillType.Attack
 
 
-class SonicBlow(Command):
+class SonicBlow(Skill):
     key = Keybindings.SONIC_BLOW
     cooldown = 45
     precast = 0.1
     backswing = 3
+    type = SkillType.Attack
 
 
-class PhaseDash(Command):
+class PhaseDash(Skill):
     key = 't'
     cooldown = 0
     backswing = 1
+    type = SkillType.Move
 
+
+class PickPocket(Skill):
+    key = Keybindings.PICK_POCKET
+    type = SkillType.Switch
 
 ###################
 #      Buffs      #
 ###################
+
 
 class Buff(Command):
     """Uses each of Shadowers's buffs once."""
 
     def __init__(self):
         super().__init__(locals())
-        self.buffs = [
-            MAPLE_WARRIOR,
+        self.buffs: list[Skill] = [
+            MapleWarrior,
             GODDESS_BLESSING,
             LAST_RESORT,
             FOR_THE_GUILD,
             HARD_HITTER,
             SHADOW_WALKER,
+            PickPocket,
         ]
 
     def main(self):
         for buff in self.buffs:
-            if buff().canUse():
+            if buff.canUse():
                 buff().execute()
                 break
 
 
-class GODDESS_BLESSING(Command):
+class GODDESS_BLESSING(Skill):
     key = Keybindings.GODDESS_BLESSING
     cooldown = 180
     precast = 0.3
     backswing = 0.85
+    type = SkillType.Buff
 
 
-class LAST_RESORT(Command):
+class LAST_RESORT(Skill):
     key = Keybindings.LAST_RESORT
     cooldown = 75
     precast = 0.3
     backswing = 0.8
+    type = SkillType.Buff
 
 
-class SHADOW_WALKER(Command):
+class SHADOW_WALKER(Skill):
     key = Keybindings.SHADOW_WALKER
     cooldown = 180
     precast = 0.3
     backswing = 0.8
+    type = SkillType.Buff
 
     def main(self):
         super().main()
         bot_status.hide_start = time.time()
 
 
-class EPIC_ADVENTURE(Command):
+class EPIC_ADVENTURE(Skill):
     key = Keybindings.EPIC_ADVENTURE
     cooldown = 120
     backswing = 0.75
+    type = SkillType.Buff
 
 
-class MAPLE_WARRIOR(Command):
-    key = Keybindings.MAPLE_WARRIOR
-    cooldown = 900
-    backswing = 0.8
-
-
-class FOR_THE_GUILD(Command):
+class FOR_THE_GUILD(Skill):
     key = Keybindings.FOR_THE_GUILD
     cooldown = 3610
     backswing = 0.1
+    type = SkillType.Buff
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Guild Buff')
         if not enabled:
             return False
@@ -610,12 +622,14 @@ class FOR_THE_GUILD(Command):
         return super().canUse(next_t)
 
 
-class HARD_HITTER(Command):
+class HARD_HITTER(Skill):
     key = Keybindings.HARD_HITTER
     cooldown = 3610
     backswing = 0.1
+    type = SkillType.Buff
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Guild Buff')
         if not enabled:
             return False

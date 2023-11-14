@@ -191,4 +191,12 @@ class Capture(Subject):
             return None
         return (pos[0] + bot_settings.mini_margin, pos[1])
     
+    @property
+    def buff_frame(self):
+        return self.frame[:150, ]
+    
+    @property
+    def skill_frame(self):
+        return self.frame[-200:, -600:] 
+     
 capture = Capture()

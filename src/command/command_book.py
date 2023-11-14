@@ -31,6 +31,7 @@ class CommandBook():
         if result is None:
             raise ValueError(f"Invalid command book at '{file}'")
         self.dict, self.module = result
+        bot_settings.class_name = self.name
 
     def _load_commands(self, file):
         """Prompts the user to select a command module to import. Updates config's command book."""

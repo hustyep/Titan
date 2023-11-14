@@ -65,8 +65,8 @@ class Notifier(Subject):
                 image_path = utils.save_screenshot(frame=capture.frame)
                 self.send_message(text=text, image_path=image_path)
             elif event_type == BotWarnning:
-                if event == BotWarnning.RUNE_FAILED:
-                    info = f'{detector.rune_active_time - time.time()}s'
+                # if event == BotWarnning.RUNE_FAILED:
+                #     info = f'{detector.rune_active_time - time.time()}s'
                 
                 if gui_setting.notification.get('notice_level') < 3:
                     return

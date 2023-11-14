@@ -20,7 +20,7 @@ from src.common.image_template import *
 from src.common.constants import *
 from src.common.hid import hid
 from src.modules.capture import capture
-from src.map.map import map
+from src.map.map import map as game_map
 
 
 class Detector(Subject):
@@ -273,10 +273,10 @@ class Detector(Subject):
             return
 
         rune_buff = utils.multi_match(
-            frame[:150, :], RUNE_BUFF_TEMPLATE, threshold=0.9, debug=True)
+            frame[:150, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
         if len(rune_buff) == 0:
             rune_buff = utils.multi_match(
-                frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9, debug=True)
+                frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
         if rune_buff:
             bot_status.rune_pos = None
             bot_status.rune_closest_pos = None
@@ -284,7 +284,7 @@ class Detector(Subject):
 
         if routine.sequence:
             old_pos = bot_status.rune_pos
-            abs_rune_pos = map.platform_point((matches[0][0], matches[0][1]))
+            abs_rune_pos = game_map.platform_point((matches[0][0], matches[0][1]))
             if old_pos != abs_rune_pos:
                 bot_status.rune_pos = abs_rune_pos
                 distances = list(

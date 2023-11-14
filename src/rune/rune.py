@@ -484,7 +484,7 @@ def rune_interact_result(frame):
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     text = tess.image_to_string(image_rgb, lang="eng")
     content = text.replace("\f", "").lower()
-    keywords = ['tap', 'arrow', 'keys', 'correct', 'order', 'activate', 'rune']
+    keywords = ['tap', 'the', 'arrow', 'keys', 'in', 'correct', 'order', 'to', 'activate', 'rune']
     if len(content) > 0:
         for keyword in keywords:
             if keyword in content:

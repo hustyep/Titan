@@ -1,5 +1,5 @@
 import time
-import math
+import os
 from enum import Enum
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils
@@ -20,6 +20,8 @@ class DefaultKeybindings:
     FLASH_JUMP = ';'
     ROPE_LIFT = 'b'
     ERDA_SHOWER = '~'
+    MAPLE_WARRIOR = '3'
+    ARACHNID = 'j'
 
     # Potion
     EXP_POTION = '0'
@@ -93,12 +95,13 @@ class Command():
         #     self.__class__.complete_callback(self)
         return result
 
-    def canUse(self, next_t: float = 0) -> bool:
-        if self.__class__.cooldown is None:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if cls.cooldown == 0:
             return True
 
         cur_time = time.time()
-        if (cur_time + next_t - self.__class__.castedTime) > self.__class__.cooldown + self.__class__.backswing:
+        if (cur_time + next_t - cls.castedTime) > cls.cooldown + cls.backswing:
             return True
 
         return False
@@ -116,6 +119,76 @@ class Command():
         return True
 
 
+class SkillType(Enum):
+    Buff = 'buff'
+    Switch = 'switch'
+    Summon = 'summon'
+    Attack = 'attack'
+    Move = 'move'
+
+
+class Skill(Command):
+    duration:  int = 0
+    type: SkillType = SkillType.Attack
+    icon = None
+    loaded = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if not self.__class__.loaded:
+            self.__class__.loaded = True
+
+            module_name = self.__class__.__module__.split('.')[-1]
+            path1 = f'assets/skills/{module_name}/{self.__class__.__name__}.png'
+            path2 = f'assets/skills/{self.__class__.__name__}.png'
+            if os.path.exists(path1):
+                self.__class__.icon = cv2.imread(path1, 0)
+            elif os.path.exists(path2):
+                self.__class__.icon = cv2.imread(path2, 0)
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if cls.type == SkillType.Switch:
+            return True
+        elif cls.cooldown != 0 and cls.icon is not None and capture.frame is not None:
+            matchs = utils.multi_match(
+                capture.skill_frame, cls.icon[8:, ], threshold=0.99)
+            return len(matchs) > 0
+        else:
+            return super().canUse(next_t)
+
+    def main(self):
+        if capture.frame is not None:
+            match (self.type):
+                case SkillType.Switch:
+                    if self.icon is not None:
+                        match = utils.multi_match(
+                            capture.buff_frame, self.__class__.icon, threshold=0.9)
+                        if not match:
+                            return super().main()
+                        return False
+                    else:
+                        return False
+                case SkillType.Buff:
+                    if self.canUse():
+                        match = utils.multi_match(
+                            capture.buff_frame, self.icon[:14, 14:], threshold=0.9)
+                        if not match:
+                            match = utils.multi_match(
+                                capture.buff_frame, self.icon[14:, 14:], threshold=0.9)
+                        if not match:
+                            return super().main()
+                        else:
+                            return False
+                    else:
+                        return False
+                case (_):
+                    return super().main()
+        else:
+            return super().main()
+
+
 class Move(Command):
 
     def __init__(self, x, y, tolerance, step=1, max_steps=15):
@@ -130,7 +203,7 @@ class Move(Command):
             return
 
         if map.minimap_data.any:
-            if bot_status.player_pos[1] == self.target[1] and abs(bot_status.player_pos[0] - self.target[0]) <= self.tolerance:
+            if target_reached(self.target, self.tolerance):
                 return
         elif utils.distance(bot_status.player_pos, self.target) <= self.tolerance:
             return
@@ -246,10 +319,10 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
             return tmp_y
         return map.platform_point(tmp_x)
     else:
-        if abs(d_x) >= 20 and abs(d_y) >= 20:
-            p = (start[0] + (20 if d_x > 0 else -20), target[1])
-            if map.on_the_platform(p):
-                return p
+        # if abs(d_x) >= 20 and abs(d_y) >= 20:
+        #     p = (start[0] + (20 if d_x > 0 else -20), target[1])
+        #     if map.on_the_platform(p):
+        #         return p
         tmp_x = (target[0], start[1])
         if map.is_continuous(tmp_x, target):
             return tmp_x
@@ -260,11 +333,11 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
 
 
 @run_if_map_available
-def evade_rope(target:tuple[int, int] = None):
+def evade_rope(target: tuple[int, int] = None):
     if target is None:
         pos = bot_status.player_pos
         left = max(0, pos[0] - 1)
-        right = min(pos[1] + 1, map.minimap_data.shape[1] - 1)
+        right = min(pos[0] + 1, map.minimap_data.shape[1] - 1)
         has_rope = False
         for x in range(left, right + 1):
             if map.point_type((x, pos[1] + 7)) == MapPointType.FloorRope:
@@ -361,14 +434,28 @@ def edge_reached() -> bool:
         return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
 
 
+def target_reached(target, tolerance=bot_settings.move_tolerance):
+    p = bot_status.player_pos
+    return p[1] == target[1] and abs(p[0] - target[0]) <= tolerance
+
 #############################
 #      Common Command       #
 #############################
 
-class ErdaShower(Command):
+
+class MapleWarrior(Skill):
+    key = Keybindings.MAPLE_WARRIOR
+    cooldown = 900
+    backswing = 0.8
+    type = SkillType.Buff
+
+
+class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
+    type = SkillType.Summon
     cooldown = 57
     backswing = 0.7
+    duration = 60
 
     def __init__(self, direction=None):
         super().__init__(locals())
@@ -389,6 +476,13 @@ class ErdaShower(Command):
         time.sleep(self.__class__.backswing)
 
 
+class Arachnid(Skill):
+    key = Keybindings.ARACHNID
+    type = SkillType.Attack
+    cooldown = 250
+    backswing = 0.9
+
+
 class Walk(Command):
     """Walks in the given direction for a set amount of time."""
 
@@ -398,7 +492,7 @@ class Walk(Command):
         self.interval = bot_settings.validate_nonnegative_float(interval)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
         self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
-            
+
     def main(self):
         d_x = self.target_x - bot_status.player_pos[0]
         if abs(d_x) <= self.tolerance:
@@ -436,7 +530,8 @@ class FeedPet(Command):
     backswing = 0.3
     key = Keybindings.FEED_PET
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         pet_settings = gui_setting.pet
 
         auto_feed = pet_settings.get('Auto-feed')
@@ -444,7 +539,7 @@ class FeedPet(Command):
             return False
 
         num_pets = pet_settings.get('Num pets')
-        self.__class__.cooldown = 600 // num_pets
+        cls.cooldown = 600 // num_pets
 
         return super().canUse(next_t)
 
@@ -478,7 +573,8 @@ class SolveRune(Command):
         self.target = target
         self.attempts = attempts
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         frame = capture.frame
         if frame is None:
             return False
@@ -624,14 +720,16 @@ class Mining(Command):
 class Summon(Command):
     """'Summon' command for the default command book."""
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         return False
 
 
 class DotAoe(Command):
     """'DotAoe' command for the default command book."""
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         return False
 
 
@@ -676,7 +774,7 @@ class Potion(Command):
         if bot_status.invisible:
             return False
         for potion in self.potions:
-            if potion().canUse():
+            if potion.canUse():
                 potion().execute()
                 time.sleep(0.3)
         return True
@@ -687,7 +785,8 @@ class EXP_POTION(Command):
     cooldown = 7250
     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Exp Potion')
         if not enabled:
             return False
@@ -699,7 +798,8 @@ class WEALTH_POTION(Command):
     cooldown = 7250
     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Wealthy Potion')
         if not enabled:
             return False
@@ -711,7 +811,8 @@ class GOLD_POTION(Command):
     cooldown = 1810
     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Gold Potion')
         if not enabled:
             return False
@@ -723,7 +824,8 @@ class GUILD_POTION(Command):
     cooldown = 1810
     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Guild Potion')
         if not enabled:
             return False
@@ -735,7 +837,8 @@ class CANDIED_APPLE(Command):
     cooldown = 1800
     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Candied Apple')
         if not enabled:
             return False
@@ -747,7 +850,8 @@ class LEGION_WEALTHY(Command):
     cooldown = 1810
     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Legion Wealthy')
         if not enabled:
             return False
@@ -759,7 +863,8 @@ class EXP_COUPON(Command):
     cooldown = 1810
     backswing = 0.5
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         enabled = gui_setting.buff.get('Exp Coupon')
         if not enabled:
             return False
