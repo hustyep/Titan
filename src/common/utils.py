@@ -15,6 +15,8 @@ import win32api
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
+import pytesseract as tess
+import difflib
 
 def single_match(frame, template):
     """
@@ -79,7 +81,7 @@ def filter_color(img, ranges):
     :param ranges:  A list of tuples, each of which is a pair upper and lower HSV bounds.
     :return:        A filtered copy of IMG.
     """
-    if img is None or len(img) == 0:
+    if img is None or img.size == 0:
         return None
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, ranges[0][0], ranges[0][1])
@@ -308,3 +310,18 @@ def maple_screenshot():
         img_name = f"maple_{int(time.time() * 1000)}.png"
         img = window_capture(hwnd, img_name)
         return img
+
+def image_2_str(image):
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    text = tess.image_to_string(image_rgb, lang="eng")
+    content = text.replace("\f", "")
+    return content
+
+def show_image(image, title=''):
+    cv2.imshow(title, image)
+    cv2.waitKey()
+    
+def string_similar(s1, s2):
+    seq = difflib.SequenceMatcher(None, s1, s2)
+    ratio = seq.ratio()
+    return ratio

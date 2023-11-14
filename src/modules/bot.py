@@ -5,7 +5,7 @@ import time
 from enum import Enum
 from rx.subject import Subject
 
-from src.common import utils, bot_status
+from src.common import utils, bot_status, bot_settings
 from src.common.constants import *
 from src.common.action_simulator import *
 from src.common.vkeys import key_up, key_down, releaseAll
@@ -15,6 +15,10 @@ from src.modules.detector import detector
 from src.modules.chat_bot import chat_bot
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
+
+name_class_map = {'Sllee': 'shadower',
+                  'issl': 'night_lord',
+                  'ggswift': 'shadower', }
 
 
 class BotUpdateType(Enum):
@@ -29,6 +33,7 @@ class Bot(Subject):
 
         super().__init__()
         self.command_book: CommandBook = None
+        self.prepared = False
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -51,10 +56,38 @@ class Bot(Subject):
 
         self.ready = True
         while True:
-            if bot_status.enabled and len(routine) > 0 and bot_status.player_pos != (0, 0):
-                routine.step()
+            if bot_status.enabled:
+                if not self.prepared:
+                    self.pre_load()
+                elif len(routine) > 0 and bot_status.player_pos != (0, 0):
+                    routine.step()
+                else:
+                    time.sleep(0.01)
             else:
                 time.sleep(0.01)
+
+    def pre_load(self):
+        if self.prepared:
+            return
+
+        name = utils.image_2_str(capture.name_frame).replace(
+            " ", "").replace('\n', '').lower()
+        print(name)
+        class_name = None
+        best = 0
+        for key, value in name_class_map.items():
+            ratio = utils.string_similar(name, key.lower())
+            if ratio == 1:
+                class_name = value
+                break
+            elif ratio > best:
+                best = ratio
+                class_name = value
+        if bot_settings.class_name != class_name:
+            file = bot_settings.get_command_book_path(class_name)
+            self.load_commands(file)
+
+        self.prepared = True
 
     def load_commands(self, file):
         try:
@@ -72,20 +105,15 @@ class Bot(Subject):
         bot_status.rune_pos = None
         bot_status.rune_closest_pos = None
 
-        bot_status.minal_active = False
         bot_status.minal_pos = None
         bot_status.minal_closest_pos = None
 
-        if enabled:
-            capture.calibrated = False
-
-        if bot_status.enabled == enabled:
-            return
-
-        bot_status.enabled = enabled
-        utils.print_state(enabled)
+        self.prepared = False
+        capture.calibrated = False
 
         releaseAll()
+        bot_status.enabled = enabled
+        utils.print_state(enabled)
 
     def on_event(self, args):
         event_type = args[0]
@@ -107,8 +135,8 @@ class Bot(Subject):
             # end match
         elif isinstance(event_type, BotWarnning):
             match event_type:
-                case BotWarnning.NO_MOVEMENT:
-                    ActionSimulator.jump_down()
+                # case BotWarnning.NO_MOVEMENT:
+                #     ActionSimulator.jump_down()
                 case BotWarnning.OTHERS_STAY_OVER_30S:
                     words = ['cc pls', 'cc pls ', ' cc pls']
                     random_word = random.choice(words)

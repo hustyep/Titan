@@ -70,10 +70,10 @@ class Capture(Subject):
 
     def calibrate(self):
         ''' Calibrate screen capture'''
-        if not bot_status.enabled:
-            return
         self.hwnd = win32gui.FindWindow(None, "MapleStory")
         if (self.hwnd == 0):
+            if bot_status.enabled:
+                self.on_next((BotError.LOST_WINDOW, ))
             return False
 
         x1, y1, x2, y2 = win32gui.GetWindowRect(self.hwnd)  # 获取当前窗口大小
@@ -180,5 +180,10 @@ class Capture(Subject):
     @property
     def skill_frame(self):
         return self.frame[-200:, -600:] 
+    
+    @property
+    def name_frame(self):
+        width = self.frame.shape[1]
+        return self.frame[-100:-60, (width - 30)//2:(width + 80)//2] 
      
 capture = Capture()

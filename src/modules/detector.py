@@ -77,7 +77,7 @@ class Detector(Subject):
                 self.check_dead()
                 self.check_no_movement()
                 self.check_others()
-                self.check_forground()
+                # self.check_forground()
             time.sleep(0.2)
 
     def _main_event(self):
@@ -134,6 +134,8 @@ class Detector(Subject):
             time.sleep(0.1)
 
     def check_forground(self):
+        if capture.frame is None:
+            return
         hwnd = win32gui.FindWindow(None, "MapleStory")
         if (hwnd == 0):
             self.on_next((BotError.LOST_WINDOW, ))

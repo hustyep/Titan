@@ -203,13 +203,20 @@ class FlashJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.FLASH_JUMP
     type = SkillType.Move
-    cooldown = 0.3
+    # cooldown = 0.1
 
     def __init__(self, target: tuple[int, int], attack_if_needed=False):
         super().__init__(locals())
 
         self.target = target
         self.attack_if_needed = attack_if_needed
+    
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        # if time.time() - CruelStab.castedTime < 0.55:
+        #     return False
+
+        return super().canUse()
 
     def detect_mob(self, direction):
         player_pos = map.minimap_to_window(bot_status.player_pos)
@@ -225,7 +232,7 @@ class FlashJump(Skill):
 
     def main(self):
         while not self.canUse():
-            time.sleep(0.1)
+            time.sleep(0.01)
         dx = self.target[0] - bot_status.player_pos[0]
         dy = self.target[1] - bot_status.player_pos[1]
         direction = 'left' if dx < 0 else 'right'
@@ -242,7 +249,7 @@ class FlashJump(Skill):
             times = 2 if mobs_detected else 1
             press(self.key, times, down_time=0.03, up_time=0.03)
             if mobs_detected:
-                CruelStab(True).execute()
+                CruelStab().execute()
         else:
             times = 2 if abs(dx) >= 32 else 1
             if dy < 0:
@@ -299,9 +306,10 @@ class ShadowAssault(Skill):
 
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
+        cls.load()
 
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[8:, ], threshold=0.99)
+            capture.skill_frame, cls.icon[8:, ], threshold=0.95)
         if matchs:
             return True
         matchs = utils.multi_match(
@@ -394,20 +402,20 @@ class CruelStab(Skill):
     """Uses 'CruelStab' once."""
     key = Keybindings.CRUEL_STAB
     type = SkillType.Attack
-    cooldown = 0.5
+    # cooldown = 0.5
     backswing = 0.1
 
-    def __init__(self, jumped=False):
+    def __init__(self):
         super().__init__(locals())
-        self.jumped = jumped
 
     def main(self):
         if not self.canUse():
             return
         self.__class__.castedTime = time.time()
+        jumped = not map.on_the_platform(bot_status.player_pos)
         press(self.key, 1, up_time=0.2)
         MesoExplosion().execute()
-        time.sleep(0.5 if not self.jumped else self.backswing)
+        time.sleep(0.5 if not jumped else self.backswing)
 
 
 class MesoExplosion(Skill):
@@ -438,8 +446,6 @@ class DarkFlare(Skill):
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        while not self.canUse():
-            time.sleep(0.1)
         if self.direction is not None:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
         super().main()
@@ -472,7 +478,8 @@ class SuddenRaid(Skill):
     backswing = 0.75
     type = SkillType.Attack
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         usable = super().canUse(next_t)
         if usable:
             mobs = detect_mobs(top=500, bottom=500, left=500,
@@ -501,7 +508,8 @@ class TrickBlade(Skill):
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    def canUse(self, next_t: float = 0) -> bool:
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
         usable = super().canUse(next_t)
         if usable:
             mobs = detect_mobs(top=200, bottom=150, left=400, right=400)

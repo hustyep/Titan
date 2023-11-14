@@ -93,7 +93,7 @@ class File(MenuBarItem):
     @staticmethod
     @bot_status.run_if_disabled('\n[!] Cannot save routines while Mars is enabled')
     def _save_routine():
-        file_path = asksaveasfilename(initialdir=get_routines_dir(),
+        file_path = asksaveasfilename(initialdir=bot_settings.get_routines_dir(),
                                       title='Save routine',
                                       filetypes=[('*.csv', '*.csv')],
                                       defaultextension='*.csv')
@@ -109,7 +109,7 @@ class File(MenuBarItem):
                                     'Would you like to proceed anyways?',
                             icon='warning'):
                 return
-        file_path = askopenfilename(initialdir=get_routines_dir(),
+        file_path = askopenfilename(initialdir=bot_settings.get_routines_dir(),
                                     title='Select a routine',
                                     filetypes=[('*.csv', '*.csv')])
         if file_path:
@@ -174,7 +174,7 @@ def get_command_books() -> list:
 
 def get_routines(command_name) -> list:
     routines = []
-    folder = get_routines_dir(command_name)
+    folder = bot_settings.get_routines_dir(command_name)
     for root, ds, fs in os.walk(folder):
         for f in fs:
             if f.endswith(".csv"):
@@ -182,11 +182,4 @@ def get_routines(command_name) -> list:
     return routines
 
 
-def get_routines_dir(command_name=None):
-    if command_name is None:
-        command_name = bot_settings.class_name
-    target = os.path.join(RESOURCES_DIR,
-                          'routines', command_name)
-    if not os.path.exists(target):
-        os.makedirs(target)
-    return target
+

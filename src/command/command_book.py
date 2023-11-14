@@ -119,6 +119,11 @@ class CommandBook():
         else:
             print(f" !  Command book '{self.name}' was not loaded")
 
+    def reset(self):
+        for name, command in inspect.getmembers(self.module, inspect.isclass):
+            if issubclass(command, commands.Command):
+                command.castedTime = 0
+
     def __getitem__(self, item):
         return self.dict[item]
 

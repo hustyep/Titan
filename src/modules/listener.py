@@ -84,13 +84,11 @@ class Listener(Configurable, Subject):
         # notifier.notice_time_record.clear()
 
         if not bot_status.enabled:
-            self.recalibrate_minimap()      # Recalibrate only when being enabled.
             bot_status.started_time = time.time()
         else:
             bot_status.started_time = None
 
-        bot_status.enabled = not bot_status.enabled
-        utils.print_state(bot_status.enabled)
+        bot.toggle(not bot_status.enabled)
 
         # if bot_status.enabled:
         #     winsound.Beep(784, 333)     # G5
@@ -106,12 +104,6 @@ class Listener(Configurable, Subject):
         winsound.Beep(523, 200)     # C5
         winsound.Beep(659, 200)     # E5
         winsound.Beep(784, 200)     # G5
-
-    def recalibrate_minimap(self):
-        capture.calibrated = False
-        # while not capture.calibrated:
-        #     time.sleep(0.01)
-        # self.on_next('calibrated')
 
     def record_position(self):
         pos = bot_status.player_pos

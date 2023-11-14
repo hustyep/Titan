@@ -1,4 +1,6 @@
 import cv2
+import os
+from src.common.constants import RESOURCES_DIR
 from src.common.file_setting import File_Setting
 
 """p
@@ -122,6 +124,25 @@ def setup_template():
                 f'assets/roles/player_{role_name}_template.png', 0)
         except:
             pass
+
+def get_command_book_path(command_name=None):
+    if command_name is None:
+        command_name = class_name
+    target = os.path.join(RESOURCES_DIR,
+                          'command_books', command_name, '.py')
+    if not os.path.exists(target):
+        return target
+    else:
+        raise ValueError(f"command book '{target}' is not exists.")
+
+def get_routines_dir(command_name=None):
+    if command_name is None:
+        command_name = class_name
+    target = os.path.join(RESOURCES_DIR,
+                          'routines', command_name)
+    if not os.path.exists(target):
+        os.makedirs(target)
+    return target
 
 
 # The allowed error from the destination when moving towards a Point

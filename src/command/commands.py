@@ -135,25 +135,31 @@ class Skill(Command):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.__class__.load()
 
-        if not self.__class__.loaded:
-            self.__class__.loaded = True
+    @classmethod
+    def load(cls):
+        if cls.loaded:
+            return
 
-            module_name = self.__class__.__module__.split('.')[-1]
-            path1 = f'assets/skills/{module_name}/{self.__class__.__name__}.png'
-            path2 = f'assets/skills/{self.__class__.__name__}.png'
-            if os.path.exists(path1):
-                self.__class__.icon = cv2.imread(path1, 0)
-            elif os.path.exists(path2):
-                self.__class__.icon = cv2.imread(path2, 0)
+        cls.loaded = True
+        module_name = cls.__module__.split('.')[-1]
+        path1 = f'assets/skills/{module_name}/{cls.__name__}.png'
+        path2 = f'assets/skills/{cls.__name__}.png'
+        if os.path.exists(path1):
+            cls.icon = cv2.imread(path1, 0)
+        elif os.path.exists(path2):
+            cls.icon = cv2.imread(path2, 0)
 
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
+        cls.load()
+
         if cls.type == SkillType.Switch:
             return True
         elif cls.cooldown != 0 and cls.icon is not None and capture.frame is not None:
             matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[8:, ], threshold=0.99)
+                capture.skill_frame, cls.icon[9:, ], threshold=0.96, debug=False)
             return len(matchs) > 0
         else:
             return super().canUse(next_t)
