@@ -71,12 +71,10 @@ class Detector(Subject):
 
     def _main_exception(self):
         while True:
-            frame = capture.frame
-
-            if bot_status.enabled and frame is not None:
-                self.check_boss(frame)
-                self.check_binded(frame)
-                self.check_dead(frame)
+            if bot_status.enabled:
+                self.check_boss()
+                self.check_binded()
+                self.check_dead()
                 self.check_no_movement()
                 self.check_others()
                 self.check_forground()
@@ -136,8 +134,14 @@ class Detector(Subject):
             time.sleep(0.1)
 
     def check_forground(self):
+        hwnd = win32gui.FindWindow(None, "MapleStory")
+        if (hwnd == 0):
+            self.on_next((BotError.LOST_WINDOW, ))
+            return
+
         '''Check if window is forground'''
-        if capture.hwnd and capture.hwnd != win32gui.GetForegroundWindow():
+        if hwnd != win32gui.GetForegroundWindow():
+            self.on_next((BotWarnning.BACKGROUND, ))
             try:
                 pythoncom.CoInitialize()
                 shell = client.Dispatch("WScript.Shell")
@@ -150,6 +154,23 @@ class Detector(Subject):
             except Exception as e:
                 print(e)
             time.sleep(0.5)
+        else:
+            self.check_minimap(hwnd)
+
+    def check_minimap(self, hwnd):
+        x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)  # 获取当前窗口大小
+        if x1 != 0:
+            x1 += window_cap_horiz
+            x2 -= window_cap_horiz
+            y1 += window_cap_top
+            y2 -= window_cap_botton
+        tl = dll_helper.screenSearch(MM_TL_BMP, x1, y1, x2, y2)
+        br = dll_helper.screenSearch(MM_BR_BMP,  x1, y1, x2, y2)
+        if tl == None or br == None:
+            self.on_next((BotError.LOST_MINI_MAP, ))
+            bot_status.lost_minimap = True
+        else:
+            bot_status.lost_minimap = False
 
     def check_no_movement(self):
         if bot_status.enabled and operator.eq(bot_status.player_pos, self.player_pos):
@@ -160,7 +181,10 @@ class Detector(Subject):
             self.player_pos = bot_status.player_pos
             self.player_pos_updated_time = time.time()
 
-    def check_boss(self, frame):
+    def check_boss(self):
+        frame = capture.frame
+        if frame is None:
+            return
         height, width, _ = frame.shape
         elite_frame = frame[height // 4:3 *
                             height // 4, width // 4:3 * width // 4]
@@ -168,7 +192,10 @@ class Detector(Subject):
         if len(elite) > 0:
             self.on_next((BotVerbose.BOSS_APPEAR, ))
 
-    def check_binded(self, frame):
+    def check_binded(self):
+        frame = capture.frame
+        if frame is None:
+            return
         player_template = bot_settings.role_template
         player = utils.multi_match(
             frame, player_template, threshold=0.9)
@@ -194,7 +221,10 @@ class Detector(Subject):
             bot_status.enabled = True
 
     # Check for dead
-    def check_dead(self, frame):
+    def check_dead(self):
+        frame = capture.frame
+        if frame is None:
+            return
         x = (frame.shape[1] - 450) // 2
         y = (frame.shape[0] - 200) // 2
         image = frame[y:y+200, x:x+450]
@@ -284,7 +314,8 @@ class Detector(Subject):
 
         if routine.sequence:
             old_pos = bot_status.rune_pos
-            abs_rune_pos = game_map.platform_point((matches[0][0], matches[0][1]))
+            abs_rune_pos = game_map.platform_point(
+                (matches[0][0], matches[0][1]))
             if old_pos != abs_rune_pos:
                 bot_status.rune_pos = abs_rune_pos
                 distances = list(

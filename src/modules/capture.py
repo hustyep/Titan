@@ -38,11 +38,9 @@ class Capture(Subject):
         self.mm_tl = None
         self.mm_br = None
 
-        self.lost_window_time = 0
-        self.lost_minimap_time = 0
         self.lost_player_time = 0
 
-        self.lost_time_threshold = 3
+        self.lost_time_threshold = 1
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -76,14 +74,8 @@ class Capture(Subject):
             return
         self.hwnd = win32gui.FindWindow(None, "MapleStory")
         if (self.hwnd == 0):
-
-            now = time.time()
-            if self.lost_window_time == 0:
-                self.lost_window_time = now
-            self.on_next((BotError.LOST_WINDOW, now - self.lost_window_time))
             return False
 
-        self.lost_window_time = 0
         x1, y1, x2, y2 = win32gui.GetWindowRect(self.hwnd)  # 获取当前窗口大小
         if x1 != 0:
             x1 += window_cap_horiz
@@ -98,23 +90,13 @@ class Capture(Subject):
 
         # Calibrate by finding the top-left and bottom-right corners of the minimap
         tl = dll_helper.screenSearch(MM_TL_BMP, x1, y1, x2, y2)
-        if tl:
-            br = dll_helper.screenSearch(MM_BR_BMP,  x1, y1, x2, y2)
+        br = dll_helper.screenSearch(MM_BR_BMP,  x1, y1, x2, y2)
 
         if tl == None or br == None:
             bot_status.lost_minimap = True
-            if bot_status.enabled:
-                now = time.time()
-                if self.lost_minimap_time == 0:
-                    self.lost_minimap_time = now
-                if now - self.lost_minimap_time >= self.lost_time_threshold:
-                    self.on_next((BotError.LOST_MINI_MAP,
-                                  now - self.lost_minimap_time))
-
             return False
 
         bot_status.lost_minimap = False
-        self.lost_minimap_time = 0
         mm_tl = (
             tl[0] - x1 - 2,
             tl[1] - y1 + 2

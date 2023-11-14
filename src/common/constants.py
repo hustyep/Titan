@@ -37,6 +37,7 @@ class BotWarnning(Enum):
     BINDED = 'Binded'
     NO_MOVEMENT = 'No Movement'
     RUNE_ERROR = 'Rune Error'
+    BACKGROUND = 'background'
 
 class BotInfo(Enum):
     RUNE_ACTIVE = 'Rune Active'
