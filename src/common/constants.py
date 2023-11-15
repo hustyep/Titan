@@ -13,6 +13,10 @@ window_cap_top = 31
 window_cap_botton = 8
 window_cap_horiz = 8
 
+Name_Class_Map = {'Sllee': 'shadower',
+                  'issl': 'night_lord',
+                  'ggswift': 'shadower', }
+
 ################################
 #       Bot Notification       #
 ################################

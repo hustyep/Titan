@@ -155,34 +155,6 @@ class Map:
 
         return True
 
-    def minimap_to_window(self, point: tuple[int, int]):
-        '''convent the minimap point to the screen point'''
-        window_width = capture.window['width']
-        window_height = capture.window['height']
-
-        mini_height, mini_width, _ = capture.minimap_actual.shape
-
-        map_width = mini_width * MINIMAP_SCALE
-        map_height = mini_height * MINIMAP_SCALE
-
-        map_x = point[0] * MINIMAP_SCALE
-        map_y = point[1] * MINIMAP_SCALE
-
-        if map_x < window_width // 2:
-            x = map_x
-        elif map_width - map_x < window_width // 2:
-            x = map_x - (map_width - window_width)
-        else:
-            x = window_width // 2
-
-        if map_y < window_height // 2:
-            y = map_y
-        elif map_height - map_y < window_height // 2:
-            y = map_y - (map_height - window_height)
-        else:
-            y = window_height // 2
-        return (int(x), int(y))
-
 
 def get_maps_dir(name):
     return os.path.join(RESOURCES_DIR, 'maps', name)

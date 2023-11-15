@@ -87,9 +87,6 @@ SETTING_VALIDATORS = {
     'move_tolerance': int,
     'adjust_tolerance': int,
     'record_layout': validate_boolean,
-    'buff_cooldown': validate_nonnegative_int,
-    'map_name': str,
-    'role_name': str,
     'mini_margin': int,
 }
 
@@ -97,25 +94,23 @@ SETTING_VALIDATORS = {
 def reset():
     """Resets all settings to their default values."""
 
-    global move_tolerance, adjust_tolerance, record_layout, buff_cooldown, role_name, map_name, class_name, mini_margin
-    global role_template, boundary_point_l, boundary_point_r
+    global move_tolerance, adjust_tolerance, record_layout, mini_margin, mob_detect
+    global role_name, class_name, role_template, boundary_point_l, boundary_point_r
 
     move_tolerance = 13
     adjust_tolerance = 3
     record_layout = False
-    buff_cooldown = 180
-    role_name = ''
     mini_margin = 0
-    map_name = ''
+    mob_detect = True
+
+    role_name = ''
     class_name = ''
-
     role_template = None
-
     boundary_point_l = (100, 0)
     boundary_point_r = (0, 0)
 
 
-def setup_template():
+def load_role_template():
     global role_template
 
     if len(role_name) > 0:
@@ -123,7 +118,7 @@ def setup_template():
             role_template = cv2.imread(
                 f'assets/roles/player_{role_name}_template.png', 0)
         except:
-            pass
+            raise ValueError(f"role template '{role_template}' is not exists.")
 
 def get_command_book_path(command_name=None):
     if command_name is None:
@@ -154,24 +149,20 @@ adjust_tolerance = 3
 # Whether the bot should save new player positions to the current layout
 record_layout = False
 
-# The amount of time (in seconds) to wait between each call to the 'buff' command
-buff_cooldown = 180
-
 mini_margin = 0
+
+mob_detect = True
+
 
 class_name = ''
 
 # The name of the role
 role_name = ''
 
-map_name = ''
-
 role_template = None
 
 boundary_point_l = (100, 0)
 boundary_point_r = (0, 0)
-
-mob_detect = False
 
 file_setting: File_Setting = None
 

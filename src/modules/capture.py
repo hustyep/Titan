@@ -123,17 +123,12 @@ class Capture(Subject):
         left = self.window['left']
         width = self.window['width']
         height = self.window['height']
-        self.frame = frame[top:top+height, left:left+width]
-        self.on_next((BotVerbose.NEW_FRAME, self.frame))
+        new_frame = frame[top:top+height, left:left+width]
 
         # Crop the frame to only show the minimap
-        minimap = self.frame[self.mm_tl[1]
+        minimap = new_frame[self.mm_tl[1]
             :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
-        self.minimap_display = minimap
-        self.minimap_actual = minimap[:, bot_settings.mini_margin:-bot_settings.mini_margin]
-        if self.minimap_sample is None:
-            self.minimap_sample = minimap
-            
+
         # Determine the player's position
         player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
         if len(player) == 0:
@@ -154,9 +149,9 @@ class Capture(Subject):
         if player:
             # h, w, _ = minimap.shape
             # print(f"{player[0]} | {w}")
-            bot_status.player_pos = self.fix_minimap_point(player[0])
+            bot_status.player_pos = self.convert_to_relative_minimap_point(
+                player[0])
             self.lost_player_time = 0
-            self.on_next(player[0])
         elif bot_status.enabled:
             now = time.time()
             if self.lost_player_time == 0:
@@ -165,25 +160,88 @@ class Capture(Subject):
                 self.on_next(
                     (BotError.LOST_PLAYER, now - self.lost_player_time))
 
-    def fix_minimap_point(self, pos:tuple[int, int]):
+        self.frame = new_frame
+        self.minimap_display = minimap
+        self.minimap_actual = minimap[:,
+                                      bot_settings.mini_margin:-bot_settings.mini_margin]
+        if self.minimap_sample is None:
+            self.minimap_sample = minimap
+        self.on_next((BotVerbose.NEW_FRAME, self.frame))
+
+    def convert_to_relative_minimap_point(self, pos: tuple[int, int]):
         return (pos[0] - bot_settings.mini_margin, pos[1])
-    
-    def point_2_minimap(self, pos:tuple[int, int]):
+
+    def convert_to_absolute_minimap_point(self, pos: tuple[int, int]):
         if not pos:
             return None
         return (pos[0] + bot_settings.mini_margin, pos[1])
-    
+
+    def convert_point_minimap_to_window(self, point: tuple[int, int]):
+        '''convent the minimap point to the window point'''
+        window_width = self.window['width']
+        window_height = self.window['height']
+
+        mini_height, mini_width, _ = self.minimap_actual.shape
+
+        map_width = mini_width * MINIMAP_SCALE
+        map_height = mini_height * MINIMAP_SCALE
+
+        map_x = point[0] * MINIMAP_SCALE
+        map_y = point[1] * MINIMAP_SCALE
+
+        if map_x < window_width // 2:
+            x = map_x
+        elif map_width - map_x < window_width // 2:
+            x = map_x - (map_width - window_width)
+        else:
+            x = window_width // 2
+
+        if map_y < window_height // 2:
+            y = map_y
+        elif map_height - map_y < window_height // 2:
+            y = map_y - (map_height - window_height)
+        else:
+            y = window_height // 2
+        return (int(x), int(y))
+
+    def locate_player_fullscreen(self, accurate=False, frame=None, role_template=None):
+        player_pos = self.convert_point_minimap_to_window(
+            bot_status.player_pos)
+
+        if accurate:
+            if frame is None:
+                frame = self.frame
+            if role_template is None:
+                role_template = bot_settings.role_template
+            tl_x = player_pos[0]-50
+            tl_y = player_pos[1]
+            player_crop = frame[tl_y:tl_y+150, tl_x:tl_x+100]
+            matchs = utils.multi_match(player_crop,
+                                       role_template,
+                                       threshold=0.9,
+                                       debug=False)
+            if matchs:
+                player_pos = (matchs[0][0] - 5 + tl_x,
+                              matchs[0][1] - 140 + tl_y)
+        return player_pos
+
     @property
     def buff_frame(self):
         return self.frame[:150, ]
-    
+
     @property
     def skill_frame(self):
-        return self.frame[-200:, -600:] 
-    
+        return self.frame[-200:, -600:]
+
     @property
     def name_frame(self):
         width = self.frame.shape[1]
-        return self.frame[-100:-60, (width - 30)//2:(width + 80)//2] 
-     
+        return self.frame[-100:-60, (width - 30)//2:(width + 80)//2]
+
+    @property
+    def map_name_frame(self):
+        return self.frame[self.mm_tl[1] - 28:self.mm_tl[1] - 10,
+                          self.mm_tl[0] + 36:self.mm_br[0]]
+
+
 capture = Capture()

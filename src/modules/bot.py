@@ -6,6 +6,7 @@ from enum import Enum
 from rx.subject import Subject
 
 from src.common import utils, bot_status, bot_settings
+from src.common.gui_setting import gui_setting
 from src.common.constants import *
 from src.common.action_simulator import *
 from src.common.vkeys import key_up, key_down, releaseAll
@@ -16,10 +17,6 @@ from src.modules.chat_bot import chat_bot
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
 from src.command.commands import Skill
-
-name_class_map = {'Sllee': 'shadower',
-                  'issl': 'night_lord',
-                  'ggswift': 'shadower', }
 
 
 class BotUpdateType(Enum):
@@ -82,23 +79,27 @@ class Bot(Subject):
     def pre_load(self):
         if self.prepared:
             return
+        
+        if not gui_setting.auto.auto_load:
+            self.prepared = True
+            return
 
-        name = utils.image_2_str(capture.name_frame).replace(
-            " ", "").replace('\n', '').lower()
-        print(name)
-        class_name = None
-        best = 0
-        for key, value in name_class_map.items():
-            ratio = utils.string_similar(name, key.lower())
-            if ratio == 1:
-                class_name = value
-                break
-            elif ratio > best:
-                best = ratio
-                class_name = value
+        role_name, class_name = detector.identify_role()
+                
+        # update role template      
+        bot_settings.role_name = role_name
+        bot_settings.load_role_template()
+        
+        # update command book
         if bot_settings.class_name != class_name:
             file = bot_settings.get_command_book_path(class_name)
             self.load_commands(file)
+
+        # update routine
+        map_name = detector.identify_map_name()
+        map_routine_path = f'{bot_settings.get_routines_dir()}/{map_name}.csv'
+        if map_routine_path != routine.path:
+            routine.load(map_routine_path, self.command_book)
 
         self.prepared = True
 
@@ -127,6 +128,8 @@ class Bot(Subject):
         releaseAll()
         bot_status.enabled = enabled
         utils.print_state(enabled)
+        
+
 
     def on_event(self, args):
         event_type = args[0]
@@ -179,6 +182,5 @@ class Bot(Subject):
             f"reason: {ext}\n"
         )
         return message
-
 
 bot = Bot()

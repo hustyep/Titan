@@ -88,7 +88,7 @@ class Detector(Subject):
             if bot_status.enabled and frame is not None and minimap is not None:
                 self.check_rune_status(frame, minimap)
                 self.check_mineral(frame, minimap)
-            time.sleep(0.2)
+            time.sleep(0.5)
 
     def on_event(self, args):
         event = args[0]
@@ -380,6 +380,30 @@ class Detector(Subject):
                     map(distance_to_minal, routine.sequence))
                 index = np.argmin(distances)
                 bot_status.minal_closest_pos = routine[index].location
+
+    def identify_role(self):
+        role_name = ''
+        class_name = ''
+
+        name = utils.image_2_str(capture.name_frame).replace(
+            " ", "").replace('\n', '').lower()
+
+        best = 0
+        for key, value in Name_Class_Map.items():
+            ratio = utils.string_similar(name, key.lower())
+            if ratio == 1:
+                class_name = value
+                role_name = key
+                break
+            elif ratio > best:
+                best = ratio
+                class_name = value
+                role_name = key
+
+        return role_name, class_name
+
+    def identify_map_name(self):
+        return utils.image_2_str(capture.map_name_frame).replace('\n', '')
 
 
 detector = Detector()

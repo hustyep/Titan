@@ -37,6 +37,14 @@ class Keybindings(DefaultKeybindings):
     """ 'Keybindings' must be implemented in command book."""
 
 
+class AreaInsets:
+    def __init__(self, top=0, bottom=0, left=0, right=0) -> None:
+        self.top = top
+        self.bottom = bottom
+        self.left = left
+        self.right = right
+
+
 class Command():
     id = 'Command Superclass'
     PRIMITIVES = {int, str, bool, float}
@@ -365,7 +373,11 @@ class MobType(Enum):
     BOSS = 'boss mob'
 
 
-def detect_mobs(top=0, left=0, right=0, bottom=0, anchor: tuple[int, int] = None, type: MobType = MobType.NORMAL, debug=False):
+def detect_mobs(insets: AreaInsets = None,
+                anchor: tuple[int, int] = None,
+                type: MobType = MobType.NORMAL,
+                multy_match=False,
+                debug=False):
     frame = capture.frame
 
     if frame is None:
@@ -382,28 +394,13 @@ def detect_mobs(top=0, left=0, right=0, bottom=0, anchor: tuple[int, int] = None
     if len(mob_templates) == 0:
         raise ValueError(f"Missing {type.value} template")
 
-    crop = None
-    if anchor:
-        crop = frame[max(0, anchor[1]-top):anchor[1] +
-                     bottom, max(0, anchor[0]-left):anchor[0]+right]
-    else:
-        if bot_settings.role_template is None:
-            raise ValueError('Missing Role template')
-
-        player_match = utils.multi_match(
-            capture.frame, bot_settings.role_template, threshold=0.9)
-        if len(player_match) == 0:
-            # print("lost player")
-            if type != MobType.NORMAL or abs(left) <= 300 and abs(right) <= 300:
-                return []
-            else:
-                crop = frame[50:-100,]
-        else:
-            player_pos = (player_match[0][0] - 5, player_match[0][1] - 55)
-            y_start = max(0, player_pos[1]-top)
-            x_start = max(0, player_pos[0]-left)
-            crop = frame[y_start:player_pos[1]+bottom,
-                         x_start:player_pos[0]+right]
+    crop = frame
+    if insets is not None:
+        if anchor is None:
+            anchor = capture.convert_point_minimap_to_window(
+                bot_status.player_pos)
+        crop = frame[max(0, anchor[1]-insets.top):anchor[1]+insets.bottom,
+                     max(0, anchor[0]-insets.left):anchor[0]+insets.right]
 
     mobs = []
     for mob_template in mob_templates:
@@ -412,6 +409,8 @@ def detect_mobs(top=0, left=0, right=0, bottom=0, anchor: tuple[int, int] = None
         if len(mobs_tmp) > 0:
             for mob in mobs_tmp:
                 mobs.append(mob)
+                if not multy_match:
+                    return mobs
 
     return mobs
 

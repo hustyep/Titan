@@ -11,6 +11,7 @@ from src.common.constants import *
 from src.common.dll_helper import dll_helper
 from src.common.image_template import *
 from src.chat_bot.wechat_bot import WechatBot
+from src.modules.detector import detector
 from src.common import utils
 from PIL import Image
 import pytesseract as tess
@@ -79,9 +80,8 @@ def subject_test():
             break
 
 
-def minimap_to_window_test():
+def minimap_to_window_test(image_path):
     '''convent the minimap point to the screen point'''
-    image_path = ".test/maple_230828224432541.png"
     frame = cv2.imread(image_path)
     frame = frame[window_cap_top:-window_cap_botton,
                   window_cap_horiz:-window_cap_horiz]
@@ -97,14 +97,15 @@ def minimap_to_window_test():
     br = dll_helper.screenSearch(MM_BR_BMP, 0, 0, 300, 300, frame=c_frame)
 
     mm_tl = (
-        tl[0] - x1 - 2 - window_cap_horiz + 20,
+        tl[0] - x1 - 2 - window_cap_horiz + 13,
         tl[1] - y1 + 2 - window_cap_top
     )
     mm_br = (
-        br[0] - x1 + 16 - window_cap_horiz - 20,
+        br[0] - x1 + 16 - window_cap_horiz - 13,
         br[1] - y1 - window_cap_top
     )
     minimap = frame[mm_tl[1]:mm_br[1], mm_tl[0]:mm_br[0]]
+    # utils.show_image(minimap)
     player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
     point = player[0]
 
@@ -133,17 +134,9 @@ def minimap_to_window_test():
     else:
         y = window_height // 2
 
-    crop = frame[y:y+200, x:x+300]
-    MOB_TEMPLATE_L = cv2.imread('assets/mobs/Sandblade.png', 0)
-    MOB_TEMPLATE_R = cv2.flip(MOB_TEMPLATE_L, 1)
-    start = time.time()
-    mobs = utils.multi_match(crop, MOB_TEMPLATE_L, threshold=0.95)
-    mobs = utils.multi_match(crop, MOB_TEMPLATE_R, threshold=0.95)
-    print(f'{time.time() - start}')
-
     cv2.circle(frame, (x, y), 10, (0, 255, 0), 2)
-    cv2.imshow('', frame)
-    cv2.waitKey()
+    # utils.show_image(frame)
+    return x, y
 
 
 def wechat_test():
@@ -165,25 +158,33 @@ def rune_test():
             frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9, debug=True)
 
 
-def mob_detect_test():
-    frame = cv2.imread(".test/maple_230828224432541.png")
+def mob_detect_test(accurate=True):
+    image_path = ".test/maple_231111233834073.png"
+    frame = cv2.imread(image_path)
 
-    # PLAYER_SLLEE_TEMPLATE = cv2.imread('assets/roles/player_sllee_template.png', 0)
-    # player_match = utils.multi_match(frame, PLAYER_SLLEE_TEMPLATE, threshold=0.9)
-    # player_pos = (player_match[0][0] - 5, player_match[0][1] - 55)
-    # crop = frame[player_pos[1]-180:player_pos[1]-20, player_pos[0]-300:player_pos[0]+300]
-    # cv2.imshow('', crop)
-    # cv2.waitKey()
+    player_pos = minimap_to_window_test(image_path)
 
-    MOB_TEMPLATE_L = cv2.imread('assets/mobs/Seeker T-Drone Model A.png', 0)
+    if accurate:
+        PLAYER_SLLEE_TEMPLATE = cv2.imread('assets/roles/player_sllee_template.png', 0)
+        # start = time.time()
+        player_crop = frame[player_pos[1]:player_pos[1]+150, player_pos[0]-50:player_pos[0]+50]
+        player_match = utils.multi_match(player_crop, PLAYER_SLLEE_TEMPLATE, threshold=0.9, debug=False)
+        # print(f'{time.time() - start}')
+        player_pos = (player_match[0][0] - 5 + player_pos[0]-50, player_match[0][1] - 140+player_pos[1])
+        cv2.circle(frame, player_pos, 10, (0, 255, 0), 2)
+        # utils.show_image(frame)
+        
+    crop = frame[player_pos[1]-200:player_pos[1]+100, player_pos[0]-650:player_pos[0]+10]
+    # utils.show_image(crop)
+    MOB_TEMPLATE_L = cv2.imread('assets/mobs/Sandblade.png', 0)
     MOB_TEMPLATE_R = cv2.flip(MOB_TEMPLATE_L, 1)
     # h, w = MOB_TEMPLATE_L.shape
     # MOB_TEMPLATE_ELITE = cv2.resize(MOB_TEMPLATE_L, (w * 2, h * 2))
     start = time.time()
-    mobs = utils.multi_match(frame, MOB_TEMPLATE_L,
-                             threshold=0.95, debug=False)
-    mobs = utils.multi_match(frame, MOB_TEMPLATE_R,
-                             threshold=0.95, debug=False)
+    mobs = utils.multi_match(crop, MOB_TEMPLATE_L,
+                             threshold=0.95, debug=True)
+    mobs = utils.multi_match(crop, MOB_TEMPLATE_R,
+                             threshold=0.95, debug=True)
     print(f'{time.time() - start}')
 
 
@@ -235,7 +236,7 @@ def minimap_test():
         br[1]
     )
     minimap = frame[mm_tl[1] - 28:mm_tl[1] - 10, mm_tl[0] + 36:mm_br[0]]
-    utils.show_image(minimap)
+    # utils.show_image(minimap)
     name = utils.image_2_str(minimap).replace('\n', '')
     print(name)
     
@@ -243,5 +244,5 @@ if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
     # wechat_test()
-    # mob_detect_test()
-    minimap_test()
+    mob_detect_test()
+    # minimap_test()

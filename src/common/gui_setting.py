@@ -5,8 +5,12 @@ class AutoSettings(Configurable):
         'MVP': False,
         'Ask': False,
         'Mining': False,
-        'MobDetect': False
+        'Auto Load': True,
     }
+    
+    @property
+    def auto_load(self):
+        return self.get('Auto Load')
     
 class BuffSettings(Configurable):
     DEFAULT_CONFIG = {

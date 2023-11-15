@@ -25,10 +25,10 @@ class Minimap(LabelFrame):
 
         minimap = capture.minimap_display
         if minimap is not None:
-            rune_pos = capture.point_2_minimap(bot_status.rune_pos)
-            minal_pos = capture.point_2_minimap(bot_status.minal_pos)
-            path = [capture.point_2_minimap(p) for p in bot_status.path]
-            player_pos = capture.point_2_minimap(bot_status.player_pos)
+            rune_pos = capture.convert_to_absolute_minimap_point(bot_status.rune_pos)
+            minal_pos = capture.convert_to_absolute_minimap_point(bot_status.minal_pos)
+            path = [capture.convert_to_absolute_minimap_point(p) for p in bot_status.path]
+            player_pos = capture.convert_to_absolute_minimap_point(bot_status.player_pos)
             minimap_img = minimap
             
             height, width, _ = minimap_img.shape
@@ -70,7 +70,7 @@ class Minimap(LabelFrame):
             for p in routine.sequence:
                 if isinstance(p, Point):
                     utils.draw_location(img,
-                                        capture.point_2_minimap(p.location),
+                                        capture.convert_to_absolute_minimap_point(p.location),
                                         ratio,
                                         (0, 255, 0) if bot_status.enabled else (255, 0, 0),
                                         p.tolerance)

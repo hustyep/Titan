@@ -94,21 +94,15 @@ def step(target, tolerance):
 
 
 def pre_detect(direction):
-    result = detect_next_mob(direction, MobType.ELITE)
-    if not result:
-        result = detect_next_mob(direction, MobType.BOSS)
-    return result
-
-
-def detect_next_mob(direction, type):
-    pos = map.minimap_to_window(bot_status.player_pos)
-    if direction == 'right':
-        has_elite = detect_mobs(
-            anchor=pos, top=180, bottom=-20, left=-600, right=1000, type=type)
-    else:
-        has_elite = detect_mobs(
-            anchor=pos, top=180, bottom=-20, left=1000, right=-600, type=type)
-    return len(has_elite) > 0
+    anchor = capture.locate_player_fullscreen(accurate=True)
+    insets = AreaInsets(top=150,
+                        bottom=50,
+                        left=-620 if direction == 'right' else 1000,
+                        right=1000 if direction == 'right' else -620)
+    matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
+    if not matchs:
+        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.BOSS)
+    return len(matchs) > 0
 
 
 @bot_status.run_if_enabled
@@ -120,18 +114,23 @@ def hit_and_run(direction, target):
             time.sleep(0.05)
             key_up(direction)
             time.sleep(0.5)
-            # SlashShadowFormation().execute()
+            SlashShadowFormation().execute()
+
             count = 0
             while count < 80:
                 count += 1
-                pos = map.minimap_to_window(bot_status.player_pos)
-                has_boss = detect_mobs(top=180, bottom=-20, left=300, right=300,
-                                       anchor=pos,
-                                       type=MobType.BOSS)
-                if len(has_boss) > 0:
+                anchor = capture.locate_player_fullscreen(accurate=True)
+                matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                                     anchor=anchor,
+                                     type=MobType.BOSS)
+                if not matchs:
+                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                                         anchor=anchor,
+                                         type=MobType.ELITE)
+                if matchs:
                     SonicBlow().execute()
-                mobs = detect_mobs(top=350, bottom=50, left=1100, right=1100,
-                                   anchor=pos)
+                mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1100, right=1100),
+                                   anchor=anchor)
                 if len(mobs) >= 2:
                     break
         t = AsyncTask(target=pre_detect, args=(direction,))
@@ -211,23 +210,13 @@ class FlashJump(Skill):
         self.target = target
         self.attack_if_needed = attack_if_needed
 
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        # if time.time() - CruelStab.castedTime < 0.55:
-        #     return False
-
-        return super().canUse()
-
     def detect_mob(self, direction):
-        player_pos = map.minimap_to_window(bot_status.player_pos)
-        mobs = []
-        if direction == 'left':
-            mobs = detect_mobs(anchor=player_pos, top=200,
-                               left=600, right=0, bottom=100)
-        else:
-            mobs = detect_mobs(anchor=player_pos, top=200,
-                               left=0, right=600, bottom=100)
-            time.time()
+        insets = AreaInsets(top=220,
+                            bottom=100,
+                            left=650 if direction == 'left' else 10,
+                            right=10 if direction == 'left' else 600)
+        anchor = capture.locate_player_fullscreen(accurate=True)
+        mobs = detect_mobs(insets=insets, anchor=anchor)
         return mobs
 
     def main(self):
@@ -240,12 +229,11 @@ class FlashJump(Skill):
         self.__class__.castedTime = time.time()
         key_down(direction)
         if self.attack_if_needed:
-            # detect = AsyncTask(
-            #     target=self.detect_mob, args=(direction, ))
-            # detect.start()
+            detect = AsyncTask(
+                target=self.detect_mob, args=(direction, ))
+            detect.start()
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-            # mobs_detected = detect.join()
-            mobs_detected = True
+            mobs_detected = detect.join()
             times = 2 if mobs_detected else 1
             press(self.key, times, down_time=0.03, up_time=0.03)
             if mobs_detected:
@@ -316,7 +304,6 @@ class ShadowAssault(Skill):
             matchs = utils.multi_match(
                 capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
             cls.ready = len(matchs) > 0
-
 
     def main(self):
         if self.distance == 0:
@@ -482,8 +469,8 @@ class SuddenRaid(Skill):
     def canUse(cls, next_t: float = 0) -> bool:
         usable = super().canUse(next_t)
         if usable:
-            mobs = detect_mobs(top=500, bottom=500, left=500,
-                               right=500, debug=False)
+            mobs = detect_mobs(insets=AreaInsets(
+                top=500, bottom=500, left=500, right=500))
             return mobs is None or len(mobs) > 0
         else:
             return False
@@ -512,16 +499,11 @@ class TrickBlade(Skill):
     def canUse(cls, next_t: float = 0) -> bool:
         usable = super().canUse(next_t)
         if usable:
-            mobs = detect_mobs(top=200, bottom=150, left=400, right=400)
-            return mobs is None or len(mobs) > 0
+            mobs = detect_mobs(insets=AreaInsets(
+                top=200, bottom=150, left=400, right=400))
+            return len(mobs) > 0
         else:
             return False
-
-    # def main(self):
-    #     used = super().main()
-    #     if used:
-    #         MesoExplosion().execute()
-    #     return used
 
 
 class SlashShadowFormation(Skill):

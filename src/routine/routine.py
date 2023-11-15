@@ -359,7 +359,9 @@ class Routine(Subject):
             if new_direction == bot_status.player_direction:
                 # Feed Pet
                 self.command_book.FeedPet().execute()
-
+                # Use Buff and Potion
+                self.command_book.Potion().execute()
+                self.command_book.Buff().execute()
                 
 
         # Execute next Point in the routine
@@ -367,9 +369,6 @@ class Routine(Subject):
 
     def _on_command_complete(self, c: Command):
         if isinstance(c, Move) and not target_reached(c.target, tolerance=c.tolerance):
-            # Use Buff and Potion
-            self.command_book.Potion().execute()
-            self.command_book.Buff().execute()
             self.check_point(bot_status.player_pos)
 
     def _on_component_complete(self, c: Component):

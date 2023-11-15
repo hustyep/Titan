@@ -311,7 +311,7 @@ def maple_screenshot():
         img = window_capture(hwnd, img_name)
         return img
 
-def image_2_str(image):
+def image_2_str(image) -> str:
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     text = tess.image_to_string(image_rgb, lang="eng")
     content = text.replace("\f", "")
