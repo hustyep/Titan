@@ -210,7 +210,7 @@ class FlashJump(Skill):
 
         self.target = target
         self.attack_if_needed = attack_if_needed
-    
+
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         # if time.time() - CruelStab.castedTime < 0.55:
@@ -305,18 +305,18 @@ class ShadowAssault(Skill):
             return ShadowAssault.usable_times
 
     @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
+    def check(cls) -> bool:
         cls.load()
 
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[8:, ], threshold=0.95)
         if matchs:
-            return True
-        matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
-        if matchs:
-            return True
-        return False
+            cls.ready = True
+        else:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
+            cls.ready = len(matchs) > 0
+
 
     def main(self):
         if self.distance == 0:
@@ -549,6 +549,8 @@ class PhaseDash(Skill):
 class PickPocket(Skill):
     key = Keybindings.PICK_POCKET
     type = SkillType.Switch
+    ready = False
+
 
 ###################
 #      Buffs      #
@@ -562,22 +564,23 @@ class Buff(Command):
         super().__init__(locals())
         self.buffs: list[Skill] = [
             MapleWarrior,
-            GODDESS_BLESSING,
-            LAST_RESORT,
+            GoddessBlessing,
+            LastResort,
             FOR_THE_GUILD,
             HARD_HITTER,
-            SHADOW_WALKER,
+            ShadowWalker,
             PickPocket,
         ]
 
     def main(self):
         for buff in self.buffs:
             if buff.canUse():
-                buff().execute()
-                break
+                result = buff().execute()
+                if result:
+                    break
 
 
-class GODDESS_BLESSING(Skill):
+class GoddessBlessing(Skill):
     key = Keybindings.GODDESS_BLESSING
     cooldown = 180
     precast = 0.3
@@ -585,7 +588,7 @@ class GODDESS_BLESSING(Skill):
     type = SkillType.Buff
 
 
-class LAST_RESORT(Skill):
+class LastResort(Skill):
     key = Keybindings.LAST_RESORT
     cooldown = 75
     precast = 0.3
@@ -593,7 +596,7 @@ class LAST_RESORT(Skill):
     type = SkillType.Buff
 
 
-class SHADOW_WALKER(Skill):
+class ShadowWalker(Skill):
     key = Keybindings.SHADOW_WALKER
     cooldown = 180
     precast = 0.3

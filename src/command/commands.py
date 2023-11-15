@@ -96,12 +96,12 @@ class Command():
         return result
 
     @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
+    def canUse(cls) -> bool:
         if cls.cooldown == 0:
             return True
 
         cur_time = time.time()
-        if (cur_time + next_t - cls.castedTime) > cls.cooldown + cls.backswing:
+        if (cur_time - cls.castedTime) > cls.cooldown + cls.backswing:
             return True
 
         return False
@@ -132,6 +132,7 @@ class Skill(Command):
     type: SkillType = SkillType.Attack
     icon = None
     loaded = False
+    ready = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -152,47 +153,38 @@ class Skill(Command):
             cls.icon = cv2.imread(path2, 0)
 
     @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
+    def canUse(cls) -> bool:
+        return cls.ready
+
+    @classmethod
+    def check(cls) -> bool:
         cls.load()
 
-        if cls.type == SkillType.Switch:
-            return True
-        elif cls.cooldown != 0 and cls.icon is not None and capture.frame is not None:
-            matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[9:, ], threshold=0.96, debug=False)
-            return len(matchs) > 0
-        else:
-            return super().canUse(next_t)
-
-    def main(self):
-        if capture.frame is not None:
-            match (self.type):
-                case SkillType.Switch:
-                    if self.icon is not None:
-                        match = utils.multi_match(
-                            capture.buff_frame, self.__class__.icon, threshold=0.9)
-                        if not match:
-                            return super().main()
-                        return False
-                    else:
-                        return False
-                case SkillType.Buff:
-                    if self.canUse():
-                        match = utils.multi_match(
-                            capture.buff_frame, self.icon[:14, 14:], threshold=0.9)
-                        if not match:
-                            match = utils.multi_match(
-                                capture.buff_frame, self.icon[14:, 14:], threshold=0.9)
-                        if not match:
-                            return super().main()
-                        else:
-                            return False
-                    else:
-                        return False
-                case (_):
-                    return super().main()
-        else:
-            return super().main()
+        if cls.icon is None:
+            return
+        if capture.frame is None:
+            return
+        match cls.type:
+            case SkillType.Switch:
+                matchs = utils.multi_match(
+                    capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
+                cls.ready = len(matchs) == 0
+            case SkillType.Buff:
+                matchs = utils.multi_match(
+                    capture.skill_frame, cls.icon[9:, ], threshold=0.96)
+                if not matchs:
+                    cls.ready = False
+                else:
+                    matchs = utils.multi_match(
+                        capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+                    if not matchs:
+                        matchs = utils.multi_match(
+                            capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+                    cls.ready = len(matchs) == 0
+            case (_):
+                matchs = utils.multi_match(
+                    capture.skill_frame, cls.icon[9:, ], threshold=0.96)
+                cls.ready = len(matchs) > 0
 
 
 class Move(Command):

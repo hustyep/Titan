@@ -15,6 +15,7 @@ from src.modules.detector import detector
 from src.modules.chat_bot import chat_bot
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
+from src.command.commands import Skill
 
 name_class_map = {'Sllee': 'shadower',
                   'issl': 'night_lord',
@@ -35,6 +36,9 @@ class Bot(Subject):
         self.command_book: CommandBook = None
         self.prepared = False
 
+        self.check_thread = threading.Thread(target=self._main_check)
+        self.check_thread.daemon = True
+
         self.ready = False
         self.thread = threading.Thread(target=self._main)
         self.thread.daemon = True
@@ -47,6 +51,7 @@ class Bot(Subject):
         notifier.subscribe(lambda e: self.on_event(e))
         print('\n[~] Started main bot loop')
         self.thread.start()
+        self.check_thread.start()
 
     def _main(self):
         """
@@ -65,6 +70,14 @@ class Bot(Subject):
                     time.sleep(0.01)
             else:
                 time.sleep(0.01)
+
+    def _main_check(self):
+        while True:
+            if self.command_book is not None and bot_status.enabled and capture.frame is not None:
+                for skill in self.command_book.dict.values():
+                    if issubclass(skill, Skill):
+                        skill.check()
+            time.sleep(0.2)
 
     def pre_load(self):
         if self.prepared:

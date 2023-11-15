@@ -354,21 +354,22 @@ class Routine(Subject):
         # Highlight the current Point
         self.on_next((RoutineUpdateType.selected, element))
 
-        # if isinstance(element, Point):
-        #     new_direction = 'right' if element.location[0] > bot_status.player_pos[0] else 'left'
-        #     if new_direction == bot_status.player_direction:
-        #         # Feed Pet
-        #         self.command_book.FeedPet().execute()
+        if isinstance(element, Point):
+            new_direction = 'right' if element.location[0] > bot_status.player_pos[0] else 'left'
+            if new_direction == bot_status.player_direction:
+                # Feed Pet
+                self.command_book.FeedPet().execute()
 
-        #         # Use Buff and Potion
-        #         self.command_book.Potion().execute()
-        #         self.command_book.Buff().execute()
+                
 
         # Execute next Point in the routine
         element.execute()
 
     def _on_command_complete(self, c: Command):
         if isinstance(c, Move) and not target_reached(c.target, tolerance=c.tolerance):
+            # Use Buff and Potion
+            self.command_book.Potion().execute()
+            self.command_book.Buff().execute()
             self.check_point(bot_status.player_pos)
 
     def _on_component_complete(self, c: Component):
