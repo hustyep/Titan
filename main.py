@@ -4,6 +4,7 @@ import platform
 from src.modules.bot import bot
 from src.common.dll_helper import dll_helper
 from src.modules.capture import capture
+from src.modules.msg_capture import msg_capture
 from src.modules.detector import detector
 from src.modules.listener import listener
 from src.modules.chat_bot import chat_bot
@@ -32,6 +33,8 @@ while not listener.ready:
 chat_bot.start(command_handler=listener.on_new_command)
 
 notifier.start()
+
+msg_capture.start()
 
 bot.start()
 while not bot.ready:

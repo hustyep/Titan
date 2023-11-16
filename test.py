@@ -15,6 +15,7 @@ from src.modules.detector import detector
 from src.common import utils
 from PIL import Image
 import pytesseract as tess
+from src.modules.msg_capture import msg_capture
 
 # debounce操作符，仅在时间间隔之外的可以发射
 
@@ -239,6 +240,7 @@ def minimap_test():
     # utils.show_image(minimap)
     name = utils.image_2_str(minimap).replace('\n', '')
     print(name)
+    
     
 if __name__ == "__main__":
     # subject_test()

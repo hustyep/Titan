@@ -97,11 +97,16 @@ class MsgCapture:
                 if new_normal_msg and new_normal_msg != self.last_nomarl_msg:
                     self.last_nomarl_msg = new_normal_msg
                     self.notify_new_msg(new_normal_msg)
+                    
+                new_sys_msg = self.get_new_msg(frame, GameMsgType.SYSTEM)
+                if new_sys_msg and new_sys_msg != self.last_system_msg:
+                    self.last_system_msg = new_sys_msg
+                    self.notify_new_msg(new_sys_msg)
 
-                new_mvp_msg = self.get_new_msg(frame, GameMsgType.MVP)
-                if new_mvp_msg and new_mvp_msg != self.last_mvp_msg:
-                    self.last_mvp_msg = new_mvp_msg
-                    self.notify_new_msg(new_mvp_msg)
+                # new_mvp_msg = self.get_new_msg(frame, GameMsgType.MVP)
+                # if new_mvp_msg and new_mvp_msg != self.last_mvp_msg:
+                #     self.last_mvp_msg = new_mvp_msg
+                #     self.notify_new_msg(new_mvp_msg)
 
             time.sleep(0.5)
 
@@ -124,7 +129,7 @@ class MsgCapture:
         return GameMsg(new_msg, GameMsgType.NORMAL, image)
 
     def get_sys_msg(self, frame):
-        image = frame[94:94+MAX_MSG_HEIGHT, 2:400]
+        image = frame[95:95+MAX_MSG_HEIGHT, 2:400]
         msg_list = self.image_to_str(image)
 
         if msg_list:
@@ -228,7 +233,7 @@ class MsgCapture:
         return list
 
 
-chat_capture = MsgCapture()
+msg_capture = MsgCapture()
 
 
 if __name__ == "__main__":
@@ -252,7 +257,7 @@ if __name__ == "__main__":
     # image = image[-64:-29, 2:400]
     # image = image[-500:-439, 2:400]
     # text = chat_capture.image_to_str(image)
-    msg = chat_capture.get_new_msg(image, GameMsgType.NORMAL)
+    msg = msg_capture.get_new_msg(image, GameMsgType.NORMAL)
     print(str(msg))
     # while True:
     #     new_msg = chat_capture.get_new_msg(image, GameMsgType.MVP)

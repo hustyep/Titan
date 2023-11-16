@@ -79,8 +79,8 @@ class Capture(Subject):
     def emum_windows_callback(self, hwnd, window_list):
         title = win32gui.GetWindowText(hwnd)
         if title == 'MapleStory':
-            class_name = win32gui.GetClassName(hwnd)
-            print('title:', title, 'name:', class_name)
+            # class_name = win32gui.GetClassName(hwnd)
+            # print('title:', title, 'name:', class_name)
             self.window_list.append(hwnd)
 
     def find_window(self):
@@ -147,7 +147,7 @@ class Capture(Subject):
         frame = self.camera.get_latest_frame()
         if frame is None:
             return
-        utils.show_image(frame)
+
         top = self.window['top']
         left = self.window['left']
         width = self.window['width']
