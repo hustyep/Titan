@@ -25,9 +25,3 @@ $, target=role_name, value=sllee
     TrickBlade, direction=left
     Arachnid
     ShadowAssault, direction=downleft, jump=True, distance=80
-
-~, label=123, interval=0, skip=False
-*, x=1, y=1, interval=0, tolerance=13, skip=False
-*, x=1, y=1, interval=0, tolerance=13, skip=False
-    Attack
-#
