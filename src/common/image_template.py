@@ -123,5 +123,9 @@ GRAY_RANGES = (
 BLACK_RANGES = (
     ((0, 0, 0), (180, 255, 46)),
 )
+TEXT_WHITE_RANGES = (
+    ((0, 0, 150), (180, 30, 255)),
+    ((0, 0, 46), (180, 43, 255)),
+)
 
 # https://blog.csdn.net/weixin_45946270/article/details/124827045

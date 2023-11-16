@@ -73,10 +73,10 @@ class Map:
             print(f" ~ Finished saving map data '{self.name}'")
 
     def create_minimap_data(self):
-        if self.minimap_data is not None:
+        if len(self.minimap_data) > 0:
             return
         
-        if capture.minimap_actual.any:
+        if capture.minimap_actual is not None and len(capture.minimap_actual) > 0:
             self.minimap_data = np.zeros_like(capture.minimap_actual, np.uint8)
             print(' ~ Created new minimap data \n')
         else:

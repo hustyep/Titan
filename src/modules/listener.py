@@ -126,7 +126,7 @@ class Listener(Configurable, Subject):
         print(f'\n[~] Recorded position ({pos[0]}, {pos[1]}) at {now}')
         time.sleep(0.5)
 
-    @bot_status.run_if_disabled
+    @bot_status.run_if_disabled('')
     def add_start_point(self):
         pos = bot_status.player_pos
         game_map.add_start_point((pos[0], pos[1] + 7))

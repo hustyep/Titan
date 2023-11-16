@@ -1,6 +1,7 @@
 """A module for detecting and notifying the user of dangerous in-game events."""
 
 import time
+import string
 import threading
 import operator
 import numpy as np
@@ -404,7 +405,11 @@ class Detector(Subject):
         return role_name, class_name
 
     def identify_map_name(self):
-        return utils.image_2_str(capture.map_name_frame).replace('\n', '')
+        frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
+        # utils.show_image(frame)
+        name = utils.image_2_str(frame).replace('\n', '')
+        name = name.strip(string.punctuation)
+        return name
 
 
 detector = Detector()

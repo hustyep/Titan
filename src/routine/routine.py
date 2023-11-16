@@ -244,8 +244,8 @@ class Routine(Subject):
 
         if not file or not os.path.exists(file):
             print('[!] File path not provided, try load default routine')
-            file = f'{bot_settings.get_routines_dir}/default.csv'
-            if os.path.exists(file):
+            file = os.path.join(bot_settings.get_routines_dir(), 'default.csv')
+            if not os.path.exists(file):
                 print('[!] default routine not provided')
                 return False
             

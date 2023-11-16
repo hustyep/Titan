@@ -89,6 +89,9 @@ class Bot(Subject):
             return
 
         role_name, class_name = detector.identify_role()
+        
+        if not role_name or not class_name:
+            return
                 
         # update role template      
         bot_settings.role_name = role_name
@@ -111,7 +114,7 @@ class Bot(Subject):
         try:
             self.command_book = CommandBook(file)
         except Exception as e:
-            print(e)
+            raise ValueError(f"load command book error '{e}'")
         else:
             self.on_next(BotUpdateType.command_loaded)
             # command_book.move.step_callback = self.point_check

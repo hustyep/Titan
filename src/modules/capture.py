@@ -271,7 +271,7 @@ class Capture(Subject):
     def name_frame(self):
         if self.frame is not None:
             width = self.frame.shape[1]
-            return self.frame[-100:-60, (width - 30)//2:(width + 80)//2]
+            return self.frame[-80:-55, (width - 30)//2:(width + 80)//2]
 
     @property
     def map_name_frame(self):

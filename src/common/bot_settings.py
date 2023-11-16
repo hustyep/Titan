@@ -120,15 +120,17 @@ def load_role_template():
         except:
             raise ValueError(f"role template '{role_template}' is not exists.")
 
+
 def get_command_book_path(command_name=None):
     if command_name is None:
         command_name = class_name
     target = os.path.join(RESOURCES_DIR,
-                          'command_books', command_name, '.py')
+                          'command_books', f'{command_name}.py')
     if not os.path.exists(target):
-        return target
-    else:
-        raise ValueError(f"command book '{target}' is not exists.")
+        print(f"command book '{target}' is not exists.")
+        # raise ValueError(f"command book '{target}' is not exists.")
+    return target
+
 
 def get_routines_dir(command_name=None):
     if command_name is None:
