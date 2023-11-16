@@ -232,7 +232,7 @@ class MsgCapture:
             return None
 
     def notify_new_msg(self, msg: GameMsg):
-        text = f'{"🏆" if msg.type == GameMsgType.MVP else "💬"}{msg.text}'
+        text = f'{"📢" if msg.type == GameMsgType.SYSTEM else "💬"}{msg.text}'
         print(text)
         if (BotFatal.WHITE_ROOM in notifier.notice_time_record and notifier.notice_time_record[BotFatal.WHITE_ROOM] > 0) or gui_setting.notification.notice_level >= 4:
             path = 'screenshot/msgs'

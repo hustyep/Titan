@@ -58,10 +58,10 @@ class Bot(Subject):
 
         self.ready = True
         while True:
-            if bot_status.enabled:
-                if not self.prepared:
-                    self.pre_load()
-                elif len(routine) > 0 and bot_status.player_pos != (0, 0):
+            if not self.prepared:
+                self.pre_load()
+            elif bot_status.enabled:
+                if len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
                 else:
                     time.sleep(0.01)
@@ -82,6 +82,10 @@ class Bot(Subject):
         
         if not gui_setting.auto.auto_load:
             self.prepared = True
+            return
+        
+        if capture.minimap_display is None:
+            time.sleep(0.5)
             return
 
         role_name, class_name = detector.identify_role()

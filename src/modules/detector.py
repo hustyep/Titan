@@ -169,8 +169,9 @@ class Detector(Subject):
         tl = dll_helper.screenSearch(MM_TL_BMP, x1, y1, x2, y2)
         br = dll_helper.screenSearch(MM_BR_BMP,  x1, y1, x2, y2)
         if tl == None or br == None:
-            self.on_next((BotError.LOST_MINI_MAP, ))
             bot_status.lost_minimap = True
+            capture.calibrate = False
+            self.on_next((BotError.LOST_MINI_MAP, ))
         else:
             bot_status.lost_minimap = False
 

@@ -49,29 +49,100 @@ class Map:
         self.load_mob_template()
 
     def load_minimap_data(self):
-        resArray = []
-        minimap_data_file = f'{get_maps_dir(self.name)}.xlsx'
+        minimap_data_file = f'{get_maps_dir(self.name)}.txt'
         print(f"[~] Loading map '{minimap_data_file}'")
-        try:
-            data = xlrd.open_workbook(minimap_data_file)  # 读取文件
-        except Exception as e:
-            data = None
-            print(f'[!] load map: {minimap_data_file}失败! \n{e}')
-        if data:
-            table = data.sheet_by_index(0)  # 按索引获取工作表，0就是工作表1
-            for i in range(1, table.nrows):  # table.nrows表示总行数
-                line = table.row_values(i)[1:]  # 读取每行数据，保存在line里面，line是list
-                resArray.append(line)  # 将line加入到resArray中，resArray是二维list
-            resArray = np.array(resArray)  # 将resArray从二维list变成数组
-            self.minimap_data = resArray.astype(int)
-        print(f" ~ Finished loading map '{self.name}'")
+        if os.path.exists(minimap_data_file):
+            try:
+                self.minimap_data = np.loadtxt(
+                    minimap_data_file, delimiter=',').astype(int)
+            except Exception as e:
+                print(f'[!] load map: {minimap_data_file} failed! \n{e}')
+            else:
+                print(f" ~ Finished loading map '{self.name}'")
+        else:
+            self.create_minimap_data()
 
+    def save_minimap_data(self):
+        try:
+            minimap_data_file = f'{get_maps_dir(self.name)}.txt'
+            np.savetxt(minimap_data_file, self.minimap_data,
+                       fmt='%d', delimiter=",")
+        except Exception as e:
+            print(f'[!] save map: {minimap_data_file} failed! \n{e}')
+        else:
+            print(f" ~ Finished saving map data '{self.name}'")
+
+    def create_minimap_data(self):
+        if self.minimap_data is not None:
+            return
+        
+        if capture.minimap_actual.any:
+            self.minimap_data = np.zeros_like(capture.minimap_actual, np.uint8)
+            print(' ~ Created new minimap data \n')
+        else:
+            print('[!] create minimap data failed! \n')
+
+    def add_start_point(self, point: tuple[int, int]):
+        print(f'\n[~] add start point {point}')
+
+        self.create_minimap_data()
+        x = point[0]
+        y = point[1]
+        line = self.minimap_data[y]
+        line[x] = type.value
+        
+        for i in range(x - 1, -1, -1):
+            if line[i] > 0:
+                line[i] = 0
+            else:
+                break
+        for i in range(x + 1, len(line)):
+            if line[i] > 0:
+                line[i] = 0
+            else:
+                break
+        self.save_minimap_data()
+        
+    def add_end_point(self, point: tuple[int, int]):
+        print(f'\n[~] add end point {point}')
+        self.create_minimap_data()
+        x = point[0]
+        y = point[1]
+        line = self.minimap_data[y]
+        line[x] = type.value
+        
+        for i in range(x - 1, -1, -1):
+            if line[i] == 0:
+                line[i] = 1
+            else:
+                break
+        for i in range(x + 1, len(line)):
+            if line[i] > 0:
+                line[i] = 0
+            else:
+                break
+        self.save_minimap_data()
+        
+    def add_rope_point(self, point: tuple[int, int]):
+        print(f'\n[~] add rope point {point}')
+        self.create_minimap_data()
+        x = point[0]
+        y = point[1]
+        self.minimap_data[y][x] = MapPointType.Rope
+        for i in range(y - 1, -1, -1):
+            if self.point_type((x, i)) == MapPointType.Air:
+                self.minimap_data[y][x] = MapPointType.Rope.value
+            elif self.point_type((x, i)) == MapPointType.Rope or self.point_type((x, i)) == MapPointType.FloorRope:
+                self.minimap_data[y][x] = MapPointType.FloorRope.value
+                break        
+        self.save_minimap_data()
+        
     def load_mob_template(self):
         try:
-            mob_template = cv2.imread(f'assets/mobs/{self.name}_normal.png', 0)
+            mob_template = cv2.imread(f'assets/mobs/{self.name}@normal.png', 0)
             elite_template = cv2.imread(
-                f'assets/mobs/{self.name}_elite.png', 0)
-            boss_template = cv2.imread(f'assets/mobs/{self.name}_boss.png', 0)
+                f'assets/mobs/{self.name}@elite.png', 0)
+            boss_template = cv2.imread(f'assets/mobs/{self.name}@boss.png', 0)
         except:
             pass
         if mob_template is not None:

@@ -14,12 +14,17 @@ from src.routine.routine import routine
 from src.chat_bot.chat_bot_entity import ChatBotCommand
 from src.common.action_simulator import ActionSimulator
 from rx.subject import Subject
+from src.map.map import map as game_map
+
 
 class Listener(Configurable, Subject):
     DEFAULT_CONFIG = {
         'Start/stop': 'tab',
         'Reload routine': 'page up',
-        'Record position': 'f12'
+        'Record position': 'f7',
+        'Add start point': 'f10',
+        'Add end point': 'f11',
+        'Add rope point': 'f12',
     }
     BLOCK_DELAY = 1         # Delay after blocking restricted button press
 
@@ -32,13 +37,13 @@ class Listener(Configurable, Subject):
         self.block_time = 0
         self.thread = threading.Thread(target=self._main)
         self.thread.daemon = True
-        
+
         self.is_disposed = False
         self.exception = None
         self.observers = []
         self.lock = threading.RLock()
         self.is_stopped = False
-        
+
     def start(self):
         """
         Starts listening to user inputs.
@@ -53,7 +58,7 @@ class Listener(Configurable, Subject):
         Constantly listens for user inputs and updates variables in config accordingly.
         :return:    None
         """
-    
+
         self.ready = True
         while True:
             if self.enabled:
@@ -63,6 +68,12 @@ class Listener(Configurable, Subject):
                     self.reload_routine()
                 elif self.restricted_pressed('Record position'):
                     self.record_position()
+                elif self.restricted_pressed('Add start point'):
+                    self.add_start_point()
+                elif self.restricted_pressed('Add end point'):
+                    self.add_end_point()
+                elif self.restricted_pressed('Add rope point'):
+                    self.add_rope_point()
             time.sleep(0.01)
 
     def restricted_pressed(self, action):
@@ -97,10 +108,13 @@ class Listener(Configurable, Subject):
         time.sleep(0.267)
 
     def reload_routine(self):
-        self.recalibrate_minimap()
+        # self.recalibrate_minimap()
 
-        routine.load(routine.path)
+        # routine.load(routine.path)
 
+        routine.clear()
+        capture.calibrate = False
+        bot.prepared = False
         winsound.Beep(523, 200)     # C5
         winsound.Beep(659, 200)     # E5
         winsound.Beep(784, 200)     # G5
@@ -110,45 +124,65 @@ class Listener(Configurable, Subject):
         now = datetime.now().strftime('%I:%M:%S %p')
         self.on_next(('record', pos, now))
         print(f'\n[~] Recorded position ({pos[0]}, {pos[1]}) at {now}')
-        time.sleep(0.6)
+        time.sleep(0.5)
+
+    @bot_status.run_if_disabled
+    def add_start_point(self):
+        pos = bot_status.player_pos
+        game_map.add_start_point((pos[0], pos[1] + 7))
+        time.sleep(0.5)
+        
+    @bot_status.run_if_disabled
+    def add_end_point(self):
+        pos = bot_status.player_pos
+        game_map.add_end_point((pos[0], pos[1] + 7))
+        time.sleep(0.5)
+        
+    @bot_status.run_if_disabled
+    def add_rope_point(self):
+        pos = bot_status.player_pos
+        game_map.add_rope_point((pos[0], pos[1] + 7))
+        time.sleep(0.5)
 
     def on_new_command(self, command: ChatBotCommand, *args):
-            match (command):
-                case ChatBotCommand.INFO:
-                    return bot.bot_status(), None
-                case ChatBotCommand.START:
-                    bot.toggle(True)
-                    return bot.bot_status(), None
-                case ChatBotCommand.PAUSE:
-                    bot.toggle(False)
-                    return bot.bot_status(), None
-                case ChatBotCommand.SCREENSHOT:
-                    filepath = utils.save_screenshot(capture.frame)
-                    return None, filepath
-                case ChatBotCommand.PRINTSCREEN:
-                    filepath = utils.save_screenshot(capture.camera.get_latest_frame())
-                    return None, filepath
-                case ChatBotCommand.CLICK:
-                    ActionSimulator.click_key(args[0])
-                    filepath = utils.save_screenshot(capture.frame)
-                    return "done", filepath
-                case ChatBotCommand.LEVEL:
-                    level = int(args[0])
-                    gui_setting.notification.set('notice_level', level)
-                    #  TODO update UI
-                    return "done", None
-                case ChatBotCommand.SAY:
-                    ActionSimulator.say_to_all(args[0])
-                    filepath = utils.save_screenshot(capture.frame)
-                    return f'said: "{args[0]}"', filepath
-                case ChatBotCommand.TP:
-                    ActionSimulator.go_home()
-                    return "tp...", None
-                case ChatBotCommand.CHANGE_CHANNEL:
-                    channel_num = 0
-                    if len(args) > 0:
-                        channel_num = int(args[0])
-                    ActionSimulator.change_channel(channel_num)
-                    return "changing channel...", None
+        match (command):
+            case ChatBotCommand.INFO:
+                return bot.bot_status(), None
+            case ChatBotCommand.START:
+                bot.toggle(True)
+                return bot.bot_status(), None
+            case ChatBotCommand.PAUSE:
+                bot.toggle(False)
+                return bot.bot_status(), None
+            case ChatBotCommand.SCREENSHOT:
+                filepath = utils.save_screenshot(capture.frame)
+                return None, filepath
+            case ChatBotCommand.PRINTSCREEN:
+                filepath = utils.save_screenshot(
+                    capture.camera.get_latest_frame())
+                return None, filepath
+            case ChatBotCommand.CLICK:
+                ActionSimulator.click_key(args[0])
+                filepath = utils.save_screenshot(capture.frame)
+                return "done", filepath
+            case ChatBotCommand.LEVEL:
+                level = int(args[0])
+                gui_setting.notification.set('notice_level', level)
+                #  TODO update UI
+                return "done", None
+            case ChatBotCommand.SAY:
+                ActionSimulator.say_to_all(args[0])
+                filepath = utils.save_screenshot(capture.frame)
+                return f'said: "{args[0]}"', filepath
+            case ChatBotCommand.TP:
+                ActionSimulator.go_home()
+                return "tp...", None
+            case ChatBotCommand.CHANGE_CHANNEL:
+                channel_num = 0
+                if len(args) > 0:
+                    channel_num = int(args[0])
+                ActionSimulator.change_channel(channel_num)
+                return "changing channel...", None
+
 
 listener = Listener()

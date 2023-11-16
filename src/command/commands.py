@@ -405,7 +405,10 @@ def detect_mobs(insets: AreaInsets = None,
     mobs = []
     for mob_template in mob_templates:
         mobs_tmp = utils.multi_match(
-            crop, mob_template, threshold=0.98, debug=debug)
+            crop,
+            mob_template,
+            threshold=0.98 if type == MobType.NORMAL else 0.9,
+            debug=debug)
         if len(mobs_tmp) > 0:
             for mob in mobs_tmp:
                 mobs.append(mob)

@@ -24,8 +24,8 @@ class Capture(Subject):
         self.camera = dxcam.create(output_idx=0, output_color="BGR")
         self.calibrated = False
         self.window_list = []
-        self.hwnd = None
-        self.msg_hwnd = None
+        self.hwnd = 0
+        self.msg_hwnd = 0
         self.frame = None
         self.msg_frame = None
         self.minimap_sample = None
@@ -85,12 +85,14 @@ class Capture(Subject):
 
     def find_window(self):
         win32gui.EnumWindows(self.emum_windows_callback, self.window_list)
-        self.hwnd = self.window_list[-1]
-        self.msg_hwnd = self.window_list[0]
+        if len(self.window_list) > 1:
+            self.hwnd = self.window_list[-1]
+            self.msg_hwnd = self.window_list[0]
+        elif self.window_list:
+            self.hwnd = self.window_list[0]
 
     def calibrate_msg_window(self):
-        if self.msg_hwnd == 0:
-            print(" ! msg window not found")
+        if not self.msg_hwnd:
             return
         self.msg_window = win32gui.GetWindowRect(self.msg_hwnd)  # 获取当前窗口大小
 
@@ -100,7 +102,7 @@ class Capture(Subject):
         
         ''' Calibrate screen capture'''
         # self.hwnd = win32gui.FindWindow(None, "MapleStory")
-        if (self.hwnd == 0):
+        if not self.hwnd:
             if bot_status.enabled:
                 self.on_next((BotError.LOST_WINDOW, ))
             return False
@@ -257,21 +259,25 @@ class Capture(Subject):
 
     @property
     def buff_frame(self):
-        return self.frame[:150, ]
+        if self.frame is not None:
+            return self.frame[:150, ]
 
     @property
     def skill_frame(self):
-        return self.frame[-200:, -600:]
+        if self.frame is not None:
+            return self.frame[-200:, -600:]
 
     @property
     def name_frame(self):
-        width = self.frame.shape[1]
-        return self.frame[-100:-60, (width - 30)//2:(width + 80)//2]
+        if self.frame is not None:
+            width = self.frame.shape[1]
+            return self.frame[-100:-60, (width - 30)//2:(width + 80)//2]
 
     @property
     def map_name_frame(self):
-        return self.frame[self.mm_tl[1] - 28:self.mm_tl[1] - 10,
-                          self.mm_tl[0] + 36:self.mm_br[0]]
+        if self.frame is not None:
+            return self.frame[self.mm_tl[1] - 28:self.mm_tl[1] - 10,
+                            self.mm_tl[0] + 36:self.mm_br[0]]
 
 
 capture = Capture()
