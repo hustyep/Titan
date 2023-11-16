@@ -16,7 +16,6 @@ from src.common.constants import *
 user32 = ctypes.windll.user32
 user32.SetProcessDPIAware()
 
-
 class Capture(Subject):
 
     def __init__(self):
@@ -24,8 +23,11 @@ class Capture(Subject):
 
         self.camera = dxcam.create(output_idx=0, output_color="BGR")
         self.calibrated = False
+        self.window_list = []
         self.hwnd = None
+        self.msg_hwnd = None
         self.frame = None
+        self.msg_frame = None
         self.minimap_sample = None
         self.minimap_actual = None
         self.minimap_display = None
@@ -68,9 +70,23 @@ class Capture(Subject):
                     break
                 self.locatePlayer()
 
+    def emum_windows_callback(self, hwnd, window_list):
+        title = win32gui.GetWindowText(hwnd)
+        if title == 'MapleStory':
+            class_name = win32gui.GetClassName(hwnd)
+            print('title:', title, 'name:', class_name)
+            self.window_list.append(hwnd)
+
+    def find_window(self):
+        win32gui.EnumWindows(self.emum_windows_callback, self.window_list)
+        self.hwnd = self.window_list[-1]
+        self.msg_hwnd = self.window_list[0]
+
     def calibrate(self):
+        self.find_window()
+        
         ''' Calibrate screen capture'''
-        self.hwnd = win32gui.FindWindow(None, "MapleStory")
+        # self.hwnd = win32gui.FindWindow(None, "MapleStory")
         if (self.hwnd == 0):
             if bot_status.enabled:
                 self.on_next((BotError.LOST_WINDOW, ))
@@ -118,7 +134,7 @@ class Capture(Subject):
         frame = self.camera.get_latest_frame()
         if frame is None:
             return
-
+        utils.show_image(frame)
         top = self.window['top']
         left = self.window['left']
         width = self.window['width']
