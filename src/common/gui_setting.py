@@ -32,6 +32,10 @@ class NotificationSettings(Configurable):
         'notice_level': 1
     }
     
+    @property
+    def notice_level(self):
+        return self.get('notice_level')
+    
 class PetSettings(Configurable):
     DEFAULT_CONFIG = {
         'Auto-feed': False,

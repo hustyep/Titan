@@ -37,6 +37,12 @@ class Capture(Subject):
             'width': 1366,
             'height': 768
         }
+        self.msg_window = {
+            'tl_x': 0,
+            'tl_y': 0,
+            'br_x': 1366,
+            'br_y': 768
+        }
         self.mm_tl = None
         self.mm_br = None
 
@@ -82,8 +88,15 @@ class Capture(Subject):
         self.hwnd = self.window_list[-1]
         self.msg_hwnd = self.window_list[0]
 
+    def calibrate_msg_window(self):
+        if self.msg_hwnd == 0:
+            print(" ! msg window not found")
+            return
+        self.msg_window = win32gui.GetWindowRect(self.msg_hwnd)  # 获取当前窗口大小
+
     def calibrate(self):
         self.find_window()
+        self.calibrate_msg_window()
         
         ''' Calibrate screen capture'''
         # self.hwnd = win32gui.FindWindow(None, "MapleStory")
@@ -177,6 +190,7 @@ class Capture(Subject):
                     (BotError.LOST_PLAYER, now - self.lost_player_time))
 
         self.frame = new_frame
+        self.msg_frame = frame[self.msg_window[1]:self.msg_window[3], self.msg_window[0]:self.msg_window[2]]
         self.minimap_display = minimap
         self.minimap_actual = minimap[:,
                                       bot_settings.mini_margin:-bot_settings.mini_margin]

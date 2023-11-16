@@ -4,15 +4,15 @@ import datetime
 from enum import Enum
 import cv2
 import pytesseract as tess
-import numpy as np
-import mss
-import mss.windows
+
 
 if __name__ != "__main__":
-    from src.common import utils, config
     from src.modules.capture import capture
     from src.modules.notifier import notifier
     from src.modules.chat_bot import chat_bot
+    from src.common.gui_setting import gui_setting
+    from src.common.constants import *
+    from src.common import utils
 
 
 NORMAL_MSG_RANGES = (
@@ -23,13 +23,12 @@ WORLD_MSG_RANGES = (
     ((30, 200, 100), (80, 255, 255)),
 )
 
+MAX_MSG_HEIGHT = 100
 
 class GameMsgType(Enum):
-    NORMAL = 'normal'
-    WORLD = 'world'
-    SYSTEM = 'system'
-    BATTLE = 'battle'
-    MVP = 'MVP'
+    NORMAL = '[normal msg]'
+    SYSTEM = '[system msg]'
+    MVP = '[MVP msg]'
 
 
 class GameMsg:
@@ -40,25 +39,41 @@ class GameMsg:
         self.image = image
         self.timestamp = time.time()
 
-        # MPV Msg
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, GameMsg):
+            if self.type != __value.type:
+                return False
+            ratio = utils.string_similar(self.text, __value.text)
+            return ratio >= 0.8
+        return False
+
+    def __str__(self):
+        variables = self.__dict__
+        result = self.type.value
+        if len(variables) - 1 > 0:
+            result += ':'
+        for key, value in variables.items():
+            if key != 'image' and key != 'type':
+                result += f'\n  {key} = {value}'
+        return result
+
+
+class MvpMsg(GameMsg):
+    '''MPV Msg'''
+
+    def __init__(self, text: str, image) -> None:
+        super().__init__(text, GameMsgType.MVP, image)
         self.channel = 0
         self.time = None
         self.map = None
-
-    def equal(self, other) -> bool:
-        if other is None:
-            return False
-        if self.type != other.type:
-            return False
-        return self.text == other.text
 
 
 class MsgCapture:
 
     def __init__(self):
         super().__init__()
-        self.sct = mss.mss()
 
+        self.last_system_msg = None
         self.last_nomarl_msg = None
         self.last_mvp_msg = None
 
@@ -74,64 +89,58 @@ class MsgCapture:
 
     def _main(self):
         self.ready = True
-        mss.windows.CAPTUREBLT = 0
 
-        with mss.mss() as self.sct:
-            while True:
-                window = {
-                    'left': capture.window['left'] + capture.window['width'] + 5,
-                    'top': capture.window['top'],
-                    'width': 400,
-                    'height': capture.window["height"],
-                }
+        while True:
+            frame = capture.msg_frame
+            if frame is not None:
+                new_normal_msg = self.get_new_msg(frame, GameMsgType.NORMAL)
+                if new_normal_msg and new_normal_msg != self.last_nomarl_msg:
+                    self.last_nomarl_msg = new_normal_msg
+                    self.notify_new_msg(new_normal_msg)
 
-                frame = self.screenshot(window)
-                # cv2.imshow("", frame)
-                # cv2.waitKey(0)
-                if frame is not None:
-                    new_normal_msg = self.get_new_msg(frame, GameMsgType.NORMAL)
-                    if new_normal_msg and not new_normal_msg.equal(self.last_nomarl_msg):
-                        self.last_nomarl_msg = new_normal_msg
-                        self.notify_new_msg(new_normal_msg)
+                new_mvp_msg = self.get_new_msg(frame, GameMsgType.MVP)
+                if new_mvp_msg and new_mvp_msg != self.last_mvp_msg:
+                    self.last_mvp_msg = new_mvp_msg
+                    self.notify_new_msg(new_mvp_msg)
 
-                    new_mvp_msg = self.get_new_msg(frame, GameMsgType.MVP)
-                    if new_mvp_msg and not new_mvp_msg.equal(self.last_mvp_msg):
-                        self.last_mvp_msg = new_mvp_msg
-                        self.notify_new_msg(new_mvp_msg)
-
-                time.sleep(0.5)
-
-    def screenshot(self, window, delay=1):
-        try:
-            return np.array(self.sct.grab(window))
-        except mss.exception.ScreenShotError:
-            print(f'\n[!] Error while taking screenshot, retrying in {delay} second'
-                  + ('s' if delay != 1 else ''))
-            time.sleep(delay)
+            time.sleep(0.5)
 
     def get_new_msg(self, image, msg_type) -> GameMsg | None:
-        if msg_type == GameMsgType.NORMAL:
-            image = image[-70:-29, 2:400]
-            msg_list = self.image_to_str(image)
-        else:
-            image = image[-540:-440, 2:400]
-            msg_list = self.image_to_str(image)
-            # image = image[-567:-518, 2:400]
-            # cv2.imshow("", image)
-            # cv2.waitKey(0)
+        match (msg_type):
+            case GameMsgType.NORMAL:
+                return self.get_normal_msg(image)
+            case GameMsgType.SYSTEM:
+                return self.get_sys_msg(image)
+            case GameMsgType.MVP:
+                return self.get_mvp_msg(image)
+
+    def get_normal_msg(self, frame):
+        image = frame[-29-MAX_MSG_HEIGHT:-29, 2:400]
+        msg_list = self.image_to_str(image)
+
         if len(msg_list) == 0:
             return None
         new_msg = msg_list.pop()
-        if msg_type == GameMsgType.MVP:
-            return self.get_mpv_msg(new_msg, image)
+        return GameMsg(new_msg, GameMsgType.NORMAL, image)
 
-        return GameMsg(new_msg, msg_type, image)
+    def get_sys_msg(self, frame):
+        image = frame[94:94+MAX_MSG_HEIGHT, 2:400]
+        msg_list = self.image_to_str(image)
 
-    def get_mpv_msg(self, text, image) -> GameMsg | None:
-        print(text)
-        low_text = text.lower()
+        if msg_list:
+            new_msg = msg_list.pop()
+            return GameMsg(new_msg, GameMsgType.NORMAL, image)
+
+    def get_mvp_msg(self, frame) -> GameMsg | None:
+        image = frame[-540:-440, 2:400]
+        msg_list = self.image_to_str(image)
+
+        if len(msg_list) == 0:
+            return None
+        new_msg = msg_list.pop()
+        low_text = new_msg.lower()
         if 'mvp' in low_text and 'x' in low_text:
-            mvp_msg = GameMsg(text, GameMsgType.MVP, image)
+            mvp_msg = MvpMsg(new_msg, image)
             list = low_text.split(" ")
             min_str = ''
             channel = 0
@@ -164,7 +173,7 @@ class MsgCapture:
                                 pass
                     if tmp and tmp <= 40:
                         channel = tmp
-                        
+
                 if 'ms' in words or 'shrine' in words or 'mushroom' in words:
                     mvp_msg.map = 'mushroom shrine'
 
@@ -191,7 +200,7 @@ class MsgCapture:
     def notify_new_msg(self, msg: GameMsg):
         text = f'{"🏆" if msg.type == GameMsgType.MVP else "💬"}{msg.text}'
         print(text)
-        if (BotFatal.WHITE_ROOM in notifier.notice_time_record and notifier.notice_time_record[BotFatal.WHITE_ROOM] > 0) or config.notice_level >= 4:
+        if (BotFatal.WHITE_ROOM in notifier.notice_time_record and notifier.notice_time_record[BotFatal.WHITE_ROOM] > 0) or gui_setting.notification.notice_level >= 4:
             path = 'screenshot/msgs'
             image_path = utils.save_screenshot(
                 frame=msg.image, file_path=path, compress=False)
@@ -219,7 +228,7 @@ class MsgCapture:
         return list
 
 
-chat_capture = ChatCapture()
+chat_capture = MsgCapture()
 
 
 if __name__ == "__main__":
@@ -243,10 +252,10 @@ if __name__ == "__main__":
     # image = image[-64:-29, 2:400]
     # image = image[-500:-439, 2:400]
     # text = chat_capture.image_to_str(image)
-    msg = chat_capture.get_new_msg(image, GameMsgType.MVP)
-    print(msg.text)
-    while True:
-        new_msg = chat_capture.get_new_msg(image, GameMsgType.MVP)
-        if new_msg and not new_msg.equal(msg):
-            print("New Msg")
-        time.sleep(0.5)
+    msg = chat_capture.get_new_msg(image, GameMsgType.NORMAL)
+    print(str(msg))
+    # while True:
+    #     new_msg = chat_capture.get_new_msg(image, GameMsgType.MVP)
+    #     if new_msg and not new_msg.equal(msg):
+    #         print("New Msg")
+    #     time.sleep(0.5)
