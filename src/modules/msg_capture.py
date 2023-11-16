@@ -2,6 +2,7 @@ import threading
 import time
 import datetime
 from enum import Enum
+import numpy as np
 import cv2
 import pytesseract as tess
 
@@ -15,15 +16,43 @@ if __name__ != "__main__":
     from src.common import utils
 
 
-NORMAL_MSG_RANGES = (
+SYSTEM_MSG_RANGES = (
     ((0, 0, 150), (180, 30, 255)),
+    ((0, 0, 221), (180, 43, 255)),
+    ((0, 0, 0), (180, 255, 30)),
 )
-
 WORLD_MSG_RANGES = (
     ((30, 200, 100), (80, 255, 255)),
 )
-
+WHITE_RANGES = (
+    # ((0, 0, 100), (180, 50, 255)),
+    ((0, 0, 150), (180, 30, 255)),
+)
 MAX_MSG_HEIGHT = 100
+
+
+def filter_color(img, ranges):
+    """
+    Returns a filtered copy of IMG that only contains pixels within the given RANGES.
+    on the HSV scale.
+    :param img:     The image to filter.
+    :param ranges:  A list of tuples, each of which is a pair upper and lower HSV bounds.
+    :return:        A filtered copy of IMG.
+    """
+    if img is None or img.size == 0:
+        return None
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, ranges[0][0], ranges[0][1])
+    for i in range(1, len(ranges)):
+        mask = cv2.bitwise_or(mask, cv2.inRange(
+            hsv, ranges[i][0], ranges[i][1]))
+
+    # Mask the image
+    color_mask = mask > 0
+    result = np.zeros_like(img, np.uint8)
+    result[color_mask] = img[color_mask]
+    return result
+
 
 class GameMsgType(Enum):
     NORMAL = '[normal msg]'
@@ -97,7 +126,7 @@ class MsgCapture:
                 if new_normal_msg and new_normal_msg != self.last_nomarl_msg:
                     self.last_nomarl_msg = new_normal_msg
                     self.notify_new_msg(new_normal_msg)
-                    
+
                 new_sys_msg = self.get_new_msg(frame, GameMsgType.SYSTEM)
                 if new_sys_msg and new_sys_msg != self.last_system_msg:
                     self.last_system_msg = new_sys_msg
@@ -130,7 +159,7 @@ class MsgCapture:
 
     def get_sys_msg(self, frame):
         image = frame[95:95+MAX_MSG_HEIGHT, 2:400]
-        msg_list = self.image_to_str(image)
+        msg_list = self.image_to_str(image, SYSTEM_MSG_RANGES)
 
         if msg_list:
             new_msg = msg_list.pop()
@@ -213,7 +242,7 @@ class MsgCapture:
 
     def image_to_str(self, image, ranges=None):
         if ranges:
-            image = utils.filter_color(image, ranges)
+            image = filter_color(image, ranges)
         # cv2.imshow("", image)
         # cv2.waitKey(0)
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -237,27 +266,11 @@ msg_capture = MsgCapture()
 
 
 if __name__ == "__main__":
-    YELLOW_RANGES = (
-        ((26, 43, 46), (34, 255, 255)),
-    )
-    BLUE_RANGES = (
-        ((100, 43, 46), (124, 255, 255)),
-    )
-    GREEN_RANGES = (
-        ((50, 200, 46), (77, 255, 255)),
-    )
-    WORLD_MSG_RANGES = (
-        ((30, 200, 100), (80, 255, 255)),
-    )
-    WHITE_RANGES = (
-        # ((0, 0, 100), (180, 50, 255)),
-        ((0, 0, 150), (180, 30, 255)),
-    )
     image = cv2.imread(".test/3.png")
     # image = image[-64:-29, 2:400]
     # image = image[-500:-439, 2:400]
     # text = chat_capture.image_to_str(image)
-    msg = msg_capture.get_new_msg(image, GameMsgType.NORMAL)
+    msg = msg_capture.get_new_msg(image, GameMsgType.SYSTEM)
     print(str(msg))
     # while True:
     #     new_msg = chat_capture.get_new_msg(image, GameMsgType.MVP)
