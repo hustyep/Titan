@@ -309,7 +309,7 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
     if len(map.minimap_data) == 0:
         return target
 
-    if target[1] == start[1] and utils.distance(start, target) <= tolerance:
+    if target_reached(start, target):
         return
 
     d_x = target[0] - start[0]
@@ -439,7 +439,10 @@ def edge_reached() -> bool:
 
 def target_reached(target, tolerance=bot_settings.move_tolerance):
     p = bot_status.player_pos
-    return p[1] == target[1] and abs(p[0] - target[0]) <= tolerance
+    if tolerance > bot_settings.adjust_tolerance:
+        return utils.distance(p, target) <= tolerance
+    else:
+        return p[1] == target[1] and abs(p[0] - target[0]) <= tolerance
 
 #############################
 #      Common Command       #
