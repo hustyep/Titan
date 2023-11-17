@@ -37,12 +37,7 @@ class Capture(Subject):
             'width': 1366,
             'height': 768
         }
-        self.msg_window = {
-            'tl_x': 0,
-            'tl_y': 0,
-            'br_x': 1366,
-            'br_y': 768
-        }
+        self.msg_window = (0, 0, 0, 0)
         self.mm_tl = None
         self.mm_br = None
 
@@ -78,12 +73,13 @@ class Capture(Subject):
 
     def emum_windows_callback(self, hwnd, window_list):
         title = win32gui.GetWindowText(hwnd)
-        if title == 'MapleStory':
+        if title == 'MapleStory' and not hwnd in window_list:
             # class_name = win32gui.GetClassName(hwnd)
             # print('title:', title, 'name:', class_name)
-            self.window_list.append(hwnd)
+            window_list.append(hwnd)
 
     def find_window(self):
+        self.window_list.clear()
         win32gui.EnumWindows(self.emum_windows_callback, self.window_list)
         if len(self.window_list) > 1:
             self.hwnd = self.window_list[-1]
