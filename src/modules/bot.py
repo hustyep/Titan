@@ -80,10 +80,6 @@ class Bot(Subject):
         if self.prepared:
             return
         
-        if not gui_setting.auto.auto_load:
-            self.prepared = True
-            return
-        
         if capture.minimap_display is None:
             time.sleep(0.5)
             return
@@ -92,10 +88,16 @@ class Bot(Subject):
         
         if not role_name or not class_name:
             return
-                
+
+        print(f"identify name:{role_name}, class:{class_name}")
+      
         # update role template      
         bot_settings.role_name = role_name
         bot_settings.load_role_template()
+        
+        if not gui_setting.auto.auto_load:
+            self.prepared = True
+            return
         
         # update command book
         if bot_settings.class_name != class_name:

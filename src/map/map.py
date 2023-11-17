@@ -194,7 +194,7 @@ class Map:
         return value == MapPointType.Floor or value == MapPointType.FloorRope
 
     def platform_point(self, target: tuple[int, int]):
-        if map.minimap_data.any:
+        if len(map.minimap_data) > 0:
             height, _ = map.minimap_data.shape
             for y in range(target[1] - 7, height - 1):
                 p = (target[0], y)

@@ -111,7 +111,9 @@ def pre_detect(direction):
 @bot_status.run_if_enabled
 def hit_and_run(direction, target):
     if gui_setting.auto.detect_mob:
-        if direction_changed() and time.time() - ErdaShower.castedTime > 5:
+        changed = direction_changed(direction)
+        print(f"{changed} {bot_status.player_pos} {bot_settings.boundary_point_l}")
+        if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]  and time.time() - ErdaShower.castedTime > 5:
             print("direction_changed")
             key_down(direction)
             time.sleep(0.05)
@@ -123,19 +125,20 @@ def hit_and_run(direction, target):
             while count < 80:
                 count += 1
                 anchor = capture.locate_player_fullscreen(accurate=True)
-                matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                                     anchor=anchor,
-                                     type=MobType.BOSS)
-                if not matchs:
-                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                                         anchor=anchor,
-                                         type=MobType.ELITE)
-                if matchs:
-                    SonicBlow().execute()
+                # matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                #                      anchor=anchor,
+                #                      type=MobType.BOSS)
+                # if not matchs:
+                #     matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                #                          anchor=anchor,
+                #                          type=MobType.ELITE)
+                # if matchs:
+                #     SonicBlow().execute()
                 mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1100, right=1100),
-                                   anchor=anchor)
-                if len(mobs) >= 2:
+                                   anchor=anchor, debug=False)
+                if len(mobs) > 0:
                     break
+                time.sleep(0.05)
         t = AsyncTask(target=pre_detect, args=(direction,))
         t.start()
         FlashJump(target=target, attack_if_needed=True).execute()

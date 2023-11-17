@@ -334,6 +334,8 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         #     if map.on_the_platform(p):
         #         return p
         tmp_x = (target[0], start[1])
+        if target_reached(tmp_x, target, tolerance):
+            return tmp_x
         if map.is_continuous(tmp_x, target):
             return tmp_x
         tmp_y = (start[0], target[1])
@@ -425,8 +427,8 @@ def detect_mobs(insets: AreaInsets = None,
     return mobs
 
 
-def direction_changed() -> bool:
-    if bot_status.player_direction == 'left':
+def direction_changed(direction) -> bool:
+    if direction == 'left':
         return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
     else:
         return abs(bot_settings.boundary_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
