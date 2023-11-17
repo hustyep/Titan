@@ -161,7 +161,7 @@ class Skill(Command):
         return cls.ready
 
     @classmethod
-    def check(cls) -> bool:
+    def check(cls):
         if cls.icon is None:
             return
         if capture.frame is None:

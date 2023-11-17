@@ -68,7 +68,7 @@ def step(target, tolerance):
             ShadowAssault(target=target).execute()
             return
     if abs(d_x) >= 26:
-        hit_and_run(direction, target)
+        hit_and_run('right' if d_x > 0 else 'left', target)
         return
 
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
@@ -300,7 +300,7 @@ class ShadowAssault(Skill):
             return ShadowAssault.usable_times
 
     @classmethod
-    def check(cls) -> bool:
+    def check(cls):
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[8:, ], threshold=0.95)
         if matchs:
