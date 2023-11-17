@@ -19,7 +19,7 @@ class DefaultKeybindings:
     JUMP = 's'
     FLASH_JUMP = ';'
     ROPE_LIFT = 'b'
-    ERDA_SHOWER = '~'
+    ERDA_SHOWER = '`'
     MAPLE_WARRIOR = '3'
     ARACHNID = 'j'
 
@@ -104,7 +104,7 @@ class Command():
         return result
 
     @classmethod
-    def canUse(cls) -> bool:
+    def canUse(cls, next_t: float = 0) -> bool:
         if cls.cooldown == 0:
             return True
 
@@ -392,7 +392,10 @@ def detect_mobs(insets: AreaInsets = None,
             mob_templates = map.mob_templates
 
     if len(mob_templates) == 0:
-        raise ValueError(f"Missing {type.value} template")
+        if type == MobType.NORMAL:
+            raise ValueError(f"Missing {type.value} template")
+        else:
+            return []
 
     crop = frame
     if insets is not None:

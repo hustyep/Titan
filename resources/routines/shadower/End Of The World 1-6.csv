@@ -1,0 +1,15 @@
+$, target=move_tolerance, value=10
+$, target=mini_margin, value=11
+
+@, label=Summoning
+*, x=18, y=38, interval=60, tolerance=1, skip=False
+    DarkFlare, direction=right
+*, x=122, y=79, interval=60, tolerance=1, skip=False
+*, x=117, y=38, interval=60, tolerance=1, skip=False
+    MesoExplosion
+    Wait, duration=0.1
+    ErdaShower, direction=left
+
+@, label=Bottom mobbing
+*, x=6, y=79, interval=0, tolerance=10, skip=False
+*, x=130, y=79, interval=0, tolerance=10, skip=False

@@ -34,7 +34,7 @@ class Minimap(LabelFrame):
     def draw_default(self):
         """Displays just the minimap sample without any markings."""
 
-        if capture.minimap_sample is not None:
+        if capture.minimap_sample is not None and len(capture.minimap_sample) > 0:
             minimap = cv2.cvtColor(capture.minimap_sample, cv2.COLOR_BGR2RGB)
             img, _ = self.resize_to_fit(minimap)
             self.draw(img)

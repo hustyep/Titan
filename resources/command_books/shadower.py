@@ -158,7 +158,7 @@ def move_up(target):
         sleep_in_the_air()
     elif dy <= 24:
         JumpUp(target).execute()
-    elif dy <= 40 and ShadowAssault.canUse():
+    elif dy <= 41 and ShadowAssault.canUse():
         ShadowAssault(target=target).execute()
     else:
         RopeLift(dy).execute()
@@ -229,11 +229,12 @@ class FlashJump(Skill):
         self.__class__.castedTime = time.time()
         key_down(direction)
         if self.attack_if_needed:
-            detect = AsyncTask(
-                target=self.detect_mob, args=(direction, ))
-            detect.start()
+            # detect = AsyncTask(
+            #     target=self.detect_mob, args=(direction, ))
+            # detect.start()
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-            mobs_detected = detect.join()
+            # mobs_detected = detect.join()
+            mobs_detected = True
             times = 2 if mobs_detected else 1
             press(self.key, times, down_time=0.03, up_time=0.03)
             if mobs_detected:
@@ -255,6 +256,7 @@ class ShadowAssault(Skill):
     ShadowAssault in a given direction, jumping if specified. Adds the player's position
     to the current Layout if necessary.
     """
+    id = 'ShadowAssault'
     key = Keybindings.SHADOW_ASSAULT
     type = SkillType.Move
     backswing = 0.3
@@ -294,7 +296,9 @@ class ShadowAssault(Skill):
 
     @classmethod
     def check(cls) -> bool:
-        cls.load()
+        if cls.icon is None:
+            cls.loaded = False
+            super().load()
 
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[8:, ], threshold=0.95)

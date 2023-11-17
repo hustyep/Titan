@@ -66,7 +66,7 @@ class Capture(Subject):
     def _main(self):
         """Constantly monitors the player's position and in-game events."""
         while True:
-            self.calibrated = self.calibrate()
+            self.calibrated = self.recalibrate()
             if not self.calibrated:
                 time.sleep(0.1)
                 continue
@@ -96,7 +96,7 @@ class Capture(Subject):
             return
         self.msg_window = win32gui.GetWindowRect(self.msg_hwnd)  # 获取当前窗口大小
 
-    def calibrate(self):
+    def recalibrate(self):
         self.find_window()
         self.calibrate_msg_window()
         
@@ -183,16 +183,19 @@ class Capture(Subject):
             bot_status.player_pos = self.convert_to_relative_minimap_point(
                 player[0])
             self.lost_player_time = 0
-        elif bot_status.enabled:
-            now = time.time()
-            if self.lost_player_time == 0:
-                self.lost_player_time = now
-            if now - self.lost_player_time >= self.lost_time_threshold:
-                self.on_next(
-                    (BotError.LOST_PLAYER, now - self.lost_player_time))
+        else:
+            self.calibrated = False
+            if bot_status.enabled:
+                now = time.time()
+                if self.lost_player_time == 0:
+                    self.lost_player_time = now
+                if now - self.lost_player_time >= self.lost_time_threshold:
+                    self.on_next(
+                        (BotError.LOST_PLAYER, now - self.lost_player_time))
 
         self.frame = new_frame
-        self.msg_frame = frame[self.msg_window[1]:self.msg_window[3], self.msg_window[0]:self.msg_window[2]]
+        if len(self.window_list) > 1:
+            self.msg_frame = frame[self.msg_window[1]:self.msg_window[3], self.msg_window[0]:self.msg_window[2]]
         self.minimap_display = minimap
         self.minimap_actual = minimap[:,
                                       bot_settings.mini_margin:-bot_settings.mini_margin]

@@ -60,7 +60,7 @@ class Map:
             else:
                 print(f" ~ Finished loading map '{self.name}'")
         else:
-            self.create_minimap_data()
+            print(f" [!] map '{self.name}' not exist")
 
     def save_minimap_data(self):
         try:
@@ -77,7 +77,7 @@ class Map:
             return
         
         if capture.minimap_actual is not None and len(capture.minimap_actual) > 0:
-            self.minimap_data = np.zeros_like(capture.minimap_actual, np.uint8)
+            self.minimap_data = np.zeros((capture.minimap_actual.shape[0] + 1, capture.minimap_actual.shape[1] + 1), np.uint8)
             print(' ~ Created new minimap data \n')
         else:
             print('[!] create minimap data failed! \n')
@@ -89,7 +89,7 @@ class Map:
         x = point[0]
         y = point[1]
         line = self.minimap_data[y]
-        line[x] = type.value
+        line[x] = MapPointType.Floor.value
         
         for i in range(x - 1, -1, -1):
             if line[i] > 0:
@@ -109,7 +109,7 @@ class Map:
         x = point[0]
         y = point[1]
         line = self.minimap_data[y]
-        line[x] = type.value
+        line[x] = MapPointType.Floor.value
         
         for i in range(x - 1, -1, -1):
             if line[i] == 0:
@@ -128,12 +128,12 @@ class Map:
         self.create_minimap_data()
         x = point[0]
         y = point[1]
-        self.minimap_data[y][x] = MapPointType.Rope
+        self.minimap_data[y][x] = MapPointType.Rope.value
         for i in range(y - 1, -1, -1):
-            if self.point_type((x, i)) == MapPointType.Air:
-                self.minimap_data[y][x] = MapPointType.Rope.value
-            elif self.point_type((x, i)) == MapPointType.Rope or self.point_type((x, i)) == MapPointType.FloorRope:
-                self.minimap_data[y][x] = MapPointType.FloorRope.value
+            if self.minimap_data[i][x] == 0:
+                self.minimap_data[i][x] = 2
+            elif self.minimap_data[i][x] == 1 or self.minimap_data[i][x] == 3:
+                self.minimap_data[i][x] = 3
                 break        
         self.save_minimap_data()
         

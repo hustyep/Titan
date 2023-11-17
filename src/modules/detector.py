@@ -72,13 +72,14 @@ class Detector(Subject):
 
     def _main_exception(self):
         while True:
+            self.check_minimap()
             if bot_status.enabled:
                 self.check_boss()
                 self.check_binded()
                 self.check_dead()
                 self.check_no_movement()
                 self.check_others()
-                # self.check_forground()
+                self.check_forground()
             time.sleep(0.2)
 
     def _main_event(self):
@@ -157,10 +158,9 @@ class Detector(Subject):
             except Exception as e:
                 print(e)
             time.sleep(0.5)
-        else:
-            self.check_minimap(hwnd)
 
-    def check_minimap(self, hwnd):
+    def check_minimap(self):
+        hwnd = win32gui.FindWindow(None, "MapleStory")
         x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)  # 获取当前窗口大小
         if x1 != 0:
             x1 += window_cap_horiz
@@ -171,7 +171,7 @@ class Detector(Subject):
         br = dll_helper.screenSearch(MM_BR_BMP,  x1, y1, x2, y2)
         if tl == None or br == None:
             bot_status.lost_minimap = True
-            capture.calibrate = False
+            capture.calibrated = False
             self.on_next((BotError.LOST_MINI_MAP, ))
         else:
             bot_status.lost_minimap = False
