@@ -294,8 +294,10 @@ def sleep_in_the_air(interval=0.02, n=3, start_y=0):
             if start_y > 0:
                 if start_y == bot_status.player_pos[1]:
                     break
+                elif n < 8:
+                    n = 8
                 else:
-                    n = 4
+                    break
             else:
                 break
         step += 1

@@ -79,7 +79,7 @@ class Detector(Subject):
                 self.check_dead()
                 self.check_no_movement()
                 self.check_others()
-                self.check_forground()
+                # self.check_forground()
             time.sleep(0.2)
 
     def _main_event(self):

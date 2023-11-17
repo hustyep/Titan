@@ -135,7 +135,7 @@ class Bot(Subject):
         releaseAll()
         bot_status.enabled = enabled
         utils.print_state(enabled)
-        
+        print(reason)
 
 
     def on_event(self, args):
