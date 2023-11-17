@@ -174,7 +174,8 @@ class Detector(Subject):
         if tl == None or br == None:
             bot_status.lost_minimap = True
             capture.calibrated = False
-            self.on_next((BotError.LOST_MINI_MAP, ))
+            if bot_status.enabled:
+                self.on_next((BotError.LOST_MINI_MAP, ))
         else:
             bot_status.lost_minimap = False
 
