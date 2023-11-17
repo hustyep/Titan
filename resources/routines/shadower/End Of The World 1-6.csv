@@ -6,8 +6,7 @@ $, target=mini_margin, value=11
     DarkFlare, direction=right
 *, x=122, y=79, interval=60, tolerance=1, skip=False
 *, x=117, y=38, interval=60, tolerance=1, skip=False
-    MesoExplosion
-    Wait, duration=0.1
+    Wait, duration=0.2
     ErdaShower, direction=left
 
 @, label=Bottom mobbing

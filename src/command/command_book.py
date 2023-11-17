@@ -114,6 +114,12 @@ class CommandBook():
                 name = command.__name__
                 if name.lower() in new_cb:
                     self.__setattr__(name, new_cb[name.lower()])
+                    
+                    
+            # pre load
+            for skill in new_cb.values():
+                if issubclass(skill, commands.Skill):
+                    skill.load()
             print(f" ~  Successfully loaded command book '{self.name}'")
             return new_cb, module
         else:

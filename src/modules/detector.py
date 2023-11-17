@@ -160,8 +160,10 @@ class Detector(Subject):
             time.sleep(0.5)
 
     def check_minimap(self):
-        hwnd = win32gui.FindWindow(None, "MapleStory")
-        x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)  # 获取当前窗口大小
+        capture.find_window()
+        if capture.hwnd == 0:
+            return
+        x1, y1, x2, y2 = win32gui.GetWindowRect(capture.hwnd)  # 获取当前窗口大小
         if x1 != 0:
             x1 += window_cap_horiz
             x2 -= window_cap_horiz

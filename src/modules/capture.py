@@ -90,6 +90,9 @@ class Capture(Subject):
             self.msg_hwnd = self.window_list[0]
         elif self.window_list:
             self.hwnd = self.window_list[0]
+        else:
+            self.hwnd = 0
+            self.msg_hwnd = 0
 
     def calibrate_msg_window(self):
         if not self.msg_hwnd:

@@ -100,7 +100,7 @@ class HitAndRun(Command):
 
     def main(self):
         d_x = self.target[0] - bot_status.player_pos[0]
-        if bot_status.mob_detect:
+        if gui_setting.auto.detect_mob:
             if direction_changed():
                 print("direction_changed")
                 time.sleep(0.08)

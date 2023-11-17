@@ -72,7 +72,7 @@ class Bot(Subject):
         while True:
             if self.command_book is not None and bot_status.enabled and capture.frame is not None:
                 for skill in self.command_book.dict.values():
-                    if issubclass(skill, Skill):
+                    if issubclass(skill, Skill) and skill.key is not None and skill.cooldown > 0:
                         skill.check()
             time.sleep(0.2)
 

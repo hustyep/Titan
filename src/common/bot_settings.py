@@ -94,14 +94,13 @@ SETTING_VALIDATORS = {
 def reset():
     """Resets all settings to their default values."""
 
-    global move_tolerance, adjust_tolerance, record_layout, mini_margin, mob_detect
+    global move_tolerance, adjust_tolerance, record_layout, mini_margin
     global role_name, class_name, role_template, boundary_point_l, boundary_point_r
 
     move_tolerance = 13
     adjust_tolerance = 3
     record_layout = False
     mini_margin = 0
-    mob_detect = True
 
     role_name = ''
     class_name = ''
@@ -152,9 +151,6 @@ adjust_tolerance = 3
 record_layout = False
 
 mini_margin = 0
-
-mob_detect = True
-
 
 class_name = ''
 

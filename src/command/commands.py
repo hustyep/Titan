@@ -139,7 +139,6 @@ class Skill(Command):
     duration:  int = 0
     type: SkillType = SkillType.Attack
     icon = None
-    loaded = False
     ready = True
 
     def __init__(self, *args, **kwargs):
@@ -148,10 +147,6 @@ class Skill(Command):
 
     @classmethod
     def load(cls):
-        if cls.loaded:
-            return
-
-        cls.loaded = True
         module_name = cls.__module__.split('.')[-1]
         path1 = f'assets/skills/{module_name}/{cls.__name__}.png'
         path2 = f'assets/skills/{cls.__name__}.png'
@@ -159,6 +154,7 @@ class Skill(Command):
             cls.icon = cv2.imread(path1, 0)
         elif os.path.exists(path2):
             cls.icon = cv2.imread(path2, 0)
+        cls.id = cls.__name__
 
     @classmethod
     def canUse(cls) -> bool:
@@ -166,8 +162,6 @@ class Skill(Command):
 
     @classmethod
     def check(cls) -> bool:
-        cls.load()
-
         if cls.icon is None:
             return
         if capture.frame is None:
@@ -471,9 +465,9 @@ class ErdaShower(Skill):
         while not self.canUse():
             time.sleep(0.1)
         if self.direction:
-            press_acc(self.direction, down_time=0.03, up_time=0.1)
+            press_acc(self.direction, down_time=0.03, up_time=0.03)
         key_down('down')
-        press(Keybindings.ERDA_SHOWER)
+        press(Keybindings.ERDA_SHOWER, 2)
         key_up('down')
         self.__class__.castedTime = time.time()
         time.sleep(self.__class__.backswing)

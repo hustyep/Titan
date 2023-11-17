@@ -6,11 +6,16 @@ class AutoSettings(Configurable):
         'Ask': False,
         'Mining': False,
         'Auto Load': True,
+        'Detect Mob': False
     }
     
     @property
     def auto_load(self):
         return self.get('Auto Load')
+   
+    @property
+    def detect_mob(self):
+        return self.get('Detect Mob') 
     
 class BuffSettings(Configurable):
     DEFAULT_CONFIG = {

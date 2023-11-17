@@ -46,7 +46,7 @@ class Keybindings(DefaultKeybindings):
     TRICKBLADE = 'a'
     SLASH_SHADOW_FORMATION = 'c'
     SONIC_BLOW = 'z'
-
+    ERDA_SHOWER = '`'
 
 #########################
 #       Commands        #
@@ -59,14 +59,17 @@ def step(target, tolerance):
 
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) in range(20, 28) and -d_y in range(25, 35):
+    if abs(d_x) in ShadowAssault.x_range and -d_y in ShadowAssault.y_range:
         if ShadowAssault.usable_count() >= 2:
             ShadowAssault(target=target).execute()
             return
-    if d_y in range(25, 35):
+    if d_y in ShadowAssault.y_range:
         if ShadowAssault.usable_count() >= 2:
             ShadowAssault(target=target).execute()
             return
+    if abs(d_x) >= 26:
+        hit_and_run(direction, target)
+        return
 
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
     if not next_p:
@@ -107,7 +110,7 @@ def pre_detect(direction):
 
 @bot_status.run_if_enabled
 def hit_and_run(direction, target):
-    if bot_settings.mob_detect:
+    if gui_setting.auto.detect_mob:
         if direction_changed() and time.time() - ErdaShower.castedTime > 5:
             print("direction_changed")
             key_down(direction)
@@ -262,6 +265,8 @@ class ShadowAssault(Skill):
     backswing = 0.3
     usable_times = 4
     cooldown = 60
+    x_range = range(20, 35)
+    y_range = range(20, 42)
 
     def __init__(self, direction='up', jump='True', distance=80, target=None):
         super().__init__(locals())
@@ -296,10 +301,6 @@ class ShadowAssault(Skill):
 
     @classmethod
     def check(cls) -> bool:
-        if cls.icon is None:
-            cls.loaded = False
-            super().load()
-
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[8:, ], threshold=0.95)
         if matchs:
