@@ -40,7 +40,7 @@ class Notifier(Subject):
 
     def on_event(self, args):
         event = args[0]
-        info = args[1] if len(args) > 1 else None
+        info = args[1] if len(args) > 1 else ''
         self._notify(event, info)
 
     def _notify(self, event: Enum, info) -> None:

@@ -38,8 +38,11 @@ class Detector(Subject):
         self.others_detect_count = 0
         self.others_no_detect_count = 0
 
+        self.lost_time_threshold = 1
+        self.lost_minimap_time = 0
+
         self.black_screen_threshold = 0.9
-        self.white_room_threshold = 0.55
+        self.white_room_threshold = 0.6
 
         self.ready = False
         self.fetal_thread = threading.Thread(target=self._main_fetal)
@@ -175,8 +178,12 @@ class Detector(Subject):
             bot_status.lost_minimap = True
             capture.calibrated = False
             if bot_status.enabled:
-                self.on_next((BotError.LOST_MINI_MAP, ))
+                if self.lost_minimap_time == 0:
+                    self.lost_minimap_time = time.time()
+                if time.time() - self.lost_minimap_time > self.lost_time_threshold:
+                    self.on_next((BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
         else:
+            self.lost_minimap_time = 0
             bot_status.lost_minimap = False
 
     def check_no_movement(self):
