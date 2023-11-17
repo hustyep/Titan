@@ -228,6 +228,7 @@ class FlashJump(Skill):
         dx = self.target[0] - bot_status.player_pos[0]
         dy = self.target[1] - bot_status.player_pos[1]
         direction = 'left' if dx < 0 else 'right'
+        start_y = bot_status.player_pos[1]
 
         self.__class__.castedTime = time.time()
         key_down(direction)
@@ -251,7 +252,7 @@ class FlashJump(Skill):
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        sleep_in_the_air(n=1)
+        sleep_in_the_air(n=1, start_y=start_y)
 
 
 class ShadowAssault(Skill):

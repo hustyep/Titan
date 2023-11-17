@@ -276,7 +276,7 @@ def sleep_while_move_y(interval=0.02, n=15):
             break
 
 
-def sleep_in_the_air(interval=0.02, n=3):
+def sleep_in_the_air(interval=0.02, n=3, start_y=0):
     if len(map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
         return
@@ -290,8 +290,11 @@ def sleep_in_the_air(interval=0.02, n=3):
             count = 0
         else:
             count += 1
-        if count == n:
-            break
+        if count >= n:
+            if start_y == bot_status.player_pos[1]:
+                break
+            else:
+                n = 4
         step += 1
         if step >= 250:
             break
