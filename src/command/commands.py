@@ -291,10 +291,13 @@ def sleep_in_the_air(interval=0.02, n=3, start_y=0):
         else:
             count += 1
         if count >= n:
-            if start_y == bot_status.player_pos[1]:
-                break
+            if start_y > 0:
+                if start_y == bot_status.player_pos[1]:
+                    break
+                else:
+                    n = 4
             else:
-                n = 4
+                break
         step += 1
         if step >= 250:
             break
