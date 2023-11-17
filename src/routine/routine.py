@@ -368,7 +368,7 @@ class Routine(Subject):
         element.execute()
 
     def _on_command_complete(self, c: Command):
-        if isinstance(c, Move) and not target_reached(c.target, tolerance=c.tolerance):
+        if isinstance(c, Move) and not target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):
             self.check_point(bot_status.player_pos)
 
     def _on_component_complete(self, c: Component):

@@ -203,7 +203,7 @@ class Move(Command):
             return
 
         if map.minimap_data.any:
-            if target_reached(self.target, self.tolerance):
+            if target_reached(bot_status.player_pos, self.target, self.tolerance):
                 return
         elif utils.distance(bot_status.player_pos, self.target) <= self.tolerance:
             return
@@ -309,7 +309,7 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
     if len(map.minimap_data) == 0:
         return target
 
-    if target_reached(start, target):
+    if target_reached(start, target, tolerance):
         return
 
     d_x = target[0] - start[0]
@@ -318,6 +318,8 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         return target
     elif d_y < 0:
         tmp_x = (target[0], start[1])
+        if target_reached(tmp_x, target, tolerance):
+            return tmp_x
         if map.on_the_platform(tmp_x):
             return tmp_x
         tmp_y = (start[0], target[1])
@@ -437,12 +439,11 @@ def edge_reached() -> bool:
         return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
 
 
-def target_reached(target, tolerance=bot_settings.move_tolerance):
-    p = bot_status.player_pos
+def target_reached(start, target, tolerance=bot_settings.move_tolerance):
     if tolerance > bot_settings.adjust_tolerance:
-        return utils.distance(p, target) <= tolerance
+        return utils.distance(start, target) <= tolerance
     else:
-        return p[1] == target[1] and abs(p[0] - target[0]) <= tolerance
+        return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
 
 #############################
 #      Common Command       #
