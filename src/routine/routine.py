@@ -225,7 +225,7 @@ class Routine(Subject):
 
         self.on_next((RoutineUpdateType.cleared, ))
 
-    def load(self, file: str, command_book: CommandBook=None):
+    def load(self, file: str, command_book: CommandBook = None):
         """
         Attempts to load FILE into a sequence of Components. If no file path is provided, attempts to
         load the previous routine file.
@@ -248,7 +248,7 @@ class Routine(Subject):
             if not os.path.exists(file):
                 print('[!] default routine not provided')
                 return False
-            
+
         ext = splitext(file)[1]
         if ext != '.csv':
             print(f" !  '{ext}' is not a supported file extension.")
@@ -362,7 +362,6 @@ class Routine(Subject):
                 # Use Buff and Potion
                 self.command_book.Potion().execute()
                 self.command_book.Buff().execute()
-                
 
         # Execute next Point in the routine
         element.execute()
@@ -384,7 +383,8 @@ class Routine(Subject):
                 and (utils.distance(p, bot_status.rune_pos) <= 20 or p == bot_status.rune_closest_pos):
             result, frame = self.command_book.SolveRune(
                 bot_status.rune_pos).execute()
-            self.solve_rune_callback(result, frame)
+            threading.Thread(target=self.solve_rune_callback,
+                             args=(result, frame)).start()
         if bot_status.minal_pos \
                 and (utils.distance(p, bot_status.minal_pos) <= 20 or p == bot_status.minal_closest_pos):
             self.command_book.Mining(bot_status.minal_pos).execute()
