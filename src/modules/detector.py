@@ -22,6 +22,7 @@ from src.common.constants import *
 from src.common.hid import hid
 from src.modules.capture import capture
 from src.map.map import map as game_map
+from src.common.gui_setting import gui_setting
 
 
 class Detector(Subject):
@@ -339,6 +340,9 @@ class Detector(Subject):
                 self.on_next((BotInfo.RUNE_ACTIVE, ))
 
     def check_mineral(self, frame, minimap):
+        if not gui_setting.auto.mining:
+            return
+        
         if frame is None or minimap is None:
             return
 
@@ -468,5 +472,6 @@ def distance_to_minal(point):
     :return:        The distance from POINT to the minal, infinity if it is not a Point object.
     """
 
-    if isinstance(point, Point):
+    if isinstance(point, Point) and point.interval == 0:
         return utils.distance(bot_status.minal_pos, point.location)
+    return float('inf')

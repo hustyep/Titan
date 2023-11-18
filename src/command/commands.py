@@ -96,7 +96,7 @@ class Command():
 
     @bot_status.run_if_enabled
     def execute(self):
-        if gui_setting.notification.get('notice_level') >= 5:
+        if gui_setting.notification.get('notice_level') >= 4:
             print(str(self))
         result = self.main()
         # if self.__class__.complete_callback:

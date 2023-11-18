@@ -111,8 +111,6 @@ def pre_detect(direction):
 @bot_status.run_if_enabled
 def hit_and_run(direction, target):
     if gui_setting.auto.detect_mob:
-        changed = direction_changed(direction)
-        print(f"{changed} {bot_status.player_pos} {bot_settings.boundary_point_l}")
         if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]  and time.time() - ErdaShower.castedTime > 5:
             print("direction_changed")
             key_down(direction)

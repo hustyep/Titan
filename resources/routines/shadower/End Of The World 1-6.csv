@@ -4,6 +4,9 @@ $, target=mini_margin, value=11
 @, label=Summoning
 *, x=18, y=38, interval=60, tolerance=1, skip=False
     DarkFlare, direction=right
+*, x=68, y=79, interval=60, tolerance=10, skip=False
+    ShadowVeil, direction=right
+*, x=125, y=79, interval=60, tolerance=10, skip=False
 *, x=117, y=38, interval=60, tolerance=1, skip=False
     Wait, duration=0.2
     ErdaShower, direction=left

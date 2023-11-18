@@ -10,6 +10,10 @@ class AutoSettings(Configurable):
     }
     
     @property
+    def mining(self):
+        return self.get('Mining')
+    
+    @property
     def auto_load(self):
         return self.get('Auto Load')
    

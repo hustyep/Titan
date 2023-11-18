@@ -30,7 +30,7 @@ class Component:
     @bot_status.run_if_enabled
     def execute(self):
         self.main()
-        print(str(self))
+        # print(str(self))
 
     def main(self):
         pass
