@@ -1,0 +1,14 @@
+$, target=move_tolerance, value=10
+$, target=mini_margin, value=11
+
+@, label=Summoning
+*, x=25, y=21, interval=60, tolerance=3, skip=False
+    ErdaShower, direction=left
+*, x=82, y=26, interval=60, tolerance=3, skip=False
+*, x=116, y=31, interval=60, tolerance=2, skip=False
+    DarkFlare, direction=right
+*, x=116, y=50, interval=60, tolerance=2, skip=False
+
+@, label=Bottom mobbing
+*, x=0, y=50, interval=0, tolerance=6, skip=False
+*, x=137, y=50, interval=0, tolerance=6, skip=False

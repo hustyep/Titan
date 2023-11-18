@@ -111,7 +111,7 @@ def pre_detect(direction):
 @bot_status.run_if_enabled
 def hit_and_run(direction, target):
     if gui_setting.auto.detect_mob:
-        if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]  and time.time() - ErdaShower.castedTime > 5:
+        if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
             print("direction_changed")
             key_down(direction)
             time.sleep(0.05)
@@ -137,12 +137,12 @@ def hit_and_run(direction, target):
                 if len(mobs) > 0:
                     break
                 time.sleep(0.05)
-        t = AsyncTask(target=pre_detect, args=(direction,))
-        t.start()
+        # t = AsyncTask(target=pre_detect, args=(direction,))
+        # t.start()
         FlashJump(target=target, attack_if_needed=True).execute()
-        elite_detected = t.join()
-        if elite_detected:
-            SonicBlow().execute()
+        # elite_detected = t.join()
+        # if elite_detected:
+        #     SonicBlow().execute()
     else:
         FlashJump(target=target, attack_if_needed=True).execute()
 
@@ -237,11 +237,11 @@ class FlashJump(Skill):
             # detect = AsyncTask(
             #     target=self.detect_mob, args=(direction, ))
             # detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+            press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.03)
             # mobs_detected = detect.join()
             mobs_detected = True
             times = 2 if mobs_detected else 1
-            press(self.key, times, down_time=0.03, up_time=0.03)
+            press(self.key, 1, down_time=0.03, up_time=0.03)
             if mobs_detected:
                 CruelStab().execute()
         else:
@@ -407,7 +407,7 @@ class CruelStab(Skill):
             return
         self.__class__.castedTime = time.time()
         jumped = not map.on_the_platform(bot_status.player_pos)
-        press(self.key, 1, up_time=0.2)
+        press(self.key, 1, up_time=0.3)
         MesoExplosion().execute()
         time.sleep(0.5 if not jumped else self.backswing)
 
@@ -428,8 +428,8 @@ class DarkFlare(Skill):
     """
     key = Keybindings.DARK_FLARE
     type = SkillType.Summon
-    cooldown = 57
-    backswing = 0.8
+    cooldown = 54
+    backswing = 1
     duration = 60
 
     def __init__(self, direction=None):
@@ -538,6 +538,7 @@ class PhaseDash(Skill):
 class PickPocket(Skill):
     key = Keybindings.PICK_POCKET
     type = SkillType.Switch
+    cooldown = 1
     ready = False
 
 

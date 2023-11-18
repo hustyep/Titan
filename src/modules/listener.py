@@ -99,6 +99,7 @@ class Listener(Configurable, Subject):
         else:
             bot_status.started_time = None
 
+        bot.prepared = False
         bot.toggle(not bot_status.enabled)
 
         # if bot_status.enabled:

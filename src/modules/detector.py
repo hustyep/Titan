@@ -83,7 +83,8 @@ class Detector(Subject):
                 self.check_dead()
                 self.check_no_movement()
                 self.check_others()
-                # self.check_forground()
+                self.check_alert()
+                self.check_forground()
             time.sleep(0.2)
 
     def _main_event(self):
@@ -122,9 +123,10 @@ class Detector(Subject):
         if bot_status.started_time and np.count_nonzero(gray_crop == 255) / height / width >= self.white_room_threshold:
             self.on_next((BotFatal.WHITE_ROOM,))
 
-    def check_alert(self, frame):
-        if frame is None:
+    def check_alert(self):
+        if capture.frame is None:
             return
+        frame = capture.frame
 
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 220) // 2
@@ -422,7 +424,9 @@ class Detector(Subject):
         frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
         # utils.show_image(frame)
         name = utils.image_2_str(frame).replace('\n', '')
-        name = name.strip(string.punctuation)
+        for i in string.punctuation:
+            if i not in ['-']:
+                name = name.replace(i, '')
         return name
 
 

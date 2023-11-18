@@ -202,7 +202,7 @@ class Move(Command):
         if self.step > self.max_steps:
             return
 
-        if map.minimap_data.any:
+        if map.minimap_data is not None and len(map.minimap_data) > 0:
             if target_reached(bot_status.player_pos, self.target, self.tolerance):
                 return
         elif utils.distance(bot_status.player_pos, self.target) <= self.tolerance:
@@ -216,16 +216,16 @@ class Move(Command):
 
         if edge_reached():
             print("-----------------------edge reached")
-            # pos = map.minimap_to_window(bot_status.player_pos)
-            # key_up(bot_status.player_direction)
-            # if bot_status.player_direction == 'left':
-            #     mobs = detect_mobs(
-            #         anchor=pos, top=100, bottom=80, left=300, right=0)
-            # else:
-            #     mobs = detect_mobs(
-            #         anchor=pos, top=100, bottom=80, left=0, right=300)
-            # if mobs:
-            #     Attack().execute()
+            pos = capture.convert_point_minimap_to_window(bot_status.player_pos)
+            key_up(bot_status.player_direction)
+            if bot_status.player_direction == 'left':
+                mobs = detect_mobs(
+                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
+            else:
+                mobs = detect_mobs(
+                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
+            if mobs:
+                Attack().execute()
 
         Command.complete_callback(self)
 
@@ -277,7 +277,7 @@ def sleep_while_move_y(interval=0.02, n=15):
 
 
 def sleep_in_the_air(interval=0.02, n=3, start_y=0):
-    if len(map.minimap_data) == 0:
+    if map.minimap_data is None or len(map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
         return
     count = 0
@@ -308,7 +308,7 @@ def sleep_in_the_air(interval=0.02, n=3, start_y=0):
 
 def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
 
-    if len(map.minimap_data) == 0:
+    if map.minimap_data is None or len(map.minimap_data) == 0:
         return target
 
     if target_reached(start, target, tolerance):
@@ -444,9 +444,9 @@ def edge_reached() -> bool:
 
 
 def target_reached(start, target, tolerance=bot_settings.move_tolerance):
-    if tolerance > bot_settings.adjust_tolerance:
-        return utils.distance(start, target) <= tolerance
-    else:
+    # if tolerance > bot_settings.adjust_tolerance:
+    #     return utils.distance(start, target) <= tolerance
+    # else:
         return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
 
 #############################
@@ -464,7 +464,7 @@ class MapleWarrior(Skill):
 class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
-    cooldown = 57
+    cooldown = 54
     backswing = 0.7
     duration = 60
 
@@ -476,8 +476,9 @@ class ErdaShower(Skill):
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        while not self.canUse():
-            time.sleep(0.1)
+        if time.time() - self.castedTime < self.cooldown - 2:
+            while not self.canUse():
+                time.sleep(0.1)
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
         key_down('down')
@@ -514,11 +515,15 @@ class Walk(Command):
         key_down(direction)
         while bot_status.enabled and abs(d_x) > self.tolerance and walk_counter < self.max_steps:
             new_direction = 'left' if d_x < 0 else 'right'
-            if new_direction != direction:
+            if abs(d_x) <= 2:
                 key_up(direction)
-                key_down(new_direction)
-                direction = new_direction
-            time.sleep(self.interval)
+                press_acc(new_direction, down_time=0.02, up_time=0.03)
+            else:
+                if new_direction != direction:
+                    key_up(direction)
+                    key_down(new_direction)
+                    direction = new_direction
+                time.sleep(self.interval)
             walk_counter += 1
             d_x = self.target_x - bot_status.player_pos[0]
         key_up(direction)

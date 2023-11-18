@@ -48,16 +48,15 @@ class Notifier(Subject):
         now = time.time()
         noticed_time = self.notice_time_record.get(event, 0)
 
-        if noticed_time == 0 or now - noticed_time >= 8:
+        if noticed_time == 0 or now - noticed_time >= 30:
             self.notice_time_record[event] = now
             event_type = type(event)
             if event_type == BotFatal:
-                self._alert('siren')
-                time.sleep(20)
-                chat_bot.voice_call()
+                threading.Thread(target=self._alert, args=('siren', )).start()
                 text = f'‼️[{event.value}] {info}'
                 image_path = utils.save_screenshot(frame=capture.frame)
                 self.send_message(text=text, image_path=image_path)
+                # chat_bot.voice_call()
             elif event_type == BotError:
                 if gui_setting.notification.get('notice_level') < 2:
                     return
@@ -105,7 +104,7 @@ class Notifier(Subject):
         self.mixer.set_volume(volume)
         self.mixer.play(-1)
         # TODO key
-        while not kb.is_pressed('esc'):
+        while not kb.is_pressed('tab'):
             time.sleep(0.1)
         self.mixer.stop()
         time.sleep(2)

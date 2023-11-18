@@ -30,14 +30,14 @@ class Map:
         """
 
         self.name = ''
-        self.minimap_data = []
+        self.minimap_data = None
         self.mob_templates = []
         self.elite_templates = []
         self.boss_templates = []
 
     def clear(self):
         self.name = ''
-        self.minimap_data = []
+        self.minimap_data = None
         self.mob_templates = []
         self.elite_templates = []
         self.boss_templates = []
@@ -73,12 +73,17 @@ class Map:
             print(f" ~ Finished saving map data '{self.name}'")
 
     def create_minimap_data(self):
-        if len(self.minimap_data) > 0:
-            return
-        
         if capture.minimap_actual is not None and len(capture.minimap_actual) > 0:
-            self.minimap_data = np.zeros((capture.minimap_actual.shape[0] + 1, capture.minimap_actual.shape[1] + 1), np.uint8)
-            print(' ~ Created new minimap data \n')
+            width = capture.minimap_actual.shape[1] + 1
+            height = capture.minimap_actual.shape[0] + 1
+            if self.minimap_data is not None:
+                m_height, m_widht = self.minimap_data.shape
+                if m_widht != width or m_height != height:
+                    self.minimap_data = np.zeros((height, width), np.uint8)
+                    print(' ~ Created new minimap data \n')
+            else:
+                self.minimap_data = np.zeros((height, width), np.uint8)
+                print(' ~ Created new minimap data \n')
         else:
             print('[!] create minimap data failed! \n')
 
@@ -164,7 +169,7 @@ class Map:
         return MapPointType(value)
 
     def near_rope(self, location: tuple[int, int]):
-        if self.minimap_data.any:
+        if self.minimap_data is not None:
             height, width = self.minimap_data.shape
             cur_x = location[0]
             cur_y = location[1]
@@ -179,7 +184,7 @@ class Map:
         return False
 
     def on_the_rope(self, location: tuple[int, int]):
-        if self.minimap_data.any:
+        if self.minimap_data is not None:
             point_type = self.point_type((location[0], location[1] + 7))
             if point_type == MapPointType.Floor or point_type == MapPointType.FloorRope:
                 return False
@@ -194,7 +199,7 @@ class Map:
         return value == MapPointType.Floor or value == MapPointType.FloorRope
 
     def platform_point(self, target: tuple[int, int]):
-        if len(map.minimap_data) > 0:
+        if self.minimap_data is not None:
             height, _ = map.minimap_data.shape
             for y in range(target[1] - 7, height - 1):
                 p = (target[0], y)
@@ -239,7 +244,7 @@ def run_if_map_available(function):
     """
 
     def helper(*args, **kwargs):
-        if map.minimap_data.any:
+        if map.minimap_data is not None and len(map.minimap_data) > 0:
             return function(*args, **kwargs)
     return helper
 

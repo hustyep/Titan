@@ -131,7 +131,6 @@ class Bot(Subject):
         bot_status.minal_pos = None
         bot_status.minal_closest_pos = None
 
-        self.prepared = False
         capture.calibrated = False
 
         releaseAll()
