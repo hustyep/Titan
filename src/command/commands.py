@@ -96,8 +96,8 @@ class Command():
 
     @bot_status.run_if_enabled
     def execute(self):
-        if gui_setting.notification.get('notice_level') >= 4:
-            print(str(self))
+        # if gui_setting.notification.get('notice_level') >= 4:
+        #     print(str(self))
         result = self.main()
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)
@@ -464,7 +464,7 @@ class MapleWarrior(Skill):
 class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
-    cooldown = 54
+    cooldown = 58
     backswing = 0.7
     duration = 60
 
@@ -612,21 +612,21 @@ class SolveRune(Command):
         time.sleep(0.5)
         # Inherited from Configurable
         press(Keybindings.INTERACT, 1, down_time=0.2, up_time=0.8)
-        interact_result = False
-        for _ in range(3):
-            interact_result = rune.rune_interact_result(capture.frame)
-            if interact_result:
-                break
-            else:
-                time.sleep(0.2)
+        # interact_result = False
+        # for _ in range(3):
+        #     interact_result = rune.rune_interact_result(capture.frame)
+        #     if interact_result:
+        #         break
+        #     else:
+        #         time.sleep(0.2)
 
-        if interact_result:
-            pass
-        elif self.attempts < 2:
-            return SolveRune(target=self.target, attempts=self.attempts+1).execute()
-        else:
-            bot_status.rune_solving = False
-            return 0, None
+        # if interact_result:
+        #     pass
+        # elif self.attempts < 2:
+        #     return SolveRune(target=self.target, attempts=self.attempts+1).execute()
+        # else:
+        #     bot_status.rune_solving = False
+        #     return 0, None
 
         print('\nSolving rune:')
         used_frame = None

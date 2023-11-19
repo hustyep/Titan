@@ -267,8 +267,8 @@ class ShadowAssault(Skill):
     backswing = 0.3
     usable_times = 4
     cooldown = 60
-    x_range = range(20, 35)
-    y_range = range(20, 42)
+    x_range = range(18, 35)
+    y_range = range(18, 42)
 
     def __init__(self, direction='up', jump='True', distance=80, target=None):
         super().__init__(locals())
@@ -428,7 +428,7 @@ class DarkFlare(Skill):
     """
     key = Keybindings.DARK_FLARE
     type = SkillType.Summon
-    cooldown = 54
+    cooldown = 58
     backswing = 1
     duration = 60
 
