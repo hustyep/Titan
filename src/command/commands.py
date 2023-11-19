@@ -157,7 +157,7 @@ class Skill(Command):
         cls.id = cls.__name__
 
     @classmethod
-    def canUse(cls) -> bool:
+    def canUse(cls, next_t: float = 0) -> bool:
         return cls.ready
 
     @classmethod
@@ -173,7 +173,7 @@ class Skill(Command):
                 cls.ready = len(matchs) == 0
             case SkillType.Buff:
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[9:, ], threshold=0.96)
+                    capture.skill_frame, cls.icon[8:, ], threshold=0.9)
                 if not matchs:
                     cls.ready = False
                 else:
@@ -185,7 +185,7 @@ class Skill(Command):
                     cls.ready = len(matchs) == 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[9:, ], threshold=0.96)
+                    capture.skill_frame, cls.icon[8:, ], threshold=0.9)
                 cls.ready = len(matchs) > 0
 
 
@@ -416,7 +416,7 @@ def detect_mobs(insets: AreaInsets = None,
         mobs_tmp = utils.multi_match(
             crop,
             mob_template,
-            threshold=0.98 if type == MobType.NORMAL else 0.9,
+            threshold=0.99 if type == MobType.NORMAL else 0.9,
             debug=debug)
         if len(mobs_tmp) > 0:
             for mob in mobs_tmp:
@@ -476,9 +476,11 @@ class ErdaShower(Skill):
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        if time.time() - self.castedTime < self.cooldown - 2:
+        if time.time() - self.castedTime > self.cooldown - 2:
             while not self.canUse():
                 time.sleep(0.1)
+        elif not self.canUse():
+            return
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
         key_down('down')

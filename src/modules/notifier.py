@@ -48,7 +48,7 @@ class Notifier(Subject):
         now = time.time()
         noticed_time = self.notice_time_record.get(event, 0)
 
-        if noticed_time == 0 or now - noticed_time >= 30:
+        if noticed_time == 0 or now - noticed_time >= 20:
             self.notice_time_record[event] = now
             event_type = type(event)
             if event_type == BotFatal:

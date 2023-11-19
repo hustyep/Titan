@@ -51,6 +51,8 @@ class Keybindings(DefaultKeybindings):
 #########################
 #       Commands        #
 #########################
+
+
 def step(target, tolerance):
     """
     Performs one movement step in the given DIRECTION towards TARGET.
@@ -64,11 +66,11 @@ def step(target, tolerance):
             ShadowAssault(target=target).execute()
             return
     if d_y in ShadowAssault.y_range:
-        if ShadowAssault.usable_count() >= 2:
+        if ShadowAssault.canUse():
             ShadowAssault(target=target).execute()
             return
     if abs(d_x) >= 26:
-        hit_and_run('right' if d_x > 0 else 'left', target)
+        hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
         return
 
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
@@ -91,7 +93,7 @@ def step(target, tolerance):
     elif direction == "down":
         move_down(next_p)
     elif abs(d_x) >= 26:
-        hit_and_run(direction, target)
+        hit_and_run(direction, target, tolerance)
     else:
         Walk(target_x=target[0], tolerance=tolerance).execute()
 
@@ -109,14 +111,15 @@ def pre_detect(direction):
 
 
 @bot_status.run_if_enabled
-def hit_and_run(direction, target):
+def hit_and_run(direction, target, tolerance):
     if gui_setting.auto.detect_mob:
+        # and time.time() - DarkFlare.castedTime > 5
         if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
             print("direction_changed")
             key_down(direction)
             time.sleep(0.05)
             key_up(direction)
-            time.sleep(0.5)
+            time.sleep(1)
             SlashShadowFormation().execute()
 
             count = 0
@@ -133,8 +136,12 @@ def hit_and_run(direction, target):
                 # if matchs:
                 #     SonicBlow().execute()
                 mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1100, right=1100),
-                                   anchor=anchor, debug=False)
-                if len(mobs) > 0:
+                                   anchor=anchor,
+                                   multy_match=True,
+                                   debug=False)
+                if len(mobs):
+                    print(len(mobs))
+                if len(mobs) > 1:
                     break
                 time.sleep(0.05)
         # t = AsyncTask(target=pre_detect, args=(direction,))
@@ -267,7 +274,7 @@ class ShadowAssault(Skill):
     backswing = 0.3
     usable_times = 4
     cooldown = 60
-    x_range = range(18, 35)
+    x_range = range(18, 36)
     y_range = range(18, 42)
 
     def __init__(self, direction='up', jump='True', distance=80, target=None):
@@ -304,7 +311,7 @@ class ShadowAssault(Skill):
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[8:, ], threshold=0.95)
+            capture.skill_frame, cls.icon[8:, ], threshold=0.94)
         if matchs:
             cls.ready = True
         else:
@@ -338,7 +345,8 @@ class ShadowAssault(Skill):
                 key_up("down")
             else:
                 press(Keybindings.JUMP)
-                time.sleep(0.1 if self.distance > 32 else 0.4)
+                dy = self.target[1] - bot_status.player_pos[1]
+                time.sleep(0.1 if abs(dy) > 32 else 0.4)
 
         key_down(self.direction)
         time.sleep(0.03)
@@ -474,13 +482,14 @@ class SuddenRaid(Skill):
 
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
-        usable = super().canUse(next_t)
-        if usable:
-            mobs = detect_mobs(insets=AreaInsets(
-                top=500, bottom=500, left=500, right=500))
-            return mobs is None or len(mobs) > 0
-        else:
-            return False
+        usable = super().canUse()
+        return usable
+        # if usable:
+        #     mobs = detect_mobs(insets=AreaInsets(
+        #         top=500, bottom=500, left=500, right=500))
+        #     return mobs is None or len(mobs) > 0
+        # else:
+        #     return False
 
     # def main(self):
     #     used = super().main()
@@ -489,28 +498,36 @@ class SuddenRaid(Skill):
     #     return used
 
 
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
+            return
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[9:, ], threshold=0.9, debug=False)
+        cls.ready = len(matchs) > 0
+
 class TrickBlade(Skill):
     key = Keybindings.TRICKBLADE
     cooldown = 14
     backswing = 0.7
     type = SkillType.Attack
 
-    def __init__(self, direction=None):
+    def __init__(self, direction='right'):
         super().__init__(locals())
         if direction is None:
             self.direction = direction
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        usable = super().canUse(next_t)
-        if usable:
-            mobs = detect_mobs(insets=AreaInsets(
-                top=200, bottom=150, left=400, right=400))
-            return len(mobs) > 0
-        else:
-            return False
+    # @classmethod
+    # def canUse(cls, next_t: float = 0) -> bool:
+    #     usable = super().canUse()
+    #     if usable:
+    #         mobs = detect_mobs(insets=AreaInsets(
+    #             top=200, bottom=150, left=400, right=400))
+    #         return len(mobs) > 0
+    #     else:
+    #         return False
 
 
 class SlashShadowFormation(Skill):
@@ -563,6 +580,7 @@ class Buff(Command):
         ]
 
     def main(self):
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!use buff")
         for buff in self.buffs:
             if buff.canUse():
                 result = buff().execute()
@@ -605,7 +623,7 @@ class EPIC_ADVENTURE(Skill):
     type = SkillType.Buff
 
 
-class FOR_THE_GUILD(Skill):
+class FOR_THE_GUILD(Command):
     key = Keybindings.FOR_THE_GUILD
     cooldown = 3610
     backswing = 0.1
@@ -623,7 +641,7 @@ class FOR_THE_GUILD(Skill):
         return super().canUse(next_t)
 
 
-class HARD_HITTER(Skill):
+class HARD_HITTER(Command):
     key = Keybindings.HARD_HITTER
     cooldown = 3610
     backswing = 0.1
