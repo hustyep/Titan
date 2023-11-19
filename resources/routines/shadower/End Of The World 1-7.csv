@@ -3,7 +3,7 @@ $, target=mini_margin, value=11
 
 @, label=Summoning
 *, x=25, y=21, interval=56, tolerance=3, skip=False
-    ErdaShower, direction=left
+    ErdaShower, direction=right
 *, x=82, y=26, interval=56, tolerance=3, skip=False
 *, x=118, y=31, interval=56, tolerance=2, skip=False
     DarkFlare, direction=right

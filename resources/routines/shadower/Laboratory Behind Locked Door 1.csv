@@ -1,0 +1,17 @@
+$, target=move_tolerance, value=10
+$, target=mini_margin, value=44
+
+~, label=Summon, interval=40, skip=False
+*, x=19, y=57, interval=0, tolerance=3, skip=False
+*, x=50, y=30, interval=0, tolerance=3, skip=False
+    ErdaShower, direction=left
+    SuddenRaid
+*, x=97, y=30, interval=0, tolerance=3, skip=False
+    DarkFlare, direction=right
+    TrickBlade, direction=right
+*, x=138, y=57, interval=0, tolerance=9, skip=False
+#
+
+@, label=Bottom mobbing
+*, x=9, y=57, interval=0, tolerance=6, skip=False
+*, x=139, y=57, interval=0, tolerance=6, skip=False

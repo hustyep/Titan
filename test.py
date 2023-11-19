@@ -98,11 +98,11 @@ def minimap_to_window_test(image_path):
     br = dll_helper.screenSearch(MM_BR_BMP, 0, 0, 300, 300, frame=c_frame)
 
     mm_tl = (
-        tl[0] - x1 - 2 - window_cap_horiz + 13,
+        tl[0] - x1 - 2 - window_cap_horiz + 44,
         tl[1] - y1 + 2 - window_cap_top
     )
     mm_br = (
-        br[0] - x1 + 16 - window_cap_horiz - 13,
+        br[0] - x1 + 16 - window_cap_horiz - 44,
         br[1] - y1 - window_cap_top
     )
     minimap = frame[mm_tl[1]:mm_br[1], mm_tl[0]:mm_br[0]]
@@ -160,7 +160,7 @@ def rune_test():
 
 
 def mob_detect_test(accurate=True):
-    image_path = ".test/maple_231111233834073.png"
+    image_path = ".test/Maple_231119_130543.png"
     frame = cv2.imread(image_path)
 
     player_pos = minimap_to_window_test(image_path)
@@ -168,16 +168,17 @@ def mob_detect_test(accurate=True):
     if accurate:
         PLAYER_SLLEE_TEMPLATE = cv2.imread('assets/roles/player_sllee_template.png', 0)
         # start = time.time()
-        player_crop = frame[player_pos[1]:player_pos[1]+150, player_pos[0]-50:player_pos[0]+50]
+        player_crop = frame[player_pos[1]:player_pos[1]+250, player_pos[0]-100:player_pos[0]+150]
+        # utils.show_image(player_crop)
         player_match = utils.multi_match(player_crop, PLAYER_SLLEE_TEMPLATE, threshold=0.9, debug=False)
         # print(f'{time.time() - start}')
         player_pos = (player_match[0][0] - 5 + player_pos[0]-50, player_match[0][1] - 140+player_pos[1])
         cv2.circle(frame, player_pos, 10, (0, 255, 0), 2)
         # utils.show_image(frame)
         
-    crop = frame[player_pos[1]-200:player_pos[1]+100, player_pos[0]-650:player_pos[0]+10]
+    crop = frame[player_pos[1]-200:player_pos[1]+100, player_pos[0]-10:player_pos[0]+650]
     # utils.show_image(crop)
-    MOB_TEMPLATE_L = cv2.imread('assets/mobs/Sandblade.png', 0)
+    MOB_TEMPLATE_L = cv2.imread('assets/mobs/Laboratory Behind Locked Door 1@normal.png', 0)
     MOB_TEMPLATE_R = cv2.flip(MOB_TEMPLATE_L, 1)
     # h, w = MOB_TEMPLATE_L.shape
     # MOB_TEMPLATE_ELITE = cv2.resize(MOB_TEMPLATE_L, (w * 2, h * 2))
@@ -190,15 +191,15 @@ def mob_detect_test(accurate=True):
 
 
 def buff_test():
-    frame = cv2.imread(".test/maple_230829030838303.png")
-    template = cv2.imread('assets/skills/MapleWarrior.png', 0)
+    frame = cv2.imread(".test/Maple_231119_130543.png")
+    template = cv2.imread('assets/skills/shadower/SuddenRaid.png', 0)
     # ShadowWalker ErdaShower
     # template =Image.open('assets/skills/shadower/ShadowWalker.png').convert('RGBA')
     # template = utils.add_mask(template, (0,0,28,28), fill=(0,0,0,int(0.0*255)))
 
-    template = template[8:,]
+    template = template[9:,]
     rune_buff = utils.multi_match(
-        frame[-100:-60, ], template, threshold=0.99, debug=True)
+        frame[-200:, -600], template, threshold=0.99, debug=True)
 
     rune_buff = utils.multi_match(
         frame[-200:, -600:], template, threshold=0.9, debug=True)
@@ -246,5 +247,5 @@ if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
     # wechat_test()
-    mob_detect_test()
+    buff_test()
     # minimap_test()

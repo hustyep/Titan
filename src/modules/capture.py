@@ -238,7 +238,7 @@ class Capture(Subject):
             y = window_height // 2
         return (int(x), int(y))
 
-    def locate_player_fullscreen(self, accurate=False, frame=None, role_template=None):
+    def locate_player_fullscreen(self, accurate=False, frame=None, role_template=None):# -> tuple | tuple[int, int]:
         player_pos = self.convert_point_minimap_to_window(
             bot_status.player_pos)
 
@@ -249,7 +249,7 @@ class Capture(Subject):
                 role_template = bot_settings.role_template
             tl_x = player_pos[0]-50
             tl_y = player_pos[1]
-            player_crop = frame[tl_y:tl_y+150, tl_x:tl_x+100]
+            player_crop = frame[tl_y:tl_y+250, tl_x-150:tl_x+150]
             matchs = utils.multi_match(player_crop,
                                        role_template,
                                        threshold=0.9,
