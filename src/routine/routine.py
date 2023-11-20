@@ -357,11 +357,7 @@ class Routine(Subject):
         if isinstance(element, Point):
             # new_direction = 'right' if element.location[0] > bot_status.player_pos[0] else 'left'
             # if new_direction == bot_status.player_direction:
-                # Feed Pet
-                self.command_book.FeedPet().execute()
-                # Use Buff and Potion
-                self.command_book.Potion().execute()
-                self.command_book.Buff().execute()
+            pass
 
         # Execute next Point in the routine
         element.execute()
@@ -370,6 +366,12 @@ class Routine(Subject):
         if isinstance(c, Move) and not target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):
             self.check_point(bot_status.player_pos)
 
+            # Feed Pet
+            self.command_book.FeedPet().execute()
+            # Use Buff and Potion
+            self.command_book.Potion().execute()
+            self.command_book.Buff().execute()
+            
     def _on_component_complete(self, c: Component):
         if isinstance(c, Point):
             self.check_point(c.location)
