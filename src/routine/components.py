@@ -190,7 +190,7 @@ class Sequence(Component):
     def info(self):
         curr = super().info()
         curr['vars']['index'] = self.index
-        curr['vars']['series'] = self.series
+        # curr['vars']['series'] = self.series
         return curr
 
     def __delete__(self, instance):

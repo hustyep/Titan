@@ -250,7 +250,7 @@ class FlashJump(Skill):
             # detect = AsyncTask(
             #     target=self.detect_mob, args=(direction, ))
             # detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
             # mobs_detected = detect.join()
             mobs_detected = True
             times = 2 if mobs_detected else 1
