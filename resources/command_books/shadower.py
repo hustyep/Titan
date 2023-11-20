@@ -618,7 +618,7 @@ class ShadowWalker(Skill):
 
     def main(self):
         super().main()
-        bot_status.hide_start = time.time()
+        # bot_status.hide_start = time.time()
 
 
 class EPIC_ADVENTURE(Skill):

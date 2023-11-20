@@ -173,7 +173,7 @@ class Skill(Command):
                 cls.ready = len(matchs) == 0
             case SkillType.Buff:
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[8:, ], threshold=0.98)
+                    capture.skill_frame, cls.icon[8:, ], threshold=0.99)
                 if not matchs:
                     cls.ready = False
                 else:
