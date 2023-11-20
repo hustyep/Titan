@@ -464,7 +464,7 @@ def distance_to_rune(point):
     :return:        The distance from POINT to the rune, infinity if it is not a Point object.
     """
 
-    if isinstance(point, Point) and point.interval == 0:
+    if isinstance(point, Point) and point.interval == 0 and point.parent is None:
         return utils.distance(bot_status.rune_pos, point.location)
     return float('inf')
 
