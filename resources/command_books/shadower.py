@@ -147,7 +147,7 @@ def hit_and_run(direction, target, tolerance):
                     print(len(mobs))
                 if len(mobs) > 1:
                     break
-                time.sleep(0.05)
+                time.sleep(0.001)
         if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
             t = AsyncTask(target=pre_detect, args=(direction,))
             t.start()

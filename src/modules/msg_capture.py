@@ -5,7 +5,7 @@ from enum import Enum
 import numpy as np
 import cv2
 import pytesseract as tess
-
+from src.common.gui_setting import gui_setting
 
 if __name__ != "__main__":
     from src.modules.capture import capture
@@ -120,14 +120,13 @@ class MsgCapture:
         self.ready = True
 
         while True:
-            frame = capture.msg_frame
-            if frame is not None:
-                new_normal_msg = self.get_new_msg(frame, GameMsgType.NORMAL)
+            if gui_setting.notification.game_msg and capture.msg_frame is not None:
+                new_normal_msg = self.get_new_msg(capture.msg_frame, GameMsgType.NORMAL)
                 if new_normal_msg and new_normal_msg != self.last_nomarl_msg:
                     self.last_nomarl_msg = new_normal_msg
                     self.notify_new_msg(new_normal_msg)
 
-                new_sys_msg = self.get_new_msg(frame, GameMsgType.SYSTEM)
+                new_sys_msg = self.get_new_msg(capture.msg_frame, GameMsgType.SYSTEM)
                 if new_sys_msg and new_sys_msg != self.last_system_msg:
                     self.last_system_msg = new_sys_msg
                     self.notify_new_msg(new_sys_msg)

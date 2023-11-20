@@ -51,6 +51,7 @@ class NotificationSettings(Configurable):
         'Telegram': True,
         'Wechat': False,
         'Email': False,
+        'Game_Msg': False,
         'notice_level': 1
     }
 
@@ -65,6 +66,10 @@ class NotificationSettings(Configurable):
     @property
     def wechat(self):
         return self.get('Wechat')
+    
+    @property
+    def game_msg(self):
+        return self.get('Game_Msg')
     
     
 class PetSettings(Configurable):

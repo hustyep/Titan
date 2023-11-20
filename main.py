@@ -34,7 +34,7 @@ chat_bot.start(command_handler=listener.on_new_command)
 
 notifier.start()
 
-# msg_capture.start()
+msg_capture.start()
 
 bot.start()
 while not bot.ready:

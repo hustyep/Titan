@@ -10,6 +10,7 @@ from src.modules.capture import capture
 
 
 class MapPointType(Enum):
+    Unknown = -1
     Air = 0
     Floor = 1
     Rope = 2
@@ -31,6 +32,10 @@ class Map:
         self.mob_templates = []
         self.elite_templates = []
         self.boss_templates = []
+
+    @property
+    def data_available(self):
+        return self.minimap_data is not None and len(self.minimap_data) > 0
 
     def clear(self):
         self.name = ''
@@ -60,8 +65,9 @@ class Map:
                 print(f" ~ Finished loading map '{self.name}'")
         else:
             print(f" [!] map '{self.name}' not exist")
-            
-        minimap_sample_path = os.path.join(RESOURCES_DIR, 'maps', 'sample', f'{self.name}.png')
+
+        minimap_sample_path = os.path.join(
+            RESOURCES_DIR, 'maps', 'sample', f'{self.name}.png')
         if os.path.exists(minimap_sample_path):
             self.minimap_sample = cv2.imread(minimap_sample_path)
         elif capture.minimap_display is not None:
@@ -100,7 +106,7 @@ class Map:
         y = point[1]
         line = self.minimap_data[y]
         line[x] = MapPointType.Floor.value
-        
+
         for i in range(x - 1, -1, -1):
             if line[i] > 0:
                 line[i] = 0
@@ -112,7 +118,7 @@ class Map:
             else:
                 break
         self.save_minimap_data()
-        
+
     def add_end_point(self, point: tuple[int, int]):
         print(f'\n[~] add end point {point}')
         self.create_minimap_data()
@@ -120,7 +126,7 @@ class Map:
         y = point[1]
         line = self.minimap_data[y]
         line[x] = MapPointType.Floor.value
-        
+
         for i in range(x - 1, -1, -1):
             if line[i] == 0:
                 line[i] = 1
@@ -132,7 +138,7 @@ class Map:
             else:
                 break
         self.save_minimap_data()
-        
+
     def add_rope_point(self, point: tuple[int, int]):
         print(f'\n[~] add rope point {point}')
         self.create_minimap_data()
@@ -144,9 +150,9 @@ class Map:
                 self.minimap_data[i][x] = 2
             elif self.minimap_data[i][x] == 1 or self.minimap_data[i][x] == 3:
                 self.minimap_data[i][x] = 3
-                break        
+                break
         self.save_minimap_data()
-        
+
     def load_mob_template(self):
         try:
             mob_template = cv2.imread(f'assets/mobs/{self.name}@normal.png', 0)
@@ -170,11 +176,14 @@ class Map:
             self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
 
     def point_type(self, point: tuple[int, int]):
-        value = self.minimap_data[point[1]][point[0]]
-        return MapPointType(value)
+        if self.data_available:
+            value = self.minimap_data[point[1]][point[0]]
+            return MapPointType(value)
+        else:
+            return MapPointType.Unknown
 
     def near_rope(self, location: tuple[int, int]):
-        if self.minimap_data is not None:
+        if self.data_available:
             height, width = self.minimap_data.shape
             cur_x = location[0]
             cur_y = location[1]
@@ -189,7 +198,7 @@ class Map:
         return False
 
     def on_the_rope(self, location: tuple[int, int]):
-        if self.minimap_data is not None:
+        if self.data_available:
             point_type = self.point_type((location[0], location[1] + 7))
             if point_type == MapPointType.Floor or point_type == MapPointType.FloorRope:
                 return False
@@ -204,7 +213,7 @@ class Map:
         return value == MapPointType.Floor or value == MapPointType.FloorRope
 
     def platform_point(self, target: tuple[int, int]):
-        if self.minimap_data is not None:
+        if self.data_available:
             height, _ = map.minimap_data.shape
             for y in range(target[1] - 7, height - 1):
                 p = (target[0], y)
@@ -214,27 +223,32 @@ class Map:
         return target
 
     def valid_point(self, p: tuple[int, int]):
-        height, width = self.minimap_data.shape
-        x = min(max(0, p[0]), width - 1)
-        y = min(max(0, p[1]), height - 1)
-        return (x, y)
+        if self.data_available:
+            height, width = self.minimap_data.shape
+            x = min(max(0, p[0]), width - 1)
+            y = min(max(0, p[1]), height - 1)
+            return (x, y)
+        return p
 
     def is_continuous(self, p1, p2, max_gap=10):
-        if p1[1] != p2[1]:
-            return False
-        if not self.on_the_platform(p1) or not self.on_the_platform(p2):
-            return False
-        gap = 0
-        y = p1[1]
-        for x in range(p1[0], p2[0]):
-            if self.on_the_platform((x, y)):
-                gap = 0
-            else:
-                gap += 1
-            if gap > max_gap:
+        if self.data_available:
+            if p1[1] != p2[1]:
                 return False
+            if not self.on_the_platform(p1) or not self.on_the_platform(p2):
+                return False
+            gap = 0
+            y = p1[1]
+            for x in range(p1[0], p2[0]):
+                if self.on_the_platform((x, y)):
+                    gap = 0
+                else:
+                    gap += 1
+                if gap > max_gap:
+                    return False
 
-        return True
+            return True
+        else:
+            return True
 
 
 def get_maps_dir(name):
@@ -249,7 +263,7 @@ def run_if_map_available(function):
     """
 
     def helper(*args, **kwargs):
-        if map.minimap_data is not None and len(map.minimap_data) > 0:
+        if map.data_available:
             return function(*args, **kwargs)
     return helper
 
