@@ -1,26 +1,38 @@
 from src.common.interfaces import Configurable
 
+
 class AutoSettings(Configurable):
     DEFAULT_CONFIG = {
         'MVP': False,
         'Ask': False,
         'Mining': False,
         'Auto Load': True,
-        'Detect Mob': False
+        'Detect Mob': False,
+        'Detect Elite': False,
+        'Detect Boss': False
     }
-    
+
     @property
     def mining(self):
         return self.get('Mining')
-    
+
     @property
     def auto_load(self):
         return self.get('Auto Load')
-   
+
     @property
     def detect_mob(self):
-        return self.get('Detect Mob') 
-    
+        return self.get('Detect Mob')
+
+    @property
+    def detect_elite(self):
+        return self.get('Detect Elite')
+
+    @property
+    def detect_boss(self):
+        return self.get('Detect Boss')
+
+
 class BuffSettings(Configurable):
     DEFAULT_CONFIG = {
         'Guild Buff': False,
@@ -32,7 +44,8 @@ class BuffSettings(Configurable):
         'Legion Wealthy': False,
         'Exp Coupon': False
     }
-    
+
+
 class NotificationSettings(Configurable):
     DEFAULT_CONFIG = {
         'Telegram': True,
@@ -40,17 +53,19 @@ class NotificationSettings(Configurable):
         'Email': False,
         'notice_level': 1
     }
-    
+
     @property
     def notice_level(self):
         return self.get('notice_level')
-    
+
+
 class PetSettings(Configurable):
     DEFAULT_CONFIG = {
         'Auto-feed': False,
         'Num pets': 1
     }
-    
+
+
 class MiscSettings(Configurable):
     DEFAULT_CONFIG = {
         'Open Herb': False,
@@ -58,12 +73,14 @@ class MiscSettings(Configurable):
         'Cube': False,
         'Star': False,
     }
-    
+
+
 class ShadowerSettings(Configurable):
     DEFAULT_CONFIG = {
         'Meso Explosion': False,
         'Trickblade': False,
     }
+
 
 class Gui_Setting():
     def __init__(self):
@@ -73,5 +90,6 @@ class Gui_Setting():
         self.pet = PetSettings('pet')
         self.misc = MiscSettings('misc')
         self.shadower = ShadowerSettings('shadower')
-        
+
+
 gui_setting = Gui_Setting()

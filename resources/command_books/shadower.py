@@ -104,8 +104,10 @@ def pre_detect(direction):
                         bottom=50,
                         left=-620 if direction == 'right' else 1000,
                         right=1000 if direction == 'right' else -620)
-    matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
-    if not matchs:
+    matchs = []
+    if gui_setting.auto.detect_elite:
+        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
+    if not matchs and gui_setting.auto.detect_boss:
         matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.BOSS)
     return len(matchs) > 0
 
@@ -126,15 +128,17 @@ def hit_and_run(direction, target, tolerance):
             while count < 80:
                 count += 1
                 anchor = capture.locate_player_fullscreen(accurate=True)
-                # matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                #                      anchor=anchor,
-                #                      type=MobType.BOSS)
-                # if not matchs:
-                #     matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                #                          anchor=anchor,
-                #                          type=MobType.ELITE)
-                # if matchs:
-                #     SonicBlow().execute()
+                matchs = []
+                if gui_setting.auto.detect_boss:
+                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                                         anchor=anchor,
+                                         type=MobType.BOSS)
+                if not matchs and gui_setting.auto.detect_elite:
+                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                                         anchor=anchor,
+                                         type=MobType.ELITE)
+                if matchs:
+                    SonicBlow().execute()
                 mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1100, right=1100),
                                    anchor=anchor,
                                    multy_match=True,
@@ -144,12 +148,14 @@ def hit_and_run(direction, target, tolerance):
                 if len(mobs) > 1:
                     break
                 time.sleep(0.05)
-        # t = AsyncTask(target=pre_detect, args=(direction,))
-        # t.start()
+        if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
+            t = AsyncTask(target=pre_detect, args=(direction,))
+            t.start()
         FlashJump(target=target, attack_if_needed=True).execute()
-        # elite_detected = t.join()
-        # if elite_detected:
-        #     SonicBlow().execute()
+        if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
+            elite_detected = t.join()
+            if elite_detected:
+                SonicBlow().execute()
     else:
         FlashJump(target=target, attack_if_needed=True).execute()
 
@@ -461,7 +467,7 @@ class ShadowVeil(Skill):
     backswing = 0.9
     duration = 12
 
-    def __init__(self, direction=None):
+    def __init__(self, direction='right'):
         super().__init__(locals())
         if direction is None:
             self.direction = direction
@@ -495,7 +501,6 @@ class SuddenRaid(Skill):
     #         MesoExplosion().execute()
     #     return used
 
-
     @classmethod
     def check(cls):
         if cls.icon is None:
@@ -503,6 +508,7 @@ class SuddenRaid(Skill):
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[9:, ], threshold=0.9, debug=False)
         cls.ready = len(matchs) > 0
+
 
 class TrickBlade(Skill):
     key = Keybindings.TRICKBLADE
