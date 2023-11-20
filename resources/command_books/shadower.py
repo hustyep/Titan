@@ -483,13 +483,11 @@ class SuddenRaid(Skill):
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         usable = super().canUse()
-        return usable
-        # if usable:
-        #     mobs = detect_mobs(insets=AreaInsets(
-        #         top=500, bottom=500, left=500, right=500))
-        #     return mobs is None or len(mobs) > 0
-        # else:
-        #     return False
+        if usable:
+            mobs = detect_mobs()
+            return mobs is None or len(mobs) > 0
+        else:
+            return False
 
     # def main(self):
     #     used = super().main()
