@@ -141,11 +141,11 @@ def hit_and_run(direction, target, tolerance):
                     SonicBlow().execute()
                 mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -200, right=1100 if direction == 'right' else -200),
                                    anchor=anchor,
-                                   multy_match=True,
+                                   multy_match=False,
                                    debug=False)
                 if len(mobs):
                     print(len(mobs))
-                if len(mobs) > 1:
+                if len(mobs) > 0:
                     break
                 time.sleep(0.001)
         if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
