@@ -35,8 +35,14 @@ minal_closest_pos = None
 mineral_type = None
 
 def reset():
-    global rune_pos, rune_closest_pos, minal_pos, minal_closest_pos, mineral_type
+    global player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, minal_pos, minal_closest_pos, mineral_type
 
+    player_pos = (0, 0)
+    player_direction = 'right'
+    path = []
+    lost_minimap = False
+    point_checking = False
+    
     rune_pos = None
     rune_closest_pos = None
     

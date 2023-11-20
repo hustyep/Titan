@@ -6,7 +6,7 @@ class AutoSettings(Configurable):
         'MVP': False,
         'Ask': False,
         'Mining': False,
-        'Auto Load': True,
+        'Load Map': True,
         'Detect Mob': False,
         'Detect Elite': False,
         'Detect Boss': False
@@ -17,8 +17,8 @@ class AutoSettings(Configurable):
         return self.get('Mining')
 
     @property
-    def auto_load(self):
-        return self.get('Auto Load')
+    def load_map(self):
+        return self.get('Load Map')
 
     @property
     def detect_mob(self):

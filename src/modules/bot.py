@@ -95,14 +95,14 @@ class Bot(Subject):
         bot_settings.role_name = role_name
         bot_settings.load_role_template()
         
-        if not gui_setting.auto.auto_load:
-            self.prepared = True
-            return
-        
         # update command book
         if bot_settings.class_name != class_name:
             file = bot_settings.get_command_book_path(class_name)
             self.load_commands(file)
+
+        if not gui_setting.auto.load_map:
+            self.prepared = True
+            return
 
         # update routine
         map_name = detector.identify_map_name()
@@ -123,6 +123,7 @@ class Bot(Subject):
 
     def load_routine(self, file: str):
         routine.load(file, self.command_book)
+        bot_status.reset()
 
     def toggle(self, enabled: bool, reason: str = ''):
         bot_status.rune_pos = None

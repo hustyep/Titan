@@ -10,7 +10,6 @@ from src.gui import Menu, View, Edit, Settings, Macros
 from src.common import bot_settings
 from src.modules.bot import BotUpdateType, bot
 from src.modules.listener import listener
-from src.command.command_book import CommandBook
 from src.routine.routine import RoutineUpdateType, routine
 
 
@@ -105,6 +104,7 @@ class GUI():
                 self.settings.update_class_bindings()
                 self.menu.file.enable_routine_state()
                 self.view.status.set_cb(bot.command_book.name)
+                self.view.status.set_role(bot_settings.role_name)
 
     def on_routine_update(self, args):
         match (args[0]):
@@ -116,7 +116,10 @@ class GUI():
             case (RoutineUpdateType.updated):
                 self.set_routine(routine.display)
                 self.view.details.update_details()
-
+            case (RoutineUpdateType.selected):
+                self.view.routine.select(routine.index)
+                self.view.details.display_info(routine.index)
+                
     def on_listener(self, args):
         match (args[0]):
             case 'recalibrated':

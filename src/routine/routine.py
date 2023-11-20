@@ -353,7 +353,7 @@ class Routine(Subject):
 
         # Highlight the current Point
         self.on_next((RoutineUpdateType.selected, element))
-
+        
         if isinstance(element, Point):
             # new_direction = 'right' if element.location[0] > bot_status.player_pos[0] else 'left'
             # if new_direction == bot_status.player_direction:

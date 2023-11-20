@@ -2,13 +2,9 @@
 
 import os
 import cv2
-import math
-import pickle
-import xlrd
 import numpy as np
 
 from os.path import join, isfile, splitext, basename
-from heapq import heappush, heappop
 from src.common.constants import *
 from src.modules.capture import capture
 
@@ -31,6 +27,7 @@ class Map:
 
         self.name = ''
         self.minimap_data = None
+        self.minimap_sample = None
         self.mob_templates = []
         self.elite_templates = []
         self.boss_templates = []
@@ -38,6 +35,7 @@ class Map:
     def clear(self):
         self.name = ''
         self.minimap_data = None
+        self.minimap_sample = None
         self.mob_templates = []
         self.elite_templates = []
         self.boss_templates = []
@@ -49,18 +47,25 @@ class Map:
         self.load_mob_template()
 
     def load_minimap_data(self):
-        minimap_data_file = f'{get_maps_dir(self.name)}.txt'
-        print(f"[~] Loading map '{minimap_data_file}'")
-        if os.path.exists(minimap_data_file):
+        map_dir = get_maps_dir(self.name)
+        minimap_data_path = f'{map_dir}.txt'
+        print(f"[~] Loading map '{minimap_data_path}'")
+        if os.path.exists(minimap_data_path):
             try:
                 self.minimap_data = np.loadtxt(
-                    minimap_data_file, delimiter=',').astype(int)
+                    minimap_data_path, delimiter=',').astype(int)
             except Exception as e:
-                print(f'[!] load map: {minimap_data_file} failed! \n{e}')
+                print(f'[!] load map: {minimap_data_path} failed! \n{e}')
             else:
                 print(f" ~ Finished loading map '{self.name}'")
         else:
             print(f" [!] map '{self.name}' not exist")
+            
+        minimap_sample_path = os.path.join(RESOURCES_DIR, 'maps', 'sample', f'{self.name}.png')
+        if os.path.exists(minimap_sample_path):
+            self.minimap_sample = cv2.imread(minimap_sample_path)
+        elif capture.minimap_display is not None:
+            cv2.imwrite(minimap_sample_path, capture.minimap_display)
 
     def save_minimap_data(self):
         try:

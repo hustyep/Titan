@@ -28,7 +28,6 @@ class Capture(Subject):
         self.msg_hwnd = 0
         self.frame = None
         self.msg_frame = None
-        self.minimap_sample = None
         self.minimap_actual = None
         self.minimap_display = None
         self.window = {
@@ -198,8 +197,6 @@ class Capture(Subject):
         self.minimap_display = minimap
         self.minimap_actual = minimap[:,
                                       bot_settings.mini_margin:-bot_settings.mini_margin]
-        if self.minimap_sample is None:
-            self.minimap_sample = minimap
         self.on_next((BotVerbose.NEW_FRAME, self.frame))
 
     def convert_to_relative_minimap_point(self, pos: tuple[int, int]):
