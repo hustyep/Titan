@@ -325,3 +325,8 @@ def string_similar(s1, s2):
     seq = difflib.SequenceMatcher(None, s1, s2)
     ratio = seq.ratio()
     return ratio
+
+def cvt2Plt(cv_image):
+    rgb_img = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
+    image = Image.fromarray(rgb_img)
+    return image
