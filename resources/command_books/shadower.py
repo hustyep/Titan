@@ -95,7 +95,7 @@ def step(target, tolerance):
     elif abs(d_x) >= 26:
         hit_and_run(direction, target, tolerance)
     else:
-        Walk(target_x=target[0], tolerance=tolerance).execute()
+        Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
 
 def pre_detect(direction):

@@ -517,9 +517,9 @@ class Walk(Command):
         key_down(direction)
         while bot_status.enabled and abs(d_x) > self.tolerance and walk_counter < self.max_steps:
             new_direction = 'left' if d_x < 0 else 'right'
-            if abs(d_x) <= 2:
+            if abs(d_x) <= 1:
                 key_up(direction)
-                press_acc(new_direction, down_time=0.02, up_time=0.03)
+                press_acc(new_direction, down_time=0.01, up_time=0.02)
             else:
                 if new_direction != direction:
                     key_up(direction)
