@@ -153,24 +153,25 @@ class Bot(Subject):
             chat_bot.voice_call()
             match (event_type):
                 case BotError.OTHERS_STAY_OVER_120S:
-                    ActionSimulator.go_home()
+                    pass
+                    # ActionSimulator.go_home()
                 case (_):
                     self.toggle(False, event_type.value)
-            # end match
         elif isinstance(event_type, BotWarnning):
-            match event_type:
-                # case BotWarnning.NO_MOVEMENT:
-                #     ActionSimulator.jump_down()
-                case BotWarnning.OTHERS_STAY_OVER_30S:
-                    words = ['cc pls', 'cc pls ', ' cc pls']
-                    random_word = random.choice(words)
-                    ActionSimulator.say_to_all(random_word)
-                case BotWarnning.OTHERS_STAY_OVER_60S:
-                    words = ['??', 'hello?', ' cc pls', 'bro?']
-                    random_word = random.choice(words)
-                    ActionSimulator.say_to_all(random_word)
-                case BotWarnning.OTHERS_COMMING:
-                    pass
+            pass
+            # match event_type:
+            #     # case BotWarnning.NO_MOVEMENT:
+            #     #     ActionSimulator.jump_down()
+            #     case BotWarnning.OTHERS_STAY_OVER_30S:
+            #         words = ['cc pls', 'cc pls ', ' cc pls']
+            #         random_word = random.choice(words)
+            #         ActionSimulator.say_to_all(random_word)
+            #     case BotWarnning.OTHERS_STAY_OVER_60S:
+            #         words = ['??', 'hello?', ' cc pls', 'bro?']
+            #         random_word = random.choice(words)
+            #         ActionSimulator.say_to_all(random_word)
+            #     case BotWarnning.OTHERS_COMMING:
+            #         pass
         elif isinstance(event_type, BotInfo):
             match event_type:
                 case BotInfo.RUNE_ACTIVE:

@@ -284,22 +284,22 @@ class Detector(Subject):
             self.others_no_detect_count += 1
 
         duration = int(time.time() - self.others_comming_time)
-        if self.others_no_detect_count == 150:
+        if self.others_no_detect_count == 30:
             self.others_no_detect_count += 1
-            if self.others_comming_time > 0 and self.others_detect_count > 200:
+            if self.others_comming_time > 0 and self.others_detect_count > 40:
                 self.on_next((BotInfo.OTHERS_LEAVED, ))
             self.others_detect_count = 0
             self.others_comming_time = 0
-        elif self.others_detect_count == 1200:
+        elif self.others_detect_count == 300:
             self.others_detect_count += 1
             self.on_next((BotError.OTHERS_STAY_OVER_120S, duration))
-        elif self.others_detect_count == 800:
+        elif self.others_detect_count == 200:
             self.others_detect_count += 1
             self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
-        elif self.others_detect_count == 500:
+        elif self.others_detect_count == 100:
             self.others_detect_count += 1
             self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
-        elif self.others_detect_count == 200:
+        elif self.others_detect_count == 50:
             self.others_detect_count += 1
             self.on_next((BotWarnning.OTHERS_COMMING, duration))
 
