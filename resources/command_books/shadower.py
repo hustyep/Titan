@@ -167,7 +167,7 @@ def move_up(target):
     elif dy <= 7:
         press(Keybindings.JUMP)
         sleep_in_the_air()
-    elif dy <= 24:
+    elif dy <= 23:
         JumpUp(target).execute()
     elif dy <= 41 and ShadowAssault.canUse():
         ShadowAssault(target=target).execute()
@@ -583,6 +583,7 @@ class Buff(Command):
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!use buff")
         for buff in self.buffs:
             if buff.canUse():
+                print(buff)
                 result = buff().execute()
                 if result:
                     break
