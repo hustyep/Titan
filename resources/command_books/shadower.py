@@ -125,7 +125,7 @@ def hit_and_run(direction, target, tolerance):
             SlashShadowFormation().execute()
 
             count = 0
-            while count < 80:
+            while count < 150:
                 count += 1
                 anchor = capture.locate_player_fullscreen(accurate=True)
                 matchs = []
