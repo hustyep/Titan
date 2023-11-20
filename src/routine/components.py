@@ -118,6 +118,8 @@ class Point(Component):
         if self.interval > 0:
             now = time.time()
             if self.skip and self.last_execute_time == 0:
+                if self.interval == 0:
+                    return
                 self.last_execute_time = now
             if now - self.last_execute_time >= self.interval:
                 self._main()

@@ -333,6 +333,7 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         #     p = (start[0] + (20 if d_x > 0 else -20), target[1])
         #     if map.on_the_platform(p):
         #         return p
+        tmp_x = (target[0], start[1])
         if map.is_continuous(tmp_x, target):
             return tmp_x
         tmp_y = (start[0], target[1])
