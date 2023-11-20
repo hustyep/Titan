@@ -4,7 +4,8 @@ import threading
 from src.chat_bot.telegram_bot import TelegramBot
 from src.chat_bot.wechat_bot import WechatBot
 from src.common import bot_settings
-    
+from src.common.gui_setting import gui_setting
+
 
 class ChatBot():
 
@@ -33,7 +34,10 @@ class ChatBot():
         self.telegram_bot.send_image(image, image_path)
 
     def send_message(self, text=None, image=None, image_path=None):
-        self.telegram_bot.send_message(text=text, image_path=image_path)
+        if gui_setting.notification.telegram:
+            self.telegram_bot.send_message(text=text, image_path=image_path)
+        if gui_setting.notification.wechat:
+            self.wechat_bot.send_message(text=text, imagePath=image_path)
 
     def voice_call(self):
         self.wechat_bot.voice_call()
@@ -43,5 +47,6 @@ class ChatBot():
 
     def on_command(self, command, *arg):
         return self.command_handler(command, *arg)
-        
+
+
 chat_bot = ChatBot()

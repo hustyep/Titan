@@ -184,7 +184,8 @@ class Detector(Subject):
                 if self.lost_minimap_time == 0:
                     self.lost_minimap_time = time.time()
                 if time.time() - self.lost_minimap_time > self.lost_time_threshold:
-                    self.on_next((BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
+                    self.on_next(
+                        (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
         else:
             self.lost_minimap_time = 0
             bot_status.lost_minimap = False
@@ -344,7 +345,7 @@ class Detector(Subject):
     def check_mineral(self, frame, minimap):
         if not gui_setting.auto.mining:
             return
-        
+
         if frame is None or minimap is None:
             return
 
@@ -427,7 +428,17 @@ class Detector(Subject):
         for i in string.punctuation:
             if i not in ['-']:
                 name = name.replace(i, '')
-        return name
+        result = name
+        best = 0       
+        for value in Map_Names:
+            ratio = utils.string_similar(name, value)
+            if ratio == 1:
+                result = value
+                break
+            elif ratio > best:
+                best = ratio
+                result = value
+        return result
 
 
 detector = Detector()

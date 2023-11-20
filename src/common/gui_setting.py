@@ -58,7 +58,15 @@ class NotificationSettings(Configurable):
     def notice_level(self):
         return self.get('notice_level')
 
-
+    @property
+    def telegram(self):
+        return self.get('Telegram')
+    
+    @property
+    def wechat(self):
+        return self.get('Wechat')
+    
+    
 class PetSettings(Configurable):
     DEFAULT_CONFIG = {
         'Auto-feed': False,
