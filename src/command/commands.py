@@ -18,10 +18,6 @@ class DefaultKeybindings:
     Attack = 'insert'
     JUMP = 's'
     FLASH_JUMP = ';'
-    ROPE_LIFT = 'b'
-    ERDA_SHOWER = '`'
-    MAPLE_WARRIOR = '3'
-    ARACHNID = 'j'
 
     # Potion
     EXP_POTION = '0'
@@ -31,7 +27,14 @@ class DefaultKeybindings:
     CANDIED_APPLE = '5'
     LEGION_WEALTHY = ''
     EXP_COUPON = '6'
-
+    
+    # Common Skill
+    FOR_THE_GUILD = '7'
+    HARD_HITTER = '8'
+    ROPE_LIFT = 'b'
+    ERDA_SHOWER = '`'
+    MAPLE_WARRIOR = '3'
+    ARACHNID = 'j'
 
 class Keybindings(DefaultKeybindings):
     """ 'Keybindings' must be implemented in command book."""
@@ -140,6 +143,7 @@ class Skill(Command):
     type: SkillType = SkillType.Attack
     icon = None
     ready = True
+    enabled = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -171,23 +175,26 @@ class Skill(Command):
                 matchs = utils.multi_match(
                     capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
                 cls.ready = len(matchs) == 0
+                cls.enabled = not cls.ready
             case SkillType.Buff:
-                matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[8:, ], threshold=0.99)
-                if not matchs:
+                cls.check_buff_enabled()
+                if cls.enabled:
                     cls.ready = False
                 else:
                     matchs = utils.multi_match(
-                        capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
-                    if not matchs:
-                        matchs = utils.multi_match(
-                            capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
-                    cls.ready = len(matchs) == 0
+                        capture.skill_frame, cls.icon[8:, ], threshold=0.99)
+                    cls.ready = len(matchs) > 0                    
             case (_):
                 matchs = utils.multi_match(
                     capture.skill_frame, cls.icon[8:, ], threshold=0.9)
                 cls.ready = len(matchs) > 0
 
+    @classmethod
+    def check_buff_enabled(cls):
+        matchs = utils.multi_match(capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+        if not matchs:
+            matchs = utils.multi_match(capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+        cls.enabled = len(matchs) > 0
 
 class Move(Command):
 
@@ -767,6 +774,41 @@ class Buff(Command):
         bot_status.enabled = False
 
 
+class ForTheGuild(Skill):
+    key = Keybindings.FOR_THE_GUILD
+    cooldown = 3610
+    backswing = 0.1
+    type = SkillType.Buff
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        enabled = gui_setting.buff.get('Guild Buff')
+        if not enabled:
+            return False
+
+        if HardHitter.enabled:
+            return False
+
+        return super().canUse(next_t)
+
+
+class HardHitter(Skill):
+    key = Keybindings.HARD_HITTER
+    cooldown = 3610
+    backswing = 0.1
+    type = SkillType.Buff
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        enabled = gui_setting.buff.get('Guild Buff')
+        if not enabled:
+            return False
+
+        if ForTheGuild.enabled:
+            return False
+
+        return super().canUse(next_t)
+    
 ###################
 #      Potion     #
 ###################

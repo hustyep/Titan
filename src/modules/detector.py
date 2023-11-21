@@ -82,7 +82,7 @@ class Detector(Subject):
                 self.check_binded()
                 self.check_dead()
                 self.check_no_movement()
-                # self.check_others()
+                self.check_others()
                 self.check_alert()
                 self.check_forground()
             time.sleep(0.2)

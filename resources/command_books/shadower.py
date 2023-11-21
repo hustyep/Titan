@@ -23,8 +23,6 @@ class Keybindings(DefaultKeybindings):
     LAST_RESORT = '2'
     SHADOW_WALKER = 'shift'
     THROW_BLASTING = 'v'
-    FOR_THE_GUILD = '7'
-    HARD_HITTER = '8'
     PICK_POCKET = 'f1'
 
     # Potion
@@ -125,7 +123,7 @@ def hit_and_run(direction, target, tolerance):
             SlashShadowFormation().execute()
 
             count = 0
-            while count < 150:
+            while count < 200:
                 count += 1
                 anchor = capture.locate_player_fullscreen(accurate=True)
                 matchs = []
@@ -577,8 +575,8 @@ class Buff(Command):
             MapleWarrior,
             GoddessBlessing,
             LastResort,
-            FOR_THE_GUILD,
-            HARD_HITTER,
+            ForTheGuild,
+            HardHitter,
             ShadowWalker,
             PickPocket,
         ]
@@ -644,39 +642,3 @@ class EPIC_ADVENTURE(Skill):
     cooldown = 120
     backswing = 0.75
     type = SkillType.Buff
-
-
-class FOR_THE_GUILD(Command):
-    key = Keybindings.FOR_THE_GUILD
-    cooldown = 3610
-    backswing = 0.1
-    type = SkillType.Buff
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        enabled = gui_setting.buff.get('Guild Buff')
-        if not enabled:
-            return False
-
-        if time.time() - HARD_HITTER.castedTime <= 1800 and HARD_HITTER.castedTime > 0:
-            return False
-
-        return super().canUse(next_t)
-
-
-class HARD_HITTER(Command):
-    key = Keybindings.HARD_HITTER
-    cooldown = 3610
-    backswing = 0.1
-    type = SkillType.Buff
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        enabled = gui_setting.buff.get('Guild Buff')
-        if not enabled:
-            return False
-
-        if time.time() - FOR_THE_GUILD.castedTime <= 1800:
-            return False
-
-        return super().canUse(next_t)
