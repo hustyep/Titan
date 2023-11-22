@@ -247,7 +247,7 @@ class DoubleJump(Skill):
             times = 2 if abs(dx) >= 32 else 1
             if dy == 0:
                 if abs(dx) in range(20, 26):
-                    press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.5)
+                    press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.2)
                 else:
                     press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             else:
@@ -555,8 +555,8 @@ class Buff(Command):
             if buff.canUse():
                 print(buff)
                 result = buff().execute()
-                if result:
-                    break
+                # if result:
+                #     break
 
 
 class GoddessBlessing(Skill):
