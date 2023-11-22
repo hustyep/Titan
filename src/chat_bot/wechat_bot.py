@@ -21,10 +21,13 @@ WECHAT_BOT_COMMAND_START = '/b'
 # pause
 WECHAT_BOT_COMMAND_PAUSE = '/p'
 # screenshot
-WECHAT_BOT_COMMAND_SCREENSHOT = '/t'
+WECHAT_BOT_COMMAND_SCREENSHOT = '/ss'
 # say
 WECHAT_BOT_COMMAND_SAY = '/s'
-
+# tp
+WECHAT_BOT_COMMAND_TP = '/tp'
+# click
+WECHAT_BOT_COMMAND_CLICK = '/c'
 
 class WechatBot:
 
@@ -94,6 +97,10 @@ class WechatBot:
                 self.screenshot_command()
             elif msg.startswith(WECHAT_BOT_COMMAND_SAY):
                 self.say_command(msg=msg)
+            elif msg.startswith(WECHAT_BOT_COMMAND_CLICK):
+                self.click_command(msg=msg)
+            elif msg == WECHAT_BOT_COMMAND_TP:
+                self.tp_command(msg=msg)
             else:
                 self.send_text('unknow')
             # self.last_msg = None
@@ -119,6 +126,15 @@ class WechatBot:
         message, image_path = self.command_handler(ChatBotCommand.SAY, (list[1], ))
         self.send_message(message, imagePath=image_path)
 
+    def click_command(self, msg: str):
+        list = msg.split(' ')
+        message, image_path = self.command_handler(ChatBotCommand.CLICK, (list[1], ))
+        self.send_message(message, imagePath=image_path)
+        
+    def tp_command(self):
+        message, image_path = self.command_handler(ChatBotCommand.TP, )
+        self.send_message(message, imagePath=image_path)
+        
     def click(self, x, y):
         lParam = win32api.MAKELONG(x, y)
         win32gui.SendMessage(
