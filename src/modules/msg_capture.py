@@ -120,7 +120,7 @@ class MsgCapture:
         self.ready = True
 
         while True:
-            if gui_setting.notification.game_msg and capture.msg_frame is not None:
+            if gui_setting.notification.game_msg and capture.msg_frame is not None and len(capture.msg_frame) > 0:
                 new_normal_msg = self.get_new_msg(capture.msg_frame, GameMsgType.NORMAL)
                 if new_normal_msg and new_normal_msg != self.last_nomarl_msg:
                     self.last_nomarl_msg = new_normal_msg
@@ -135,7 +135,6 @@ class MsgCapture:
                 # if new_mvp_msg and new_mvp_msg != self.last_mvp_msg:
                 #     self.last_mvp_msg = new_mvp_msg
                 #     self.notify_new_msg(new_mvp_msg)
-
             time.sleep(0.5)
 
     def get_new_msg(self, image, msg_type) -> GameMsg | None:

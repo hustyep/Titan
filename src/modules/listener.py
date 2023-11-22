@@ -156,7 +156,7 @@ class Listener(Configurable, Subject):
                 bot.toggle(False)
                 return bot.bot_status(), None
             case ChatBotCommand.SCREENSHOT:
-                filepath = utils.save_screenshot(capture.frame)
+                filepath = utils.save_screenshot(capture.frame if capture.frame is not None else capture.camera.get_latest_frame())
                 return None, filepath
             case ChatBotCommand.PRINTSCREEN:
                 filepath = utils.save_screenshot(
