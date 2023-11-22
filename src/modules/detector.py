@@ -132,12 +132,22 @@ class Detector(Subject):
         y = (frame.shape[0] - 220) // 2
         ok_btn = utils.multi_match(
             frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+        if ok_btn:
+            hid.key_press('esc')
+            time.sleep(0.1)
+            return
 
         x = (frame.shape[1] - 520) // 2
         y = (frame.shape[0] - 400) // 2
         end_talk = utils.multi_match(
             frame[y:y+400, x:x+520], END_TALK_TEMPLATE, threshold=0.9)
-        if ok_btn or end_talk:
+        if end_talk:
+            hid.key_press('esc')
+            time.sleep(0.1)
+            return
+        confirm_btn = utils.multi_match(
+            frame[y:y+400, x:x+520], BUTTON_CONFIRM_TEMPLATE, threshold=0.9)
+        if confirm_btn:
             hid.key_press('esc')
             time.sleep(0.1)
 

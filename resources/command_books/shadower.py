@@ -92,8 +92,8 @@ def step(target, tolerance):
         move_down(next_p)
     elif abs(d_x) >= 26:
         hit_and_run(direction, next_p, tolerance)
-    elif abs(d_x) >= 20:
-        DoubleJump(next_p).execute()
+    # elif abs(d_x) >= 20:
+    #     DoubleJump(next_p).execute()
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
@@ -125,7 +125,7 @@ def hit_and_run(direction, target, tolerance):
                                          type=MobType.ELITE)
                 if matchs:
                     SonicBlow().execute()
-                mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -200, right=1100 if direction == 'right' else -200),
+                mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
                                    anchor=anchor,
                                    multy_match=False,
                                    debug=False)

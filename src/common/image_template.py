@@ -14,6 +14,8 @@ RUNE_BUFF_GRAY_TEMPLATE = cv2.imread(
 ########################
 
 # Alert button
+BUTTON_CONFIRM_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/btn_confirm_template.png', 0)
 BUTTON_OK_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/btn_ok_template.png', 0)
 END_TALK_TEMPLATE = cv2.imread(

@@ -192,8 +192,8 @@ def mob_detect_test(accurate=True):
 
 def buff_test():
     frame = cv2.imread(".test/Maple_231119_130543.png")
-    template = cv2.imread('assets/skills/shadower/SuddenRaid.png', 0)
-    # ShadowWalker ErdaShower
+    template = cv2.imread('assets/skills/shadower/ForTheGuild.png', 0)
+    # ShadowWalker ErdaShower SuddenRaid
     # template =Image.open('assets/skills/shadower/ShadowWalker.png').convert('RGBA')
     # template = utils.add_mask(template, (0,0,28,28), fill=(0,0,0,int(0.0*255)))
 
