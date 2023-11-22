@@ -12,19 +12,25 @@ import cv2
 from src.common.hid import hid
 from src.modules.capture import capture
 from src.common.image_template import WECHAT_CALL_TEMPLATE, WECHAT_CALL_TEMPLATE_2X
+from src.chat_bot.chat_bot_entity import ChatBotEntity, ChatBotCommand
 
-
-WECHAT_BOT_COMMAND_INFO = '/info'
-WECHAT_BOT_COMMAND_START = '/start'
-WECHAT_BOT_COMMAND_PAUSE = '/pause'
-WECHAT_BOT_COMMAND_SCREENSHOT = '/shot'
-WECHAT_BOT_COMMAND_SAY = '/say'
+# info
+WECHAT_BOT_COMMAND_INFO = '/i'
+# begin
+WECHAT_BOT_COMMAND_START = '/b'
+# pause
+WECHAT_BOT_COMMAND_PAUSE = '/p'
+# screenshot
+WECHAT_BOT_COMMAND_SCREENSHOT = '/t'
+# say
+WECHAT_BOT_COMMAND_SAY = '/s'
 
 
 class WechatBot:
 
-    def __init__(self, name):
+    def __init__(self, name, command_handler):
         self.name = name
+        self.command_handler = command_handler
         self.hwnd = win32gui.FindWindow(None, name)
         self.last_msg = None
         self.window = {
@@ -78,45 +84,39 @@ class WechatBot:
             self.last_msg = msg
             print(f'[wechat] {msg}')
 
-            if msg.startswith(WECHAT_BOT_COMMAND_INFO):
+            if msg == WECHAT_BOT_COMMAND_INFO:
                 self.info_command()
-            elif msg.startswith(WECHAT_BOT_COMMAND_START):
+            elif msg == WECHAT_BOT_COMMAND_START:
                 self.start_command()
-            elif msg.startswith(WECHAT_BOT_COMMAND_PAUSE):
+            elif msg == WECHAT_BOT_COMMAND_PAUSE:
                 self.pause_command()
-            elif msg.startswith(WECHAT_BOT_COMMAND_SCREENSHOT):
+            elif msg == WECHAT_BOT_COMMAND_SCREENSHOT:
                 self.screenshot_command()
             elif msg.startswith(WECHAT_BOT_COMMAND_SAY):
                 self.say_command(msg=msg)
-
-            self.send_text('get')
+            else:
+                self.send_text('unknow')
             self.last_msg = None
 
     def info_command(self):
-        pass
+        message, _ = self.command_handler(ChatBotCommand.INFO, )
+        self.send_text(message)
 
     def start_command(self):
-        pass
+        message, _ = self.command_handler(ChatBotCommand.START, )
+        self.send_text(message)
 
     def pause_command(self):
-        pass
+        message, _ = self.command_handler(ChatBotCommand.PAUSE, )
+        self.send_text(message)
 
     def screenshot_command(self):
-        self.send_image(capture.frame)
+        _, image_path = self.command_handler(ChatBotCommand.SCREENSHOT, )
+        self.send_image(imagePath=image_path)
 
     def say_command(self, msg: str):
-        list = msg.split(" ")
-        str = '?'
-        if len(list) > 1:
-            str = list[1]
-
-        self.pause_command()
-        hid.key_press('enter')
-        hid.key_string(str)
-        hid.key_press('enter')
-
-        time.sleep(0.1)
-        self.send_text(f'sayed "{str}" to all')
+        message, image_path = self.command_handler(ChatBotCommand.SAY, (msg, ))
+        self.send_message(message, imagePath=image_path)
 
     def click(self, x, y):
         lParam = win32api.MAKELONG(x, y)
@@ -200,12 +200,9 @@ class WechatBot:
             self.send_image(imagePath=imagePath)
 
     def voice_call(self):
-        # self.click(480, 530)
         frame = utils.window_capture(self.hwnd)
         if frame is None:
             return
-        # cv2.imshow("", frame)
-        # cv2.waitKey()
         location = utils.multi_match(
             frame, WECHAT_CALL_TEMPLATE, threshold=0.9)
         if not location:
@@ -217,23 +214,7 @@ class WechatBot:
     def video_call(self):
         self.click(510, 530)
 
-        # frame = utils.window_capture(self.hwnd)
-        # location = utils.multi_match(frame, WECHAT_CALL_TEMPLATE, threshold=0.9)
-        # if location:
-        #     self.click(location[0][0], location[0][1])
-
     def shot_new_msg(self):
-        # with mss() as sct:
-        # msg_size = 70
-        # msg_rect = {
-        # 'left': self.window['left'],
-        # 'top': self.window['top'] + 430,
-        # 'width': msg_size,
-        # 'height': msg_size
-        # }
-        # frame = np.array(sct.grab(self.window))
-        # return frame
-
         frame = utils.window_capture(self.hwnd)
         frame = frame[430:500, 0:70]
         # cv2.imshow("", frame)

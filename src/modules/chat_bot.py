@@ -11,7 +11,7 @@ class ChatBot():
 
     def __init__(self):
         self.command_handler = None
-        self.wechat_bot = WechatBot(bot_settings.wechat_name)
+        self.wechat_bot = WechatBot(bot_settings.wechat_name, self.on_command)
         self.telegram_bot = TelegramBot(
             bot_settings.telegram_apiToken, bot_settings.telegram_chat_id, self.on_command)
 
