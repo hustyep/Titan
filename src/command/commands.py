@@ -455,6 +455,7 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
 class MapleWarrior(Skill):
     key = Keybindings.MAPLE_WARRIOR
     cooldown = 900
+    precast = 0.3
     backswing = 0.8
     type = SkillType.Buff
 
