@@ -242,10 +242,32 @@ def minimap_test():
     name = utils.image_2_str(minimap).replace('\n', '')
     print(name)
     
+def msg_test():
+    def image_to_str(image):
+        # cv2.imshow("", image)
+        # cv2.waitKey(0)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        text = tess.image_to_string(image_rgb, lang="eng")
+        content = text.replace("\f", "").split("\n")
+
+        list = []
+        for item in content:
+            if len(item.strip()) == 0:
+                continue
+            if item.startswith('[') and len(item) > 6 and item[6] == ']':
+                list.append(item)
+            elif len(list) > 0:
+                new = list.pop() + item
+                list.append(new)
+
+        return list
+    image = cv2.imread('.test/WechatIMG1320.png')
+    image_to_str(image)
     
 if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
     # wechat_test()
-    buff_test()
+    # buff_test()
     # minimap_test()
+    msg_test()
