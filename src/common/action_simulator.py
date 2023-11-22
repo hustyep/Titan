@@ -154,17 +154,17 @@ class ActionSimulator:
             ActionSimulator.click_key('down')
             ActionSimulator.click_key('right')
             ActionSimulator.click_key('enter')
+        time.sleep(1)
 
-        while capture.frame is None:
-            time.sleep(0.1)
         frame = capture.frame
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 220) // 2
         ok_btn = utils.multi_match(
             frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
         if ok_btn:
-            ActionSimulator.click_key('enter')
-            ActionSimulator._change_channel()
+            ActionSimulator.click_key('esc')
+            time.sleep(1)
+            ActionSimulator._change_channel(num, enable)
             return
 
         delay = 0
@@ -194,4 +194,3 @@ class ActionSimulator:
             ActionSimulator.change_channel()
         else:
             bot_status.change_channel = False
-            bot_status.enabled = True

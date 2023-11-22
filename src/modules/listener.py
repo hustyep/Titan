@@ -182,7 +182,7 @@ class Listener(Configurable, Subject):
                 channel_num = 0
                 if len(args) > 0:
                     channel_num = int(args[0])
-                ActionSimulator.change_channel(channel_num)
+                ActionSimulator.change_channel(channel_num, bot_status.enabled)
                 return "changing channel...", None
 
 

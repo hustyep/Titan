@@ -8,6 +8,8 @@
 # Describes whether the main bot loop is currently running or not
 enabled: bool = False
 
+change_channel: bool = False
+
 started_time = None
 
 # The player's position relative to the minimap

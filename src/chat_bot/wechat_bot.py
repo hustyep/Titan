@@ -28,6 +28,8 @@ WECHAT_BOT_COMMAND_SAY = '/s'
 WECHAT_BOT_COMMAND_TP = '/tp'
 # click
 WECHAT_BOT_COMMAND_CLICK = '/c'
+# change channel
+WECHAT_BOT_COMMAND_CHANGE_CHANNEL = '/cc'
 
 class WechatBot:
 
@@ -101,6 +103,8 @@ class WechatBot:
                 self.click_command(msg=msg)
             elif msg == WECHAT_BOT_COMMAND_TP:
                 self.tp_command(msg=msg)
+            elif msg == WECHAT_BOT_COMMAND_CHANGE_CHANNEL:
+                self.change_channel()
             else:
                 self.send_text('unknow')
             # self.last_msg = None
@@ -135,6 +139,10 @@ class WechatBot:
         message, image_path = self.command_handler(ChatBotCommand.TP, )
         self.send_message(message, imagePath=image_path)
         
+    def change_channel(self):
+        message, image_path = self.command_handler(ChatBotCommand.CHANGE_CHANNEL, )
+        self.send_message(message, imagePath=image_path)
+    
     def click(self, x, y):
         lParam = win32api.MAKELONG(x, y)
         win32gui.SendMessage(
