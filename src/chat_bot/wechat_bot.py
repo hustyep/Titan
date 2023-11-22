@@ -20,6 +20,7 @@ WECHAT_BOT_COMMAND_PAUSE = '/pause'
 WECHAT_BOT_COMMAND_SCREENSHOT = '/shot'
 WECHAT_BOT_COMMAND_SAY = '/say'
 
+
 class WechatBot:
 
     def __init__(self, name):
@@ -39,10 +40,10 @@ class WechatBot:
     def run(self):
         """Starts this WechatBot's thread."""
         print('\n[~] Started WechatBot')
-        # self.thread.start()
+        self.thread.start()
 
     def _main(self):
-        
+
         if not self.hwnd:
             return
         x1, y1, x2, y2 = win32gui.GetWindowRect(self.hwnd)  # 获取当前窗口大小
@@ -50,12 +51,12 @@ class WechatBot:
         self.window['top'] = y1
         self.window['width'] = x2 - x1
         self.window['height'] = y2 - y1
-        
+
         while True:
             msg = self.getNewMsg()
             self.handleMsg(msg)
-            
-            time.sleep(0.1)
+
+            time.sleep(0.5)
 
     def getNewMsg(self):
         image = self.shot_new_msg()
@@ -63,20 +64,20 @@ class WechatBot:
         height, width = gray.shape
         if np.count_nonzero(gray == 245) / height / width > 0.8:
             return None
-        
+
         lParam = win32api.MAKELONG(90, 460)
         win32gui.SendMessage(
             self.hwnd, win32con.WM_LBUTTONDBLCLK, win32con.MK_LBUTTON, lParam)
         win32gui.SendMessage(
             self.hwnd, win32con.WM_LBUTTONDBLCLK, win32con.MK_LBUTTON, lParam)
-        
+
         return self.copy()
 
     def handleMsg(self, msg: str):
         if msg and msg != self.last_msg:
             self.last_msg = msg
             print(f'[wechat] {msg}')
-            
+
             if msg.startswith(WECHAT_BOT_COMMAND_INFO):
                 self.info_command()
             elif msg.startswith(WECHAT_BOT_COMMAND_START):
@@ -87,82 +88,62 @@ class WechatBot:
                 self.screenshot_command()
             elif msg.startswith(WECHAT_BOT_COMMAND_SAY):
                 self.say_command(msg=msg)
-                
+
+            self.send_text('get')
             self.last_msg = None
-                
+
     def info_command(self):
-        info = utils.bot_status()
-        frame = capture.frame
-        if frame is None:
-            width = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
-            height = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
+        pass
 
-            window = {
-            'left': 0,
-            'top': 0,
-            'width': width,
-            'height': height
-            }
-            with mss() as sct:
-                frame = np.array(sct.grab(window))
-
-        self.send_message(info, frame)
-    
     def start_command(self):
-        bot_status.enabled = True
-        time.sleep(0.5)
-        utils.print_state(True)
-        self.info_command()
-    
+        pass
+
     def pause_command(self):
-        bot_status.enabled = False
-        time.sleep(0.5)
-        utils.print_state(False)
-        self.info_command()
-    
+        pass
+
     def screenshot_command(self):
         self.send_image(capture.frame)
-    
+
     def say_command(self, msg: str):
         list = msg.split(" ")
         str = '?'
         if len(list) > 1:
             str = list[1]
-        
+
         self.pause_command()
         hid.key_press('enter')
         hid.key_string(str)
         hid.key_press('enter')
-        
+
         time.sleep(0.1)
         self.send_text(f'sayed "{str}" to all')
-    
+
     def click(self, x, y):
         lParam = win32api.MAKELONG(x, y)
         win32gui.SendMessage(
             self.hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lParam)
         win32gui.SendMessage(self.hwnd, win32con.WM_LBUTTONUP, None, lParam)
 
-    def copy(self):   
+    def copy(self):
         wc.OpenClipboard()
         wc.EmptyClipboard()
         wc.CloseClipboard()
-         
+
         hid.key_down('ctrl')
         win32gui.SendMessage(self.hwnd, win32con.WM_KEYDOWN, 0x43, 0)
         win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP, 0x43, 0)
         hid.key_up('ctrl')
-        
+
         wc.OpenClipboard()
         try:
             data = wc.GetClipboardData()
         except Exception as e:
             data = None
         wc.CloseClipboard()
-        
+
         return data
 
-    def paste(self):                
+    def paste(self):
         hid.key_down('ctrl')
         win32gui.SendMessage(self.hwnd, win32con.WM_KEYDOWN, 86, 0)
         win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP, 86, 0)
@@ -171,7 +152,7 @@ class WechatBot:
     def send_text(self, text):
         if not hid:
             return
-        
+
         wc.OpenClipboard()
         wc.EmptyClipboard()
         wc.SetClipboardData(win32con.CF_UNICODETEXT, text)
@@ -181,9 +162,9 @@ class WechatBot:
         self.paste()
         win32gui.SendMessage(self.hwnd, win32con.WM_KEYDOWN,
                              win32con.VK_RETURN, 0)
-        win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
+        win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP,
+                             win32con.VK_RETURN, 0)
 
-    
     def send_image(self, image=None, imagePath=None):
         if not hid:
             return
@@ -196,7 +177,7 @@ class WechatBot:
         image.convert("RGB").save(output, "BMP")
         data = output.getvalue()[14:]
         output.close()
-        
+
         wc.OpenClipboard()
         wc.EmptyClipboard()
         wc.SetClipboardData(win32con.CF_DIB, data)
@@ -206,18 +187,18 @@ class WechatBot:
         self.paste()
         win32gui.SendMessage(self.hwnd, win32con.WM_KEYDOWN,
                              win32con.VK_RETURN, 0)
-        win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
+        win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP,
+                             win32con.VK_RETURN, 0)
 
-        
     def send_message(self, text=None, image=None, imagePath=None):
         if text:
             self.send_text(text)
-            
+
         if image is not None:
             self.send_image(image=image)
         elif imagePath is not None:
             self.send_image(imagePath=imagePath)
-            
+
     def voice_call(self):
         # self.click(480, 530)
         frame = utils.window_capture(self.hwnd)
@@ -225,12 +206,14 @@ class WechatBot:
             return
         # cv2.imshow("", frame)
         # cv2.waitKey()
-        location = utils.multi_match(frame, WECHAT_CALL_TEMPLATE, threshold=0.9)
+        location = utils.multi_match(
+            frame, WECHAT_CALL_TEMPLATE, threshold=0.9)
         if not location:
-            location = utils.multi_match(frame, WECHAT_CALL_TEMPLATE_2X, threshold=0.9)
+            location = utils.multi_match(
+                frame, WECHAT_CALL_TEMPLATE_2X, threshold=0.9)
         if location:
             self.click(location[0][0], location[0][1])
-        
+
     def video_call(self):
         self.click(510, 530)
 
@@ -241,22 +224,21 @@ class WechatBot:
 
     def shot_new_msg(self):
         # with mss() as sct:
-            # msg_size = 70
-            # msg_rect = {
-            # 'left': self.window['left'],
-            # 'top': self.window['top'] + 430,
-            # 'width': msg_size,
-            # 'height': msg_size
-            # }
-            # frame = np.array(sct.grab(self.window))
-            # return frame
-        
+        # msg_size = 70
+        # msg_rect = {
+        # 'left': self.window['left'],
+        # 'top': self.window['top'] + 430,
+        # 'width': msg_size,
+        # 'height': msg_size
+        # }
+        # frame = np.array(sct.grab(self.window))
+        # return frame
+
         frame = utils.window_capture(self.hwnd)
         frame = frame[430:500, 0:70]
         # cv2.imshow("", frame)
         # cv2.waitKey(0)
         return frame
-
 
 
 if __name__ == "__main__":

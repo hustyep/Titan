@@ -521,6 +521,50 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
 #############################
 
 
+class MapleWarrior(Skill):
+    key = Keybindings.MAPLE_WARRIOR
+    cooldown = 900
+    precast = 0.3
+    backswing = 0.8
+    type = SkillType.Buff
+
+
+class ErdaShower(Skill):
+    key = Keybindings.ERDA_SHOWER
+    type = SkillType.Summon
+    cooldown = 58
+    backswing = 0.7
+    duration = 60
+
+    def __init__(self, direction=None):
+        super().__init__(locals())
+        if direction is None:
+            self.direction = direction
+        else:
+            self.direction = bot_settings.validate_horizontal_arrows(direction)
+
+    def main(self):
+        if time.time() - self.castedTime > self.cooldown - 2:
+            while not self.canUse():
+                time.sleep(0.1)
+        elif not self.canUse():
+            return
+        if self.direction:
+            press_acc(self.direction, down_time=0.03, up_time=0.03)
+        key_down('down')
+        press(Keybindings.ERDA_SHOWER, 2)
+        key_up('down')
+        self.__class__.castedTime = time.time()
+        time.sleep(self.__class__.backswing)
+
+
+class Arachnid(Skill):
+    key = Keybindings.ARACHNID
+    type = SkillType.Attack
+    cooldown = 250
+    backswing = 0.9
+
+
 class Walk(Command):
     """Walks in the given direction for a set amount of time."""
 
