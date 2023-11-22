@@ -125,11 +125,6 @@ def hit_and_run(direction, target, tolerance):
                                          type=MobType.ELITE)
                 if matchs:
                     SonicBlow().execute()
-                else:
-                    matchs = detect_mobs(insets=AreaInsets(top=150, bottom=100, left=300, right=300),
-                                         anchor=anchor)
-                    if matchs:
-                        TrickBlade().execute()
                     
                 mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
                                    anchor=anchor,
@@ -139,6 +134,11 @@ def hit_and_run(direction, target, tolerance):
                     print(len(mobs))
                 if len(mobs) > 0:
                     break
+                else:
+                    matchs = detect_mobs(insets=AreaInsets(top=150, bottom=100, left=300, right=300),
+                                         anchor=anchor)
+                    if matchs:
+                        TrickBlade().execute()
                 time.sleep(0.001)
         if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
             t = AsyncTask(target=pre_detect, args=(direction,))
