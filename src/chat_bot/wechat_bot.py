@@ -115,7 +115,8 @@ class WechatBot:
         self.send_image(imagePath=image_path)
 
     def say_command(self, msg: str):
-        message, image_path = self.command_handler(ChatBotCommand.SAY, (msg, ))
+        list = msg.split(' ')
+        message, image_path = self.command_handler(ChatBotCommand.SAY, (list[1], ))
         self.send_message(message, imagePath=image_path)
 
     def click(self, x, y):
