@@ -192,17 +192,17 @@ def mob_detect_test(accurate=True):
 
 def buff_test():
     frame = cv2.imread(".test/Maple_231119_130543.png")
-    template = cv2.imread('assets/skills/shadower/ForTheGuild.png', 0)
+    template = cv2.imread('assets/skills/HardHitter.png', 0)
     # ShadowWalker ErdaShower SuddenRaid
     # template =Image.open('assets/skills/shadower/ShadowWalker.png').convert('RGBA')
     # template = utils.add_mask(template, (0,0,28,28), fill=(0,0,0,int(0.0*255)))
 
-    template = template[9:,]
+    template = template[8:,]
     rune_buff = utils.multi_match(
-        frame[-200:, -600], template, threshold=0.99, debug=True)
+        frame[-200:, -600:], template, threshold=0.98, debug=True)
 
-    rune_buff = utils.multi_match(
-        frame[-200:, -600:], template, threshold=0.9, debug=True)
+    # rune_buff = utils.multi_match(
+    #     frame[-200:, -600:], template, threshold=0.9, debug=True)
 
 
 def name_test():
