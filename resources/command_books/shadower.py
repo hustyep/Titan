@@ -98,9 +98,57 @@ def step(target, tolerance):
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
 
+@bot_status.run_if_enabled
+def hit_and_run(direction, target, tolerance):
+    if gui_setting.auto.detect_mob:
+        # and time.time() - DarkFlare.castedTime > 5
+        if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
+            print("direction_changed")
+            key_down(direction)
+            time.sleep(0.05)
+            key_up(direction)
+            time.sleep(0.5)
+            SlashShadowFormation().execute()
+
+            count = 0
+            while count < 200:
+                count += 1
+                anchor = capture.locate_player_fullscreen(accurate=True)
+                matchs = []
+                if gui_setting.auto.detect_boss:
+                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                                         anchor=anchor,
+                                         type=MobType.BOSS)
+                if not matchs and gui_setting.auto.detect_elite:
+                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                                         anchor=anchor,
+                                         type=MobType.ELITE)
+                if matchs:
+                    SonicBlow().execute()
+                mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -200, right=1100 if direction == 'right' else -200),
+                                   anchor=anchor,
+                                   multy_match=False,
+                                   debug=False)
+                if len(mobs):
+                    print(len(mobs))
+                if len(mobs) > 0:
+                    break
+                time.sleep(0.001)
+        if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
+            t = AsyncTask(target=pre_detect, args=(direction,))
+            t.start()
+        DoubleJump(target=target, attack_if_needed=True).execute()
+        if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
+            elite_detected = t.join()
+            if elite_detected:
+                SonicBlow().execute()
+    else:
+        DoubleJump(target=target, attack_if_needed=True).execute()
+
 #########################
 #        Y轴移动         #
 #########################
+
 
 @bot_status.run_if_enabled
 def move_up(target):
@@ -151,7 +199,7 @@ class JumpUp(Command):
         press(self.key, 1)
         key_up('up')
         sleep_in_the_air()
-    
+
 
 class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
