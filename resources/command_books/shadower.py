@@ -571,6 +571,13 @@ class GoddessBlessing(Skill):
     precast = 0.3
     backswing = 0.85
     type = SkillType.Buff
+    
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if not MapleWarrior.enabled:
+            return False
+
+        return super().canUse(next_t)
 
 
 class LastResort(Skill):
