@@ -27,7 +27,7 @@ class DefaultKeybindings:
     CANDIED_APPLE = '5'
     LEGION_WEALTHY = ''
     EXP_COUPON = '6'
-    
+
     # Common Skill
     FOR_THE_GUILD = '7'
     HARD_HITTER = '8'
@@ -35,6 +35,7 @@ class DefaultKeybindings:
     ERDA_SHOWER = '`'
     MAPLE_WARRIOR = '3'
     ARACHNID = 'j'
+
 
 class Keybindings(DefaultKeybindings):
     """ 'Keybindings' must be implemented in command book."""
@@ -183,7 +184,7 @@ class Skill(Command):
                 else:
                     matchs = utils.multi_match(
                         capture.skill_frame, cls.icon[8:, ], threshold=0.99)
-                    cls.ready = len(matchs) > 0                    
+                    cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
                     capture.skill_frame, cls.icon[8:, ], threshold=0.9)
@@ -191,10 +192,13 @@ class Skill(Command):
 
     @classmethod
     def check_buff_enabled(cls):
-        matchs = utils.multi_match(capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
         if not matchs:
-            matchs = utils.multi_match(capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
         cls.enabled = len(matchs) > 0
+
 
 class Move(Command):
 
@@ -223,7 +227,8 @@ class Move(Command):
 
         if edge_reached():
             print("-----------------------edge reached")
-            pos = capture.convert_point_minimap_to_window(bot_status.player_pos)
+            pos = capture.convert_point_minimap_to_window(
+                bot_status.player_pos)
             key_up(bot_status.player_direction)
             if bot_status.player_direction == 'left':
                 mobs = detect_mobs(
@@ -256,6 +261,61 @@ def step(target, tolerance):
     bot_status.enabled = False
 
 
+def pre_detect(direction):
+    anchor = capture.locate_player_fullscreen(accurate=True)
+    insets = AreaInsets(top=150,
+                        bottom=50,
+                        left=-620 if direction == 'right' else 1000,
+                        right=1000 if direction == 'right' else -620)
+    matchs = []
+    if gui_setting.auto.detect_elite:
+        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
+    if not matchs and gui_setting.auto.detect_boss:
+        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.BOSS)
+    return len(matchs) > 0
+
+
+@bot_status.run_if_enabled
+def hit_and_run(direction, target):
+    if gui_setting.auto.detect_mob:
+        # and time.time() - DarkFlare.castedTime > 5
+        if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
+            print("direction_changed")
+            key_down(direction)
+            time.sleep(0.05)
+            key_up(direction)
+            time.sleep(0.5)
+
+            count = 0
+            while count < 200:
+                count += 1
+                anchor = capture.locate_player_fullscreen(accurate=True)
+                matchs = []
+                if gui_setting.auto.detect_boss:
+                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                                         anchor=anchor,
+                                         type=MobType.BOSS)
+                if not matchs and gui_setting.auto.detect_elite:
+                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
+                                         anchor=anchor,
+                                         type=MobType.ELITE)
+                if matchs:
+                    pass
+                    # SonicBlow().execute()
+                mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -200, right=1100 if direction == 'right' else -200),
+                                   anchor=anchor,
+                                   multy_match=False,
+                                   debug=False)
+                if len(mobs):
+                    print(len(mobs))
+                if len(mobs) > 0:
+                    break
+                time.sleep(0.001)
+        DoubleJump(target=target, attack_if_needed=True).execute()
+    else:
+        DoubleJump(target=target, attack_if_needed=True).execute()
+
+
 @run_if_map_available
 def climb_rope(isUP=True):
     step = 0
@@ -269,6 +329,7 @@ def climb_rope(isUP=True):
             break
 
 
+@bot_status.run_if_enabled
 def sleep_while_move_y(interval=0.02, n=15):
     player_y = bot_status.player_pos[1]
     count = 0
@@ -283,6 +344,7 @@ def sleep_while_move_y(interval=0.02, n=15):
             break
 
 
+@bot_status.run_if_enabled
 def sleep_in_the_air(interval=0.02, n=3, start_y=0):
     if map.minimap_data is None or len(map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
@@ -313,8 +375,8 @@ def sleep_in_the_air(interval=0.02, n=3, start_y=0):
         time.sleep(interval)
 
 
+@bot_status.run_if_enabled
 def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
-
     if map.minimap_data is None or len(map.minimap_data) == 0:
         return target
 
@@ -452,54 +514,11 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
     # if tolerance > bot_settings.adjust_tolerance:
     #     return utils.distance(start, target) <= tolerance
     # else:
-        return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
+    return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
 
 #############################
 #      Common Command       #
 #############################
-
-
-class MapleWarrior(Skill):
-    key = Keybindings.MAPLE_WARRIOR
-    cooldown = 900
-    backswing = 0.8
-    type = SkillType.Buff
-
-
-class ErdaShower(Skill):
-    key = Keybindings.ERDA_SHOWER
-    type = SkillType.Summon
-    cooldown = 58
-    backswing = 0.7
-    duration = 60
-
-    def __init__(self, direction=None):
-        super().__init__(locals())
-        if direction is None:
-            self.direction = direction
-        else:
-            self.direction = bot_settings.validate_horizontal_arrows(direction)
-
-    def main(self):
-        if time.time() - self.castedTime > self.cooldown - 2:
-            while not self.canUse():
-                time.sleep(0.1)
-        elif not self.canUse():
-            return
-        if self.direction:
-            press_acc(self.direction, down_time=0.03, up_time=0.03)
-        key_down('down')
-        press(Keybindings.ERDA_SHOWER, 2)
-        key_up('down')
-        self.__class__.castedTime = time.time()
-        time.sleep(self.__class__.backswing)
-
-
-class Arachnid(Skill):
-    key = Keybindings.ARACHNID
-    type = SkillType.Attack
-    cooldown = 250
-    backswing = 0.9
 
 
 class Walk(Command):
@@ -740,6 +759,11 @@ class Mining(Command):
         bot_status.minal_closest_pos = None
 
 
+###########################
+#      Abstract Skill     #
+###########################
+
+
 class Summon(Command):
     """'Summon' command for the default command book."""
 
@@ -765,6 +789,21 @@ class Attack(Command):
         bot_status.enabled = False
 
 
+class DoubleJump(Skill):
+    """Undefined 'FlashJump' command for the default command book."""
+
+    def __init__(self, target: tuple[int, int], attack_if_needed=False):
+        super().__init__(locals())
+
+        self.target = target
+        self.attack_if_needed = attack_if_needed
+
+    def main(self):
+        print(
+            "\n[!] 'FlashJump' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
+
 class Buff(Command):
     """Undefined 'buff' command for the default command book."""
 
@@ -774,7 +813,55 @@ class Buff(Command):
         bot_status.enabled = False
 
 
+#########################
+#      Common Skill     #
+#########################
+
+class MapleWarrior(Skill):
+    key = Keybindings.MAPLE_WARRIOR
+    cooldown = 900
+    backswing = 0.8
+    type = SkillType.Buff
+
+
+class ErdaShower(Skill):
+    key = Keybindings.ERDA_SHOWER
+    type = SkillType.Summon
+    cooldown = 58
+    backswing = 0.7
+    duration = 60
+
+    def __init__(self, direction=None):
+        super().__init__(locals())
+        if direction is None:
+            self.direction = direction
+        else:
+            self.direction = bot_settings.validate_horizontal_arrows(direction)
+
+    def main(self):
+        if time.time() - self.castedTime > self.cooldown - 2:
+            while not self.canUse():
+                time.sleep(0.1)
+        elif not self.canUse():
+            return
+        if self.direction:
+            press_acc(self.direction, down_time=0.03, up_time=0.03)
+        key_down('down')
+        press(Keybindings.ERDA_SHOWER, 2)
+        key_up('down')
+        self.__class__.castedTime = time.time()
+        time.sleep(self.__class__.backswing)
+
+
+class Arachnid(Skill):
+    key = Keybindings.ARACHNID
+    type = SkillType.Attack
+    cooldown = 250
+    backswing = 0.9
+
+
 class ForTheGuild(Skill):
+    '''工会技能'''
     key = Keybindings.FOR_THE_GUILD
     cooldown = 3610
     backswing = 0.1
@@ -793,6 +880,7 @@ class ForTheGuild(Skill):
 
 
 class HardHitter(Skill):
+    '''工会技能'''
     key = Keybindings.HARD_HITTER
     cooldown = 3610
     backswing = 0.1
@@ -808,10 +896,31 @@ class HardHitter(Skill):
             return False
 
         return super().canUse(next_t)
-    
+
+
+class RopeLift(Skill):
+    '''绳索'''
+    key = Keybindings.ROPE_LIFT
+    type = SkillType.Move
+    cooldown = 3
+
+    def __init__(self, dy: int = 20):
+        super().__init__(locals())
+        self.dy = abs(dy)
+
+    def main(self):
+
+        if self.dy >= 45:
+            press(Keybindings.JUMP, up_time=0.2)
+        elif self.dy >= 32:
+            press(Keybindings.JUMP, up_time=0.1)
+        press(self.__class__.key)
+        sleep_in_the_air(n=10)
+
 ###################
 #      Potion     #
 ###################
+
 
 class Potion(Command):
     """Uses each of Shadowers's potion once."""

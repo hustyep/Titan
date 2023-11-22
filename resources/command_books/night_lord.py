@@ -8,7 +8,7 @@ from src.command.commands import *
 
 
 # List of key mappings
-class Key:
+class Keybindings:
     # Movement
     JUMP = 's'
     FLASH_JUMP = ';'
@@ -35,7 +35,7 @@ class Key:
     CANDIED_APPLE = '6'
     LEGION_WEALTHY = '='
     EXP_COUPON = ''
-    
+
     # SHADOW_PARTNER = '3'
     # SPEED_INFUSION = '8'
     # HOLY_SYMBOL = '4'
@@ -58,124 +58,131 @@ class Key:
 #########################
 
 @bot_status.run_if_enabled
-def step(direction, target):
+def step(target, tolerance):
     """
     Performs one movement step in the given DIRECTION towards TARGET.
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    if bot_status.stage_fright and direction != 'up' and utils.bernoulli(0.6):
-        time.sleep(utils.rand_float(0.1, 0.3))
-
-    d_x = abs(target[0] - bot_status.player_pos[0])
-    d_y = abs(target[1] - bot_status.player_pos[1])
-    # if d_y > bot_settings.move_tolerance * 1.5:
-    if direction == 'down':
-        if d_y > bot_settings.move_tolerance:
-            print(f"step_down: {d_y}")
-            key_down('down')
-            press_acc(Key.JUMP, 1, down_time=0.2, up_time=0.08)
-            key_up('down')
-            time.sleep(0.6)
-        return
-    elif direction == 'up':
-        # print(f"step_up: {d_y}")
-        MoveUp(dy=d_y)
+    d_x = target[0] - bot_status.player_pos[0]
+    d_y = target[1] - bot_status.player_pos[1]
+    if abs(d_x) >= 26:
+        hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
         return
 
-    if d_x >= 28:
-        HitAndRun(direction, target).execute()
-    elif d_x >= 10:
-        # time.sleep(0.05)
-        if not ShadowSurge().execute():
-            time.sleep(0.02)
+    next_p = find_next_point(bot_status.player_pos, target, tolerance)
+    if not next_p:
+        return
+
+    bot_status.path = [bot_status.player_pos, next_p, target]
+
+    d_x = next_p[0] - bot_status.player_pos[0]
+    d_y = next_p[1] - bot_status.player_pos[1]
+
+    direction = None
+    if abs(d_x) > tolerance:
+        direction = 'right' if d_x > 0 else 'left'
     else:
-        time.sleep(0.02)
+        direction = 'down' if d_y > 0 else 'up'
 
-class HitAndRun(Command):
-    def __init__(self, direction, target):
-        super().__init__(locals())
-        self.direction = direction
-        self.target = target
+    if direction == "up":
+        move_up(next_p)
+    elif direction == "down":
+        move_down(next_p)
+    elif abs(d_x) >= 26:
+        hit_and_run(direction, next_p, tolerance)
+    elif abs(d_x) >= 10 and ShadowSurge.ready:
+        ShadowSurge().execute()
+    else:
+        Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
-    def main(self):
-        d_x = self.target[0] - bot_status.player_pos[0]
-        if gui_setting.auto.detect_mob:
-            if direction_changed():
-                print("direction_changed")
-                time.sleep(0.08)
-                key_up(self.direction)
-                time.sleep(0.9)
-                count = 0
-                while count < 80:
-                    count += 1
-                    # has_boss = Detect_Mobs(top=180,bottom=-20,left=300,right=300,type=MobType.BOSS).execute()
-                    # if has_boss is not None and len(has_boss) > 0:
-                    #     SonicBlow().execute()
-                    mobs = detect_mobs(AreaInsets(top=350,bottom=50,left=1100,right=1100))
-                    if mobs is not None and len(mobs) >= 2:
-                        break
-                    time.sleep(0.1)
-                key_down(self.direction)                
-            press(Key.JUMP, 1, down_time=0.04, up_time=0.05)
-            press(Key.FLASH_JUMP, 1, down_time=0.04, up_time=0.05)
-            ShowDown().execute()
-        else:
-            press(Key.JUMP, 1, down_time=0.04, up_time=0.05)
-            press(Key.FLASH_JUMP, 1, down_time=0.04, up_time=0.05)
-            ShowDown().execute()
 
 #########################
 #        Y轴移动         #
 #########################
 
-class MoveUp(Command):
-    def __init__(self, dy: int = 20):
-        super().__init__(locals())
-        self.dy = abs(dy)
 
-    def main(self):
-        if self.dy <= 6:
-            press(Key.JUMP)
-        if self.dy <= 18:
-            ShadowLeap(True if self.dy > 15 else False).execute()
-        else:
-            RopeLift(self.dy).execute()
+@bot_status.run_if_enabled
+def move_up(target):
+    p = bot_status.player_pos
+    dy = abs(p[1] - target[1])
 
-
-class MoveDown(Command):
-    def __init__(self, dy: int = 20):
-        super().__init__(locals())
-        self.dy = abs(dy)
-
-    def main(self):
-        key_down('down')
-        press(Key.JUMP, 2, down_time=0.1, up_time=0.1)
-        key_up('down')
-        time.sleep(1 if self.dy >= 15 else 0.7)
-
-# 二段跳
+    if dy <= 6:
+        press(Keybindings.JUMP)
+    elif dy <= 18:
+        ShadowLeap(True if dy > 15 else False).execute()
+    else:
+        RopeLift(dy).execute()
 
 
-class FlashJump(Command):
+@bot_status.run_if_enabled
+def move_down(target):
+    sleep_in_the_air(n=1)
+    if target[1] > bot_status.player_pos[1]:
+        Fall().execute()
+
+
+class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
+    key = Keybindings.FLASH_JUMP
+    type = SkillType.Move
+    # cooldown = 0.1
 
-    def __init__(self, direction):
+    def __init__(self, target: tuple[int, int], attack_if_needed=False):
         super().__init__(locals())
-        self.direction = bot_settings.validate_arrows(direction)
+
+        self.target = target
+        self.attack_if_needed = attack_if_needed
+
+    def detect_mob(self, direction):
+        insets = AreaInsets(top=220,
+                            bottom=100,
+                            left=650 if direction == 'left' else 10,
+                            right=10 if direction == 'left' else 600)
+        anchor = capture.locate_player_fullscreen(accurate=True)
+        mobs = detect_mobs(insets=insets, anchor=anchor)
+        return mobs
 
     def main(self):
-        key_down(self.direction)
-        time.sleep(0.1)
-        press(Key.JUMP, 1, down_time=0.04, up_time=0.05)
-        press(Key.FLASH_JUMP, 1, down_time=0.04, up_time=0.05)
-        key_up(self.direction)
-        time.sleep(0.5)
+        while not self.canUse():
+            time.sleep(0.01)
+        dx = self.target[0] - bot_status.player_pos[0]
+        dy = self.target[1] - bot_status.player_pos[1]
+        direction = 'left' if dx < 0 else 'right'
+        start_y = bot_status.player_pos[1]
+
+        self.__class__.castedTime = time.time()
+        key_down(direction)
+        if self.attack_if_needed:
+            # detect = AsyncTask(
+            #     target=self.detect_mob, args=(direction, ))
+            # detect.start()
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+            # mobs_detected = detect.join()
+            mobs_detected = True
+            times = 2 if mobs_detected else 1
+            press(self.key, 1, down_time=0.03, up_time=0.03)
+            if mobs_detected:
+                Attack().execute()
+        else:
+            times = 2 if abs(dx) >= 32 else 1
+            if dy == 0:
+                if abs(dx) in range(20, 26):
+                    press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.5)
+                else:
+                    press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+            else:
+                press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
+            press(self.key, times, down_time=0.03, up_time=0.03)
+
+        key_up(direction)
+        sleep_in_the_air(n=1, start_y=start_y)
 
 
 # 上跳
 class ShadowLeap(Command):
-    key = Key.SHADOW_LEAP
+    key = Keybindings.SHADOW_LEAP
+    type = SkillType.Move
     precast = 0.5
     backswing = 0.9
 
@@ -186,50 +193,49 @@ class ShadowLeap(Command):
     def main(self):
         time.sleep(self.__class__.precast)
         if self.jump:
-            press_acc(Key.JUMP, down_time=0.05, up_time=0.06)
+            press_acc(Keybindings.JUMP, down_time=0.05, up_time=0.06)
 
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
 
 
 # 水平位移
-class ShadowSurge(Command):
-    key = Key.SHADOW_SURGE
+class ShadowSurge(Skill):
+    key = Keybindings.SHADOW_SURGE
+    type = SkillType.Move
     cooldown = 5
     precast = 0
     backswing = 0.2
 
-
-# 绳索
-class RopeLift(Command):
-    key = Key.ROPE_LIFT
-    cooldown = 3
-
-    def __init__(self, dy: int = 20):
+    def __init__(self, direction):
         super().__init__(locals())
-        self.dy = abs(dy)
+        self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        if self.dy >= 45:
-            press(Key.JUMP, up_time=0.2)
-        elif self.dy >= 32:
-            press(Key.JUMP, up_time=0.1)
-        press_acc(self.__class__.key, up_time=self.dy * 0.07)
-        if self.dy >= 32:
-            time.sleep((self.dy - 32) * 0.05)
+        if not self.canUse():
+            return False
 
+        time.sleep(self.__class__.precast)
+        self.__class__.castedTime = time.time()
+        key_down(self.direction)
+        press_acc(self.__class__.key, up_time=self.__class__.backswing)
+        key_up(self.direction)
+        return True
 
 #######################
 #       Summon        #
 #######################
 
 
-class DarkFlare(Command):
+class DarkFlare(Skill):
     """
     Uses 'DarkFlare' in a given direction, or towards the center of the map if
     no direction is specified.
     """
-    cooldown = 120
-    backswing = 0.4
+    key = Keybindings.DARK_FLARE
+    type = SkillType.Summon
+    cooldown = 58
+    backswing = 1
+    duration = 60
 
     def __init__(self, direction=None):
         super().__init__(locals())
@@ -239,47 +245,19 @@ class DarkFlare(Command):
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        if self.direction:
-            press(self.direction, 1, down_time=0.05, up_time=0.05)
-        else:
-            if bot_status.player_pos[0] > 0.5:
-                press('left', 1, down_time=0.1, up_time=0.05)
-            else:
-                press('right', 1, down_time=0.1, up_time=0.05)
-        press(Key.DARK_FLARE, 2, up_time=self.__class__.backswing)
-
-
-class ErdaShower(Command):
-    """
-    Use ErdaShower in a given direction, Placing ErdaFountain if specified. Adds the player's position
-    to the current Layout if necessary.
-    """
-    cooldown = 120
-    backswing = 0.6
-
-    def __init__(self, direction=None):
-        super().__init__(locals())
-        if direction is None:
-            self.direction = direction
-        else:
-            self.direction = bot_settings.validate_horizontal_arrows(direction)
-
-    def main(self):
-        if self.direction:
-            press(self.direction, 1, down_time=0.05, up_time=0.05)
-        key_down('down')
-        press(Key.ERDA_SHOWER, 1, up_time=self.__class__.backswing)
-        key_up('down')
+        if self.direction is not None:
+            press_acc(self.direction, down_time=0.03, up_time=0.03)
+        super().main()
 
 
 #######################
 #       Skills        #
 #######################
 
-
 class ShowDown(Command):
-    key = Key.SHOW_DOWN
-    backswing = 0.57
+    key = Keybindings.SHOW_DOWN
+    type = SkillType.Attack
+    backswing = 0.5
 
     def main(self):
         time.sleep(self.__class__.precast)
@@ -287,26 +265,49 @@ class ShowDown(Command):
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
 
 
-class SuddenRaid(Command):
-    key = Key.SUDDEN_RAID
+class Attack(Command):
+    key = ShowDown.key
+    type = SkillType.Attack
+    backswing = ShowDown.backswing
+
+    def main(self):
+        ShowDown().execute()
+
+
+class SuddenRaid(Skill):
+    key = Keybindings.SUDDEN_RAID
+    type = SkillType.Attack
     cooldown = 30
-    backswing = 0.7
+    backswing = 0.75
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        usable = super().canUse()
+        if usable:
+            mobs = detect_mobs()
+            return mobs is None or len(mobs) > 0
+        else:
+            return False
+
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
+            return
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[9:, ], threshold=0.9, debug=False)
+        cls.ready = len(matchs) > 0
 
 
 class Omen(Command):
-    key = Key.OMEN
+    key = Keybindings.OMEN
+    type = SkillType.Buff
     cooldown = 60
     backswing = 0.8
 
 
-class Arachnid(Command):
-    key = Key.ARACHNID
-    cooldown = 250
-    backswing = 0.9
-
-
 class SHURIKEN(Command):
-    key = Key.SHURIKEN
+    key = Keybindings.SHURIKEN
+    type = SkillType.Attack
     cooldown = 20
     backswing = 0.8
 
@@ -334,15 +335,14 @@ class Buff(Command):
     def __init__(self):
         super().__init__(locals())
         self.buffs = [
-            GODDESS_BLESSING(),
-            LAST_RESORT(),
-            EPIC_ADVENTURE(),
-            MEMORIES(),
-            MAPLE_WARRIOR(),
-            THROW_BLASTING(),
-            FOR_THE_GUILD(),
-            HARD_HITTER(),
-            SHADOW_WALKER(),
+            MapleWarrior,
+            GoddessBlessing,
+            LastResort,
+            ForTheGuild,
+            HardHitter,
+            ShadowWalker,
+            MEMORIES,
+            THROW_BLASTING,
         ]
 
     def main(self):
@@ -352,187 +352,73 @@ class Buff(Command):
                 break
 
 
-class GODDESS_BLESSING(Command):
-    key = Key.GODDESS_BLESSING
+class GoddessBlessing(Skill):
+    key = Keybindings.GODDESS_BLESSING
+    type = SkillType.Buff
     cooldown = 180
-    backswing = 0.75
+    precast = 0.3
+    backswing = 0.85
 
 
-class LAST_RESORT(Command):
-    key = Key.LAST_RESORT
+class LastResort(Skill):
+    key = Keybindings.LAST_RESORT
+    type = SkillType.Buff
     cooldown = 75
-    backswing = 0.75
+    precast = 0.3
+    backswing = 0.8
+
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
+            return
+        if capture.frame is None:
+            return
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[8:, ], threshold=0.95)
+        if not matchs:
+            cls.ready = False
+        else:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+            if not matchs:
+                matchs = utils.multi_match(
+                    capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+            cls.ready = len(matchs) == 0
 
 
-class EPIC_ADVENTURE(Command):
-    key = Key.EPIC_ADVENTURE
+class EPIC_ADVENTURE(Skill):
+    key = Keybindings.EPIC_ADVENTURE
+    type = SkillType.Buff
     cooldown = 120
     backswing = 0.75
 
 
 class MEMORIES(Command):
-    key = Key.MEMORIES
+    key = Keybindings.MEMORIES
     cooldown = 150
     backswing = 1
 
 
-class MAPLE_WARRIOR(Command):
-    key = Key.MAPLE_WARRIOR
-    cooldown = 900
-    backswing = 0.75
-
-
-class SHADOW_WALKER(Command):
-    key = Key.SHADOW_WALKER
-    cooldown = 190
+class ShadowWalker(Skill):
+    key = Keybindings.SHADOW_WALKER
+    type = SkillType.Buff
+    cooldown = 180
+    precast = 0.3
     backswing = 0.8
 
 
 class THROW_BLASTING(Command):
-    key = Key.THROW_BLASTING
+    key = Keybindings.THROW_BLASTING
+    type = SkillType.Buff
     cooldown = 180
     backswing = 0.8
 
-
-class FOR_THE_GUILD(Command):
-    key = Key.FOR_THE_GUILD
-    cooldown = 3610
-    backswing = 0.1
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Guild Buff')
-        if not enabled:
-            return False
-
-        if time.time() - HARD_HITTER.castedTime <= 1800 and HARD_HITTER.castedTime > 0:
-            return False
-
-        return super().canUse(next_t)
-
-
-class HARD_HITTER(Command):
-    key = Key.HARD_HITTER
-    cooldown = 3610
-    backswing = 0.1
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Guild Buff')
-        if not enabled:
-            return False
-
-        if time.time() - FOR_THE_GUILD.castedTime <= 1800:
-            return False
-
-        return super().canUse(next_t)
-
-
-###################
-#      Potion     #
-###################
-
-class Potion(Command):
-    """Uses each of Shadowers's potion once."""
-
-    def __init__(self):
-        super().__init__(locals())
-        self.potions = [
-            EXP_POTION(),
-            WEALTH_POTION(),
-            GOLD_POTION(),
-            GUILD_POTION(),
-            CANDIED_APPLE(),
-            LEGION_WEALTHY(),
-            EXP_COUPON(),
-        ]
-
-    def main(self):
-        if SHADOW_WALKER.castedTime != 0 and time.time() - SHADOW_WALKER.castedTime <= 35:
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
             return
-        for potion in self.potions:
-            if potion.canUse():
-                potion.main()
-                break
-
-
-class EXP_POTION(Command):
-    key = Key.EXP_POTION
-    cooldown = 7250
-    backswing = 0
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Exp Potion')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
-
-
-class WEALTH_POTION(Command):
-    key = Key.WEALTH_POTION
-    cooldown = 7250
-    backswing = 0
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Wealthy Potion')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
-
-
-class GOLD_POTION(Command):
-    key = Key.GOLD_POTION
-    cooldown = 1800
-    backswing = 0
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Gold Potion')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
-
-
-class GUILD_POTION(Command):
-    key = Key.GUILD_POTION
-    cooldown = 1800
-    backswing = 0
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Guild Potion')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
-
-
-class CANDIED_APPLE(Command):
-    key = Key.CANDIED_APPLE
-    cooldown = 1800
-    backswing = 0
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Candied Apple')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
-
-
-class LEGION_WEALTHY(Command):
-    key = Key.LEGION_WEALTHY
-    cooldown = 1800
-    backswing = 0
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Legion Wealthy')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
-
-
-class EXP_COUPON(Command):
-    key = Key.EXP_COUPON
-    cooldown = 1800
-    backswing = 0
-
-    def canUse(self, next_t: float = 0) -> bool:
-        enabled = bot_status.gui.bot_settings.buffs.buff_bot_settings.get('Exp Coupon')
-        if not enabled:
-            return False
-        return super().canUse(next_t)
+        if capture.frame is None:
+            return
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[8:, ], threshold=0.95)
+        cls.ready = len(matchs) > 0

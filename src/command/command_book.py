@@ -95,7 +95,7 @@ class CommandBook():
 
         # Check if required commands have been implemented and overridden
         required_command_found = True
-        for command in [commands.Buff, commands.Attack]:
+        for command in [commands.Buff, commands.Attack, commands.DoubleJump]:
             name = command.__name__.lower()
             if name not in new_cb:
                 required_command_found = False
@@ -109,13 +109,13 @@ class CommandBook():
             self.step = new_func['step']
             commands.step = self.step
             commands.Attack = new_cb["attack"]
+            commands.DoubleJump = new_cb["doublejump"]
 
             for command in (commands.Summon, commands.DotAoe):
                 name = command.__name__
                 if name.lower() in new_cb:
                     self.__setattr__(name, new_cb[name.lower()])
-                    
-                    
+
             # pre load
             for skill in new_cb.values():
                 if issubclass(skill, commands.Skill):

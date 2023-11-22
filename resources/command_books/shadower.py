@@ -91,71 +91,11 @@ def step(target, tolerance):
     elif direction == "down":
         move_down(next_p)
     elif abs(d_x) >= 26:
-        hit_and_run(direction, target, tolerance)
+        hit_and_run(direction, next_p, tolerance)
+    elif abs(d_x) >= 20:
+        DoubleJump(next_p).execute()
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
-
-
-def pre_detect(direction):
-    anchor = capture.locate_player_fullscreen(accurate=True)
-    insets = AreaInsets(top=150,
-                        bottom=50,
-                        left=-620 if direction == 'right' else 1000,
-                        right=1000 if direction == 'right' else -620)
-    matchs = []
-    if gui_setting.auto.detect_elite:
-        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
-    if not matchs and gui_setting.auto.detect_boss:
-        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.BOSS)
-    return len(matchs) > 0
-
-
-@bot_status.run_if_enabled
-def hit_and_run(direction, target, tolerance):
-    if gui_setting.auto.detect_mob:
-        # and time.time() - DarkFlare.castedTime > 5
-        if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
-            print("direction_changed")
-            key_down(direction)
-            time.sleep(0.05)
-            key_up(direction)
-            time.sleep(0.5)
-            SlashShadowFormation().execute()
-
-            count = 0
-            while count < 200:
-                count += 1
-                anchor = capture.locate_player_fullscreen(accurate=True)
-                matchs = []
-                if gui_setting.auto.detect_boss:
-                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                                         anchor=anchor,
-                                         type=MobType.BOSS)
-                if not matchs and gui_setting.auto.detect_elite:
-                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                                         anchor=anchor,
-                                         type=MobType.ELITE)
-                if matchs:
-                    SonicBlow().execute()
-                mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -200, right=1100 if direction == 'right' else -200),
-                                   anchor=anchor,
-                                   multy_match=False,
-                                   debug=False)
-                if len(mobs):
-                    print(len(mobs))
-                if len(mobs) > 0:
-                    break
-                time.sleep(0.001)
-        if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
-            t = AsyncTask(target=pre_detect, args=(direction,))
-            t.start()
-        FlashJump(target=target, attack_if_needed=True).execute()
-        if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
-            elite_detected = t.join()
-            if elite_detected:
-                SonicBlow().execute()
-    else:
-        FlashJump(target=target, attack_if_needed=True).execute()
 
 
 #########################
@@ -211,9 +151,9 @@ class JumpUp(Command):
         press(self.key, 1)
         key_up('up')
         sleep_in_the_air()
+    
 
-
-class FlashJump(Skill):
+class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.FLASH_JUMP
     type = SkillType.Move
@@ -254,13 +194,16 @@ class FlashJump(Skill):
             times = 2 if mobs_detected else 1
             press(self.key, 1, down_time=0.03, up_time=0.03)
             if mobs_detected:
-                CruelStab().execute()
+                Attack().execute()
         else:
             times = 2 if abs(dx) >= 32 else 1
-            if dy < 0:
-                press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
+            if dy == 0:
+                if abs(dx) in range(20, 26):
+                    press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.5)
+                else:
+                    press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             else:
-                press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+                press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
@@ -371,26 +314,6 @@ class ShadowAssault(Skill):
         #     layout.add(*bot_status.player_pos)
 
 
-# 绳索
-class RopeLift(Skill):
-    key = Keybindings.ROPE_LIFT
-    type = SkillType.Move
-    cooldown = 3
-
-    def __init__(self, dy: int = 20):
-        super().__init__(locals())
-        self.dy = abs(dy)
-
-    def main(self):
-
-        if self.dy >= 45:
-            press(Keybindings.JUMP, up_time=0.2)
-        elif self.dy >= 32:
-            press(Keybindings.JUMP, up_time=0.1)
-        press(self.__class__.key)
-        sleep_in_the_air(n=10)
-
-
 #########################
 #         Skills        #
 #########################
@@ -410,9 +333,6 @@ class CruelStab(Skill):
     type = SkillType.Attack
     # cooldown = 0.5
     backswing = 0.1
-
-    def __init__(self):
-        super().__init__(locals())
 
     def main(self):
         if not self.canUse():
