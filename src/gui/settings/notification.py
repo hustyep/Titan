@@ -36,7 +36,7 @@ class Notification(LabelFrame):
             self.check_boxes.append(check)
             self.check_values.append(value)
             index += 1
-            if index == 3:
+            if index == 4:
                 break
 
         level_row = Frame(self)
