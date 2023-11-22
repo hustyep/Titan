@@ -125,6 +125,12 @@ def hit_and_run(direction, target, tolerance):
                                          type=MobType.ELITE)
                 if matchs:
                     SonicBlow().execute()
+                else:
+                    matchs = detect_mobs(insets=AreaInsets(top=150, bottom=100, left=300, right=300),
+                                         anchor=anchor)
+                    if matchs:
+                        TrickBlade().execute()
+                    
                 mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
                                    anchor=anchor,
                                    multy_match=False,
