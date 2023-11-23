@@ -7,9 +7,6 @@ class AutoSettings(Configurable):
         'Ask': False,
         'Mining': False,
         'Load Map': True,
-        'Detect Mob': False,
-        'Detect Elite': False,
-        'Detect Boss': False
     }
 
     @property
@@ -19,6 +16,14 @@ class AutoSettings(Configurable):
     @property
     def load_map(self):
         return self.get('Load Map')
+
+
+class DetectSettings(Configurable):
+    DEFAULT_CONFIG = {
+        'Detect Mob': False,
+        'Detect Elite': False,
+        'Detect Boss': False
+    }
 
     @property
     def detect_mob(self):
@@ -62,16 +67,16 @@ class NotificationSettings(Configurable):
     @property
     def telegram(self):
         return self.get('Telegram')
-    
+
     @property
     def wechat(self):
         return self.get('Wechat')
-    
+
     @property
     def game_msg(self):
         return self.get('Game_Msg')
-    
-    
+
+
 class PetSettings(Configurable):
     DEFAULT_CONFIG = {
         'Auto-feed': False,
@@ -98,6 +103,7 @@ class ShadowerSettings(Configurable):
 class Gui_Setting():
     def __init__(self):
         self.auto = AutoSettings('auto')
+        self.detection = DetectSettings('detection')
         self.buff = BuffSettings('buff')
         self.notification = NotificationSettings('notification')
         self.pet = PetSettings('pet')

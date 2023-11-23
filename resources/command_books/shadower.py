@@ -100,7 +100,7 @@ def step(target, tolerance):
 
 @bot_status.run_if_enabled
 def hit_and_run(direction, target, tolerance):
-    if gui_setting.auto.detect_mob:
+    if gui_setting.detection.detect_mob:
         # and time.time() - DarkFlare.castedTime > 5
         if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
             print("direction_changed")
@@ -115,11 +115,11 @@ def hit_and_run(direction, target, tolerance):
                 count += 1
                 anchor = capture.locate_player_fullscreen(accurate=True)
                 matchs = []
-                if gui_setting.auto.detect_boss:
+                if gui_setting.detection.detect_boss:
                     matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
                                          anchor=anchor,
                                          type=MobType.BOSS)
-                if not matchs and gui_setting.auto.detect_elite:
+                if not matchs and gui_setting.detection.detect_elite:
                     matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
                                          anchor=anchor,
                                          type=MobType.ELITE)
@@ -140,11 +140,11 @@ def hit_and_run(direction, target, tolerance):
                     if matchs:
                         TrickBlade().execute()
                 time.sleep(0.001)
-        if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
+        if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
             t = AsyncTask(target=pre_detect, args=(direction,))
             t.start()
         DoubleJump(target=target, attack_if_needed=True).execute()
-        if gui_setting.auto.detect_elite or gui_setting.auto.detect_boss:
+        if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
             elite_detected = t.join()
             if elite_detected:
                 SonicBlow().execute()

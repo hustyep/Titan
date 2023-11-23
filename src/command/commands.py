@@ -268,16 +268,16 @@ def pre_detect(direction):
                         left=-620 if direction == 'right' else 1000,
                         right=1000 if direction == 'right' else -620)
     matchs = []
-    if gui_setting.auto.detect_elite:
+    if gui_setting.detection.detect_elite:
         matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
-    if not matchs and gui_setting.auto.detect_boss:
+    if not matchs and gui_setting.detection.detect_boss:
         matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.BOSS)
     return len(matchs) > 0
 
 
 @bot_status.run_if_enabled
 def hit_and_run(direction, target):
-    if gui_setting.auto.detect_mob:
+    if gui_setting.detection.detect_mob:
         # and time.time() - DarkFlare.castedTime > 5
         if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
             print("direction_changed")
@@ -291,11 +291,11 @@ def hit_and_run(direction, target):
                 count += 1
                 anchor = capture.locate_player_fullscreen(accurate=True)
                 matchs = []
-                if gui_setting.auto.detect_boss:
+                if gui_setting.detection.detect_boss:
                     matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
                                          anchor=anchor,
                                          type=MobType.BOSS)
-                if not matchs and gui_setting.auto.detect_elite:
+                if not matchs and gui_setting.detection.detect_elite:
                     matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
                                          anchor=anchor,
                                          type=MobType.ELITE)
