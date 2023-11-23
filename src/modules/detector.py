@@ -302,7 +302,7 @@ class Detector(Subject):
                 self.on_next((BotInfo.OTHERS_LEAVED, ))
             self.others_detect_count = 0
             self.others_comming_time = 0
-        elif self.others_detect_count == 300:
+        elif self.others_detect_count == 600:
             self.others_detect_count += 1
             self.on_next((BotError.OTHERS_STAY_OVER_120S, duration))
         # elif self.others_detect_count == 200:
