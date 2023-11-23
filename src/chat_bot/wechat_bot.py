@@ -69,15 +69,17 @@ class WechatBot:
                 self.handleMsg(msg)
             else:
                 self.last_msg = None
-            hid.key_up('ctrl')
+            # hid.key_up('ctrl')
             time.sleep(0.5)
 
     def getNewMsg(self):
+        if bot_status.rune_solving:
+            return
         image = self.shot_new_msg()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         height, width = gray.shape
         if np.count_nonzero(gray == 245) / height / width > 0.8:
-            return None
+            return
 
         lParam = win32api.MAKELONG(90, 460)
         win32gui.SendMessage(
@@ -218,6 +220,8 @@ class WechatBot:
                              win32con.VK_RETURN, 0)
 
     def send_message(self, text=None, image=None, imagePath=None):
+        while bot_status.rune_solving:
+            time.sleep(0.2)
         if text:
             self.send_text(text)
 
