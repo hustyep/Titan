@@ -14,7 +14,7 @@ from src.common.constants import *
 class DefaultKeybindings:
     INTERACT = 'space'
     FEED_PET = 'L'
-    Change_Channel = 'PageDn'
+    Change_Channel = 'o'
     Attack = 'insert'
     JUMP = 's'
     FLASH_JUMP = ';'
@@ -22,10 +22,10 @@ class DefaultKeybindings:
     # Potion
     EXP_POTION = '0'
     WEALTH_POTION = "-"
-    GOLD_POTION = '='
+    GOLD_POTION = ''
     GUILD_POTION = "9"
     CANDIED_APPLE = '5'
-    LEGION_WEALTHY = ''
+    LEGION_WEALTHY = '='
     EXP_COUPON = '6'
 
     # Common Skill
@@ -552,7 +552,7 @@ class ErdaShower(Skill):
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
         key_down('down')
-        press(Keybindings.ERDA_SHOWER, 2)
+        press(Keybindings.ERDA_SHOWER, 1)
         key_up('down')
         self.__class__.castedTime = time.time()
         time.sleep(self.__class__.backswing)

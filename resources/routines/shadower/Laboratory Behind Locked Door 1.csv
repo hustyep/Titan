@@ -8,10 +8,8 @@ $, target=mini_margin, value=44
 *, x=19, y=57, interval=0, tolerance=3, skip=False
 *, x=50, y=30, interval=0, tolerance=3, skip=False
     ErdaShower, direction=left
-    Arachnid
 *, x=100, y=30, interval=0, tolerance=3, skip=False
     DarkFlare, direction=right
-    SuddenRaid
 *, x=138, y=57, interval=0, tolerance=9, skip=False
 #
 

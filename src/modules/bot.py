@@ -154,8 +154,7 @@ class Bot(Subject):
         elif isinstance(event_type, BotError):
             match (event_type):
                 case BotError.OTHERS_STAY_OVER_120S:
-                    pass
-                    # ActionSimulator.go_home()
+                    ActionSimulator.change_channel()
                 case (_):
                     self.toggle(False, event_type.value)
                     chat_bot.voice_call()

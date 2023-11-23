@@ -100,14 +100,14 @@ class WechatBot:
                 self.pause_command()
             elif msg == WECHAT_BOT_COMMAND_SCREENSHOT:
                 self.screenshot_command()
+            elif msg == WECHAT_BOT_COMMAND_TP:
+                self.tp_command()
+            elif msg == WECHAT_BOT_COMMAND_CHANGE_CHANNEL:
+                self.change_channel()
             elif msg.startswith(WECHAT_BOT_COMMAND_SAY):
                 self.say_command(msg=msg)
             elif msg.startswith(WECHAT_BOT_COMMAND_CLICK):
                 self.click_command(msg=msg)
-            elif msg == WECHAT_BOT_COMMAND_TP:
-                self.tp_command(msg=msg)
-            elif msg == WECHAT_BOT_COMMAND_CHANGE_CHANNEL:
-                self.change_channel()
             else:
                 self.send_text('unknow')
 
