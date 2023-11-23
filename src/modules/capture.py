@@ -78,8 +78,9 @@ class Capture(Subject):
             window_list.append(hwnd)
 
     def find_window(self):
-        self.window_list.clear()
-        win32gui.EnumWindows(self.emum_windows_callback, self.window_list)
+        tmp_list = []
+        win32gui.EnumWindows(self.emum_windows_callback, tmp_list)
+        self.window_list = tmp_list
         if len(self.window_list) > 1:
             self.hwnd = self.window_list[-1]
             self.msg_hwnd = self.window_list[0]
