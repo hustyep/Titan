@@ -189,7 +189,7 @@ class Bot(Subject):
     def bot_status(self, ext='') -> str:
         message = (
             f"bot status: {'running' if bot_status.enabled  else 'pause'}\n"
-            f"rune status: {f'{time.time() - detector.rune_active_time}s' if bot_status.rune_pos is not None else 'clear'}\n"
+            f"rune status: {f'{time.time()}s' if bot_status.rune_pos is not None else 'clear'}\n"
             f"other players: {detector.others_count}\n"
             f"reason: {ext}\n"
         )
