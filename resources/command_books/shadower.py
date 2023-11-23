@@ -415,7 +415,7 @@ class DarkFlare(Skill):
     key = Keybindings.DARK_FLARE
     type = SkillType.Summon
     cooldown = 58
-    backswing = 1
+    backswing = 0.8
     duration = 60
 
     def __init__(self, direction=None):
@@ -561,8 +561,8 @@ class Buff(Command):
             if buff.canUse():
                 print(buff)
                 result = buff().execute()
-                # if result:
-                #     break
+                if result:
+                    break
 
 
 class GoddessBlessing(Skill):

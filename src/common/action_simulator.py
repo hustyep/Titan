@@ -171,6 +171,7 @@ class ActionSimulator:
 
         delay = 0
         while not bot_status.lost_minimap:
+            print("changging channel")
             delay += 0.1
             if delay > 5:
                 ActionSimulator._change_channel()
@@ -178,6 +179,7 @@ class ActionSimulator:
             time.sleep(0.1)
 
         while bot_status.lost_minimap:
+            print("cc: lost mimimap")
             time.sleep(0.1)
 
         if not enable:
@@ -185,7 +187,7 @@ class ActionSimulator:
 
         chat_bot.send_message('channel changed', capture.frame)
         bot_status.enabled = True
-
+        time.sleep(3)
         others = False
         for i in range(5):
             if bot_status.stage_fright:
