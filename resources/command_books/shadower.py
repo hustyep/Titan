@@ -112,7 +112,7 @@ def hit_and_run(direction, target, tolerance):
             Command.loop_begin_callback()
             SlashShadowFormation().execute()
             cast_time = time.time() - start_time
-            time.sleep(max(0.5 - cast_time, 0))
+            time.sleep(max(0.8 - cast_time, 0))
 
             count = 0
             while count < 200:
@@ -130,7 +130,7 @@ def hit_and_run(direction, target, tolerance):
                 if matchs:
                     SonicBlow().execute()
                     
-                mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
+                mobs = detect_mobs(insets=AreaInsets(top=150, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
                                    anchor=anchor,
                                    multy_match=False,
                                    debug=False)

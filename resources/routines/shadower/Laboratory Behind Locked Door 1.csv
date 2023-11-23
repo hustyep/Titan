@@ -1,7 +1,7 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=44
 
-~, label=Summon, interval=40, skip=False
+~, label=Summon, interval=41, skip=False
 *, x=75, y=57, interval=0, tolerance=10, skip=True
     ShadowVeil, direction=left
 *, x=9, y=57, interval=0, tolerance=6, skip=False
