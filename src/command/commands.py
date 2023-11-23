@@ -58,6 +58,7 @@ class Command():
     castedTime: float = 0
     precast: float = 0
     backswing: float = 0.5
+    loop_begin_callback = None
     complete_callback = None
 
     def __init__(self, *args, **kwargs):

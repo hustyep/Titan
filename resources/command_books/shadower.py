@@ -107,8 +107,12 @@ def hit_and_run(direction, target, tolerance):
             key_down(direction)
             time.sleep(0.05)
             key_up(direction)
-            time.sleep(0.5)
+            
+            start_time = time.time()
+            Command.loop_begin_callback()
             SlashShadowFormation().execute()
+            cast_time = time.time() - start_time
+            time.sleep(max(0.5 - cast_time, 0))
 
             count = 0
             while count < 200:
