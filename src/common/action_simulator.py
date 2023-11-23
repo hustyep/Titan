@@ -8,6 +8,7 @@ from src.common.hid import hid
 from src.common.image_template import *
 from src.modules.capture import capture
 from src.command.commands import Keybindings
+from src.modules.chat_bot import chat_bot
 import threading
 
 
@@ -132,6 +133,7 @@ class ActionSimulator:
         bot_status.rune_pos = None
         bot_status.rune_closest_pos = None
         threading.Timer(5, ActionSimulator._change_channel, (num, enable, )).start()
+        chat_bot.send_text('changing channel...')
 
     @staticmethod
     def _change_channel(num: int = 0, enable=True) -> None:
@@ -181,6 +183,7 @@ class ActionSimulator:
         if not enable:
             return
 
+        chat_bot.send_message('channel changed', capture.frame)
         bot_status.enabled = True
 
         others = False

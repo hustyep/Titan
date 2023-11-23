@@ -305,12 +305,12 @@ class Detector(Subject):
         elif self.others_detect_count == 300:
             self.others_detect_count += 1
             self.on_next((BotError.OTHERS_STAY_OVER_120S, duration))
-        elif self.others_detect_count == 200:
-            self.others_detect_count += 1
-            self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
-        elif self.others_detect_count == 100:
-            self.others_detect_count += 1
-            self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
+        # elif self.others_detect_count == 200:
+        #     self.others_detect_count += 1
+        #     self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
+        # elif self.others_detect_count == 100:
+        #     self.others_detect_count += 1
+        #     self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
         elif self.others_detect_count == 50:
             self.others_detect_count += 1
             self.on_next((BotWarnning.OTHERS_COMMING, duration))

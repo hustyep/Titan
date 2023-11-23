@@ -65,7 +65,10 @@ class WechatBot:
 
         while True:
             msg = self.getNewMsg()
-            self.handleMsg(msg)
+            if msg:
+                self.handleMsg(msg)
+            else:
+                self.last_msg = None
             hid.key_up('ctrl')
             time.sleep(0.5)
 
@@ -107,7 +110,6 @@ class WechatBot:
                 self.change_channel()
             else:
                 self.send_text('unknow')
-            # self.last_msg = None
 
     def info_command(self):
         message, _ = self.command_handler(ChatBotCommand.INFO, )
