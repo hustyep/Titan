@@ -133,7 +133,7 @@ class ActionSimulator:
         bot_status.rune_pos = None
         bot_status.rune_closest_pos = None
         threading.Timer(5, ActionSimulator._change_channel, (num, enable, )).start()
-        chat_bot.send_text('changing channel...')
+        chat_bot.send_message('changing channel...')
 
     @staticmethod
     def _change_channel(num: int = 0, enable=True) -> None:
