@@ -824,6 +824,12 @@ class DotAoe(Command):
     def canUse(cls, next_t: float = 0) -> bool:
         return False
 
+class Aoe(Command):
+    """'Aoe' command for the default command book."""
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return False
 
 class Attack(Command):
     """Undefined 'Attack' command for the default command book."""

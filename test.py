@@ -270,4 +270,5 @@ if __name__ == "__main__":
     # wechat_test()
     # buff_test()
     # minimap_test()
-    msg_test()
+    # msg_test()
+    mob_detect_test()

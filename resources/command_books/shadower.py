@@ -101,58 +101,15 @@ def step(target, tolerance):
 @bot_status.run_if_enabled
 def hit_and_run(direction, target, tolerance):
     if gui_setting.detection.detect_mob:
-        # and time.time() - DarkFlare.castedTime > 5
-        if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
-            print("direction_changed")
-            key_down(direction)
-            time.sleep(0.05)
-            key_up(direction)
-            
-            start_time = time.time()
-            anchor = capture.locate_player_fullscreen(accurate=True)
-            matchs = detect_mobs(insets=AreaInsets(top=150, bottom=100, left=300, right=300),
-                                         anchor=anchor)
-            if matchs:
-                TrickBlade().execute()
-            Command.loop_begin_callback()
-            SlashShadowFormation().execute()
-            cast_time = time.time() - start_time
-            time.sleep(max(1 - cast_time, 0))
-
-            count = 0
-            while count < 200:
-                count += 1
-                anchor = capture.locate_player_fullscreen(accurate=True)
-                matchs = []
-                if gui_setting.detection.detect_boss:
-                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                                         anchor=anchor,
-                                         type=MobType.BOSS)
-                if not matchs and gui_setting.detection.detect_elite:
-                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                                         anchor=anchor,
-                                         type=MobType.ELITE)
-                if matchs:
-                    SonicBlow().execute()
-                    
-                mobs = detect_mobs(insets=AreaInsets(top=150, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
-                                   anchor=anchor,
-                                   multy_match=False,
-                                   debug=False)
-                if len(mobs):
-                    print(len(mobs))
-                if len(mobs) > 0:
-                    break
-                    
-                time.sleep(0.001)
         if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
             t = AsyncTask(target=pre_detect, args=(direction,))
             t.start()
-        DoubleJump(target=target, attack_if_needed=True).execute()
-        if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
             elite_detected = t.join()
+            DoubleJump(target=target, attack_if_needed=True).execute()
             if elite_detected:
                 SonicBlow().execute()
+        else:
+            DoubleJump(target=target, attack_if_needed=True).execute()
     else:
         DoubleJump(target=target, attack_if_needed=True).execute()
 
