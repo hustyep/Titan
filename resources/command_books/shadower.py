@@ -60,7 +60,7 @@ def step(target, tolerance):
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
     if abs(d_x) in ShadowAssault.x_range and -d_y in ShadowAssault.y_range:
-        if ShadowAssault.usable_count() >= 2:
+        if ShadowAssault.canUse():
             ShadowAssault(target=target).execute()
             return
     if d_y in ShadowAssault.y_range:
@@ -109,10 +109,15 @@ def hit_and_run(direction, target, tolerance):
             key_up(direction)
             
             start_time = time.time()
+            anchor = capture.locate_player_fullscreen(accurate=True)
+            matchs = detect_mobs(insets=AreaInsets(top=150, bottom=100, left=300, right=300),
+                                         anchor=anchor)
+            if matchs:
+                TrickBlade().execute()
             Command.loop_begin_callback()
             SlashShadowFormation().execute()
             cast_time = time.time() - start_time
-            time.sleep(max(0.8 - cast_time, 0))
+            time.sleep(max(1 - cast_time, 0))
 
             count = 0
             while count < 200:
@@ -138,11 +143,7 @@ def hit_and_run(direction, target, tolerance):
                     print(len(mobs))
                 if len(mobs) > 0:
                     break
-                else:
-                    matchs = detect_mobs(insets=AreaInsets(top=150, bottom=100, left=300, right=300),
-                                         anchor=anchor)
-                    if matchs:
-                        TrickBlade().execute()
+                    
                 time.sleep(0.001)
         if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
             t = AsyncTask(target=pre_detect, args=(direction,))
@@ -181,7 +182,7 @@ def move_up(target):
 def move_down(target):
     p = bot_status.player_pos
     dy = p[1] - target[1]
-    if dy >= 24 and ShadowAssault.usable_count() >= 3:
+    if dy >= 24 and ShadowAssault.canUse():
         ShadowAssault(target=target).execute()
     else:
         sleep_in_the_air(n=1)
@@ -277,6 +278,7 @@ class ShadowAssault(Skill):
     key = Keybindings.SHADOW_ASSAULT
     type = SkillType.Move
     backswing = 0.3
+    max_times = 4
     usable_times = 4
     cooldown = 60
     x_range = range(18, 36)
@@ -306,29 +308,25 @@ class ShadowAssault(Skill):
                 self.jump = True
             self.distance = math.sqrt(dx ** 2 + dy ** 2)
 
-    @staticmethod
-    def usable_count():
-        if (time.time() - ShadowAssault.castedTime) > ShadowAssault.cooldown + ShadowAssault.backswing:
-            return 4
-        else:
-            return ShadowAssault.usable_times
-
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[8:, ], threshold=0.94)
+            capture.skill_frame, cls.icon[8:, 1:-13], threshold=0.98, debug=False)
         if matchs:
             cls.ready = True
+            cls.usable_times = cls.max_times
         else:
             matchs = utils.multi_match(
                 capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
             cls.ready = len(matchs) > 0
+            if not cls.ready:
+                cls.usable_times = 0
 
     def main(self):
         if self.distance == 0:
             return
 
-        if not self.canUse:
+        if not self.canUse():
             return
 
         # time.sleep(0.2)
@@ -356,12 +354,7 @@ class ShadowAssault(Skill):
         key_down(self.direction)
         time.sleep(0.03)
 
-        cur_time = time.time()
-        if (cur_time - self.__class__.castedTime) > self.__class__.cooldown + self.__class__.backswing:
-            self.__class__.castedTime = cur_time
-            self.__class__.usable_times = 3
-        else:
-            self.__class__.usable_times -= 1
+        self.__class__.usable_times -= 1
         press(self.key)
         key_up(self.direction)
         sleep_in_the_air()
