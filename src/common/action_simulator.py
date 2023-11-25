@@ -112,7 +112,7 @@ class ActionSimulator:
             hid.mouse_right_down()
             time.sleep(0.2)
             hid.mouse_right_up()
-            time.sleep(0.2)
+            time.sleep(0.5)
 
     @staticmethod
     def open_boss_box():
