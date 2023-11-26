@@ -1,18 +1,16 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=44
 
-~, label=Summon, interval=41
-*, x=75, y=57, interval=0, tolerance=10, detect=True, skip=True
+~, label=Summon, interval=41, skip=False
+*, x=37, y=57, interval=0, tolerance=10, detect=True, skip=True
     ShadowVeil, direction=left
-*, x=9, y=57, interval=0, tolerance=6
-*, x=19, y=57, interval=0, tolerance=3
-*, x=50, y=30, interval=0, tolerance=3
+*, x=50, y=30, interval=0, tolerance=3, detect=False, skip=False
     ErdaShower, direction=left
-*, x=100, y=30, interval=0, tolerance=3
+*, x=100, y=30, interval=0, tolerance=3, detect=False, skip=False
     DarkFlare, direction=right
-*, x=138, y=57, interval=0, tolerance=9
+*, x=138, y=57, interval=0, tolerance=9, detect=False, skip=False
 #
 
 @, label=Bottom mobbing
-*, x=9, y=57, interval=0, tolerance=6, detect=True
-*, x=139, y=57, interval=0, tolerance=6, detect=True
+*, x=9, y=57, interval=0, tolerance=6, detect=True, skip=False
+*, x=139, y=57, interval=0, tolerance=6, detect=True, skip=False
