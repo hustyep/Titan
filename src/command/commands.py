@@ -144,7 +144,7 @@ class Skill(Command):
     duration:  int = 0
     type: SkillType = SkillType.Attack
     icon = None
-    ready = True
+    ready = False
     enabled = False
 
     def __init__(self, *args, **kwargs):

@@ -153,6 +153,7 @@ class Point(Component):
         matchs = commands.detect_mobs(insets=commands.AreaInsets(top=150, bottom=100, left=300, right=300),
                                       anchor=anchor)
         if matchs:
+            print("use aoe")
             commands.Aoe().execute()
         commands.Command.loop_begin_callback()
         cast_time = time.time() - start_time

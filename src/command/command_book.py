@@ -11,7 +11,7 @@ CB_KEYBINDING_DIR = os.path.join('resources', 'keybindings')
 
 class CommandBook():
     def __init__(self, file):
-        importlib.reload(commands)
+        # importlib.reload(commands)
         self.name = splitext(basename(file))[0]
         self.Move = commands.Move
         self.Walk = commands.Walk
@@ -112,10 +112,19 @@ class CommandBook():
             commands.step = self.step
             commands.Attack = new_cb["attack"]
             commands.DoubleJump = new_cb["doublejump"]
-            
-            # commands.Summon = new_cb["summon"]
-            # commands.DotAoe = new_cb["dotaoe"]
-            # commands.Aoe = new_cb["aoe"]
+
+            if new_cb["summon"]:
+                commands.Summon = new_cb["summon"]
+            else:
+                commands.Summon = commands.Skill
+            if new_cb["dotaoe"]:
+                commands.DotAoe = new_cb["dotaoe"]
+            else:
+                commands.DotAoe = commands.Skill
+            if new_cb["aoe"]:
+                commands.Aoe = new_cb["aoe"]
+            else:
+                commands.Aoe = commands.Skill
 
             for command in (commands.Summon, commands.DotAoe, commands.Aoe):
                 name = command.__name__
