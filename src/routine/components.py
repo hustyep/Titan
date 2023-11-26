@@ -100,7 +100,7 @@ class Point(Component):
 
     id = '*'
 
-    def __init__(self, x, y, interval=0, tolerance=13, detect=False) -> None:
+    def __init__(self, x, y, interval=0, tolerance=13, detect="False") -> None:
         super().__init__(locals())
         self.x = int(x)
         self.y = int(y)
@@ -197,7 +197,7 @@ class Sequence(Component):
 
     id = '~'
 
-    def __init__(self, label, interval=0, skip=False):
+    def __init__(self, label, interval=0, skip='False'):
         super().__init__(locals())
         self.label = str(label)
         self.interval = bot_settings.validate_nonnegative_int(interval)

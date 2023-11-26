@@ -10,7 +10,7 @@ from src.rune import rune
 from src.common.constants import *
 from src.common import bot_settings, utils
 from src.routine.components import *
-from src.command.commands import Command, target_reached
+from src.command.commands import Command, target_reached, Move
 from src.map.map import map
 from src.command.command_book import CommandBook
 from src.common.action_simulator import *
