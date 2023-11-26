@@ -824,7 +824,7 @@ class DotAoe(Command):
     def canUse(cls, next_t: float = 0) -> bool:
         return False
 
-class Aoe(Command):
+class Aoe(Skill):
     """'Aoe' command for the default command book."""
 
     @classmethod

@@ -100,7 +100,7 @@ class Point(Component):
 
     id = '*'
 
-    def __init__(self, x, y, interval=0, tolerance=13, detect="False") -> None:
+    def __init__(self, x, y, interval=0, tolerance=13, detect="False", skip="False") -> None:
         super().__init__(locals())
         self.x = int(x)
         self.y = int(y)
@@ -109,6 +109,7 @@ class Point(Component):
         self.tolerance = bot_settings.move_tolerance if int(
             tolerance) == 0 else int(tolerance)
         self.detect = bot_settings.validate_boolean(detect)
+        self.skip = bot_settings.validate_boolean(skip)
         self.last_execute_time = 0
         self.parent: Component = None
         self.index = 0
@@ -119,6 +120,9 @@ class Point(Component):
         """Executes the set of actions associated with this Point."""
         # self.print_debug_info()
 
+        if self.skip and self.last_execute_time == 0:
+            self.last_execute_time = time.time()
+            return
         if self.interval > 0:
             if time.time() - self.last_execute_time >= self.interval:
                 self._main()

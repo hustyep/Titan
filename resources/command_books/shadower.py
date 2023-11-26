@@ -334,6 +334,16 @@ class Attack(Command):
     def main(self):
         CruelStab().execute()
 
+class Aoe(Skill):
+    key = Keybindings.TRICKBLADE
+    type = SkillType.Attack
+    
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return TrickBlade.ready
+    
+    def main(self):
+        return TrickBlade().main()
 
 class CruelStab(Skill):
     """Uses 'CruelStab' once."""
@@ -442,12 +452,12 @@ class TrickBlade(Skill):
     backswing = 0.7
     type = SkillType.Attack
 
-    def __init__(self, direction='right'):
-        super().__init__(locals())
-        if direction is None:
-            self.direction = direction
-        else:
-            self.direction = bot_settings.validate_horizontal_arrows(direction)
+    # def __init__(self, direction='right'):
+    #     super().__init__(locals())
+    #     if direction is None:
+    #         self.direction = direction
+    #     else:
+    #         self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     # @classmethod
     # def canUse(cls, next_t: float = 0) -> bool:
