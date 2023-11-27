@@ -144,7 +144,7 @@ class Point(Component):
         key_down(direction)
         time.sleep(0.05)
         key_up(direction)
-        if self.detect and abs(d_x) > 80:
+        if self.detect:
             self.detect_mob(direction)
 
     def detect_mob(self, direction):
