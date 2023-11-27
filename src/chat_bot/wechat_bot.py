@@ -15,21 +15,23 @@ from src.common.image_template import WECHAT_CALL_TEMPLATE, WECHAT_CALL_TEMPLATE
 from src.chat_bot.chat_bot_entity import ChatBotEntity, ChatBotCommand
 
 # info
-WECHAT_BOT_COMMAND_INFO = '/i'
+WECHAT_BOT_COMMAND_INFO = 'i'
 # begin
-WECHAT_BOT_COMMAND_START = '/b'
+WECHAT_BOT_COMMAND_START = 'b'
 # pause
-WECHAT_BOT_COMMAND_PAUSE = '/p'
+WECHAT_BOT_COMMAND_PAUSE = 'p'
 # screenshot
-WECHAT_BOT_COMMAND_SCREENSHOT = '/ss'
+WECHAT_BOT_COMMAND_SCREENSHOT_MAPLE = 'sm'
+# screenshot window
+WECHAT_BOT_COMMAND_SCREENSHOT = 'ss'
 # say
-WECHAT_BOT_COMMAND_SAY = '/s'
+WECHAT_BOT_COMMAND_SAY = 's'
 # tp
-WECHAT_BOT_COMMAND_TP = '/tp'
+WECHAT_BOT_COMMAND_TP = 'tp'
 # click
-WECHAT_BOT_COMMAND_CLICK = '/c'
+WECHAT_BOT_COMMAND_CLICK = 'c'
 # change channel
-WECHAT_BOT_COMMAND_CHANGE_CHANNEL = '/cc'
+WECHAT_BOT_COMMAND_CHANGE_CHANNEL = 'cc'
 
 class WechatBot:
 
@@ -100,8 +102,10 @@ class WechatBot:
                 self.start_command()
             elif msg == WECHAT_BOT_COMMAND_PAUSE:
                 self.pause_command()
+            elif msg == WECHAT_BOT_COMMAND_SCREENSHOT_MAPLE:
+                self.screenshot_command(False)
             elif msg == WECHAT_BOT_COMMAND_SCREENSHOT:
-                self.screenshot_command()
+                self.screenshot_command(True)
             elif msg == WECHAT_BOT_COMMAND_TP:
                 self.tp_command()
             elif msg == WECHAT_BOT_COMMAND_CHANGE_CHANNEL:
@@ -125,8 +129,8 @@ class WechatBot:
         message, _ = self.command_handler(ChatBotCommand.PAUSE, )
         self.send_text(message)
 
-    def screenshot_command(self):
-        _, image_path = self.command_handler(ChatBotCommand.SCREENSHOT, )
+    def screenshot_command(self, full):
+        _, image_path = self.command_handler(ChatBotCommand.PRINTSCREEN if full else ChatBotCommand.SCREENSHOT, )
         self.send_image(imagePath=image_path)
 
     def say_command(self, msg: str):
