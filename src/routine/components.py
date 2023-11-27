@@ -140,10 +140,11 @@ class Point(Component):
     def pre_move(self):
         d_x = self.x - bot_status.player_pos[0]
         d_y = self.y - bot_status.player_pos[1]
-        direction = 'right' if d_x > 0 else 'left'
-        key_down(direction)
-        time.sleep(0.05)
-        key_up(direction)
+        if d_x != 0:
+            direction = 'right' if d_x > 0 else 'left'
+            key_down(direction)
+            time.sleep(0.05)
+            key_up(direction)
         if self.detect:
             self.detect_mob(direction)
 
