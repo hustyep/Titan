@@ -223,7 +223,7 @@ class DoubleJump(Skill):
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        sleep_in_the_air(n=2, start_y=start_y)
+        sleep_in_the_air(n=1, start_y=start_y)
 
 
 class ShadowAssault(Skill):
