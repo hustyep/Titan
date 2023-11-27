@@ -97,6 +97,21 @@ def step(target, tolerance):
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
 
+@bot_status.run_if_enabled
+def hit_and_run(direction, target, tolerance):
+    if gui_setting.detection.detect_mob:
+        if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
+            t = AsyncTask(target=pre_detect, args=(direction,))
+            t.start()
+            elite_detected = t.join()
+            DoubleJump(target=target, attack_if_needed=True).execute()
+            if elite_detected:
+                pass
+        else:
+            DoubleJump(target=target, attack_if_needed=True).execute()
+    else:
+        DoubleJump(target=target, attack_if_needed=True).execute()
+
 #########################
 #        Y轴移动         #
 #########################

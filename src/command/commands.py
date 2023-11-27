@@ -276,47 +276,6 @@ def pre_detect(direction):
     return len(matchs) > 0
 
 
-@bot_status.run_if_enabled
-def hit_and_run(direction, target):
-    if gui_setting.detection.detect_mob:
-        # and time.time() - DarkFlare.castedTime > 5
-        if direction_changed(direction) and bot_status.player_pos[1] == bot_settings.boundary_point_l[1]:
-            print("direction_changed")
-            key_down(direction)
-            time.sleep(0.05)
-            key_up(direction)
-            time.sleep(0.5)
-
-            count = 0
-            while count < 200:
-                count += 1
-                anchor = capture.locate_player_fullscreen(accurate=True)
-                matchs = []
-                if gui_setting.detection.detect_boss:
-                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                                         anchor=anchor,
-                                         type=MobType.BOSS)
-                if not matchs and gui_setting.detection.detect_elite:
-                    matchs = detect_mobs(insets=AreaInsets(top=180, bottom=-20, left=300, right=300),
-                                         anchor=anchor,
-                                         type=MobType.ELITE)
-                if matchs:
-                    pass
-                    # SonicBlow().execute()
-                mobs = detect_mobs(insets=AreaInsets(top=250, bottom=100, left=1200 if direction == 'left' else -200, right=1100 if direction == 'right' else -200),
-                                   anchor=anchor,
-                                   multy_match=False,
-                                   debug=False)
-                if len(mobs):
-                    print(len(mobs))
-                if len(mobs) > 0:
-                    break
-                time.sleep(0.001)
-        DoubleJump(target=target, attack_if_needed=True).execute()
-    else:
-        DoubleJump(target=target, attack_if_needed=True).execute()
-
-
 @run_if_map_available
 def climb_rope(isUP=True):
     step = 0
@@ -424,8 +383,8 @@ def evade_rope(target: tuple[int, int] = None):
                 has_rope = True
                 break
         if has_rope:
-            target_l = map.valid_point((pos[0] - 3, pos[1]))
-            target_r = map.valid_point((pos[0] + 3, pos[1]))
+            target_l = map.valid_point((pos[0] - 2, pos[1]))
+            target_r = map.valid_point((pos[0] + 2, pos[1]))
             if map.on_the_platform(target_l):
                 Walk(target_l[0], tolerance=1).execute()
             elif map.on_the_platform(target_r):
@@ -433,8 +392,8 @@ def evade_rope(target: tuple[int, int] = None):
         return
 
     if map.near_rope(bot_status.player_pos):
-        target_l = map.valid_point((target[0] - 3, target[1]))
-        target_r = map.valid_point((target[0] + 3, target[1]))
+        target_l = map.valid_point((target[0] - 2, target[1]))
+        target_r = map.valid_point((target[0] + 2, target[1]))
         if map.on_the_platform(target_l):
             Walk(target_l[0], tolerance=1).execute()
         elif map.on_the_platform(target_r):
@@ -588,7 +547,10 @@ class Walk(Command):
             new_direction = 'left' if d_x < 0 else 'right'
             if abs(d_x) <= 2:
                 key_up(direction)
-                press_acc(new_direction, down_time=0.01, up_time=0.04)
+                if self.tolerance <= 1:
+                    press_acc(new_direction, down_time=0.01, up_time=0.1)
+                else:
+                    press_acc(new_direction, down_time=0.01, up_time=0.04)
             else:
                 if new_direction != direction:
                     key_up(direction)
@@ -824,12 +786,14 @@ class DotAoe(Command):
     def canUse(cls, next_t: float = 0) -> bool:
         return False
 
+
 class Aoe(Skill):
     """'Aoe' command for the default command book."""
 
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         return False
+
 
 class Attack(Command):
     """Undefined 'Attack' command for the default command book."""
@@ -957,6 +921,7 @@ class HardHitter(Skill):
             matchs = utils.multi_match(
                 capture.skill_frame, cls.icon[8:, ], threshold=0.98)
             cls.ready = len(matchs) > 0
+
 
 class RopeLift(Skill):
     '''绳索'''
