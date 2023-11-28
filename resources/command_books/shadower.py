@@ -268,13 +268,13 @@ class ShadowAssault(Skill):
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[8:, 1:-13], threshold=0.98, debug=False)
+            capture.skill_frame, cls.icon[12:-4, 4:-17], threshold=0.98, debug=False)
         if matchs:
             cls.ready = True
             cls.usable_times = cls.max_times
         else:
             matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
+                capture.buff_frame, cls.icon[4:-4, 4:-18], threshold=0.9)
             cls.ready = len(matchs) > 0
             if not cls.ready:
                 cls.usable_times = 0
@@ -442,7 +442,7 @@ class SuddenRaid(Skill):
         if cls.icon is None:
             return
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[9:, ], threshold=0.9, debug=False)
+            capture.skill_frame, cls.icon[13:-4, 4:-4], threshold=0.9, debug=False)
         cls.ready = len(matchs) > 0
 
 
@@ -511,7 +511,7 @@ class Buff(Command):
         super().__init__(locals())
         self.buffs: list[Skill] = [
             MapleWarrior,
-            GoddessBlessing,
+            MapleWorldGoddessBlessing,
             LastResort,
             ForTheGuild,
             HardHitter,
@@ -527,47 +527,6 @@ class Buff(Command):
                 result = buff().execute()
                 if result:
                     break
-
-
-class GoddessBlessing(Skill):
-    key = Keybindings.GODDESS_BLESSING
-    cooldown = 180
-    precast = 0.3
-    backswing = 0.85
-    type = SkillType.Buff
-    
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        if not MapleWarrior.enabled:
-            return False
-
-        return super().canUse(next_t)
-
-
-class LastResort(Skill):
-    key = Keybindings.LAST_RESORT
-    cooldown = 75
-    precast = 0.3
-    backswing = 0.8
-    type = SkillType.Buff
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        if capture.frame is None:
-            return
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[8:, ], threshold=0.95)
-        if not matchs:
-            cls.ready = False
-        else:
-            matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
-            if not matchs:
-                matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
-            cls.ready = len(matchs) == 0
 
 
 class ShadowWalker(Skill):
