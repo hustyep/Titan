@@ -177,7 +177,7 @@ class Skill(Command):
         match cls.type:
             case SkillType.Switch:
                 matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[4:-4, 4:-18], threshold=0.9)
+                    capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
                 cls.ready = len(matchs) == 0
                 cls.enabled = not cls.ready
             case SkillType.Buff:
@@ -186,20 +186,20 @@ class Skill(Command):
                     cls.ready = False
                 else:
                     matchs = utils.multi_match(
-                        capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.99)
+                        capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.99)
                     cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.9)
+                    capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.9)
                 cls.ready = len(matchs) > 0
 
     @classmethod
     def check_buff_enabled(cls):
         matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[4:18, 18:-4], threshold=0.9)
+            capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
         if not matchs:
             matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[18:-4, 18:-4], threshold=0.9)
+                capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
         cls.enabled = len(matchs) > 0
 
 
@@ -544,15 +544,15 @@ class LastResort(Skill):
         if capture.frame is None:
             return
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.95)
+            capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.95)
         if not matchs:
             cls.ready = False
         else:
             matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[4:18, 18:-4], threshold=0.9)
+                capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
             if not matchs:
                 matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[18:-4, 18:-4], threshold=0.9)
+                    capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
             cls.ready = len(matchs) == 0
 
 class ErdaShower(Skill):
@@ -986,7 +986,7 @@ class HardHitter(Skill):
             cls.ready = False
         else:
             matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.98)
+                capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
             cls.ready = len(matchs) > 0
 
 

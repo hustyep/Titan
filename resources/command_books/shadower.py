@@ -268,13 +268,13 @@ class ShadowAssault(Skill):
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[12:-4, 4:-17], threshold=0.98, debug=False)
+            capture.skill_frame, cls.icon[10:-2, 2:-16], threshold=0.98, debug=False)
         if matchs:
             cls.ready = True
             cls.usable_times = cls.max_times
         else:
             matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[4:-4, 4:-18], threshold=0.9)
+                capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
             cls.ready = len(matchs) > 0
             if not cls.ready:
                 cls.usable_times = 0
@@ -442,7 +442,7 @@ class SuddenRaid(Skill):
         if cls.icon is None:
             return
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[13:-4, 4:-4], threshold=0.9, debug=False)
+            capture.skill_frame, cls.icon[11:-2, 2:-2], threshold=0.9, debug=False)
         cls.ready = len(matchs) > 0
 
 
