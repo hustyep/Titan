@@ -386,18 +386,18 @@ def evade_rope(target: tuple[int, int] = None):
             target_l = map.valid_point((pos[0] - 2, pos[1]))
             target_r = map.valid_point((pos[0] + 2, pos[1]))
             if map.on_the_platform(target_l):
-                Walk(target_l[0], tolerance=1).execute()
+                Walk(target_l[0], tolerance=0).execute()
             elif map.on_the_platform(target_r):
-                Walk(target_r[0], tolerance=1).execute()
+                Walk(target_r[0], tolerance=0).execute()
         return
 
     if map.near_rope(bot_status.player_pos):
         target_l = map.valid_point((target[0] - 2, target[1]))
         target_r = map.valid_point((target[0] + 2, target[1]))
         if map.on_the_platform(target_l):
-            Walk(target_l[0], tolerance=1).execute()
+            Walk(target_l[0], tolerance=0).execute()
         elif map.on_the_platform(target_r):
-            Walk(target_r[0], tolerance=1).execute()
+            Walk(target_r[0], tolerance=0).execute()
 
 
 class MobType(Enum):
@@ -545,7 +545,7 @@ class Walk(Command):
             if abs(d_x) <= 2:
                 key_up(direction)
                 if self.tolerance <= 1:
-                    press_acc(new_direction, down_time=0.01, up_time=0.1)
+                    press_acc(new_direction, down_time=0.01, up_time=0.2)
                 else:
                     press_acc(new_direction, down_time=0.01, up_time=0.04)
             else:
