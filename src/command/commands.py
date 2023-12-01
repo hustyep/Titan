@@ -537,24 +537,6 @@ class LastResort(Skill):
     backswing = 0.8
     type = SkillType.Buff
 
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        if capture.frame is None:
-            return
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.95)
-        if not matchs:
-            cls.ready = False
-        else:
-            matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
-            if not matchs:
-                matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
-            cls.ready = len(matchs) == 0
-
 class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
