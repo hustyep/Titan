@@ -24,8 +24,10 @@ class Keybindings:
     MAPLE_WARRIOR = '5'
     SHADOW_WALKER = 'shift'
     THROW_BLASTING = 'v'
+    Throwing_Star_Barrage_Master = 'z'
     FOR_THE_GUILD = '7'
     HARD_HITTER = '8'
+    MARK = 'f1'
 
     # Potion
     EXP_POTION = '0'
@@ -269,6 +271,12 @@ class DarkFlare(Skill):
 #       Skills        #
 #######################
 
+class Mark(Skill):
+    key = Keybindings.MARK
+    type = SkillType.Switch
+    cooldown = 1
+    ready = False
+
 class ShowDown(Command):
     key = Keybindings.SHOW_DOWN
     type = SkillType.Attack
@@ -320,7 +328,7 @@ class Omen(Command):
     backswing = 0.8
 
 
-class SHURIKEN(Command):
+class Shurrikane(Command):
     key = Keybindings.SHURIKEN
     type = SkillType.Attack
     cooldown = 20
@@ -351,13 +359,13 @@ class Buff(Command):
         super().__init__(locals())
         self.buffs = [
             MapleWarrior,
-            GoddessBlessing,
+            MapleWorldGoddessBlessing,
             LastResort,
             ForTheGuild,
             HardHitter,
             ShadowWalker,
-            MEMORIES,
-            THROW_BLASTING,
+            Memories,
+            ThrowBlasting,
         ]
 
     def main(self):
@@ -367,51 +375,11 @@ class Buff(Command):
                 break
 
 
-class GoddessBlessing(Skill):
-    key = Keybindings.GODDESS_BLESSING
-    type = SkillType.Buff
-    cooldown = 180
-    precast = 0.3
-    backswing = 0.85
-
-
-class LastResort(Skill):
-    key = Keybindings.LAST_RESORT
-    type = SkillType.Buff
-    cooldown = 75
-    precast = 0.3
-    backswing = 0.8
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        if capture.frame is None:
-            return
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[8:, ], threshold=0.95)
-        if not matchs:
-            cls.ready = False
-        else:
-            matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
-            if not matchs:
-                matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
-            cls.ready = len(matchs) == 0
-
-
 class EPIC_ADVENTURE(Skill):
     key = Keybindings.EPIC_ADVENTURE
     type = SkillType.Buff
     cooldown = 120
     backswing = 0.75
-
-
-class MEMORIES(Command):
-    key = Keybindings.MEMORIES
-    cooldown = 150
-    backswing = 1
 
 
 class ShadowWalker(Skill):
@@ -422,7 +390,7 @@ class ShadowWalker(Skill):
     backswing = 0.8
 
 
-class THROW_BLASTING(Command):
+class ThrowBlasting(Command):
     key = Keybindings.THROW_BLASTING
     type = SkillType.Buff
     cooldown = 180

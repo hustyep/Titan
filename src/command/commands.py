@@ -35,8 +35,10 @@ class DefaultKeybindings:
     ERDA_SHOWER = '`'
     MAPLE_WARRIOR = '3'
     ARACHNID = 'j'
-
-
+    MEMORIES = '4'
+    GODDESS_BLESSING = '1'
+    LAST_RESORT = '2'
+    
 class Keybindings(DefaultKeybindings):
     """ 'Keybindings' must be implemented in command book."""
 
@@ -154,8 +156,8 @@ class Skill(Command):
     @classmethod
     def load(cls):
         module_name = cls.__module__.split('.')[-1]
-        path1 = f'assets/skills/{module_name}/{cls.__name__}.png'
-        path2 = f'assets/skills/{cls.__name__}.png'
+        path1 = f'assets/skills/{module_name}/{cls.__name__}.webp'
+        path2 = f'assets/skills/{cls.__name__}.webp'
         if os.path.exists(path1):
             cls.icon = cv2.imread(path1, 0)
         elif os.path.exists(path2):
@@ -175,7 +177,7 @@ class Skill(Command):
         match cls.type:
             case SkillType.Switch:
                 matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[:, :-14], threshold=0.9)
+                    capture.buff_frame, cls.icon[4:-4, 4:-18], threshold=0.9)
                 cls.ready = len(matchs) == 0
                 cls.enabled = not cls.ready
             case SkillType.Buff:
@@ -184,20 +186,20 @@ class Skill(Command):
                     cls.ready = False
                 else:
                     matchs = utils.multi_match(
-                        capture.skill_frame, cls.icon[8:, ], threshold=0.99)
+                        capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.99)
                     cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[8:, ], threshold=0.9)
+                    capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.9)
                 cls.ready = len(matchs) > 0
 
     @classmethod
     def check_buff_enabled(cls):
         matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+            capture.buff_frame, cls.icon[4:18, 18:-4], threshold=0.9)
         if not matchs:
             matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+                capture.buff_frame, cls.icon[18:-4, 18:-4], threshold=0.9)
         cls.enabled = len(matchs) > 0
 
 
@@ -480,6 +482,19 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
 #      Common Command       #
 #############################
 
+class MapleWorldGoddessBlessing(Skill):
+    key = Keybindings.GODDESS_BLESSING
+    cooldown = 180
+    precast = 0.3
+    backswing = 0.85
+    type = SkillType.Buff
+    
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if not MapleWarrior.enabled:
+            return False
+
+        return super().canUse(next_t)
 
 class MapleWarrior(Skill):
     key = Keybindings.MAPLE_WARRIOR
@@ -488,6 +503,30 @@ class MapleWarrior(Skill):
     backswing = 0.8
     type = SkillType.Buff
 
+class LastResort(Skill):
+    key = Keybindings.LAST_RESORT
+    cooldown = 75
+    precast = 0.3
+    backswing = 0.8
+    type = SkillType.Buff
+
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
+            return
+        if capture.frame is None:
+            return
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.95)
+        if not matchs:
+            cls.ready = False
+        else:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[4:18, 18:-4], threshold=0.9)
+            if not matchs:
+                matchs = utils.multi_match(
+                    capture.buff_frame, cls.icon[18:-4, 18:-4], threshold=0.9)
+            cls.ready = len(matchs) == 0
 
 class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
@@ -871,6 +910,10 @@ class Arachnid(Skill):
     cooldown = 250
     backswing = 0.9
 
+class Memories(Command):
+    key = Keybindings.MEMORIES
+    cooldown = 150
+    backswing = 1
 
 class ForTheGuild(Skill):
     '''工会技能'''
@@ -916,7 +959,7 @@ class HardHitter(Skill):
             cls.ready = False
         else:
             matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[8:, ], threshold=0.98)
+                capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.98)
             cls.ready = len(matchs) > 0
 
 
