@@ -495,6 +495,33 @@ class MapleWorldGoddessBlessing(Skill):
             return False
 
         return super().canUse(next_t)
+    
+    @classmethod
+    def load(cls):
+        path = f'assets/skills/{cls.__name__}.png'
+        cls.icon = cv2.imread(path, 0)
+        cls.id = cls.__name__
+        
+    @classmethod
+    def check(cls):
+        if capture.frame is None:
+            return
+        cls.check_buff_enabled()
+        if cls.enabled:
+            cls.ready = False
+        else:
+            matchs = utils.multi_match(
+                capture.skill_frame, cls.icon[8:,], threshold=0.99)
+            cls.ready = len(matchs) > 0
+
+    @classmethod
+    def check_buff_enabled(cls):
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+        if not matchs:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+        cls.enabled = len(matchs) > 0
 
 class MapleWarrior(Skill):
     key = Keybindings.MAPLE_WARRIOR
