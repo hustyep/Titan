@@ -115,6 +115,7 @@ class Bot(Subject):
     def load_commands(self, file):
         try:
             self.command_book = CommandBook(file)
+            routine.clear()
         except Exception as e:
             raise ValueError(f"load command book error '{e}'")
         else:

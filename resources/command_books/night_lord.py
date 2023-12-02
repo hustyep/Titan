@@ -95,6 +95,7 @@ def step(target, tolerance):
         hit_and_run(direction, next_p, tolerance)
     elif abs(d_x) >= 10 and ShadowSurge.ready:
         ShadowSurge(direction).execute()
+        Attack().execute()
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
 

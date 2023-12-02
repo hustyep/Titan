@@ -223,7 +223,7 @@ class DoubleJump(Skill):
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        sleep_in_the_air(n=1, start_y=start_y)
+        sleep_in_the_air(n=2, start_y=start_y)
 
 
 class ShadowAssault(Skill):
@@ -297,6 +297,9 @@ class ShadowAssault(Skill):
         elif self.direction == 'up' or self.direction == 'down':
             time.sleep(0.2)
             evade_rope(self.target)
+            
+        if self.direction == 'up' and not map.on_the_platform((bot_status.player_direction[0], self.target[1])):
+            Walk(target_x=self.target[0], tolerance=0).execute()
 
         if self.jump:
             if self.direction.startswith('down'):
