@@ -4,10 +4,10 @@ $, target=mini_margin, value=44
 ~, label=Summon, interval=41, skip=False
 *, x=37, y=57, interval=0, tolerance=10, detect=True, skip=True
     ShadowVeil, direction=left
-*, x=50, y=30, interval=0, tolerance=3, detect=False, skip=False
+*, x=50, y=30, interval=0, tolerance=2, detect=False, skip=False
     ErdaShower, direction=left
     SuddenRaid
-*, x=100, y=30, interval=0, tolerance=3, detect=False, skip=False
+*, x=100, y=30, interval=0, tolerance=2, detect=False, skip=False
     DarkFlare, direction=right
 *, x=138, y=57, interval=0, tolerance=9, detect=False, skip=False
 #
@@ -17,7 +17,7 @@ $, target=mini_margin, value=44
 *, x=139, y=57, interval=0, tolerance=6, detect=True, skip=False
 
 ~, label=pick, interval=150, skip=False
-*, x=23, y=30, interval=0, tolerance=5, detect=False, skip=False
+*, x=23, y=30, interval=0, tolerance=2, detect=True, skip=False
     SuddenRaid
 *, x=117, y=30, interval=0, tolerance=3, detect=False, skip=False
     Wait, duration=1

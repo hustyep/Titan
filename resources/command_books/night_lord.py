@@ -8,7 +8,7 @@ from src.command.commands import *
 
 
 # List of key mappings
-class Keybindings:
+class Keybindings(DefaultKeybindings):
     # Movement
     JUMP = 's'
     FLASH_JUMP = ';'
@@ -32,7 +32,7 @@ class Keybindings:
     # Potion
     EXP_POTION = '0'
     WEALTH_POTION = "-"
-    GOLD_POTION = "="
+    GOLD_POTION = ""
     GUILD_POTION = ""
     CANDIED_APPLE = '6'
     LEGION_WEALTHY = '='
@@ -372,7 +372,7 @@ class Buff(Command):
     def main(self):
         for buff in self.buffs:
             if buff.canUse():
-                buff.main()
+                buff().main()
                 break
 
 

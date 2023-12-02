@@ -899,10 +899,7 @@ class ErdaShower(Skill):
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        if time.time() - self.castedTime > self.cooldown - 2:
-            while not self.canUse():
-                time.sleep(0.1)
-        elif not self.canUse():
+        if not self.canUse():
             return
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.03)

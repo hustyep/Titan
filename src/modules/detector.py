@@ -78,11 +78,11 @@ class Detector(Subject):
         while True:
             self.check_minimap()
             if bot_status.enabled:
-                self.check_boss()
-                self.check_binded()
+                # self.check_boss()
+                # self.check_binded()
                 self.check_dead()
                 self.check_no_movement()
-                self.check_others()
+                # self.check_others()
                 self.check_alert()
                 self.check_forground()
             time.sleep(0.1)

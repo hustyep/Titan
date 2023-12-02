@@ -102,11 +102,11 @@ def reset():
     record_layout = False
     mini_margin = 0
 
-    role_name = ''
-    class_name = ''
-    role_template = None
-    boundary_point_l = (100, 0)
-    boundary_point_r = (0, 0)
+    # role_name = ''
+    # class_name = ''
+    # role_template = None
+    # boundary_point_l = (100, 0)
+    # boundary_point_r = (0, 0)
 
 
 def load_role_template():

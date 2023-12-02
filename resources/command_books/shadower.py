@@ -251,10 +251,10 @@ class ShadowAssault(Skill):
         else:
             dx = target[0] - bot_status.player_pos[0]
             dy = target[1] - bot_status.player_pos[1]
-            if dy < 0 and abs(dx) >= 20:
+            if dy < 0 and abs(dx) >= 16:
                 self.direction = 'upright' if dx > 0 else 'upleft'
                 self.jump = True
-            elif dy > 0 and abs(dx) >= 20:
+            elif dy > 0 and abs(dx) >= 16:
                 self.direction = 'downright' if dx > 0 else 'downleft'
                 self.jump = True
             elif dy == 0:
@@ -298,7 +298,7 @@ class ShadowAssault(Skill):
             time.sleep(0.2)
             evade_rope(self.target)
             
-        if self.direction == 'up' and not map.on_the_platform((bot_status.player_direction[0], self.target[1])):
+        if self.direction == 'up' and not map.on_the_platform((bot_status.player_pos[0], self.target[1])):
             Walk(target_x=self.target[0], tolerance=0).execute()
 
         if self.jump:
@@ -318,9 +318,9 @@ class ShadowAssault(Skill):
         press(self.key)
         key_up(self.direction)
         sleep_in_the_air()
-        MesoExplosion().execute()
         time.sleep(self.backswing)
-
+        MesoExplosion().execute()
+        
         # if bot_settings.record_layout:
         #     layout.add(*bot_status.player_pos)
 
