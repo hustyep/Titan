@@ -300,7 +300,8 @@ class ShadowAssault(Skill):
             
         if self.direction == 'up' and not map.on_the_platform((bot_status.player_pos[0], self.target[1])):
             Walk(target_x=self.target[0], tolerance=0).execute()
-
+        
+        dy = self.target[1] - bot_status.player_pos[1]
         if self.jump:
             if self.direction.startswith('down'):
                 key_down('down')
@@ -308,7 +309,6 @@ class ShadowAssault(Skill):
                 key_up("down")
             else:
                 press(Keybindings.JUMP)
-                dy = self.target[1] - bot_status.player_pos[1]
                 time.sleep(0.1 if abs(dy) > 32 else 0.4)
 
         key_down(self.direction)
@@ -318,7 +318,7 @@ class ShadowAssault(Skill):
         press(self.key)
         key_up(self.direction)
         sleep_in_the_air()
-        time.sleep(self.backswing)
+        time.sleep(self.backswing if abs(dy) < 40 else 0.5)
         MesoExplosion().execute()
         
         # if bot_settings.record_layout:

@@ -593,7 +593,7 @@ class Walk(Command):
             if abs(d_x) <= 2:
                 key_up(direction)
                 if self.tolerance <= 1:
-                    press_acc(new_direction, down_time=0.01, up_time=0.2)
+                    press_acc(new_direction, down_time=0.01, up_time=0.15)
                 else:
                     press_acc(new_direction, down_time=0.01, up_time=0.04)
             else:
