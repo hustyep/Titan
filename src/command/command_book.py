@@ -92,8 +92,7 @@ class CommandBook():
         for func_name in ['step']:
             if func_name not in new_func:
                 required_function_found = False
-                print(
-                    f" !  Error: Must implement required function '{func_name}'.")
+                raise ValueError(f" !  Error: Must implement required function '{func_name}'.")
 
         # Check if required commands have been implemented and overridden
         required_command_found = True
@@ -102,7 +101,7 @@ class CommandBook():
             if name not in new_cb:
                 required_command_found = False
                 new_cb[name] = command
-                print(f" !  Error: Must implement required command '{name}'.")
+                raise ValueError(f" !  Error: Must implement required command '{name}'.")
 
         if required_command_found and required_function_found:
             self.Buff = new_cb['buff']

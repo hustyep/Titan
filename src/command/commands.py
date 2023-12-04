@@ -177,7 +177,7 @@ class Skill(Command):
         match cls.type:
             case SkillType.Switch:
                 matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[4:-4, 4:-18], threshold=0.9)
+                    capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
                 cls.ready = len(matchs) == 0
                 cls.enabled = not cls.ready
             case SkillType.Buff:
@@ -186,20 +186,20 @@ class Skill(Command):
                     cls.ready = False
                 else:
                     matchs = utils.multi_match(
-                        capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.99)
+                        capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.99)
                     cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.9)
+                    capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.9)
                 cls.ready = len(matchs) > 0
 
     @classmethod
     def check_buff_enabled(cls):
         matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[4:18, 18:-4], threshold=0.9)
+            capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
         if not matchs:
             matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[18:-4, 18:-4], threshold=0.9)
+                capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
         cls.enabled = len(matchs) > 0
 
 
@@ -388,18 +388,18 @@ def evade_rope(target: tuple[int, int] = None):
             target_l = map.valid_point((pos[0] - 2, pos[1]))
             target_r = map.valid_point((pos[0] + 2, pos[1]))
             if map.on_the_platform(target_l):
-                Walk(target_l[0], tolerance=1).execute()
+                Walk(target_l[0], tolerance=0).execute()
             elif map.on_the_platform(target_r):
-                Walk(target_r[0], tolerance=1).execute()
+                Walk(target_r[0], tolerance=0).execute()
         return
 
     if map.near_rope(bot_status.player_pos):
         target_l = map.valid_point((target[0] - 2, target[1]))
         target_r = map.valid_point((target[0] + 2, target[1]))
         if map.on_the_platform(target_l):
-            Walk(target_l[0], tolerance=1).execute()
+            Walk(target_l[0], tolerance=0).execute()
         elif map.on_the_platform(target_r):
-            Walk(target_r[0], tolerance=1).execute()
+            Walk(target_r[0], tolerance=0).execute()
 
 
 class MobType(Enum):
@@ -495,6 +495,33 @@ class MapleWorldGoddessBlessing(Skill):
             return False
 
         return super().canUse(next_t)
+    
+    @classmethod
+    def load(cls):
+        path = f'assets/skills/{cls.__name__}.png'
+        cls.icon = cv2.imread(path, 0)
+        cls.id = cls.__name__
+        
+    @classmethod
+    def check(cls):
+        if capture.frame is None:
+            return
+        cls.check_buff_enabled()
+        if cls.enabled:
+            cls.ready = False
+        else:
+            matchs = utils.multi_match(
+                capture.skill_frame, cls.icon[8:,], threshold=0.99)
+            cls.ready = len(matchs) > 0
+
+    @classmethod
+    def check_buff_enabled(cls):
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+        if not matchs:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+        cls.enabled = len(matchs) > 0
 
 class MapleWarrior(Skill):
     key = Keybindings.MAPLE_WARRIOR
@@ -509,24 +536,6 @@ class LastResort(Skill):
     precast = 0.3
     backswing = 0.8
     type = SkillType.Buff
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        if capture.frame is None:
-            return
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.95)
-        if not matchs:
-            cls.ready = False
-        else:
-            matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[4:18, 18:-4], threshold=0.9)
-            if not matchs:
-                matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[18:-4, 18:-4], threshold=0.9)
-            cls.ready = len(matchs) == 0
 
 class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
@@ -584,7 +593,7 @@ class Walk(Command):
             if abs(d_x) <= 2:
                 key_up(direction)
                 if self.tolerance <= 1:
-                    press_acc(new_direction, down_time=0.01, up_time=0.1)
+                    press_acc(new_direction, down_time=0.01, up_time=0.15)
                 else:
                     press_acc(new_direction, down_time=0.01, up_time=0.04)
             else:
@@ -890,10 +899,7 @@ class ErdaShower(Skill):
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self):
-        if time.time() - self.castedTime > self.cooldown - 2:
-            while not self.canUse():
-                time.sleep(0.1)
-        elif not self.canUse():
+        if not self.canUse():
             return
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
@@ -959,7 +965,7 @@ class HardHitter(Skill):
             cls.ready = False
         else:
             matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.98)
+                capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
             cls.ready = len(matchs) > 0
 
 

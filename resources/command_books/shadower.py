@@ -223,7 +223,7 @@ class DoubleJump(Skill):
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        sleep_in_the_air(n=1, start_y=start_y)
+        sleep_in_the_air(n=2, start_y=start_y)
 
 
 class ShadowAssault(Skill):
@@ -251,10 +251,10 @@ class ShadowAssault(Skill):
         else:
             dx = target[0] - bot_status.player_pos[0]
             dy = target[1] - bot_status.player_pos[1]
-            if dy < 0 and abs(dx) >= 20:
+            if dy < 0 and abs(dx) >= 16:
                 self.direction = 'upright' if dx > 0 else 'upleft'
                 self.jump = True
-            elif dy > 0 and abs(dx) >= 20:
+            elif dy > 0 and abs(dx) >= 16:
                 self.direction = 'downright' if dx > 0 else 'downleft'
                 self.jump = True
             elif dy == 0:
@@ -268,13 +268,13 @@ class ShadowAssault(Skill):
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[12:-4, 4:-17], threshold=0.98, debug=False)
+            capture.skill_frame, cls.icon[10:-2, 2:-16], threshold=0.98, debug=False)
         if matchs:
             cls.ready = True
             cls.usable_times = cls.max_times
         else:
             matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[4:-4, 4:-18], threshold=0.9)
+                capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
             cls.ready = len(matchs) > 0
             if not cls.ready:
                 cls.usable_times = 0
@@ -297,7 +297,11 @@ class ShadowAssault(Skill):
         elif self.direction == 'up' or self.direction == 'down':
             time.sleep(0.2)
             evade_rope(self.target)
-
+            
+        if self.direction == 'up' and not map.on_the_platform((bot_status.player_pos[0], self.target[1])):
+            Walk(target_x=self.target[0], tolerance=0).execute()
+        
+        dy = self.target[1] - bot_status.player_pos[1]
         if self.jump:
             if self.direction.startswith('down'):
                 key_down('down')
@@ -305,7 +309,6 @@ class ShadowAssault(Skill):
                 key_up("down")
             else:
                 press(Keybindings.JUMP)
-                dy = self.target[1] - bot_status.player_pos[1]
                 time.sleep(0.1 if abs(dy) > 32 else 0.4)
 
         key_down(self.direction)
@@ -315,9 +318,9 @@ class ShadowAssault(Skill):
         press(self.key)
         key_up(self.direction)
         sleep_in_the_air()
+        time.sleep(self.backswing if abs(dy) < 40 else 0.5)
         MesoExplosion().execute()
-        time.sleep(self.backswing)
-
+        
         # if bot_settings.record_layout:
         #     layout.add(*bot_status.player_pos)
 
@@ -442,7 +445,7 @@ class SuddenRaid(Skill):
         if cls.icon is None:
             return
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[13:-4, 4:-4], threshold=0.9, debug=False)
+            capture.skill_frame, cls.icon[11:-2, 2:-2], threshold=0.9, debug=False)
         cls.ready = len(matchs) > 0
 
 

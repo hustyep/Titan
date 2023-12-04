@@ -8,7 +8,7 @@ from src.command.commands import *
 
 
 # List of key mappings
-class Keybindings:
+class Keybindings(DefaultKeybindings):
     # Movement
     JUMP = 's'
     FLASH_JUMP = ';'
@@ -32,7 +32,7 @@ class Keybindings:
     # Potion
     EXP_POTION = '0'
     WEALTH_POTION = "-"
-    GOLD_POTION = "="
+    GOLD_POTION = ""
     GUILD_POTION = ""
     CANDIED_APPLE = '6'
     LEGION_WEALTHY = '='
@@ -94,7 +94,8 @@ def step(target, tolerance):
     elif abs(d_x) >= 26:
         hit_and_run(direction, next_p, tolerance)
     elif abs(d_x) >= 10 and ShadowSurge.ready:
-        ShadowSurge().execute()
+        ShadowSurge(direction).execute()
+        Attack().execute()
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
@@ -251,7 +252,7 @@ class DarkFlare(Skill):
     key = Keybindings.DARK_FLARE
     type = SkillType.Summon
     cooldown = 58
-    backswing = 1
+    backswing = 0.8
     duration = 60
 
     def __init__(self, direction=None):
@@ -371,7 +372,7 @@ class Buff(Command):
     def main(self):
         for buff in self.buffs:
             if buff.canUse():
-                buff.main()
+                buff().main()
                 break
 
 

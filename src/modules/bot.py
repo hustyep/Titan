@@ -115,6 +115,7 @@ class Bot(Subject):
     def load_commands(self, file):
         try:
             self.command_book = CommandBook(file)
+            routine.clear()
         except Exception as e:
             raise ValueError(f"load command book error '{e}'")
         else:
@@ -154,7 +155,8 @@ class Bot(Subject):
         elif isinstance(event_type, BotError):
             match (event_type):
                 case BotError.OTHERS_STAY_OVER_120S:
-                    ActionSimulator.change_channel()
+                    # ActionSimulator.change_channel()
+                    pass
                 case BotError.LOST_WINDOW:
                     pass
                 case (_):

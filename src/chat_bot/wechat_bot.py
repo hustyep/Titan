@@ -158,21 +158,24 @@ class WechatBot:
         win32gui.SendMessage(self.hwnd, win32con.WM_LBUTTONUP, None, lParam)
 
     def copy(self):
-        wc.OpenClipboard()
-        wc.EmptyClipboard()
-        wc.CloseClipboard()
+        try:
+            wc.OpenClipboard()
+            wc.EmptyClipboard()
+            wc.CloseClipboard()
+        except Exception as e:
+            pass       
 
         hid.key_down('ctrl')
         win32gui.SendMessage(self.hwnd, win32con.WM_KEYDOWN, 0x43, 0)
         win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP, 0x43, 0)
         hid.key_up('ctrl')
 
-        wc.OpenClipboard()
         try:
+            wc.OpenClipboard()
             data = wc.GetClipboardData()
+            wc.CloseClipboard()
         except Exception as e:
             data = None
-        wc.CloseClipboard()
 
         return data
 
@@ -186,10 +189,13 @@ class WechatBot:
         if not hid:
             return
 
-        wc.OpenClipboard()
-        wc.EmptyClipboard()
-        wc.SetClipboardData(win32con.CF_UNICODETEXT, text)
-        wc.CloseClipboard()
+        try:
+            wc.OpenClipboard()
+            wc.EmptyClipboard()
+            wc.SetClipboardData(win32con.CF_UNICODETEXT, text)
+            wc.CloseClipboard()
+        except Exception as e:
+            print(e)
 
         self.click(40, 550)
         self.paste()
@@ -211,10 +217,13 @@ class WechatBot:
         data = output.getvalue()[14:]
         output.close()
 
-        wc.OpenClipboard()
-        wc.EmptyClipboard()
-        wc.SetClipboardData(win32con.CF_DIB, data)
-        wc.CloseClipboard()
+        try:
+            wc.OpenClipboard()
+            wc.EmptyClipboard()
+            wc.SetClipboardData(win32con.CF_DIB, data)
+            wc.CloseClipboard()
+        except Exception as e:
+            print(e) 
 
         self.click(40, 550)
         self.paste()
