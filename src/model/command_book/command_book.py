@@ -1,7 +1,7 @@
 import inspect
 from enum import Enum, auto
 import time
-import os
+from abc import ABC, abstractmethod
 from src.common import bot_status, bot_settings, utils
 from src.common.gui_setting import gui_setting
 from src.common.image_template import *
@@ -12,6 +12,7 @@ from src.rune import rune
 from src.modules.capture import capture
 from src.model.command.command import *
 from src.model.command.skill import *
+
 
 class ClassType(Enum):
     Explorer = auto()
@@ -58,7 +59,7 @@ class Keybindings(DefaultKeybindings):
     """ 'Keybindings' must be implemented in command book."""
 
 
-class CommandBook:
+class CommandBook(ABC):
 
     def __init__(self, job_type: JobType):
         self.job_type = job_type
@@ -71,6 +72,10 @@ class CommandBook:
         for name, command in inspect.getmembers(self.__module__, inspect.isclass):
             if issubclass(command, Command):
                 self.dict[name.lower()] = command
+
+    @abstractmethod
+    def step(target, tolerance):
+        '''implement by subclass'''
 
     @classmethod
     @run_if_map_available
@@ -117,6 +122,7 @@ class CommandBook:
 #############################
 #      Common Command       #
 #############################
+
 
     class Move(Command):
 
@@ -407,13 +413,14 @@ class CommandBook:
 #      Shared Skill       #
 #############################
 
+
     class MapleWorldGoddessBlessing(Skill):
         key = Keybindings.GODDESS_BLESSING
         cooldown = 180
         precast = 0.3
         backswing = 0.85
         type = SkillType.Buff
-        
+
         @classmethod
         def canUse(cls, next_t: float = 0) -> bool:
             if not CommandBook.MapleWarrior.enabled:
@@ -435,24 +442,6 @@ class CommandBook:
         backswing = 0.8
         type = SkillType.Buff
 
-        @classmethod
-        def check(cls):
-            if cls.icon is None:
-                return
-            if capture.frame is None:
-                return
-            matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[12:-4, 4:-4], threshold=0.95)
-            if not matchs:
-                cls.ready = False
-            else:
-                matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[4:18, 18:-4], threshold=0.9)
-                if not matchs:
-                    matchs = utils.multi_match(
-                        capture.buff_frame, cls.icon[18:-4, 18:-4], threshold=0.9)
-                cls.ready = len(matchs) == 0
-
     class ErdaShower(Skill):
         key = Keybindings.ERDA_SHOWER
         type = SkillType.Summon
@@ -465,7 +454,8 @@ class CommandBook:
             if direction is None:
                 self.direction = direction
             else:
-                self.direction = bot_settings.validate_horizontal_arrows(direction)
+                self.direction = bot_settings.validate_horizontal_arrows(
+                    direction)
 
         def main(self):
             if not self.canUse():
@@ -478,12 +468,76 @@ class CommandBook:
             self.__class__.castedTime = time.time()
             time.sleep(self.__class__.backswing)
 
-
     class Arachnid(Skill):
         key = Keybindings.ARACHNID
         type = SkillType.Attack
         cooldown = 250
         backswing = 0.9
+
+    class RopeLift(Skill):
+        '''绳索'''
+        key = Keybindings.ROPE_LIFT
+        type = SkillType.Move
+        cooldown = 3
+
+        def __init__(self, dy: int = 20):
+            super().__init__(locals())
+            self.dy = abs(dy)
+
+        def main(self):
+
+            if self.dy >= 45:
+                press(Keybindings.JUMP, up_time=0.2)
+            elif self.dy >= 32:
+                press(Keybindings.JUMP, up_time=0.1)
+            press(self.__class__.key)
+            sleep_in_the_air(n=10)
+
+    class ForTheGuild(Skill):
+        '''工会技能'''
+        key = Keybindings.FOR_THE_GUILD
+        cooldown = 3610
+        backswing = 0.1
+        type = SkillType.Buff
+
+        @classmethod
+        def canUse(cls, next_t: float = 0) -> bool:
+            enabled = gui_setting.buff.get('Guild Buff')
+            if not enabled:
+                return False
+
+            if CommandBook.HardHitter.enabled:
+                return False
+
+            return super().canUse(next_t)
+
+    class HardHitter(Skill):
+        '''工会技能'''
+        key = Keybindings.HARD_HITTER
+        cooldown = 3610
+        backswing = 0.1
+        type = SkillType.Buff
+
+        @classmethod
+        def canUse(cls, next_t: float = 0) -> bool:
+            enabled = gui_setting.buff.get('Guild Buff')
+            if not enabled:
+                return False
+
+            if CommandBook.ForTheGuild.enabled:
+                return False
+
+            return super().canUse(next_t)
+
+        @classmethod
+        def check(cls):
+            cls.check_buff_enabled()
+            if cls.enabled:
+                cls.ready = False
+            else:
+                matchs = utils.multi_match(
+                    capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
+                cls.ready = len(matchs) > 0
 
 
 #############################
