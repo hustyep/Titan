@@ -210,7 +210,7 @@ class ActionSimulator:
         ActionSimulator.mouse_left_click(channel_pos, delay=0.5)
         ActionSimulator.click_key('enter', delay=0.08)
         
-        while utils.multi_match(capture.frame, template, 0.9):
+        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.9):
             time.sleep(0.1)
         
         ActionSimulator.click_key('enter', delay=0.5)
