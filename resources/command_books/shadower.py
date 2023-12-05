@@ -28,10 +28,10 @@ class Keybindings(DefaultKeybindings):
     # Potion
     EXP_POTION = '0'
     WEALTH_POTION = "-"
-    GOLD_POTION = '='
+    GOLD_POTION = ''
     GUILD_POTION = "9"
     CANDIED_APPLE = '5'
-    LEGION_WEALTHY = ''
+    LEGION_WEALTHY = '='
     EXP_COUPON = '6'
 
     # Skills
@@ -238,7 +238,7 @@ class ShadowAssault(Skill):
     max_times = 4
     usable_times = 4
     cooldown = 60
-    x_range = range(18, 36)
+    x_range = range(15, 36)
     y_range = range(18, 42)
 
     def __init__(self, direction='up', jump='True', distance=80, target=None):
@@ -251,10 +251,10 @@ class ShadowAssault(Skill):
         else:
             dx = target[0] - bot_status.player_pos[0]
             dy = target[1] - bot_status.player_pos[1]
-            if dy < 0 and abs(dx) >= 16:
+            if dy < 0 and abs(dx) >= 15:
                 self.direction = 'upright' if dx > 0 else 'upleft'
                 self.jump = True
-            elif dy > 0 and abs(dx) >= 16:
+            elif dy > 0 and abs(dx) >= 15:
                 self.direction = 'downright' if dx > 0 else 'downleft'
                 self.jump = True
             elif dy == 0:

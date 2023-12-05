@@ -145,13 +145,15 @@ class Point(Component):
             key_down(direction)
             time.sleep(0.05)
             key_up(direction)
+        else:
+            direction = bot_status.player_direction
         if self.detect:
             self.detect_mob(direction)
 
     def detect_mob(self, direction):
         start_time = time.time()
         anchor = capture.locate_player_fullscreen(accurate=True)
-        matchs = commands.detect_mobs(insets=commands.AreaInsets(top=150, bottom=100, left=300, right=300),
+        matchs = commands.detect_mobs(insets=commands.AreaInsets(top=200, bottom=100, left=300, right=300),
                                       anchor=anchor)
         if matchs:
             print("use aoe")

@@ -1,18 +1,19 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=44
 
-~, label=Summon, interval=41, skip=False
-*, x=40, y=57, interval=0, tolerance=8, detect=True, skip=True
+~, label=Summon, interval=40, skip=False
+*, x=45, y=57, interval=0, tolerance=3, detect=True, skip=True
     ShadowVeil, direction=left
-*, x=40, y=16, interval=0, tolerance=2, detect=False, skip=False
-    Wait, duration=0.05
-    ErdaShower, direction=left
+*, x=25, y=16, interval=0, tolerance=1, detect=False, skip=False
+    Wait, duration=0.1
+    ErdaShower, direction=right
+    Arachnid
 *, x=85, y=16, interval=0, tolerance=2, detect=False, skip=False
-    DarkFlare, direction=right
+    Wait, duration=0.2
+    DarkFlare, direction=left
 *, x=132, y=30, interval=0, tolerance=5, detect=False, skip=False
     TrickBlade
 *, x=130, y=57, interval=0, tolerance=8, detect=False, skip=False
-    SuddenRaid
 #
 
 @, label=Bottom mobbing
