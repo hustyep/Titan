@@ -18,6 +18,10 @@ BUTTON_CONFIRM_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/btn_confirm_template.png', 0)
 BUTTON_OK_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/btn_ok_template.png', 0)
+BUTTON_ERROR_OK_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/disconnect_ok_template.png', 0)
+BUTTON_CHANGE_REGION_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/change_region_template.png', 0)
 END_TALK_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/end_talk_template.png', 0)
 # dead alert

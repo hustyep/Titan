@@ -23,7 +23,7 @@ from src.common.hid import hid
 from src.modules.capture import capture
 from src.map.map import map as game_map
 from src.common.gui_setting import gui_setting
-
+from src.common.action_simulator import ActionSimulator
 
 class Detector(Subject):
 
@@ -85,7 +85,20 @@ class Detector(Subject):
                 # self.check_others()
                 self.check_alert()
                 self.check_forground()
+            else:
+                self.clear()
             time.sleep(0.1)
+
+    def clear(self):
+        self.player_pos_updated_time = 0
+        self.player_pos = (0, 0)
+
+        self.others_count = 0
+        self.others_comming_time = 0
+        self.others_detect_count = 0
+        self.others_no_detect_count = 0
+
+        self.lost_minimap_time = 0
 
     def _main_event(self):
         while True:
@@ -195,11 +208,28 @@ class Detector(Subject):
                 if self.lost_minimap_time == 0:
                     self.lost_minimap_time = time.time()
                 if time.time() - self.lost_minimap_time > self.lost_time_threshold:
-                    self.on_next(
-                        (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
+                    if not self.try_auto_login():
+                        self.on_next(
+                            (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
         else:
             self.lost_minimap_time = 0
             bot_status.lost_minimap = False
+            
+    def try_auto_login(self):
+        capture.find_window()
+        hwnd = capture.hwnd
+        if (hwnd == 0):
+            self.on_next((BotError.LOST_WINDOW, ))
+            return True
+        error_matchs = utils.multi_match(
+            capture.frame, BUTTON_ERROR_OK_TEMPLATE, threshold=0.9)
+        region_matchs = utils.multi_match(
+            capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
+        if error_matchs and region_matchs:
+            ActionSimulator.auto_login()
+            return True
+        else:
+            return False
 
     def check_no_movement(self):
         if bot_status.enabled and operator.eq(bot_status.player_pos, self.player_pos):
