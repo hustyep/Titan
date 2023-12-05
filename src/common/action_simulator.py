@@ -199,3 +199,37 @@ class ActionSimulator:
             ActionSimulator.change_channel()
         else:
             bot_status.change_channel = False
+
+    @staticmethod
+    def auto_login(channel=40):
+        bot_status.enabled = False
+        
+        ActionSimulator.click_key('esc', delay=1)
+        ActionSimulator.mouse_left_click((960, 186), delay=1)
+        channel_pos = ActionSimulator.get_channel_pos(channel)
+        ActionSimulator.mouse_left_click(channel_pos, delay=0.5)
+        ActionSimulator.click_key('enter', delay=0.08)
+        
+        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.9):
+            time.sleep(0.1)
+        
+        ActionSimulator.click_key('enter', delay=0.5)
+
+        while bot_status.lost_minimap:
+            print("cc: lost mimimap")
+            time.sleep(0.1)
+
+        bot_status.enabled = True
+
+    @staticmethod
+    def get_channel_pos(channel):
+        width = 385
+        height = 244
+        column = 5
+        row = 8 
+        cell_width = width // column
+        cell_height = height // row
+        
+        channel_row = (channel - 1) // column
+        channel_column = (channel - 1) % column
+        return channel_column * cell_width + cell_width // 2, channel_row * cell_height + cell_height // 2
