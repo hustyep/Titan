@@ -123,21 +123,22 @@ class CommandBook(ABC):
 #      Common Command       #
 #############################
 
-
     class Move(Command):
 
-        def __init__(self, x, y, tolerance, step=1, max_steps=15):
+        def __init__(self, obj, x, y, tolerance, step_idx=1, max_steps=15):
             super().__init__(locals())
+            self.obj = obj
             self.target = map.platform_point((int(x), int(y)))
             self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
-            self.step = bot_settings.validate_nonnegative_int(step)
+            self.step_idx = bot_settings.validate_nonnegative_int(step_idx)
             self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
 
-        def step(self, target, tolerance):
-            pass
+        @bot_status.run_if_enabled
+        def execute(self):
+            return self.main()
 
         def main(self):
-            if self.step > self.max_steps:
+            if self.step_idx > self.max_steps:
                 return
 
             if map.minimap_data is not None and len(map.minimap_data) > 0:
@@ -151,26 +152,26 @@ class CommandBook(ABC):
                     'up' if self.target[1] < bot_status.player_pos[1] else 'down')
 
             bot_status.path = [bot_status.player_pos, self.target]
-            self.step(self.target, self.tolerance)
+            self.obj.step(self.target, self.tolerance)
 
-            # if edge_reached():
-            #     print("-----------------------edge reached")
-            #     pos = capture.convert_point_minimap_to_window(
-            #         bot_status.player_pos)
-            #     key_up(bot_status.player_direction)
-            #     if bot_status.player_direction == 'left':
-            #         mobs = detect_mobs(
-            #             anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
-            #     else:
-            #         mobs = detect_mobs(
-            #             anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
-            #     if mobs:
-            #         Attack().execute()
+            if edge_reached():
+                print("-----------------------edge reached")
+                pos = capture.convert_point_minimap_to_window(
+                    bot_status.player_pos)
+                key_up(bot_status.player_direction)
+                if bot_status.player_direction == 'left':
+                    mobs = detect_mobs(
+                        anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
+                else:
+                    mobs = detect_mobs(
+                        anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
+                if mobs:
+                    self.obj.Attack().execute()
 
-            # Command.complete_callback(self)
+            Command.complete_callback(self)
 
-            CommandBook.Move(self.target[0], self.target[1],
-                             self.tolerance, self.step+1, self.max_steps).execute()
+            CommandBook.Move(self.obj, self.target[0], self.target[1],
+                             self.tolerance, self.step_idx+1, self.max_steps).execute()
 
     class Walk(Command):
         """Walks in the given direction for a set amount of time."""
@@ -413,7 +414,6 @@ class CommandBook(ABC):
 #      Shared Skill       #
 #############################
 
-
     class MapleWorldGoddessBlessing(Skill):
         key = Keybindings.GODDESS_BLESSING
         cooldown = 180
@@ -540,9 +540,122 @@ class CommandBook(ABC):
                 cls.ready = len(matchs) > 0
 
 
+###################
+#      Potion     #
+###################
+
+    class Potion(Command):
+        """Uses each of Shadowers's potion once."""
+
+        def __init__(self):
+            super().__init__(locals())
+            self.potions = [
+                self.GOLD_POTION,
+                self.CANDIED_APPLE,
+                self.GUILD_POTION,
+                self.LEGION_WEALTHY,
+                self.EXP_COUPON,
+                self.EXP_POTION,
+                self.WEALTH_POTION,
+            ]
+
+        def main(self):
+            if bot_status.invisible:
+                return False
+            for potion in self.potions:
+                if potion.canUse():
+                    potion().execute()
+                    time.sleep(0.3)
+            return True
+
+        class EXP_POTION(Command):
+            key = Keybindings.EXP_POTION
+            cooldown = 7250
+            backswing = 0.5
+
+            @classmethod
+            def canUse(cls, next_t: float = 0) -> bool:
+                enabled = gui_setting.buff.get('Exp Potion')
+                if not enabled:
+                    return False
+                return super().canUse(next_t)
+
+        class WEALTH_POTION(Command):
+            key = Keybindings.WEALTH_POTION
+            cooldown = 7250
+            backswing = 0.5
+
+            @classmethod
+            def canUse(cls, next_t: float = 0) -> bool:
+                enabled = gui_setting.buff.get('Wealthy Potion')
+                if not enabled:
+                    return False
+                return super().canUse(next_t)
+
+        class GOLD_POTION(Command):
+            key = Keybindings.GOLD_POTION
+            cooldown = 1810
+            backswing = 0.5
+
+            @classmethod
+            def canUse(cls, next_t: float = 0) -> bool:
+                enabled = gui_setting.buff.get('Gold Potion')
+                if not enabled:
+                    return False
+                return super().canUse(next_t)
+
+        class GUILD_POTION(Command):
+            key = Keybindings.GUILD_POTION
+            cooldown = 1810
+            backswing = 0.5
+
+            @classmethod
+            def canUse(cls, next_t: float = 0) -> bool:
+                enabled = gui_setting.buff.get('Guild Potion')
+                if not enabled:
+                    return False
+                return super().canUse(next_t)
+
+        class CANDIED_APPLE(Command):
+            key = Keybindings.CANDIED_APPLE
+            cooldown = 1800
+            backswing = 0.5
+
+            @classmethod
+            def canUse(cls, next_t: float = 0) -> bool:
+                enabled = gui_setting.buff.get('Candied Apple')
+                if not enabled:
+                    return False
+                return super().canUse(next_t)
+
+        class LEGION_WEALTHY(Command):
+            key = Keybindings.LEGION_WEALTHY
+            cooldown = 1810
+            backswing = 0.5
+
+            @classmethod
+            def canUse(cls, next_t: float = 0) -> bool:
+                enabled = gui_setting.buff.get('Legion Wealthy')
+                if not enabled:
+                    return False
+                return super().canUse(next_t)
+
+        class EXP_COUPON(Command):
+            key = Keybindings.EXP_COUPON
+            cooldown = 1810
+            backswing = 0.5
+
+            @classmethod
+            def canUse(cls, next_t: float = 0) -> bool:
+                enabled = gui_setting.buff.get('Exp Coupon')
+                if not enabled:
+                    return False
+                return super().canUse(next_t)
+
 #############################
 #      Helper Function      #
 #############################
+
 
 def direction_changed(direction) -> bool:
     if direction == 'left':

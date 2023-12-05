@@ -15,7 +15,6 @@ class Command():
     castedTime: float = 0
     precast: float = 0
     backswing: float = 0.5
-    loop_begin_callback = None
     complete_callback = None
 
     def __init__(self, *args, **kwargs):
@@ -61,8 +60,8 @@ class Command():
         # if gui_setting.notification.get('notice_level') >= 4:
         #     print(str(self))
         result = self.main()
-        # if self.__class__.complete_callback:
-        #     self.__class__.complete_callback(self)
+        if self.__class__.complete_callback:
+            self.__class__.complete_callback(self)
         return result
 
     @classmethod

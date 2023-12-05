@@ -2,6 +2,7 @@ from command_book import *
 import math
 from src.common.interfaces import AsyncTask
 
+
 class Keybindings(DefaultKeybindings):
     # Movement
     SHADOW_ASSAULT = 'g'
@@ -35,10 +36,10 @@ class Keybindings(DefaultKeybindings):
     SONIC_BLOW = 'z'
     ERDA_SHOWER = '`'
 
+
 class Shadower(CommandBook):
     def __init__(self):
         super().__init__(JobType.Shadower)
-        # self.keybindings = Keybindings
 
 #########################
 #       Commands        #
@@ -62,7 +63,8 @@ class Shadower(CommandBook):
                 Shadower.ShadowAssault(target=target).execute()
                 return
         if abs(d_x) >= 26:
-            Shadower.hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
+            Shadower.hit_and_run(
+                'right' if d_x > 0 else 'left', target, tolerance)
             return
 
         next_p = find_next_point(bot_status.player_pos, target, tolerance)
@@ -91,7 +93,6 @@ class Shadower(CommandBook):
         else:
             Shadower.Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
-
     @bot_status.run_if_enabled
     def hit_and_run(direction, target, tolerance):
         if gui_setting.detection.detect_mob:
@@ -99,18 +100,19 @@ class Shadower(CommandBook):
                 t = AsyncTask(target=pre_detect, args=(direction,))
                 t.start()
                 elite_detected = t.join()
-                Shadower.DoubleJump(target=target, attack_if_needed=True).execute()
+                Shadower.DoubleJump(
+                    target=target, attack_if_needed=True).execute()
                 if elite_detected:
                     Shadower.SonicBlow().execute()
             else:
-                Shadower.DoubleJump(target=target, attack_if_needed=True).execute()
+                Shadower.DoubleJump(
+                    target=target, attack_if_needed=True).execute()
         else:
             Shadower.DoubleJump(target=target, attack_if_needed=True).execute()
 
     #########################
     #        Y轴移动         #
     #########################
-
 
     @bot_status.run_if_enabled
     def move_up(target):
@@ -128,7 +130,6 @@ class Shadower(CommandBook):
         else:
             Shadower.RopeLift(dy).execute()
 
-
     @bot_status.run_if_enabled
     def move_down(target):
         p = bot_status.player_pos
@@ -139,7 +140,6 @@ class Shadower(CommandBook):
             sleep_in_the_air(n=1)
             if target[1] > bot_status.player_pos[1]:
                 Shadower.Fall().execute()
-
 
     class JumpUp(Command):
         key = Keybindings.FLASH_JUMP
@@ -161,7 +161,6 @@ class Shadower(CommandBook):
             press(self.key, 1)
             key_up('up')
             sleep_in_the_air()
-
 
     class DoubleJump(Skill):
         """Performs a flash jump in the given direction."""
@@ -218,7 +217,6 @@ class Shadower(CommandBook):
 
             key_up(direction)
             sleep_in_the_air(n=2, start_y=start_y)
-
 
     class ShadowAssault(Skill):
         """
@@ -291,10 +289,10 @@ class Shadower(CommandBook):
             elif self.direction == 'up' or self.direction == 'down':
                 time.sleep(0.2)
                 Shadower.evade_rope(self.target)
-                
+
             if self.direction == 'up' and not map.on_the_platform((bot_status.player_pos[0], self.target[1])):
                 Shadower.Walk(target_x=self.target[0], tolerance=0).execute()
-            
+
             dy = self.target[1] - bot_status.player_pos[1]
             if self.jump:
                 if self.direction.startswith('down'):
@@ -314,10 +312,9 @@ class Shadower(CommandBook):
             sleep_in_the_air()
             time.sleep(self.backswing if abs(dy) < 40 else 0.5)
             Shadower.MesoExplosion().execute()
-            
+
             # if bot_settings.record_layout:
             #     layout.add(*bot_status.player_pos)
-
 
     #########################
     #         Skills        #
@@ -334,11 +331,11 @@ class Shadower(CommandBook):
     class Aoe(Skill):
         key = Keybindings.TRICKBLADE
         type = SkillType.Attack
-        
+
         @classmethod
         def canUse(cls, next_t: float = 0) -> bool:
             return Shadower.TrickBlade.ready
-        
+
         def main(self):
             return Shadower.TrickBlade().main()
 
@@ -358,7 +355,6 @@ class Shadower(CommandBook):
             Shadower.MesoExplosion().execute()
             time.sleep(0.5 if not jumped else self.backswing)
 
-
     class MesoExplosion(Skill):
         """Uses 'MesoExplosion' once."""
         key = Keybindings.MESO_EXPLOSION
@@ -366,7 +362,6 @@ class Shadower(CommandBook):
 
         def main(self):
             press(self.key, down_time=0.01, up_time=0.01)
-
 
     class DarkFlare(Skill):
         """
@@ -384,13 +379,13 @@ class Shadower(CommandBook):
             if direction is None:
                 self.direction = direction
             else:
-                self.direction = bot_settings.validate_horizontal_arrows(direction)
+                self.direction = bot_settings.validate_horizontal_arrows(
+                    direction)
 
         def main(self):
             if self.direction is not None:
                 press_acc(self.direction, down_time=0.03, up_time=0.03)
             super().main()
-
 
     class ShadowVeil(Skill):
         key = Keybindings.SHADOW_VEIL
@@ -405,13 +400,13 @@ class Shadower(CommandBook):
             if direction is None:
                 self.direction = direction
             else:
-                self.direction = bot_settings.validate_horizontal_arrows(direction)
+                self.direction = bot_settings.validate_horizontal_arrows(
+                    direction)
 
         def main(self):
             if self.direction is not None:
                 press(self.direction)
             super().main()
-
 
     class SuddenRaid(Skill):
         key = Keybindings.SUDDEN_RAID
@@ -442,7 +437,6 @@ class Shadower(CommandBook):
                 capture.skill_frame, cls.icon[11:-2, 2:-2], threshold=0.9, debug=False)
             cls.ready = len(matchs) > 0
 
-
     class TrickBlade(Skill):
         key = Keybindings.TRICKBLADE
         cooldown = 14
@@ -466,13 +460,11 @@ class Shadower(CommandBook):
         #     else:
         #         return False
 
-
     class SlashShadowFormation(Skill):
         key = Keybindings.SLASH_SHADOW_FORMATION
         cooldown = 90
         backswing = 0.8
         type = SkillType.Attack
-
 
     class SonicBlow(Skill):
         key = Keybindings.SONIC_BLOW
@@ -481,13 +473,11 @@ class Shadower(CommandBook):
         backswing = 3
         type = SkillType.Attack
 
-
     class PhaseDash(Skill):
         key = 't'
         cooldown = 0
         backswing = 1
         type = SkillType.Move
-
 
     class PickPocket(Skill):
         key = Keybindings.PICK_POCKET
@@ -495,11 +485,9 @@ class Shadower(CommandBook):
         cooldown = 1
         ready = False
 
-
     ###################
     #      Buffs      #
     ###################
-
 
     class Buff(Command):
         """Uses each of Shadowers's buffs once."""
@@ -525,7 +513,6 @@ class Shadower(CommandBook):
                     if result:
                         break
 
-
     class ShadowWalker(Skill):
         key = Keybindings.SHADOW_WALKER
         cooldown = 180
@@ -536,7 +523,6 @@ class Shadower(CommandBook):
         def main(self):
             super().main()
             # bot_status.hide_start = time.time()
-
 
     class EPIC_ADVENTURE(Skill):
         key = Keybindings.EPIC_ADVENTURE
