@@ -209,7 +209,15 @@ class ActionSimulator:
         channel_pos = ActionSimulator.get_channel_pos(channel)
         ActionSimulator.mouse_left_click(channel_pos, delay=0.5)
         ActionSimulator.click_key('enter', delay=0.08)
+        
+        while utils.multi_match(capture.frame, template, 0.9):
+            time.sleep(0.1)
+        
         ActionSimulator.click_key('enter', delay=0.5)
+
+        while bot_status.lost_minimap:
+            print("cc: lost mimimap")
+            time.sleep(0.1)
 
         bot_status.enabled = True
 
