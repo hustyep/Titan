@@ -117,6 +117,13 @@ class Capture(Subject):
         self.window['top'] = y1
         self.window['width'] = x2 - x1
         self.window['height'] = y2 - y1
+        
+        top = self.window['top']
+        left = self.window['left']
+        width = self.window['width']
+        height = self.window['height']
+        frame = self.camera.get_latest_frame()
+        self.frame = frame[top:top+height, left:left+width]
 
         # Calibrate by finding the top-left and bottom-right corners of the minimap
         tl = dll_helper.screenSearch(MM_TL_BMP, x1, y1, x2, y2)

@@ -200,10 +200,13 @@ class ActionSimulator:
         bot_status.enabled = False
         
         ActionSimulator.click_key('esc', delay=1)
-        ActionSimulator.mouse_left_click((960, 186), delay=1)
+        # ActionSimulator.mouse_left_click((960, 186), delay=1)
+        ActionSimulator.click_key('up', delay=0.1)
+        ActionSimulator.click_key('up', delay=0.1)
+        ActionSimulator.click_key('up', delay=0.1)
         channel_pos = get_channel_pos(channel)
-        ActionSimulator.mouse_left_click(channel_pos, delay=0.5)
-        ActionSimulator.click_key('enter', delay=0.08)
+        ActionSimulator.mouse_left_click(channel_pos, delay=0.1)
+        ActionSimulator.click_key('enter', delay=0.5)
         
         while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.9):
             time.sleep(0.1)
@@ -222,7 +225,9 @@ class ActionSimulator:
         
 
 def get_channel_pos(channel):
-    width = 385
+    x = 334
+    y = 290
+    width = 360
     height = 244
     column = 5
     row = 8 
@@ -231,7 +236,7 @@ def get_channel_pos(channel):
     
     channel_row = (channel - 1) // column
     channel_column = (channel - 1) % column
-    return channel_column * cell_width + cell_width // 2, channel_row * cell_height + cell_height // 2
+    return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
 
 def chenck_map_available(instance=True):
     if instance:

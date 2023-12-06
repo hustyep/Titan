@@ -208,26 +208,29 @@ class Detector(Subject):
                 if self.lost_minimap_time == 0:
                     self.lost_minimap_time = time.time()
                 if time.time() - self.lost_minimap_time > self.lost_time_threshold:
-                    # if not self.try_auto_login():
-                    self.on_next(
-                        (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
+                    if not self.try_auto_login():
+                        self.on_next(
+                            (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
         else:
             self.lost_minimap_time = 0
             bot_status.lost_minimap = False
 
     def try_auto_login(self):
-        capture.find_window()
-        hwnd = capture.hwnd
-        if (hwnd == 0):
-            self.on_next((BotError.LOST_WINDOW, ))
-            return True
-        error_matchs = utils.multi_match(
-            capture.frame, BUTTON_ERROR_OK_TEMPLATE, threshold=0.9)
-        region_matchs = utils.multi_match(
-            capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
-        if error_matchs and region_matchs:
-            ActionSimulator.auto_login()
-            return True
+        bot_status.enabled = False
+        
+        for _ in range(0, 16):
+            capture.find_window()
+            hwnd = capture.hwnd
+            if (hwnd == 0):
+                self.on_next((BotError.LOST_WINDOW, ))
+                return True
+        
+            region_matchs = utils.multi_match(
+                capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95)
+            if region_matchs:
+                ActionSimulator.auto_login()
+                return True
+            time.sleep(0.5)
         else:
             return False
 
