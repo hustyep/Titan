@@ -208,13 +208,13 @@ class Detector(Subject):
                 if self.lost_minimap_time == 0:
                     self.lost_minimap_time = time.time()
                 if time.time() - self.lost_minimap_time > self.lost_time_threshold:
-                    if not self.try_auto_login():
-                        self.on_next(
-                            (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
+                    # if not self.try_auto_login():
+                    self.on_next(
+                        (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
         else:
             self.lost_minimap_time = 0
             bot_status.lost_minimap = False
-            
+
     def try_auto_login(self):
         capture.find_window()
         hwnd = capture.hwnd
@@ -470,7 +470,7 @@ class Detector(Subject):
             if i not in ['-']:
                 name = name.replace(i, '')
         result = name
-        best = 0       
+        best = 0
         for value in Map_Names:
             ratio = utils.string_similar(name, value)
             if ratio == 1:

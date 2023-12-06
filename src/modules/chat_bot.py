@@ -25,7 +25,7 @@ class ChatBot():
 
     def _main(self):
         self.wechat_bot.run()
-        # self.telegram_bot.run()
+        self.telegram_bot.run()
 
     def send_text(self, text):
         self.telegram_bot.send_text(text)

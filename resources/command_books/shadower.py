@@ -301,6 +301,7 @@ class ShadowAssault(Skill):
         if self.direction == 'up' and not map.on_the_platform((bot_status.player_pos[0], self.target[1])):
             Walk(target_x=self.target[0], tolerance=0).execute()
         
+        dx = self.target[0] - bot_status.player_pos[0]
         dy = self.target[1] - bot_status.player_pos[1]
         if self.jump:
             if self.direction.startswith('down'):
@@ -309,7 +310,7 @@ class ShadowAssault(Skill):
                 key_up("down")
             else:
                 press(Keybindings.JUMP)
-                time.sleep(0.1 if abs(dy) > 32 else 0.4)
+                time.sleep(0.05 if abs(dx) > 10 else 0.1)
 
         key_down(self.direction)
         time.sleep(0.03)
