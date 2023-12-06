@@ -32,6 +32,9 @@ WECHAT_BOT_COMMAND_TP = 'tp'
 WECHAT_BOT_COMMAND_CLICK = 'c'
 # change channel
 WECHAT_BOT_COMMAND_CHANGE_CHANNEL = 'cc'
+# test
+WECHAT_BOT_COMMAND_TEST = 'test'
+
 
 class WechatBot:
 
@@ -114,6 +117,8 @@ class WechatBot:
                 self.say_command(msg=msg)
             elif msg.startswith(WECHAT_BOT_COMMAND_CLICK):
                 self.click_command(msg=msg)
+            elif msg.startswith(WECHAT_BOT_COMMAND_TEST):
+                self.test_command(msg=msg)
             else:
                 self.send_text('unknow')
 
@@ -149,6 +154,10 @@ class WechatBot:
         
     def change_channel(self):
         message, image_path = self.command_handler(ChatBotCommand.CHANGE_CHANNEL, )
+        self.send_message(message, imagePath=image_path)
+    
+    def test_command(self):
+        message, image_path = self.command_handler(ChatBotCommand.TEST, )
         self.send_message(message, imagePath=image_path)
     
     def click(self, x, y):

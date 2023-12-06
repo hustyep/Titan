@@ -14,6 +14,7 @@ class ChatBotCommand(Enum):
     SAY = 'say'
     TP = 'tp'
     CHANGE_CHANNEL = 'cc'
+    TEST = 'test'
 
 class ChatBotEntity(ABC):
     
