@@ -157,8 +157,8 @@ class Bot(Subject):
                 case BotError.OTHERS_STAY_OVER_120S:
                     # ActionSimulator.change_channel()
                     pass
-                case BotError.LOST_PLAYER:
-                    pass
+                # case BotError.LOST_PLAYER:
+                #     pass
                 case (_):
                     self.toggle(False, event_type.value)
                     chat_bot.voice_call()

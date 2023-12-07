@@ -200,33 +200,34 @@ class ActionSimulator:
         bot_status.enabled = False
         
         ActionSimulator.click_key('esc', delay=1)
-        # ActionSimulator.mouse_left_click((960, 186), delay=1)
-        ActionSimulator.click_key('up', delay=0.1)
-        ActionSimulator.click_key('up', delay=0.1)
-        ActionSimulator.click_key('up', delay=0.1)
+        ActionSimulator.mouse_left_click((capture.window['left'] + 968, capture.window['top'] + 192), delay=2)
+        # ActionSimulator.click_key('up', delay=0.2)
+        # ActionSimulator.click_key('up', delay=0.2)
+        # ActionSimulator.click_key('up', delay=0.5)
+        # ActionSimulator.click_key('enter', delay=3)
         channel_pos = get_channel_pos(channel)
-        ActionSimulator.mouse_left_click(channel_pos, delay=0.1)
-        ActionSimulator.click_key('enter', delay=0.5)
+        ActionSimulator.mouse_left_click(channel_pos, delay=1)
+        # ActionSimulator.click_key('enter', delay=1)
         
-        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.9):
-            time.sleep(0.1)
-        time.sleep(2)
-        ActionSimulator.click_key('enter', delay=2)
+        # while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.9):
+        #     time.sleep(0.1)
+        # time.sleep(2)
+        # ActionSimulator.click_key('enter', delay=2)
 
-        while bot_status.lost_minimap:
-            print("cc: lost mimimap")
-            time.sleep(0.1)
+        # while bot_status.lost_minimap:
+        #     print("cc: lost mimimap")
+        #     time.sleep(0.1)
 
-        map_available = chenck_map_available()
-        if map_available:
-            bot_status.enabled = True
-        else:
-            ActionSimulator.change_channel()
+        # map_available = chenck_map_available()
+        # if map_available:
+        #     bot_status.enabled = True
+        # else:
+        #     ActionSimulator.change_channel()
         
 
 def get_channel_pos(channel):
-    x = 334
-    y = 290
+    x = 334 + capture.window['left']
+    y = 290 + capture.window['top']
     width = 360
     height = 244
     column = 5

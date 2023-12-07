@@ -118,7 +118,7 @@ class WechatBot:
             elif msg.startswith(WECHAT_BOT_COMMAND_CLICK):
                 self.click_command(msg=msg)
             elif msg.startswith(WECHAT_BOT_COMMAND_TEST):
-                self.test_command(msg=msg)
+                self.test_command()
             else:
                 self.send_text('unknow')
 

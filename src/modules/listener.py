@@ -186,6 +186,7 @@ class Listener(Configurable, Subject):
                 return "changing channel...", None
             case ChatBotCommand.TEST:
                 ActionSimulator.auto_login(35)
-
+                filepath = utils.save_screenshot(capture.frame)
+                return "login", filepath
 
 listener = Listener()
