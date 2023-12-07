@@ -12,7 +12,7 @@ $, target=mini_margin, value=44
     Wait, duration=0.2
     DarkFlare, direction=left
 *, x=132, y=30, interval=0, tolerance=5, detect=False, skip=False
-    TrickBlade
+    TrickBlade, direction=left
 *, x=130, y=57, interval=0, tolerance=8, detect=False, skip=False
 #
 

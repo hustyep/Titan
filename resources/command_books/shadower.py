@@ -297,10 +297,10 @@ class ShadowAssault(Skill):
         elif self.direction == 'up' or self.direction == 'down':
             time.sleep(0.2)
             evade_rope(self.target)
-            
+
         if self.direction == 'up' and not map.on_the_platform((bot_status.player_pos[0], self.target[1])):
             Walk(target_x=self.target[0], tolerance=0).execute()
-        
+
         dx = self.target[0] - bot_status.player_pos[0]
         dy = self.target[1] - bot_status.player_pos[1]
         if self.jump:
@@ -321,7 +321,7 @@ class ShadowAssault(Skill):
         sleep_in_the_air()
         time.sleep(self.backswing if abs(dy) < 40 else 0.5)
         MesoExplosion().execute()
-        
+
         # if bot_settings.record_layout:
         #     layout.add(*bot_status.player_pos)
 
@@ -338,16 +338,18 @@ class Attack(Command):
     def main(self):
         CruelStab().execute()
 
+
 class Aoe(Skill):
     key = Keybindings.TRICKBLADE
     type = SkillType.Attack
-    
+
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         return TrickBlade.ready
-    
+
     def main(self):
         return TrickBlade().main()
+
 
 class CruelStab(Skill):
     """Uses 'CruelStab' once."""
@@ -456,22 +458,14 @@ class TrickBlade(Skill):
     backswing = 0.7
     type = SkillType.Attack
 
-    # def __init__(self, direction='right'):
-    #     super().__init__(locals())
-    #     if direction is None:
-    #         self.direction = direction
-    #     else:
-    #         self.direction = bot_settings.validate_horizontal_arrows(direction)
+    def __init__(self, direction=None):
+        super().__init__(locals())
+        self.direction = direction
 
-    # @classmethod
-    # def canUse(cls, next_t: float = 0) -> bool:
-    #     usable = super().canUse()
-    #     if usable:
-    #         mobs = detect_mobs(insets=AreaInsets(
-    #             top=200, bottom=150, left=400, right=400))
-    #         return len(mobs) > 0
-    #     else:
-    #         return False
+    def main(self):
+        if self.direction is not None:
+            press_acc(self.direction, down_time=0.03, up_time=0.03)
+        super().main()
 
 
 class SlashShadowFormation(Skill):
@@ -501,6 +495,7 @@ class PickPocket(Skill):
     type = SkillType.Switch
     cooldown = 1
     ready = False
+
 
 class Steal(Skill):
     key = 'f3'
