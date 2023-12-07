@@ -118,7 +118,7 @@ class WechatBot:
             elif msg.startswith(WECHAT_BOT_COMMAND_CLICK):
                 self.click_command(msg=msg)
             elif msg.startswith(WECHAT_BOT_COMMAND_TEST):
-                self.test_command()
+                self.test_command(msg=msg)
             else:
                 self.send_text('unknow')
 
@@ -156,8 +156,9 @@ class WechatBot:
         message, image_path = self.command_handler(ChatBotCommand.CHANGE_CHANNEL, )
         self.send_message(message, imagePath=image_path)
     
-    def test_command(self):
-        message, image_path = self.command_handler(ChatBotCommand.TEST, )
+    def test_command(self, msg: str):
+        list = msg.split(' ')
+        message, image_path = self.command_handler(ChatBotCommand.TEST, int(list[1]))
         self.send_message(message, imagePath=image_path)
     
     def click(self, x, y):

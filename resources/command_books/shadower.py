@@ -310,7 +310,7 @@ class ShadowAssault(Skill):
                 key_up("down")
             else:
                 press(Keybindings.JUMP)
-                time.sleep(0.05 if abs(dx) > 10 else 0.1)
+                time.sleep(0.05 if abs(dx) < 10 else 0.1)
 
         key_down(self.direction)
         time.sleep(0.03)
@@ -502,6 +502,12 @@ class PickPocket(Skill):
     cooldown = 1
     ready = False
 
+class Steal(Skill):
+    key = 'f3'
+    type = SkillType.Switch
+    cooldown = 1
+    backswing = 2
+    ready = False
 
 ###################
 #      Buffs      #
@@ -520,6 +526,7 @@ class Buff(Command):
             ForTheGuild,
             HardHitter,
             ShadowWalker,
+            Steal,
             PickPocket,
         ]
 
