@@ -43,7 +43,7 @@ class Detector(Subject):
         self.lost_minimap_time = 0
 
         self.black_screen_threshold = 0.9
-        self.white_room_threshold = 0.6
+        self.white_room_threshold = 0.5
 
         self.ready = False
         self.fetal_thread = threading.Thread(target=self._main_fetal)
@@ -218,7 +218,7 @@ class Detector(Subject):
     def try_auto_login(self):
         bot_status.enabled = False
         
-        for _ in range(0, 16):
+        for _ in range(0, 10):
             capture.find_window()
             hwnd = capture.hwnd
             if (hwnd == 0):
@@ -226,7 +226,7 @@ class Detector(Subject):
                 return True
         
             region_matchs = utils.multi_match(
-                capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95)
+                capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
             if region_matchs:
                 ActionSimulator.auto_login()
                 return True

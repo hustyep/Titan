@@ -218,7 +218,7 @@ class ActionSimulator:
 
         map_available = chenck_map_available()
         if map_available:
-            ActionSimulator.click_key('esc', delay=0.1)
+            ActionSimulator.click_key('esc', delay=0.3)
             bot_status.enabled = True
         else:
             ActionSimulator.change_channel()
@@ -241,7 +241,7 @@ def get_channel_pos(channel):
 def chenck_map_available(instance=True):
     if instance:
         start_time = time.time()
-        while time.time() - start_time <= 8:
+        while time.time() - start_time <= 5:
             if detect_mobs():
                 return True
             time.sleep(0.1)

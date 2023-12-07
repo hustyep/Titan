@@ -58,9 +58,7 @@ class Bot(Subject):
 
         self.ready = True
         while True:
-            if not self.prepared:
-                self.pre_load()
-            elif bot_status.enabled:
+            if bot_status.enabled:
                 if len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
                 else:
@@ -149,16 +147,19 @@ class Bot(Subject):
         else:
             arg = 0
         if isinstance(event_type, BotFatal):
-            self.toggle(False, event_type.value)
-            chat_bot.voice_call()
+            if event_type == BotFatal.BLACK_SCREEN:
+                pass
+            else:
+                self.toggle(False, event_type.value)
+                chat_bot.voice_call()
 
         elif isinstance(event_type, BotError):
             match (event_type):
                 case BotError.OTHERS_STAY_OVER_120S:
                     # ActionSimulator.change_channel()
                     pass
-                # case BotError.LOST_PLAYER:
-                #     pass
+                case BotError.LOST_PLAYER:
+                    pass
                 case (_):
                     self.toggle(False, event_type.value)
                     chat_bot.voice_call()
