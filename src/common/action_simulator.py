@@ -196,7 +196,7 @@ class ActionSimulator:
             ActionSimulator.change_channel()
             
     @staticmethod
-    def auto_login(channel=40):
+    def auto_login(channel=33):
         bot_status.enabled = False
         
         matches = utils.multi_match(capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
@@ -207,7 +207,7 @@ class ActionSimulator:
         ActionSimulator.mouse_left_click(channel_pos, delay=1)
         hid.mouse_left_click()
         
-        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.9):
+        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
             time.sleep(0.1)
         time.sleep(2)
         ActionSimulator.click_key('enter', delay=2)
@@ -216,13 +216,18 @@ class ActionSimulator:
             print("cc: lost mimimap")
             time.sleep(0.1)
 
+        time.sleep(1)
+        ActionSimulator.click_key('esc', delay=1)
+        ActionSimulator.mouse_left_click(get_full_pos((1351, 586)), delay=1)
         map_available = chenck_map_available()
         if map_available:
-            ActionSimulator.click_key('esc', delay=0.3)
             bot_status.enabled = True
         else:
             ActionSimulator.change_channel()
         
+
+def get_full_pos(pos):
+    return pos[0] + capture.window['left'], pos[1] + capture.window['top']
 
 def get_channel_pos(channel):
     x = 334 + capture.window['left']

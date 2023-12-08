@@ -126,14 +126,14 @@ class Detector(Subject):
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # Check for unexpected black screen
-        if bot_status.enabled:
-            if np.count_nonzero(gray < 15) / height / width > self.black_screen_threshold:
-                self.on_next((BotFatal.BLACK_SCREEN,))
+        # if bot_status.enabled:
+        #     if np.count_nonzero(gray < 15) / height / width > self.black_screen_threshold:
+        #         self.on_next((BotFatal.BLACK_SCREEN,))
 
         # Check for white room
         gray_crop = gray[100:-100, 50:-50]
         height, width = gray.shape
-        if bot_status.started_time and np.count_nonzero(gray_crop == 255) / height / width >= self.white_room_threshold:
+        if np.count_nonzero(gray_crop == 255) / height / width >= self.white_room_threshold:
             self.on_next((BotFatal.WHITE_ROOM,))
 
     def check_alert(self):

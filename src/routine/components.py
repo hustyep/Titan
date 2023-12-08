@@ -153,7 +153,7 @@ class Point(Component):
     def detect_mob(self, direction):
         start_time = time.time()
         anchor = capture.locate_player_fullscreen(accurate=True)
-        matchs = commands.detect_mobs(insets=commands.AreaInsets(top=200, bottom=100, left=300, right=300),
+        matchs = commands.detect_mobs(insets=commands.AreaInsets(top=250, bottom=100, left=300, right=300),
                                       anchor=anchor)
         if matchs:
             print("use aoe")
