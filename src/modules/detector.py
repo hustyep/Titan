@@ -245,7 +245,7 @@ class Detector(Subject):
             region_matchs = utils.multi_match(
                 capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
             if region_matchs:
-                ActionSimulator.auto_login()
+                ActionSimulator.auto_login(gui_setting.auto.auto_login_channel)
                 return True
             time.sleep(0.5)
         else:

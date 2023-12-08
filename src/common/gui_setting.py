@@ -7,6 +7,8 @@ class AutoSettings(Configurable):
         'Ask': False,
         'Mining': False,
         'Load Map': True,
+        'Login': True,
+        'Channel': 33,
     }
 
     @property
@@ -16,6 +18,17 @@ class AutoSettings(Configurable):
     @property
     def load_map(self):
         return self.get('Load Map')
+    
+    @property
+    def auto_login(self):
+        return self.get('Login')
+    
+    @property
+    def auto_login_channel(self):
+        if self.auto_login():
+            return self.get('Channel')
+        else:
+            return 0
 
 
 class DetectSettings(Configurable):

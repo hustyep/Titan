@@ -199,6 +199,9 @@ class ActionSimulator:
     def auto_login(channel=33):
         chat_bot.send_message(f'auto login:{channel}')
 
+        if channel not in range(1, 41):
+            chat_bot.send_message(f'auto login failed: wrong channel:{channel}')
+            return
         bot_status.enabled = False
         
         matches = utils.multi_match(capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
@@ -226,6 +229,26 @@ class ActionSimulator:
         else:
             ActionSimulator.change_channel()
         
+    @staticmethod
+    def run_maplestory():
+        capture.find_window()
+        hwnd = capture.hwnd
+        if hwnd != 0:
+            return
+        matches = utils.multi_match(capture.camera.get_latest_frame(), BUTTON_ERROR_OK_TEMPLATE, 0.9)
+        if matches:
+            ActionSimulator.mouse_left_click(matches[0], 2)
+        else:
+            return
+            
+        play_matches = utils.multi_match(capture.camera.get_latest_frame(), BUTTON_ERROR_OK_TEMPLATE, 0.9)
+        if play_matches:
+            ActionSimulator.mouse_left_click(play_matches, 2)
+            
+
+        
+
+    
 
 def get_full_pos(pos):
     return pos[0] + capture.window['left'], pos[1] + capture.window['top']
