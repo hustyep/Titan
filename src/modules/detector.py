@@ -175,7 +175,7 @@ class Detector(Subject):
             time.sleep(1)
             # ActionSimulator.mouse_left_click(position=get_full_pos(853, 52), delay=0.1)
         
-        maple_reward = utils.multi_match(frame[-200:, -50:], maple_reward, threshold=0.9)
+        maple_reward = utils.multi_match(frame[-200:, -50:], MAPLE_REWARD_TEMPLATE, threshold=0.9)
         if maple_reward:
             ActionSimulator.mouse_left_click(get_full_pos((1351, 586)), delay=1)
 
