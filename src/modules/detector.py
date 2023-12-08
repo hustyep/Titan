@@ -23,7 +23,7 @@ from src.common.hid import hid
 from src.modules.capture import capture
 from src.map.map import map as game_map
 from src.common.gui_setting import gui_setting
-from src.common.action_simulator import ActionSimulator
+from src.common.action_simulator import *
 
 class Detector(Subject):
 
@@ -85,6 +85,7 @@ class Detector(Subject):
                 # self.check_others()
                 self.check_alert()
                 self.check_forground()
+                self.check_init()
             else:
                 self.clear()
             time.sleep(0.1)
@@ -163,6 +164,22 @@ class Detector(Subject):
         if confirm_btn:
             hid.key_press('esc')
             time.sleep(0.1)
+
+    def check_init(self):
+        if capture.frame is None:
+            return
+        frame = capture.frame
+        guide = utils.multi_match(frame[0:150, 700:900], GUIDE_PLUSE_TEMPLATE, threshold=0.9)
+        if guide:
+            hid.key_press('esc')
+            time.sleep(1)
+            # ActionSimulator.mouse_left_click(position=get_full_pos(853, 52), delay=0.1)
+        
+        maple_reward = utils.multi_match(frame[-200:, -50:], GUIDE_PLUSE_TEMPLATE, threshold=0.9)
+        if maple_reward:
+            ActionSimulator.mouse_left_click(get_full_pos((1351, 586)), delay=1)
+
+        
 
     def check_forground(self):
         if capture.frame is None:

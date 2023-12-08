@@ -197,6 +197,8 @@ class ActionSimulator:
             
     @staticmethod
     def auto_login(channel=33):
+        chat_bot.send_message(f'auto login:{channel}')
+
         bot_status.enabled = False
         
         matches = utils.multi_match(capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
@@ -217,11 +219,10 @@ class ActionSimulator:
             time.sleep(0.1)
 
         time.sleep(1)
-        ActionSimulator.click_key('esc', delay=1)
-        ActionSimulator.mouse_left_click(get_full_pos((1351, 586)), delay=1)
         map_available = chenck_map_available()
         if map_available:
             bot_status.enabled = True
+            chat_bot.send_message(f'auto login:{channel}. success')
         else:
             ActionSimulator.change_channel()
         

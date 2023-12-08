@@ -26,6 +26,10 @@ END_TALK_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/end_talk_template.png', 0)
 END_PLAY_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/btn_play_template.png', 0)
+GUIDE_PLUSE_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/btn_guide_plus_template.png', 0)
+MAPLE_REWARD_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/maple_reward_template.png', 0)
 # dead alert
 DEAD_TOBBSTONE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/dead_tombstone_template.png', 0)
