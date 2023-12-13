@@ -68,10 +68,11 @@ class Map:
 
         minimap_sample_path = os.path.join(
             RESOURCES_DIR, 'maps', 'sample', f'{self.name}.png')
-        if os.path.exists(minimap_sample_path):
-            self.minimap_sample = cv2.imread(minimap_sample_path)
-        elif capture.minimap_display is not None:
+        if capture.minimap_display is not None:
+            self.minimap_sample = capture.minimap_display
             cv2.imwrite(minimap_sample_path, capture.minimap_display)
+        elif os.path.exists(minimap_sample_path):
+            self.minimap_sample = cv2.imread(minimap_sample_path)
 
     def save_minimap_data(self):
         try:
