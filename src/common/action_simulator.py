@@ -212,17 +212,13 @@ class ActionSimulator:
         ActionSimulator.mouse_left_click(channel_pos, delay=1)
         hid.mouse_left_click()
         
-        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
+        while len(utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98)) == 0:
             time.sleep(0.1)
+            
         time.sleep(2)
-        ActionSimulator.click_key('enter', delay=2)
 
-        start_time = time.time()
         while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
-            if time.time() - start_time > 10:
-                start_time = time.time()
-                ActionSimulator.click_key('enter', delay=2)
-            time.sleep(0.1)
+            ActionSimulator.click_key('enter', delay=2)
 
         while bot_status.lost_minimap:
             print("cc: lost mimimap")
