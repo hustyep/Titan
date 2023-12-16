@@ -5,7 +5,6 @@ from src.common import utils
 from src.routine.components import Point
 from src.gui.interfaces import LabelFrame
 from src.modules.capture import capture
-from src.map.map import map
 from src.routine.routine import routine
 
 class Minimap(LabelFrame):
@@ -25,8 +24,8 @@ class Minimap(LabelFrame):
     def draw_point(self, pos: Point):
         """Draws a circle representing a Point centered at LOCATION."""
 
-        if map.minimap_sample is not None:
-            minimap = cv2.cvtColor(map.minimap_sample, cv2.COLOR_BGR2RGB)
+        if capture.minimap_display is not None:
+            minimap = cv2.cvtColor(capture.minimap_display, cv2.COLOR_BGR2RGB)
             img, ratio = self.resize_to_fit(minimap)
             utils.draw_location(img, capture.convert_to_absolute_minimap_point(pos.location), ratio, (0, 255, 0), pos.tolerance)
             self.draw(img)
@@ -34,8 +33,8 @@ class Minimap(LabelFrame):
     def draw_default(self):
         """Displays just the minimap sample without any markings."""
 
-        if map.minimap_sample is not None and len(map.minimap_sample) > 0:
-            minimap = cv2.cvtColor(map.minimap_sample, cv2.COLOR_BGR2RGB)
+        if capture.minimap_display is not None and len(capture.minimap_display) > 0:
+            minimap = cv2.cvtColor(capture.minimap_display, cv2.COLOR_BGR2RGB)
             img, _ = self.resize_to_fit(minimap)
             self.draw(img)
 

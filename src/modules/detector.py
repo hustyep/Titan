@@ -43,7 +43,7 @@ class Detector(Subject):
         self.lost_minimap_time = 0
 
         self.black_screen_threshold = 0.9
-        self.white_room_threshold = 0.5
+        self.white_room_threshold = 0.35
 
         self.ready = False
         self.fetal_thread = threading.Thread(target=self._main_fetal)
@@ -134,7 +134,9 @@ class Detector(Subject):
         # Check for white room
         gray_crop = gray[100:-100, 50:-50]
         height, width = gray.shape
-        if np.count_nonzero(gray_crop == 255) / height / width >= self.white_room_threshold:
+        tmp = np.count_nonzero(gray_crop == 255) / height / width
+        # print(tmp)
+        if tmp >= self.white_room_threshold:
             self.on_next((BotFatal.WHITE_ROOM,))
 
     def check_alert(self):

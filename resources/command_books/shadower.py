@@ -30,10 +30,10 @@ class Keybindings(DefaultKeybindings):
     WEALTH_POTION = "-"
     GOLD_POTION = ''
     GUILD_POTION = "9"
-    CANDIED_APPLE = '5'
-    LEGION_WEALTHY = '='
+    CANDIED_APPLE = '8'
+    LEGION_WEALTHY = '7'
     EXP_COUPON = '6'
-
+    
     # Skills
     CRUEL_STAB = 'f'
     MESO_EXPLOSION = 'd'
@@ -295,7 +295,7 @@ class ShadowAssault(Skill):
         elif self.direction.endswith("right"):
             if bot_status.player_direction != 'right':
                 press("right", down_time=0.1)
-        elif self.direction == 'up' or self.direction == 'down':
+        elif self.direction != 'left' and self.direction != 'right':
             time.sleep(0.2)
             evade_rope(self.target)
 

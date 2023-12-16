@@ -39,7 +39,7 @@ class Auto(LabelFrame):
         label = tk.Label(channel_row, text='Auto login channel:')
         label.pack(side=tk.LEFT, padx=(0, 5), fill='x')
         
-        self.display_var = tk.IntVar(value=0)
+        self.display_var = tk.IntVar(value=self.settings.get('Channel'))
         self.display_var.trace('w', self._on_channel_changed)
         self.channel_entry = tk.Entry(channel_row,
                          validate='key',
@@ -55,7 +55,7 @@ class Auto(LabelFrame):
             self.settings.set(check.cget('text'), value.get())
         self.settings.save_config()        
 
-    def _on_channel_changed(self):
+    def _on_channel_changed(self, a, b, c):
         value = self.display_var.get()
         self.settings.set('Channel', value)
         self.settings.save_config()

@@ -25,7 +25,7 @@ class AutoSettings(Configurable):
     
     @property
     def auto_login_channel(self):
-        if self.auto_login():
+        if self.auto_login:
             return self.get('Channel')
         else:
             return 0

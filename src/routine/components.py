@@ -177,7 +177,7 @@ class Point(Component):
             # if matchs:
                 # SonicBlow().execute()
 
-            mobs = commands.detect_mobs(insets=commands.AreaInsets(top=150, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
+            mobs = commands.detect_mobs(insets=commands.AreaInsets(top=350, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
                                         anchor=anchor,
                                         multy_match=False,
                                         debug=False)
