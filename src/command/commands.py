@@ -81,7 +81,14 @@ class Command():
             self.kwargs.pop('__class__')
             self.kwargs.pop('self')
         self.id = self.__class__.__name__
+        
+    def update(self, *args, **kwargs):
+        """Updates this Component's constructor arguments with new arguments."""
 
+        # Validate arguments before actually updating values
+        self.__class__(*args, **kwargs)
+        self.__init__(*args, **kwargs)
+        
     def __str__(self):
         variables = self.__dict__
         result = '    ' + self.id
