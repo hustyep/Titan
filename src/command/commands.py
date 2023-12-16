@@ -795,7 +795,7 @@ class ChangeChannel(Command):
         self.instance = instance
 
     def main(self) -> None:
-        press(Keybindings.Change_Channel)
+        hid.key_press(Keybindings.Change_Channel)
 
         if self.num > 0:
             item_width = 50
@@ -810,9 +810,11 @@ class ChangeChannel(Command):
             hid.mouse_abs_move(x, y)
             hid.mouse_left_click()
         else:
-            press('down')
-            press('right')
-            press('enter')
+            hid.key_press('down')
+            time.sleep(0.1)
+            hid.key_press('right')
+            time.sleep(0.1)
+            hid.key_press('enter')
         time.sleep(1)
 
         frame = capture.frame
@@ -821,7 +823,7 @@ class ChangeChannel(Command):
         ok_btn = utils.multi_match(
             frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
         if ok_btn:
-            press('esc')
+            hid.key_press('esc')
             time.sleep(1)
             ChangeChannel(self.num, self.enable, self.instance).execute()
             return
@@ -831,7 +833,7 @@ class ChangeChannel(Command):
             print("changging channel")
             delay += 0.1
             if delay > 5:
-                ChangeChannel(self.num, self.enable, self.instance).execute()
+                ChangeChannel(0, self.enable, self.instance).execute()
                 return
             time.sleep(0.1)
 
@@ -850,7 +852,7 @@ class ChangeChannel(Command):
             bot_status.enabled = True
             bot_status.change_channel = False
         else:
-            ChangeChannel(self.num, self.enable, self.instance).execute()
+            ChangeChannel(0, self.enable, self.instance).execute()
 
 
 class AutoLogin(Command):
@@ -871,7 +873,7 @@ class AutoLogin(Command):
         matches = utils.multi_match(
             capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
         if matches:
-            press('esc', delay=1)
+            hid.key_press('esc', delay=1)
 
         click((capture.window['left'] + 968, capture.window['top'] + 192))
         time.sleep(2)
@@ -886,8 +888,8 @@ class AutoLogin(Command):
         time.sleep(2)
 
         while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
-            press("enter", up_time=2)
-
+            hid.key_press("enter")
+            time.sleep(2)
         while bot_status.lost_minimap:
             print("cc: lost mimimap")
             time.sleep(0.1)
@@ -898,7 +900,7 @@ class AutoLogin(Command):
             bot_status.enabled = True
             chat_bot.send_message(f'auto login:{self.channel}. success')
         else:
-            ChangeChannel(self.channel, enable=True).execute()
+            ChangeChannel(0, enable=True).execute()
 
 
 class Relogin(Command):
@@ -909,28 +911,37 @@ class Relogin(Command):
 
     def main(self):
         bot_status.enabled = False
-        press('esc', up_time=0.5)
-        press('enter')
+        
+        hid.key_press('esc')
+        time.sleep(0.5)
+        hid.key_press('up')
+        time.sleep(0.5)
+        hid.key_press('enter')
+        time.sleep(0.2)
         while not utils.multi_match(capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95):
             time.sleep(0.1)
         time.sleep(2)
-        ChangeChannel(self.channel, enable=True).execute()
+        AutoLogin(self.channel).execute()
 
 
 class MapTeleport(Command):
     def main(self):
-        press('up', 2)
+        bot_status.enabled = False
+        hid.key_press('up')
+        time.sleep(2)
         while (not bot_status.lost_minimap):
             time.sleep(0.1)
         while (bot_status.lost_minimap):
             time.sleep(0.1)
         time.sleep(2)
-        press('up', 2)
+        hid.key_press('up')
+        time.sleep(2)
         while (not bot_status.lost_minimap):
             time.sleep(0.1)
         while (bot_status.lost_minimap):
             time.sleep(0.1)
         time.sleep(2)
+        bot_status.enabled = True
 
 #########################
 #      Common Skill     #
