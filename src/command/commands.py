@@ -11,6 +11,7 @@ from src.common.image_template import *
 from src.common.constants import *
 from src.modules.chat_bot import chat_bot
 
+
 class DefaultKeybindings:
     INTERACT = 'space'
     FEED_PET = 'L'
@@ -785,143 +786,156 @@ class Buff(Command):
             "\n[!] 'Buff' command not implemented in current command book, aborting process.")
         bot_status.enabled = False
 
-# class ChangeChannel(Command):
-    
-#     def __init__(self, num: int = 0, enable=True, instance = True) -> None:
-#         self.num = num
-#         self.aenage = age
-    
-#     def main(self, num: int = 0, enable=True, instance = True) -> None:
-#             press(Keybindings.Change_Channel)
 
-#             if num > 0:
-#                 item_width = 50
-#                 item_height = 40
-#                 channel_1 = (0, 0)
+class ChangeChannel(Command):
 
-#                 row = (num - 1) // 10
-#                 col = (num - 1) % 10
+    def __init__(self, num: int = 0, enable=True, instance=True) -> None:
+        self.num = num
+        self.enable = enable
+        self.instance = instance
 
-#                 x = channel_1[0] + col * item_width
-#                 y = channel_1[1] + row * item_height
-#                 hid.mouse_abs_move(x, y)
-#                 hid.mouse_left_click()
-#             else:
-#                 ActionSimulator.click_key('down')
-#                 ActionSimulator.click_key('right')
-#                 ActionSimulator.click_key('enter')
-#             time.sleep(1)
+    def main(self) -> None:
+        press(Keybindings.Change_Channel)
 
-#             frame = capture.frame
-#             x = (frame.shape[1] - 260) // 2
-#             y = (frame.shape[0] - 220) // 2
-#             ok_btn = utils.multi_match(
-#                 frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
-#             if ok_btn:
-#                 ActionSimulator.click_key('esc')
-#                 time.sleep(1)
-#                 ActionSimulator._change_channel(num, enable)
-#                 return
+        if self.num > 0:
+            item_width = 50
+            item_height = 40
+            channel_1 = (0, 0)
 
-#             delay = 0
-#             while not bot_status.lost_minimap:
-#                 print("changging channel")
-#                 delay += 0.1
-#                 if delay > 5:
-#                     ActionSimulator._change_channel()
-#                     return
-#                 time.sleep(0.1)
+            row = (self.num - 1) // 10
+            col = (self.num - 1) % 10
 
-#             while bot_status.lost_minimap:
-#                 print("cc: lost mimimap")
-#                 time.sleep(0.1)
+            x = channel_1[0] + col * item_width
+            y = channel_1[1] + row * item_height
+            hid.mouse_abs_move(x, y)
+            hid.mouse_left_click()
+        else:
+            press('down')
+            press('right')
+            press('enter')
+        time.sleep(1)
 
-#             if not enable:
-#                 return
+        frame = capture.frame
+        x = (frame.shape[1] - 260) // 2
+        y = (frame.shape[0] - 220) // 2
+        ok_btn = utils.multi_match(
+            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+        if ok_btn:
+            press('esc')
+            time.sleep(1)
+            ChangeChannel(self.num, self.enable, self.instance).execute()
+            return
 
-#             chat_bot.send_message('channel changed', capture.frame)
-#             time.sleep(3)
-#             map_available = chenck_map_available(instance=instance)
-            
-#             if map_available:
-#                 bot_status.enabled = True
-#                 bot_status.change_channel = False
-#             else:
-#                 ActionSimulator.change_channel()
+        delay = 0
+        while not bot_status.lost_minimap:
+            print("changging channel")
+            delay += 0.1
+            if delay > 5:
+                ChangeChannel(self.num, self.enable, self.instance).execute()
+                return
+            time.sleep(0.1)
 
-# class AutoLogin(Command):
+        while bot_status.lost_minimap:
+            print("cc: lost mimimap")
+            time.sleep(0.1)
 
-#     def __init__(self, channel=33):
-#         super().__init__(locals())
-#         self.channel = channel
-    
-#     def main(self):
-#             chat_bot.send_message(f'auto login:{self.channel}')
+        if not self.enable:
+            return
 
-#             if self.channel not in range(1, 41):
-#                 chat_bot.send_message(f'auto login failed: wrong channel:{self.channel}')
-#                 return
-#             bot_status.enabled = False
-            
-#             matches = utils.multi_match(capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
-#             if matches:
-#                 press('esc', delay=1)
-            
-#             click((capture.window['left'] + 968, capture.window['top'] + 192))
-#             time.sleep(2)
-#             channel_pos = get_channel_pos(self.channel)
-#             click(channel_pos)
-#             time.sleep(1)
-#             hid.mouse_left_click()
-            
-#             while len(utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98)) == 0:
-#                 time.sleep(0.1)
-                
-#             time.sleep(2)
+        chat_bot.send_message('channel changed', capture.frame)
+        time.sleep(3)
+        map_available = chenck_map_available(instance=self.instance)
 
-#             while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
-#                 press("enter", up_time=2)
+        if map_available:
+            bot_status.enabled = True
+            bot_status.change_channel = False
+        else:
+            ChangeChannel(self.num, self.enable, self.instance).execute()
 
-#             while bot_status.lost_minimap:
-#                 print("cc: lost mimimap")
-#                 time.sleep(0.1)
 
-#             time.sleep(1)
-#             map_available = chenck_map_available()
-#             if map_available:
-#                 bot_status.enabled = True
-#                 chat_bot.send_message(f'auto login:{self.channel}. success')
-#             else:
-                
+class AutoLogin(Command):
 
-# class Relogin(Command):
-#     def main(self):
-#         bot_status.enabled = False
-#         press('esc', up_time=0.5)
-#         press('enter')
-#         while not utils.multi_match(capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95):
-#             time.sleep(0.1)
-#         time.sleep(2)
-        
+    def __init__(self, channel=33):
+        super().__init__(locals())
+        self.channel = channel
 
-# class MapTeleport(Command):
-#     def main(self):
-#         press('up', 2)
-#         while(not bot_status.lost_minimap):
-#             time.sleep(0.1)
-#         while(bot_status.lost_minimap):
-#             time.sleep(0.1)
-#         time.sleep(2)
-#         press('up', 2)
-#         while(not bot_status.lost_minimap):
-#             time.sleep(0.1)
-#         while(bot_status.lost_minimap):
-#             time.sleep(0.1)
-#         time.sleep(2)
-            
+    def main(self):
+        chat_bot.send_message(f'auto login:{self.channel}')
+
+        if self.channel not in range(1, 41):
+            chat_bot.send_message(
+                f'auto login failed: wrong channel:{self.channel}')
+            return
+        bot_status.enabled = False
+
+        matches = utils.multi_match(
+            capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
+        if matches:
+            press('esc', delay=1)
+
+        click((capture.window['left'] + 968, capture.window['top'] + 192))
+        time.sleep(2)
+        channel_pos = get_channel_pos(self.channel)
+        click(channel_pos)
+        time.sleep(1)
+        hid.mouse_left_click()
+
+        while len(utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98)) == 0:
+            time.sleep(0.1)
+
+        time.sleep(2)
+
+        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
+            press("enter", up_time=2)
+
+        while bot_status.lost_minimap:
+            print("cc: lost mimimap")
+            time.sleep(0.1)
+
+        time.sleep(1)
+        map_available = chenck_map_available()
+        if map_available:
+            bot_status.enabled = True
+            chat_bot.send_message(f'auto login:{self.channel}. success')
+        else:
+            ChangeChannel(self.channel, enable=True).execute()
+
+
+class Relogin(Command):
+
+    def __init__(self, channel=33):
+        super().__init__(locals())
+        self.channel = channel
+
+    def main(self):
+        bot_status.enabled = False
+        press('esc', up_time=0.5)
+        press('enter')
+        while not utils.multi_match(capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95):
+            time.sleep(0.1)
+        time.sleep(2)
+        ChangeChannel(self.channel, enable=True).execute()
+
+
+class MapTeleport(Command):
+    def main(self):
+        press('up', 2)
+        while (not bot_status.lost_minimap):
+            time.sleep(0.1)
+        while (bot_status.lost_minimap):
+            time.sleep(0.1)
+        time.sleep(2)
+        press('up', 2)
+        while (not bot_status.lost_minimap):
+            time.sleep(0.1)
+        while (bot_status.lost_minimap):
+            time.sleep(0.1)
+        time.sleep(2)
+
 #########################
 #      Common Skill     #
 #########################
+
 
 class MapleWorldGoddessBlessing(Skill):
     key = Keybindings.GODDESS_BLESSING
@@ -1211,19 +1225,21 @@ class EXP_COUPON(Command):
 def get_full_pos(pos):
     return pos[0] + capture.window['left'], pos[1] + capture.window['top']
 
+
 def get_channel_pos(channel):
     x = 334 + capture.window['left']
     y = 290 + capture.window['top']
     width = 360
     height = 244
     column = 5
-    row = 8 
+    row = 8
     cell_width = width // column
     cell_height = height // row
-    
+
     channel_row = (channel - 1) // column
     channel_column = (channel - 1) % column
     return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
+
 
 def chenck_map_available(instance=True):
     if instance:
