@@ -177,6 +177,10 @@ class Map:
             self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
 
     def point_type(self, point: tuple[int, int]):
+        height, width = self.minimap_data.shape
+        if point[0] >= width or point[1] >= height:
+            return MapPointType.Unknown
+
         if self.data_available:
             value = self.minimap_data[point[1]][point[0]]
             return MapPointType(value)

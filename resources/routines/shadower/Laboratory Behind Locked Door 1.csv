@@ -17,7 +17,7 @@ $, target=mini_margin, value=44
 #
 
 @, label=Bottom mobbing
-*, x=6, y=57, interval=60, tolerance=5, detect=False, skip=False
+*, x=6, y=57, interval=1800, tolerance=5, detect=False, skip=True
     Relogin, channel=33
 *, x=9, y=57, interval=0, tolerance=6, detect=True, skip=False
 *, x=139, y=57, interval=0, tolerance=6, detect=True, skip=False

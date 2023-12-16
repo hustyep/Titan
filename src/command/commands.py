@@ -797,9 +797,9 @@ class Buff(Command):
 class ChangeChannel(Command):
 
     def __init__(self, num: int = 0, enable=True, instance=True) -> None:
-        self.num = num
-        self.enable = enable
-        self.instance = instance
+        self.num = bot_settings.validate_nonnegative_int(num)
+        self.enable = bot_settings.validate_boolean(enable)
+        self.instance = bot_settings.validate_boolean(instance)
 
     def main(self) -> None:
         hid.key_press(Keybindings.Change_Channel)
@@ -832,7 +832,7 @@ class ChangeChannel(Command):
         if ok_btn:
             hid.key_press('esc')
             time.sleep(1)
-            ChangeChannel(self.num, self.enable, self.instance).execute()
+            ChangeChannel(self.num, self.enable, self.instance).main()
             return
 
         delay = 0
@@ -840,7 +840,7 @@ class ChangeChannel(Command):
             print("changging channel")
             delay += 0.1
             if delay > 5:
-                ChangeChannel(0, self.enable, self.instance).execute()
+                ChangeChannel(0, self.enable, self.instance).main()
                 return
             time.sleep(0.1)
 
@@ -859,16 +859,18 @@ class ChangeChannel(Command):
             bot_status.enabled = True
             bot_status.change_channel = False
         else:
-            ChangeChannel(0, self.enable, self.instance).execute()
+            ChangeChannel(0, self.enable, self.instance).main()
 
 
 class AutoLogin(Command):
 
     def __init__(self, channel=33):
         super().__init__(locals())
-        self.channel = channel
+        self.channel = bot_settings.validate_nonnegative_int(channel)
 
     def main(self):
+        print("AutoLogin")
+
         chat_bot.send_message(f'auto login:{self.channel}')
 
         if self.channel not in range(1, 41):
@@ -882,10 +884,16 @@ class AutoLogin(Command):
         if matches:
             hid.key_press('esc', delay=1)
 
-        click((capture.window['left'] + 968, capture.window['top'] + 192))
+        pos = get_full_pos((968, 192))
+        print(f"positon: {pos}")
+        hid.mouse_abs_move(pos[0], pos[1])
+        time.sleep(0.5)
+        hid.mouse_left_click()
         time.sleep(2)
         channel_pos = get_channel_pos(self.channel)
-        click(channel_pos)
+        hid.mouse_abs_move(channel_pos[0], channel_pos[1])
+        time.sleep(0.2)
+        hid.mouse_left_click()
         time.sleep(1)
         hid.mouse_left_click()
 
@@ -897,6 +905,7 @@ class AutoLogin(Command):
         while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
             hid.key_press("enter")
             time.sleep(2)
+            
         while bot_status.lost_minimap:
             print("cc: lost mimimap")
             time.sleep(0.1)
@@ -907,14 +916,14 @@ class AutoLogin(Command):
             bot_status.enabled = True
             chat_bot.send_message(f'auto login:{self.channel}. success')
         else:
-            ChangeChannel(0, enable=True).execute()
+            ChangeChannel(0, enable=True).main()
 
 
 class Relogin(Command):
 
-    def __init__(self, channel=33):
+    def __init__(self, channel=10):
         super().__init__(locals())
-        self.channel = channel
+        self.channel = bot_settings.validate_nonnegative_int(channel)
 
     def main(self):
         bot_status.enabled = False
@@ -925,10 +934,13 @@ class Relogin(Command):
         time.sleep(0.5)
         hid.key_press('enter')
         time.sleep(0.2)
-        while not utils.multi_match(capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95):
-            time.sleep(0.1)
+        hid.key_press('enter')
         time.sleep(2)
-        AutoLogin(self.channel).execute()
+        while len(utils.multi_match(capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95)) == 0:
+            time.sleep(0.1)
+            print("wait regoin")
+        time.sleep(2)
+        AutoLogin(self.channel).main()
 
 
 class MapTeleport(Command):
