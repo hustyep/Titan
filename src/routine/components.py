@@ -106,8 +106,7 @@ class Point(Component):
         self.y = int(y)
         self.location = (self.x, self.y)
         self.interval = bot_settings.validate_nonnegative_int(interval)
-        self.tolerance = bot_settings.move_tolerance if int(
-            tolerance) == 0 else int(tolerance)
+        self.tolerance = int(tolerance)
         self.detect = bot_settings.validate_boolean(detect)
         self.skip = bot_settings.validate_boolean(skip)
         self.last_execute_time = 0
@@ -182,7 +181,7 @@ class Point(Component):
                                         multy_match=False,
                                         debug=False)
             if len(mobs):
-                print(len(mobs))
+                print(f"mobs count = {len(mobs)}")
             if len(mobs) > 0:
                 break
             if time.time() - start_time > 6:

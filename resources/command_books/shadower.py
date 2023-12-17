@@ -236,8 +236,8 @@ class ShadowAssault(Skill):
     key = Keybindings.SHADOW_ASSAULT
     type = SkillType.Move
     backswing = 0.3
-    max_times = 4
-    usable_times = 4
+    max_times = 5
+    usable_times = 5
     cooldown = 60
     x_range = range(15, 36)
     y_range = range(18, 42)
@@ -269,7 +269,7 @@ class ShadowAssault(Skill):
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[10:-2, 2:-16], threshold=0.98, debug=False)
+            capture.skill_frame, cls.icon[9:-2, 2:-12], threshold=0.98, debug=False)
         if matchs:
             cls.ready = True
             cls.usable_times = cls.max_times
@@ -279,6 +279,7 @@ class ShadowAssault(Skill):
             cls.ready = len(matchs) > 0
             if not cls.ready:
                 cls.usable_times = 0
+        print(f"ShadowAssault: canuse={cls.ready}")
 
     def main(self):
         if self.distance == 0:
@@ -311,7 +312,10 @@ class ShadowAssault(Skill):
                 key_up("down")
             else:
                 press(Keybindings.JUMP)
-                time.sleep(0.05 if abs(dx) < 10 else 0.1)
+                if self.direction == 'up':
+                    time.sleep(0.1 if abs(dy) >= 39 else 0.05)
+                else:
+                    time.sleep(0.2 if abs(dy) >= 39 else 0.05)
 
         key_down(self.direction)
         time.sleep(0.03)
@@ -320,7 +324,7 @@ class ShadowAssault(Skill):
         press(self.key)
         key_up(self.direction)
         sleep_in_the_air()
-        time.sleep(self.backswing if abs(dy) < 40 else 0.5)
+        time.sleep(self.backswing if abs(dy) < 40 else 0.6)
         MesoExplosion().execute()
 
         # if bot_settings.record_layout:

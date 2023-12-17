@@ -12,7 +12,7 @@ from src.chat_bot.chat_bot_entity import ChatBotEntity, ChatBotCommand
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.CRITICAL
 )
 
 def retry_on_error(func, wait=0.1, retry=0, *args, **kwargs):
@@ -43,15 +43,16 @@ class TelegramBot(ChatBotEntity):
         self.bot = telegram.Bot(apiToken)
 
     def run(self):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            self.application.run_polling(
-                read_timeout=60, write_timeout=60, pool_timeout=60, connect_timeout=60, timeout=60, close_loop=False)
-        except Exception as e:
-            print(e)
-            time.sleep(0.5)
-            self.run()
+        pass
+        # loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(loop)
+        # try:
+        #     self.application.run_polling(
+        #         read_timeout=60, write_timeout=60, pool_timeout=60, connect_timeout=60, timeout=60, close_loop=False)
+        # except Exception as e:
+        #     print(e)
+        #     time.sleep(0.5)
+        #     self.run()
 
     def send_text(self, message: str, retry=3):
         if not message:

@@ -494,12 +494,13 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
 class Walk(Command):
     """Walks in the given direction for a set amount of time."""
 
-    def __init__(self, target_x, tolerance=5, interval=0.005, max_steps=600):
+    def __init__(self, target_x, tolerance=5, interval=0.02, max_steps=500):
         super().__init__(locals())
         self.target_x = bot_settings.validate_nonnegative_int(target_x)
         self.interval = bot_settings.validate_nonnegative_float(interval)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
         self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
+        print(str(self))
 
     def main(self):
         d_x = self.target_x - bot_status.player_pos[0]
@@ -510,22 +511,25 @@ class Walk(Command):
         direction = 'left' if d_x < 0 else 'right'
         key_down(direction)
         while bot_status.enabled and abs(d_x) > self.tolerance and walk_counter < self.max_steps:
+            # print(f"dx={d_x}")
             new_direction = 'left' if d_x < 0 else 'right'
-            if abs(d_x) <= 2:
-                key_up(direction)
-                if self.tolerance <= 1:
-                    press_acc(new_direction, down_time=0.01, up_time=0.15)
-                else:
-                    press_acc(new_direction, down_time=0.01, up_time=0.04)
-            else:
+            if self.tolerance > 2 or abs(d_x) > 2:
                 if new_direction != direction:
                     key_up(direction)
-                    key_down(new_direction)
-                    direction = new_direction
+                    time.sleep(0.03)
+                key_down(new_direction)
+                direction = new_direction
                 time.sleep(self.interval)
+            else:
+                key_up(direction)
+                time.sleep(0.02)
+                press_acc(new_direction, down_time=0.02, up_time=0.02)
+                direction = new_direction
+                
             walk_counter += 1
             d_x = self.target_x - bot_status.player_pos[0]
         key_up(direction)
+        print(f"end dx={d_x}")
 
 
 class Wait(Command):
@@ -1126,11 +1130,13 @@ class RopeLift(Skill):
 
         if self.dy >= 45:
             press(Keybindings.JUMP, up_time=0.2)
+            press(self.__class__.key)
+            sleep_in_the_air(n=10)
         elif self.dy >= 32:
             press(Keybindings.JUMP, up_time=0.1)
-        press(self.__class__.key)
-        sleep_in_the_air(n=10)
-
+            press(self.__class__.key)
+            sleep_in_the_air(n=20)
+            
 ###################
 #      Potion     #
 ###################
