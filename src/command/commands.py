@@ -142,75 +142,6 @@ class Command():
         return True
 
 
-class SkillType(Enum):
-    Buff = 'buff'
-    Switch = 'switch'
-    Summon = 'summon'
-    Attack = 'attack'
-    Move = 'move'
-
-
-class Skill(Command):
-    duration:  int = 0
-    type: SkillType = SkillType.Attack
-    icon = None
-    ready = True
-    enabled = False
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.__class__.load()
-
-    @classmethod
-    def load(cls):
-        module_name = cls.__module__.split('.')[-1]
-        path1 = f'assets/skills/{module_name}/{cls.__name__}.webp'
-        path2 = f'assets/skills/{cls.__name__}.webp'
-        if os.path.exists(path1):
-            cls.icon = cv2.imread(path1, 0)
-        elif os.path.exists(path2):
-            cls.icon = cv2.imread(path2, 0)
-        cls.id = cls.__name__
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return cls.ready
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        if capture.frame is None:
-            return
-        match cls.type:
-            case SkillType.Switch:
-                matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
-                cls.ready = len(matchs) == 0
-                cls.enabled = not cls.ready
-            case SkillType.Buff:
-                cls.check_buff_enabled()
-                if cls.enabled:
-                    cls.ready = False
-                else:
-                    matchs = utils.multi_match(
-                        capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.99)
-                    cls.ready = len(matchs) > 0
-            case (_):
-                matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.9)
-                cls.ready = len(matchs) > 0
-
-    @classmethod
-    def check_buff_enabled(cls):
-        matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
-        if not matchs:
-            matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
-        cls.enabled = len(matchs) > 0
-
-
 class Move(Command):
 
     def __init__(self, x, y, tolerance, step=1, max_steps=15):
@@ -544,6 +475,27 @@ class Wait(Command):
         time.sleep(self.duration)
 
 
+class Detect(Command):
+    def __init__(self, count=1):
+        super().__init__(locals())
+        self.count = int(count)
+
+    def main(self):
+        anchor = capture.locate_player_fullscreen(accurate=True)
+        start = time.time()
+        while True:
+            mobs = detect_mobs(insets=AreaInsets(top=350, bottom=100, left=1200 if bot_status.player_pos == 'left' else -300, right=1100 if bot_status.player_pos == 'right' else -300),
+                                            anchor=anchor,
+                                            multy_match=False,
+                                            debug=False)
+            if len(mobs) >= self.count:
+                break
+            time.sleep(0.1)
+            if time.time() - start > 6:
+                break
+        
+    
+
 class FeedPet(Command):
     cooldown = 600
     backswing = 0.3
@@ -568,13 +520,18 @@ class Fall(Command):
     Performs a down-jump and then free-falls until the player exceeds a given distance
     from their starting position.
     """
-
+    def __init__(self, attack=False):
+        super().__init__(locals())
+        self.attack = bot_settings.validate_boolean(attack)
+        
     def main(self):
         evade_rope()
         key_down('down')
         time.sleep(0.03)
         press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.1)
         key_up('down')
+        if self.attack:
+            Attack().main()
         sleep_in_the_air()
 
 
@@ -734,59 +691,6 @@ class Mining(Command):
         bot_status.minal_active = False
         bot_status.minal_pos = None
         bot_status.minal_closest_pos = None
-
-
-###########################
-#      Abstract Skill     #
-###########################
-
-
-class Summon(Command):
-    """'Summon' command for the default command book."""
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return False
-
-
-class DotAoe(Command):
-    """'DotAoe' command for the default command book."""
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return False
-
-
-class Aoe(Skill):
-    """'Aoe' command for the default command book."""
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return False
-
-
-class Attack(Command):
-    """Undefined 'Attack' command for the default command book."""
-
-    def main(self):
-        print(
-            "\n[!] 'Attack' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
-
-
-class DoubleJump(Skill):
-    """Undefined 'FlashJump' command for the default command book."""
-
-    def __init__(self, target: tuple[int, int], attack_if_needed=False):
-        super().__init__(locals())
-
-        self.target = target
-        self.attack_if_needed = attack_if_needed
-
-    def main(self):
-        print(
-            "\n[!] 'FlashJump' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
 
 
 class Buff(Command):
@@ -965,6 +869,126 @@ class MapTeleport(Command):
             time.sleep(0.1)
         time.sleep(2)
         bot_status.enabled = True
+
+###########################
+#      Abstract Skill     #
+###########################
+
+class SkillType(Enum):
+    Buff = 'buff'
+    Switch = 'switch'
+    Summon = 'summon'
+    Attack = 'attack'
+    Move = 'move'
+
+
+class Skill(Command):
+    duration:  int = 0
+    type: SkillType = SkillType.Attack
+    icon = None
+    ready = True
+    enabled = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__class__.load()
+
+    @classmethod
+    def load(cls):
+        module_name = cls.__module__.split('.')[-1]
+        path1 = f'assets/skills/{module_name}/{cls.__name__}.webp'
+        path2 = f'assets/skills/{cls.__name__}.webp'
+        if os.path.exists(path1):
+            cls.icon = cv2.imread(path1, 0)
+        elif os.path.exists(path2):
+            cls.icon = cv2.imread(path2, 0)
+        cls.id = cls.__name__
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return cls.ready
+
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
+            return
+        if capture.frame is None:
+            return
+        match cls.type:
+            case SkillType.Switch:
+                matchs = utils.multi_match(
+                    capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
+                cls.ready = len(matchs) == 0
+                cls.enabled = not cls.ready
+            case SkillType.Buff:
+                cls.check_buff_enabled()
+                if cls.enabled:
+                    cls.ready = False
+                else:
+                    matchs = utils.multi_match(
+                        capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.99)
+                    cls.ready = len(matchs) > 0
+            case (_):
+                matchs = utils.multi_match(
+                    capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.9)
+                cls.ready = len(matchs) > 0
+
+    @classmethod
+    def check_buff_enabled(cls):
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
+        if not matchs:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
+        cls.enabled = len(matchs) > 0
+
+class Summon(Command):
+    """'Summon' command for the default command book."""
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return False
+
+
+class DotAoe(Command):
+    """'DotAoe' command for the default command book."""
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return False
+
+
+class Aoe(Skill):
+    """'Aoe' command for the default command book."""
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return False
+
+
+class Attack(Command):
+    """Undefined 'Attack' command for the default command book."""
+
+    def main(self):
+        print(
+            "\n[!] 'Attack' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
+
+class DoubleJump(Skill):
+    """Undefined 'FlashJump' command for the default command book."""
+
+    def __init__(self, target: tuple[int, int], attack_if_needed=False):
+        super().__init__(locals())
+
+        self.target = target
+        self.attack_if_needed = attack_if_needed
+
+    def main(self):
+        print(
+            "\n[!] 'FlashJump' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
 
 #########################
 #      Common Skill     #
