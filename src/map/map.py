@@ -89,10 +89,16 @@ class Map:
             width = capture.minimap_actual.shape[1] + 1
             height = capture.minimap_actual.shape[0] + 1
             if self.minimap_data is not None:
-                m_height, m_widht = self.minimap_data.shape
-                if m_widht != width or m_height != height:
+                try:
+                    m_height, m_widht = self.minimap_data.shape
+                except Exception as e:
+                    print(e)
                     self.minimap_data = np.zeros((height, width), np.uint8)
                     print(' ~ Created new minimap data \n')
+                else:
+                    if m_widht != width or m_height != height:
+                        self.minimap_data = np.zeros((height, width), np.uint8)
+                        print(' ~ Created new minimap data \n')
             else:
                 self.minimap_data = np.zeros((height, width), np.uint8)
                 print(' ~ Created new minimap data \n')

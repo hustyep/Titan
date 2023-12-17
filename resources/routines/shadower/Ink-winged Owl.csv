@@ -1,0 +1,2 @@
+$, target=move_tolerance, value=10
+$, target=mini_margin, value=1

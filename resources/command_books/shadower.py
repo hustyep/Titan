@@ -157,7 +157,7 @@ class JumpUp(Command):
 
     def main(self):
         # TODO too long
-        time.sleep(0.5)
+        time.sleep(0.3)
         evade_rope(self.target)
 
         dy = bot_status.player_pos[1] - self.target[1]
@@ -166,7 +166,7 @@ class JumpUp(Command):
         time.sleep(0.06 if dy >= 20 else 0.1)
         press(self.key, 1)
         key_up('up')
-        sleep_in_the_air()
+        sleep_in_the_air(n=10)
 
 
 class DoubleJump(Skill):
@@ -224,7 +224,7 @@ class DoubleJump(Skill):
 
         key_up(direction)
         sleep_in_the_air(n=1, start_y=start_y)
-        time.sleep(0.01)
+        # time.sleep(0.01)
 
 
 class ShadowAssault(Skill):
@@ -235,7 +235,7 @@ class ShadowAssault(Skill):
     id = 'ShadowAssault'
     key = Keybindings.SHADOW_ASSAULT
     type = SkillType.Move
-    backswing = 0.3
+    backswing = 0.5
     max_times = 5
     usable_times = 5
     cooldown = 60

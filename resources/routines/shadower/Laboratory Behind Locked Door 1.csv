@@ -8,7 +8,7 @@ $, target=mini_margin, value=44
     Wait, duration=0.05
     ErdaShower, direction=right
 *, x=85, y=16, interval=0, tolerance=2, detect=False, skip=False
-    Wait, duration=0.2
+    Wait, duration=0.1
     DarkFlare, direction=left
     SuddenRaid
 *, x=132, y=30, interval=0, tolerance=5, detect=False, skip=False
@@ -17,7 +17,7 @@ $, target=mini_margin, value=44
 #
 
 @, label=Bottom mobbing
-*, x=6, y=57, interval=12000, tolerance=0, detect=False, skip=True
+*, x=6, y=57, interval=12000, tolerance=10, detect=False, skip=True
     Relogin, channel=37
-*, x=9, y=57, interval=0, tolerance=0, detect=True, skip=False
-*, x=139, y=57, interval=0, tolerance=0, detect=True, skip=False
+*, x=9, y=57, interval=0, tolerance=5, detect=True, skip=False
+*, x=139, y=57, interval=0, tolerance=5, detect=True, skip=False
