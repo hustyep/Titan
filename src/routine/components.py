@@ -106,8 +106,7 @@ class Point(Component):
         self.y = int(y)
         self.location = (self.x, self.y)
         self.interval = bot_settings.validate_nonnegative_int(interval)
-        self.tolerance = bot_settings.move_tolerance if int(
-            tolerance) == 0 else int(tolerance)
+        self.tolerance = int(tolerance)
         self.detect = bot_settings.validate_boolean(detect)
         self.skip = bot_settings.validate_boolean(skip)
         self.last_execute_time = 0
@@ -145,13 +144,15 @@ class Point(Component):
             key_down(direction)
             time.sleep(0.05)
             key_up(direction)
+        else:
+            direction = bot_status.player_direction
         if self.detect:
             self.detect_mob(direction)
 
     def detect_mob(self, direction):
         start_time = time.time()
         anchor = capture.locate_player_fullscreen(accurate=True)
-        matchs = commands.detect_mobs(insets=commands.AreaInsets(top=150, bottom=100, left=300, right=300),
+        matchs = commands.detect_mobs(insets=commands.AreaInsets(top=250, bottom=100, left=300, right=300),
                                       anchor=anchor)
         if matchs:
             print("use aoe")
@@ -175,12 +176,12 @@ class Point(Component):
             # if matchs:
                 # SonicBlow().execute()
 
-            mobs = commands.detect_mobs(insets=commands.AreaInsets(top=150, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
+            mobs = commands.detect_mobs(insets=commands.AreaInsets(top=350, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
                                         anchor=anchor,
                                         multy_match=False,
                                         debug=False)
             if len(mobs):
-                print(len(mobs))
+                print(f"mobs count = {len(mobs)}")
             if len(mobs) > 0:
                 break
             if time.time() - start_time > 6:

@@ -43,6 +43,9 @@ def validate_boolean(value):
     :return:        VALUE as a boolean
     """
 
+    if isinstance(value, bool):
+        return value
+
     value = value.lower()
     if value in {'true', 'false'}:
         return True if value == 'true' else False

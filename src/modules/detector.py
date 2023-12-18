@@ -23,7 +23,7 @@ from src.common.hid import hid
 from src.modules.capture import capture
 from src.map.map import map as game_map
 from src.common.gui_setting import gui_setting
-
+from src.common.action_simulator import *
 
 class Detector(Subject):
 
@@ -43,7 +43,7 @@ class Detector(Subject):
         self.lost_minimap_time = 0
 
         self.black_screen_threshold = 0.9
-        self.white_room_threshold = 0.6
+        self.white_room_threshold = 0.35
 
         self.ready = False
         self.fetal_thread = threading.Thread(target=self._main_fetal)
@@ -85,7 +85,21 @@ class Detector(Subject):
                 # self.check_others()
                 self.check_alert()
                 self.check_forground()
+                self.check_init()
+            else:
+                self.clear()
             time.sleep(0.1)
+
+    def clear(self):
+        self.player_pos_updated_time = 0
+        self.player_pos = (0, 0)
+
+        self.others_count = 0
+        self.others_comming_time = 0
+        self.others_detect_count = 0
+        self.others_no_detect_count = 0
+
+        self.lost_minimap_time = 0
 
     def _main_event(self):
         while True:
@@ -113,14 +127,16 @@ class Detector(Subject):
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # Check for unexpected black screen
-        if bot_status.enabled:
-            if np.count_nonzero(gray < 15) / height / width > self.black_screen_threshold:
-                self.on_next((BotFatal.BLACK_SCREEN,))
+        # if bot_status.enabled:
+        #     if np.count_nonzero(gray < 15) / height / width > self.black_screen_threshold:
+        #         self.on_next((BotFatal.BLACK_SCREEN,))
 
         # Check for white room
         gray_crop = gray[100:-100, 50:-50]
         height, width = gray.shape
-        if bot_status.started_time and np.count_nonzero(gray_crop == 255) / height / width >= self.white_room_threshold:
+        tmp = np.count_nonzero(gray_crop == 255) / height / width
+        # print(tmp)
+        if tmp >= self.white_room_threshold:
             self.on_next((BotFatal.WHITE_ROOM,))
 
     def check_alert(self):
@@ -150,6 +166,22 @@ class Detector(Subject):
         if confirm_btn:
             hid.key_press('esc')
             time.sleep(0.1)
+
+    def check_init(self):
+        if capture.frame is None:
+            return
+        frame = capture.frame
+        guide = utils.multi_match(frame[0:150, 700:900], GUIDE_PLUSE_TEMPLATE, threshold=0.9)
+        if guide:
+            hid.key_press('esc')
+            time.sleep(1)
+            # ActionSimulator.mouse_left_click(position=get_full_pos(853, 52), delay=0.1)
+        
+        maple_reward = utils.multi_match(frame[-200:, -50:], MAPLE_REWARD_TEMPLATE, threshold=0.9)
+        if maple_reward:
+            ActionSimulator.mouse_left_click(get_full_pos((1351, 586)), delay=1)
+
+        
 
     def check_forground(self):
         if capture.frame is None:
@@ -195,11 +227,31 @@ class Detector(Subject):
                 if self.lost_minimap_time == 0:
                     self.lost_minimap_time = time.time()
                 if time.time() - self.lost_minimap_time > self.lost_time_threshold:
-                    self.on_next(
-                        (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
+                    if not self.try_auto_login():
+                        self.on_next(
+                            (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
         else:
             self.lost_minimap_time = 0
             bot_status.lost_minimap = False
+
+    def try_auto_login(self):
+        bot_status.enabled = False
+        
+        for _ in range(0, 10):
+            capture.find_window()
+            hwnd = capture.hwnd
+            if (hwnd == 0):
+                self.on_next((BotError.LOST_WINDOW, ))
+                return True
+        
+            region_matchs = utils.multi_match(
+                capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
+            if region_matchs:
+                ActionSimulator.auto_login(gui_setting.auto.auto_login_channel)
+                return True
+            time.sleep(0.5)
+        else:
+            return False
 
     def check_no_movement(self):
         if bot_status.enabled and operator.eq(bot_status.player_pos, self.player_pos):
@@ -440,7 +492,7 @@ class Detector(Subject):
             if i not in ['-']:
                 name = name.replace(i, '')
         result = name
-        best = 0       
+        best = 0
         for value in Map_Names:
             ratio = utils.string_similar(name, value)
             if ratio == 1:

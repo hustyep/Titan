@@ -7,7 +7,7 @@ from src.common import utils, bot_status
 from src.common.hid import hid
 from src.common.image_template import *
 from src.modules.capture import capture
-from src.command.commands import Keybindings
+from src.command.commands import Keybindings, detect_mobs
 from src.modules.chat_bot import chat_bot
 import threading
 
@@ -127,16 +127,16 @@ class ActionSimulator:
         ActionSimulator.change_channel(num=num, enable=False)
 
     @staticmethod
-    def change_channel(num: int = 0, enable=True):
+    def change_channel(num: int = 0, enable=True, instance = True):
         bot_status.enabled = False
         bot_status.change_channel = True
         bot_status.rune_pos = None
         bot_status.rune_closest_pos = None
-        threading.Timer(5, ActionSimulator._change_channel, (num, enable, )).start()
+        threading.Timer(5, ActionSimulator._change_channel, (num, enable, instance)).start()
         chat_bot.send_message('changing channel...')
 
     @staticmethod
-    def _change_channel(num: int = 0, enable=True) -> None:
+    def _change_channel(num: int = 0, enable=True, instance = True) -> None:
 
         ActionSimulator.click_key(Keybindings.Change_Channel)
 
@@ -186,16 +186,101 @@ class ActionSimulator:
             return
 
         chat_bot.send_message('channel changed', capture.frame)
-        bot_status.enabled = True
         time.sleep(3)
-        others = False
+        map_available = chenck_map_available(instance=instance)
+        
+        if map_available:
+            bot_status.enabled = True
+            bot_status.change_channel = False
+        else:
+            ActionSimulator.change_channel()
+            
+    @staticmethod
+    def auto_login(channel=33):
+        chat_bot.send_message(f'auto login:{channel}')
+
+        if channel not in range(1, 41):
+            chat_bot.send_message(f'auto login failed: wrong channel:{channel}')
+            return
+        bot_status.enabled = False
+        
+        matches = utils.multi_match(capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
+        if matches:
+            ActionSimulator.click_key('esc', delay=1)
+        ActionSimulator.mouse_left_click((capture.window['left'] + 968, capture.window['top'] + 192), delay=2)
+        channel_pos = get_channel_pos(channel)
+        ActionSimulator.mouse_left_click(channel_pos, delay=1)
+        hid.mouse_left_click()
+        
+        while len(utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98)) == 0:
+            time.sleep(0.1)
+            
+        time.sleep(2)
+
+        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
+            ActionSimulator.click_key('enter', delay=2)
+
+        while bot_status.lost_minimap:
+            print("cc: lost mimimap")
+            time.sleep(0.1)
+
+        time.sleep(1)
+        map_available = chenck_map_available()
+        if map_available:
+            bot_status.enabled = True
+            chat_bot.send_message(f'auto login:{channel}. success')
+        else:
+            ActionSimulator.change_channel()
+        
+    @staticmethod
+    def run_maplestory():
+        capture.find_window()
+        hwnd = capture.hwnd
+        if hwnd != 0:
+            return
+        matches = utils.multi_match(capture.camera.get_latest_frame(), BUTTON_ERROR_OK_TEMPLATE, 0.9)
+        if matches:
+            ActionSimulator.mouse_left_click(matches[0], 2)
+        else:
+            return
+            
+        play_matches = utils.multi_match(capture.camera.get_latest_frame(), BUTTON_ERROR_OK_TEMPLATE, 0.9)
+        if play_matches:
+            ActionSimulator.mouse_left_click(play_matches, 2)
+            
+
+        
+
+    
+
+def get_full_pos(pos):
+    return pos[0] + capture.window['left'], pos[1] + capture.window['top']
+
+def get_channel_pos(channel):
+    x = 334 + capture.window['left']
+    y = 290 + capture.window['top']
+    width = 360
+    height = 244
+    column = 5
+    row = 8 
+    cell_width = width // column
+    cell_height = height // row
+    
+    channel_row = (channel - 1) // column
+    channel_column = (channel - 1) % column
+    return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
+
+def chenck_map_available(instance=True):
+    if instance:
+        start_time = time.time()
+        while time.time() - start_time <= 5:
+            if detect_mobs():
+                return True
+            time.sleep(0.1)
+        return False
+    else:
         for i in range(5):
             if bot_status.stage_fright:
-                others = True
-                break
+                return False
             time.sleep(1)
-
-        if others:
-            ActionSimulator.change_channel()
-        else:
-            bot_status.change_channel = False
+        return True

@@ -184,6 +184,9 @@ class Listener(Configurable, Subject):
                     channel_num = int(args[0])
                 ActionSimulator.change_channel(channel_num, bot_status.enabled)
                 return "changing channel...", None
-
+            case ChatBotCommand.TEST:
+                ActionSimulator.auto_login(args[0])
+                filepath = utils.save_screenshot(capture.frame)
+                return "login", filepath
 
 listener = Listener()

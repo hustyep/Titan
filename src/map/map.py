@@ -68,10 +68,11 @@ class Map:
 
         minimap_sample_path = os.path.join(
             RESOURCES_DIR, 'maps', 'sample', f'{self.name}.png')
-        if os.path.exists(minimap_sample_path):
-            self.minimap_sample = cv2.imread(minimap_sample_path)
-        elif capture.minimap_display is not None:
+        if capture.minimap_display is not None:
+            self.minimap_sample = capture.minimap_display
             cv2.imwrite(minimap_sample_path, capture.minimap_display)
+        elif os.path.exists(minimap_sample_path):
+            self.minimap_sample = cv2.imread(minimap_sample_path)
 
     def save_minimap_data(self):
         try:
@@ -88,10 +89,16 @@ class Map:
             width = capture.minimap_actual.shape[1] + 1
             height = capture.minimap_actual.shape[0] + 1
             if self.minimap_data is not None:
-                m_height, m_widht = self.minimap_data.shape
-                if m_widht != width or m_height != height:
+                try:
+                    m_height, m_widht = self.minimap_data.shape
+                except Exception as e:
+                    print(e)
                     self.minimap_data = np.zeros((height, width), np.uint8)
                     print(' ~ Created new minimap data \n')
+                else:
+                    if m_widht != width or m_height != height:
+                        self.minimap_data = np.zeros((height, width), np.uint8)
+                        print(' ~ Created new minimap data \n')
             else:
                 self.minimap_data = np.zeros((height, width), np.uint8)
                 print(' ~ Created new minimap data \n')
@@ -176,6 +183,10 @@ class Map:
             self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
 
     def point_type(self, point: tuple[int, int]):
+        height, width = self.minimap_data.shape
+        if point[0] >= width or point[1] >= height:
+            return MapPointType.Unknown
+
         if self.data_available:
             value = self.minimap_data[point[1]][point[0]]
             return MapPointType(value)

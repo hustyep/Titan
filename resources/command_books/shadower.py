@@ -28,12 +28,12 @@ class Keybindings(DefaultKeybindings):
     # Potion
     EXP_POTION = '0'
     WEALTH_POTION = "-"
-    GOLD_POTION = '='
+    GOLD_POTION = ''
     GUILD_POTION = "9"
-    CANDIED_APPLE = '5'
-    LEGION_WEALTHY = ''
+    CANDIED_APPLE = '8'
+    LEGION_WEALTHY = '7'
     EXP_COUPON = '6'
-
+    
     # Skills
     CRUEL_STAB = 'f'
     MESO_EXPLOSION = 'd'
@@ -157,7 +157,7 @@ class JumpUp(Command):
 
     def main(self):
         # TODO too long
-        time.sleep(0.5)
+        time.sleep(0.3)
         evade_rope(self.target)
 
         dy = bot_status.player_pos[1] - self.target[1]
@@ -166,7 +166,7 @@ class JumpUp(Command):
         time.sleep(0.06 if dy >= 20 else 0.1)
         press(self.key, 1)
         key_up('up')
-        sleep_in_the_air()
+        sleep_in_the_air(n=10)
 
 
 class DoubleJump(Skill):
@@ -223,7 +223,8 @@ class DoubleJump(Skill):
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        sleep_in_the_air(n=2, start_y=start_y)
+        sleep_in_the_air(n=1, start_y=start_y)
+        # time.sleep(0.01)
 
 
 class ShadowAssault(Skill):
@@ -234,11 +235,11 @@ class ShadowAssault(Skill):
     id = 'ShadowAssault'
     key = Keybindings.SHADOW_ASSAULT
     type = SkillType.Move
-    backswing = 0.3
-    max_times = 4
-    usable_times = 4
+    backswing = 0.5
+    max_times = 5
+    usable_times = 5
     cooldown = 60
-    x_range = range(18, 36)
+    x_range = range(15, 36)
     y_range = range(18, 42)
 
     def __init__(self, direction='up', jump='True', distance=80, target=None):
@@ -251,10 +252,10 @@ class ShadowAssault(Skill):
         else:
             dx = target[0] - bot_status.player_pos[0]
             dy = target[1] - bot_status.player_pos[1]
-            if dy < 0 and abs(dx) >= 16:
+            if dy < 0 and abs(dx) >= 15:
                 self.direction = 'upright' if dx > 0 else 'upleft'
                 self.jump = True
-            elif dy > 0 and abs(dx) >= 16:
+            elif dy > 0 and abs(dx) >= 15:
                 self.direction = 'downright' if dx > 0 else 'downleft'
                 self.jump = True
             elif dy == 0:
@@ -268,7 +269,7 @@ class ShadowAssault(Skill):
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[10:-2, 2:-16], threshold=0.98, debug=False)
+            capture.skill_frame, cls.icon[9:-2, 2:-12], threshold=0.98, debug=False)
         if matchs:
             cls.ready = True
             cls.usable_times = cls.max_times
@@ -278,6 +279,7 @@ class ShadowAssault(Skill):
             cls.ready = len(matchs) > 0
             if not cls.ready:
                 cls.usable_times = 0
+        print(f"ShadowAssault: canuse={cls.ready}")
 
     def main(self):
         if self.distance == 0:
@@ -294,13 +296,14 @@ class ShadowAssault(Skill):
         elif self.direction.endswith("right"):
             if bot_status.player_direction != 'right':
                 press("right", down_time=0.1)
-        elif self.direction == 'up' or self.direction == 'down':
+        elif self.direction != 'left' and self.direction != 'right':
             time.sleep(0.2)
             evade_rope(self.target)
-            
+
         if self.direction == 'up' and not map.on_the_platform((bot_status.player_pos[0], self.target[1])):
             Walk(target_x=self.target[0], tolerance=0).execute()
-        
+
+        dx = self.target[0] - bot_status.player_pos[0]
         dy = self.target[1] - bot_status.player_pos[1]
         if self.jump:
             if self.direction.startswith('down'):
@@ -309,7 +312,10 @@ class ShadowAssault(Skill):
                 key_up("down")
             else:
                 press(Keybindings.JUMP)
-                time.sleep(0.1 if abs(dy) > 32 else 0.4)
+                if self.direction == 'up':
+                    time.sleep(0.1 if abs(dy) >= 39 else 0.05)
+                else:
+                    time.sleep(0.2 if abs(dy) >= 39 else 0.05)
 
         key_down(self.direction)
         time.sleep(0.03)
@@ -318,9 +324,9 @@ class ShadowAssault(Skill):
         press(self.key)
         key_up(self.direction)
         sleep_in_the_air()
-        time.sleep(self.backswing if abs(dy) < 40 else 0.5)
+        time.sleep(self.backswing if abs(dy) < 40 else 0.6)
         MesoExplosion().execute()
-        
+
         # if bot_settings.record_layout:
         #     layout.add(*bot_status.player_pos)
 
@@ -337,16 +343,18 @@ class Attack(Command):
     def main(self):
         CruelStab().execute()
 
+
 class Aoe(Skill):
     key = Keybindings.TRICKBLADE
     type = SkillType.Attack
-    
+
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         return TrickBlade.ready
-    
+
     def main(self):
         return TrickBlade().main()
+
 
 class CruelStab(Skill):
     """Uses 'CruelStab' once."""
@@ -455,22 +463,14 @@ class TrickBlade(Skill):
     backswing = 0.7
     type = SkillType.Attack
 
-    # def __init__(self, direction='right'):
-    #     super().__init__(locals())
-    #     if direction is None:
-    #         self.direction = direction
-    #     else:
-    #         self.direction = bot_settings.validate_horizontal_arrows(direction)
+    def __init__(self, direction=None):
+        super().__init__(locals())
+        self.direction = direction
 
-    # @classmethod
-    # def canUse(cls, next_t: float = 0) -> bool:
-    #     usable = super().canUse()
-    #     if usable:
-    #         mobs = detect_mobs(insets=AreaInsets(
-    #             top=200, bottom=150, left=400, right=400))
-    #         return len(mobs) > 0
-    #     else:
-    #         return False
+    def main(self):
+        if self.direction is not None:
+            press_acc(self.direction, down_time=0.03, up_time=0.03)
+        super().main()
 
 
 class SlashShadowFormation(Skill):
@@ -502,6 +502,13 @@ class PickPocket(Skill):
     ready = False
 
 
+class Steal(Skill):
+    key = 'f3'
+    type = SkillType.Switch
+    cooldown = 1
+    backswing = 2
+    ready = False
+
 ###################
 #      Buffs      #
 ###################
@@ -519,6 +526,7 @@ class Buff(Command):
             ForTheGuild,
             HardHitter,
             ShadowWalker,
+            Steal,
             PickPocket,
         ]
 

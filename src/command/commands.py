@@ -9,6 +9,7 @@ from src.rune import rune
 from src.modules.capture import capture
 from src.common.image_template import *
 from src.common.constants import *
+from src.modules.chat_bot import chat_bot
 
 
 class DefaultKeybindings:
@@ -24,21 +25,21 @@ class DefaultKeybindings:
     WEALTH_POTION = "-"
     GOLD_POTION = ''
     GUILD_POTION = "9"
-    CANDIED_APPLE = '5'
-    LEGION_WEALTHY = '='
+    CANDIED_APPLE = '8'
+    LEGION_WEALTHY = '7'
     EXP_COUPON = '6'
 
     # Common Skill
-    FOR_THE_GUILD = '7'
-    HARD_HITTER = '8'
+    FOR_THE_GUILD = '4'
+    HARD_HITTER = '5'
     ROPE_LIFT = 'b'
     ERDA_SHOWER = '`'
     MAPLE_WARRIOR = '3'
     ARACHNID = 'j'
-    MEMORIES = '4'
     GODDESS_BLESSING = '1'
     LAST_RESORT = '2'
-    
+
+
 class Keybindings(DefaultKeybindings):
     """ 'Keybindings' must be implemented in command book."""
 
@@ -80,7 +81,14 @@ class Command():
             self.kwargs.pop('__class__')
             self.kwargs.pop('self')
         self.id = self.__class__.__name__
+        
+    def update(self, *args, **kwargs):
+        """Updates this Component's constructor arguments with new arguments."""
 
+        # Validate arguments before actually updating values
+        self.__class__(*args, **kwargs)
+        self.__init__(*args, **kwargs)
+        
     def __str__(self):
         variables = self.__dict__
         result = '    ' + self.id
@@ -132,75 +140,6 @@ class Command():
         self.__class__.castedTime = time.time()
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
         return True
-
-
-class SkillType(Enum):
-    Buff = 'buff'
-    Switch = 'switch'
-    Summon = 'summon'
-    Attack = 'attack'
-    Move = 'move'
-
-
-class Skill(Command):
-    duration:  int = 0
-    type: SkillType = SkillType.Attack
-    icon = None
-    ready = True
-    enabled = False
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.__class__.load()
-
-    @classmethod
-    def load(cls):
-        module_name = cls.__module__.split('.')[-1]
-        path1 = f'assets/skills/{module_name}/{cls.__name__}.webp'
-        path2 = f'assets/skills/{cls.__name__}.webp'
-        if os.path.exists(path1):
-            cls.icon = cv2.imread(path1, 0)
-        elif os.path.exists(path2):
-            cls.icon = cv2.imread(path2, 0)
-        cls.id = cls.__name__
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return cls.ready
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        if capture.frame is None:
-            return
-        match cls.type:
-            case SkillType.Switch:
-                matchs = utils.multi_match(
-                    capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
-                cls.ready = len(matchs) == 0
-                cls.enabled = not cls.ready
-            case SkillType.Buff:
-                cls.check_buff_enabled()
-                if cls.enabled:
-                    cls.ready = False
-                else:
-                    matchs = utils.multi_match(
-                        capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.99)
-                    cls.ready = len(matchs) > 0
-            case (_):
-                matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.9)
-                cls.ready = len(matchs) > 0
-
-    @classmethod
-    def check_buff_enabled(cls):
-        matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
-        if not matchs:
-            matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
-        cls.enabled = len(matchs) > 0
 
 
 class Move(Command):
@@ -482,103 +421,17 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
 #      Common Command       #
 #############################
 
-class MapleWorldGoddessBlessing(Skill):
-    key = Keybindings.GODDESS_BLESSING
-    cooldown = 180
-    precast = 0.3
-    backswing = 0.85
-    type = SkillType.Buff
-    
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        if not MapleWarrior.enabled:
-            return False
-
-        return super().canUse(next_t)
-    
-    @classmethod
-    def load(cls):
-        path = f'assets/skills/{cls.__name__}.png'
-        cls.icon = cv2.imread(path, 0)
-        cls.id = cls.__name__
-        
-    @classmethod
-    def check(cls):
-        if capture.frame is None:
-            return
-        cls.check_buff_enabled()
-        if cls.enabled:
-            cls.ready = False
-        else:
-            matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[8:,], threshold=0.99)
-            cls.ready = len(matchs) > 0
-
-    @classmethod
-    def check_buff_enabled(cls):
-        matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
-        if not matchs:
-            matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
-        cls.enabled = len(matchs) > 0
-
-class MapleWarrior(Skill):
-    key = Keybindings.MAPLE_WARRIOR
-    cooldown = 900
-    precast = 0.3
-    backswing = 0.8
-    type = SkillType.Buff
-
-class LastResort(Skill):
-    key = Keybindings.LAST_RESORT
-    cooldown = 75
-    precast = 0.3
-    backswing = 0.8
-    type = SkillType.Buff
-
-class ErdaShower(Skill):
-    key = Keybindings.ERDA_SHOWER
-    type = SkillType.Summon
-    cooldown = 58
-    backswing = 0.7
-    duration = 60
-
-    def __init__(self, direction=None):
-        super().__init__(locals())
-        if direction is None:
-            self.direction = direction
-        else:
-            self.direction = bot_settings.validate_horizontal_arrows(direction)
-
-    def main(self):
-        if not self.canUse():
-            return
-        if self.direction:
-            press_acc(self.direction, down_time=0.03, up_time=0.03)
-        key_down('down')
-        press(Keybindings.ERDA_SHOWER, 1)
-        key_up('down')
-        self.__class__.castedTime = time.time()
-        time.sleep(self.__class__.backswing)
-
-
-class Arachnid(Skill):
-    key = Keybindings.ARACHNID
-    type = SkillType.Attack
-    cooldown = 250
-    backswing = 0.9
-
 
 class Walk(Command):
     """Walks in the given direction for a set amount of time."""
 
-    def __init__(self, target_x, tolerance=5, interval=0.005, max_steps=600):
+    def __init__(self, target_x, tolerance=5, interval=0.02, max_steps=500):
         super().__init__(locals())
         self.target_x = bot_settings.validate_nonnegative_int(target_x)
         self.interval = bot_settings.validate_nonnegative_float(interval)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
         self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
+        print(str(self))
 
     def main(self):
         d_x = self.target_x - bot_status.player_pos[0]
@@ -589,22 +442,25 @@ class Walk(Command):
         direction = 'left' if d_x < 0 else 'right'
         key_down(direction)
         while bot_status.enabled and abs(d_x) > self.tolerance and walk_counter < self.max_steps:
+            # print(f"dx={d_x}")
             new_direction = 'left' if d_x < 0 else 'right'
-            if abs(d_x) <= 2:
-                key_up(direction)
-                if self.tolerance <= 1:
-                    press_acc(new_direction, down_time=0.01, up_time=0.15)
-                else:
-                    press_acc(new_direction, down_time=0.01, up_time=0.04)
-            else:
+            if self.tolerance > 2 or abs(d_x) > 2:
                 if new_direction != direction:
                     key_up(direction)
-                    key_down(new_direction)
-                    direction = new_direction
+                    time.sleep(0.03)
+                key_down(new_direction)
+                direction = new_direction
                 time.sleep(self.interval)
+            else:
+                key_up(direction)
+                time.sleep(0.02)
+                press_acc(new_direction, down_time=0.02, up_time=0.02)
+                direction = new_direction
+                
             walk_counter += 1
             d_x = self.target_x - bot_status.player_pos[0]
         key_up(direction)
+        print(f"end dx={d_x}")
 
 
 class Wait(Command):
@@ -618,6 +474,27 @@ class Wait(Command):
         releaseAll()
         time.sleep(self.duration)
 
+
+class Detect(Command):
+    def __init__(self, count=1):
+        super().__init__(locals())
+        self.count = int(count)
+
+    def main(self):
+        anchor = capture.locate_player_fullscreen(accurate=True)
+        start = time.time()
+        while True:
+            mobs = detect_mobs(insets=AreaInsets(top=350, bottom=100, left=1200 if bot_status.player_pos == 'left' else -300, right=1100 if bot_status.player_pos == 'right' else -300),
+                                            anchor=anchor,
+                                            multy_match=False,
+                                            debug=False)
+            if len(mobs) >= self.count:
+                break
+            time.sleep(0.1)
+            if time.time() - start > 6:
+                break
+        
+    
 
 class FeedPet(Command):
     cooldown = 600
@@ -643,13 +520,18 @@ class Fall(Command):
     Performs a down-jump and then free-falls until the player exceeds a given distance
     from their starting position.
     """
-
+    def __init__(self, attack=False):
+        super().__init__(locals())
+        self.attack = bot_settings.validate_boolean(attack)
+        
     def main(self):
         evade_rope()
         key_down('down')
         time.sleep(0.03)
         press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.1)
         key_up('down')
+        if self.attack:
+            Attack().main()
         sleep_in_the_air()
 
 
@@ -811,10 +693,254 @@ class Mining(Command):
         bot_status.minal_closest_pos = None
 
 
+class Buff(Command):
+    """Undefined 'buff' command for the default command book."""
+
+    def main(self):
+        print(
+            "\n[!] 'Buff' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
+
+class ChangeChannel(Command):
+
+    def __init__(self, num: int = 0, enable=True, instance=True) -> None:
+        self.num = bot_settings.validate_nonnegative_int(num)
+        self.enable = bot_settings.validate_boolean(enable)
+        self.instance = bot_settings.validate_boolean(instance)
+
+    def main(self) -> None:
+        hid.key_press(Keybindings.Change_Channel)
+
+        if self.num > 0:
+            item_width = 50
+            item_height = 40
+            channel_1 = (0, 0)
+
+            row = (self.num - 1) // 10
+            col = (self.num - 1) % 10
+
+            x = channel_1[0] + col * item_width
+            y = channel_1[1] + row * item_height
+            hid.mouse_abs_move(x, y)
+            hid.mouse_left_click()
+        else:
+            hid.key_press('down')
+            time.sleep(0.1)
+            hid.key_press('right')
+            time.sleep(0.1)
+            hid.key_press('enter')
+        time.sleep(1)
+
+        frame = capture.frame
+        x = (frame.shape[1] - 260) // 2
+        y = (frame.shape[0] - 220) // 2
+        ok_btn = utils.multi_match(
+            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+        if ok_btn:
+            hid.key_press('esc')
+            time.sleep(1)
+            ChangeChannel(self.num, self.enable, self.instance).main()
+            return
+
+        delay = 0
+        while not bot_status.lost_minimap:
+            print("changging channel")
+            delay += 0.1
+            if delay > 5:
+                ChangeChannel(0, self.enable, self.instance).main()
+                return
+            time.sleep(0.1)
+
+        while bot_status.lost_minimap:
+            print("cc: lost mimimap")
+            time.sleep(0.1)
+
+        if not self.enable:
+            return
+
+        chat_bot.send_message('channel changed', capture.frame)
+        time.sleep(3)
+        map_available = chenck_map_available(instance=self.instance)
+
+        if map_available:
+            bot_status.enabled = True
+            bot_status.change_channel = False
+        else:
+            ChangeChannel(0, self.enable, self.instance).main()
+
+
+class AutoLogin(Command):
+
+    def __init__(self, channel=33):
+        super().__init__(locals())
+        self.channel = bot_settings.validate_nonnegative_int(channel)
+
+    def main(self):
+        print("AutoLogin")
+
+        chat_bot.send_message(f'auto login:{self.channel}')
+
+        if self.channel not in range(1, 41):
+            chat_bot.send_message(
+                f'auto login failed: wrong channel:{self.channel}')
+            return
+        bot_status.enabled = False
+
+        matches = utils.multi_match(
+            capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
+        if matches:
+            hid.key_press('esc', delay=1)
+
+        pos = get_full_pos((968, 192))
+        print(f"positon: {pos}")
+        hid.mouse_abs_move(pos[0], pos[1])
+        time.sleep(0.5)
+        hid.mouse_left_click()
+        time.sleep(2)
+        channel_pos = get_channel_pos(self.channel)
+        hid.mouse_abs_move(channel_pos[0], channel_pos[1])
+        time.sleep(0.2)
+        hid.mouse_left_click()
+        time.sleep(1)
+        hid.mouse_left_click()
+
+        while len(utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98)) == 0:
+            time.sleep(0.1)
+
+        time.sleep(2)
+
+        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
+            hid.key_press("enter")
+            time.sleep(2)
+            
+        while bot_status.lost_minimap:
+            print("cc: lost mimimap")
+            time.sleep(0.1)
+
+        time.sleep(1)
+        map_available = chenck_map_available()
+        if map_available:
+            bot_status.enabled = True
+            chat_bot.send_message(f'auto login:{self.channel}. success')
+        else:
+            ChangeChannel(0, enable=True).main()
+
+
+class Relogin(Command):
+
+    def __init__(self, channel=10):
+        super().__init__(locals())
+        self.channel = bot_settings.validate_nonnegative_int(channel)
+
+    def main(self):
+        bot_status.enabled = False
+        
+        hid.key_press('esc')
+        time.sleep(0.5)
+        hid.key_press('up')
+        time.sleep(0.5)
+        hid.key_press('enter')
+        time.sleep(0.2)
+        hid.key_press('enter')
+        time.sleep(2)
+        while len(utils.multi_match(capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95)) == 0:
+            time.sleep(0.1)
+            print("wait regoin")
+        time.sleep(2)
+        AutoLogin(self.channel).main()
+
+
+class MapTeleport(Command):
+    def main(self):
+        bot_status.enabled = False
+        hid.key_press('up')
+        time.sleep(2)
+        while (not bot_status.lost_minimap):
+            time.sleep(0.1)
+        while (bot_status.lost_minimap):
+            time.sleep(0.1)
+        time.sleep(2)
+        hid.key_press('up')
+        time.sleep(2)
+        while (not bot_status.lost_minimap):
+            time.sleep(0.1)
+        while (bot_status.lost_minimap):
+            time.sleep(0.1)
+        time.sleep(2)
+        bot_status.enabled = True
+
 ###########################
 #      Abstract Skill     #
 ###########################
 
+class SkillType(Enum):
+    Buff = 'buff'
+    Switch = 'switch'
+    Summon = 'summon'
+    Attack = 'attack'
+    Move = 'move'
+
+
+class Skill(Command):
+    duration:  int = 0
+    type: SkillType = SkillType.Attack
+    icon = None
+    ready = True
+    enabled = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__class__.load()
+
+    @classmethod
+    def load(cls):
+        module_name = cls.__module__.split('.')[-1]
+        path1 = f'assets/skills/{module_name}/{cls.__name__}.webp'
+        path2 = f'assets/skills/{cls.__name__}.webp'
+        if os.path.exists(path1):
+            cls.icon = cv2.imread(path1, 0)
+        elif os.path.exists(path2):
+            cls.icon = cv2.imread(path2, 0)
+        cls.id = cls.__name__
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return cls.ready
+
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
+            return
+        if capture.frame is None:
+            return
+        match cls.type:
+            case SkillType.Switch:
+                matchs = utils.multi_match(
+                    capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
+                cls.ready = len(matchs) == 0
+                cls.enabled = not cls.ready
+            case SkillType.Buff:
+                cls.check_buff_enabled()
+                if cls.enabled:
+                    cls.ready = False
+                else:
+                    matchs = utils.multi_match(
+                        capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.99)
+                    cls.ready = len(matchs) > 0
+            case (_):
+                matchs = utils.multi_match(
+                    capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.9)
+                cls.ready = len(matchs) > 0
+
+    @classmethod
+    def check_buff_enabled(cls):
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
+        if not matchs:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
+        cls.enabled = len(matchs) > 0
 
 class Summon(Command):
     """'Summon' command for the default command book."""
@@ -864,22 +990,57 @@ class DoubleJump(Skill):
         bot_status.enabled = False
 
 
-class Buff(Command):
-    """Undefined 'buff' command for the default command book."""
-
-    def main(self):
-        print(
-            "\n[!] 'Buff' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
-
-
 #########################
 #      Common Skill     #
 #########################
 
-class MapleWarrior(Skill):
-    key = Keybindings.MAPLE_WARRIOR
-    cooldown = 900
+
+class MapleWorldGoddessBlessing(Skill):
+    key = Keybindings.GODDESS_BLESSING
+    cooldown = 180
+    precast = 0.3
+    backswing = 0.85
+    type = SkillType.Buff
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if not MapleWarrior.enabled:
+            return False
+
+        return super().canUse(next_t)
+
+    @classmethod
+    def load(cls):
+        path = f'assets/skills/{cls.__name__}.png'
+        cls.icon = cv2.imread(path, 0)
+        cls.id = cls.__name__
+
+    @classmethod
+    def check(cls):
+        if capture.frame is None:
+            return
+        cls.check_buff_enabled()
+        if cls.enabled:
+            cls.ready = False
+        else:
+            matchs = utils.multi_match(
+                capture.skill_frame, cls.icon[8:,], threshold=0.99)
+            cls.ready = len(matchs) > 0
+
+    @classmethod
+    def check_buff_enabled(cls):
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+        if not matchs:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+        cls.enabled = len(matchs) > 0
+
+
+class LastResort(Skill):
+    key = Keybindings.LAST_RESORT
+    cooldown = 75
+    precast = 0.3
     backswing = 0.8
     type = SkillType.Buff
 
@@ -888,7 +1049,7 @@ class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
     cooldown = 58
-    backswing = 0.7
+    backswing = 0.6
     duration = 60
 
     def __init__(self, direction=None):
@@ -898,16 +1059,30 @@ class ErdaShower(Skill):
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
+    @classmethod
+    def check(cls):
+        if capture.frame is None:
+            return
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[8:, : -14], threshold=0.96)
+        cls.ready = len(matchs) > 0
+
     def main(self):
         if not self.canUse():
             return
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
-        key_down('down')
         press(Keybindings.ERDA_SHOWER, 2)
-        key_up('down')
         self.__class__.castedTime = time.time()
         time.sleep(self.__class__.backswing)
+
+
+class MapleWarrior(Skill):
+    key = Keybindings.MAPLE_WARRIOR
+    cooldown = 900
+    precast = 0.3
+    backswing = 0.8
+    type = SkillType.Buff
 
 
 class Arachnid(Skill):
@@ -916,10 +1091,6 @@ class Arachnid(Skill):
     cooldown = 250
     backswing = 0.9
 
-class Memories(Command):
-    key = Keybindings.MEMORIES
-    cooldown = 150
-    backswing = 1
 
 class ForTheGuild(Skill):
     '''工会技能'''
@@ -983,11 +1154,13 @@ class RopeLift(Skill):
 
         if self.dy >= 45:
             press(Keybindings.JUMP, up_time=0.2)
+            press(self.__class__.key)
+            sleep_in_the_air(n=10)
         elif self.dy >= 32:
             press(Keybindings.JUMP, up_time=0.1)
-        press(self.__class__.key)
-        sleep_in_the_air(n=10)
-
+            press(self.__class__.key)
+            sleep_in_the_air(n=20)
+            
 ###################
 #      Potion     #
 ###################
@@ -1107,3 +1280,38 @@ class EXP_COUPON(Command):
         if not enabled:
             return False
         return super().canUse(next_t)
+
+
+def get_full_pos(pos):
+    return pos[0] + capture.window['left'], pos[1] + capture.window['top']
+
+
+def get_channel_pos(channel):
+    x = 334 + capture.window['left']
+    y = 290 + capture.window['top']
+    width = 360
+    height = 244
+    column = 5
+    row = 8
+    cell_width = width // column
+    cell_height = height // row
+
+    channel_row = (channel - 1) // column
+    channel_column = (channel - 1) % column
+    return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
+
+
+def chenck_map_available(instance=True):
+    if instance:
+        start_time = time.time()
+        while time.time() - start_time <= 5:
+            if detect_mobs():
+                return True
+            time.sleep(0.1)
+        return False
+    else:
+        for i in range(5):
+            if bot_status.stage_fright:
+                return False
+            time.sleep(1)
+        return True

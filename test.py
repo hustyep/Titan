@@ -264,6 +264,29 @@ def msg_test():
     image = cv2.imread('.test/WechatIMG1320.png')
     image_to_str(image)
     
+def auto_login_test():
+    frame = cv2.imread(".test/Maple_231128_002558.png")
+    # matchs = utils.multi_match(
+    #     frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.98, debug=True)
+    pos = get_channel_pos(7)
+    cv2.circle(frame, pos, 10, (0, 255, 0), 2)
+    utils.show_image(frame)
+
+
+def get_channel_pos(channel):
+    x = 334
+    y = 290
+    width = 360
+    height = 244
+    column = 5
+    row = 8 
+    cell_width = width // column
+    cell_height = height // row
+    
+    channel_row = (channel - 1) // column
+    channel_column = (channel - 1) % column
+    return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
+
 if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
@@ -271,4 +294,5 @@ if __name__ == "__main__":
     # buff_test()
     # minimap_test()
     # msg_test()
-    mob_detect_test()
+    # mob_detect_test()
+    auto_login_test()
