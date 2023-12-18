@@ -493,6 +493,7 @@ class Detector(Subject):
                 name = name.replace(i, '')
         result = name
         best = 0
+        # TODO: 遍历地图文件夹
         for value in Map_Names:
             ratio = utils.string_similar(name, value)
             if ratio == 1:
@@ -501,7 +502,7 @@ class Detector(Subject):
             elif ratio > best:
                 best = ratio
                 result = value
-        return result
+        return result if ratio >= 0.8 else None
 
 
 detector = Detector()

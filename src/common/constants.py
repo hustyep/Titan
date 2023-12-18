@@ -90,4 +90,5 @@ Map_Names = [
     'End Of The World 1-7',
     'Outlaw-Infested Wastes 2',
     'Laboratory Behind Locked Door 1',
+    'Ink-winged Owl',
 ]

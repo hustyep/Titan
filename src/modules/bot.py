@@ -59,7 +59,9 @@ class Bot(Subject):
         self.ready = True
         while True:
             if bot_status.enabled:
-                if len(routine) > 0 and bot_status.player_pos != (0, 0):
+                if not self.prepared:
+                    self.pre_load()
+                elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
                 else:
                     time.sleep(0.01)
@@ -82,21 +84,21 @@ class Bot(Subject):
             time.sleep(0.5)
             return
 
-        role_name, class_name = detector.identify_role()
+        # role_name, class_name = detector.identify_role()
         
-        if not role_name or not class_name:
-            return
+        # if not role_name or not class_name:
+        #     return
 
-        print(f"identify name:{role_name}, class:{class_name}")
+        # print(f"identify name:{role_name}, class:{class_name}")
       
-        # update role template      
-        bot_settings.role_name = role_name
-        bot_settings.load_role_template()
+        # # update role template      
+        # bot_settings.role_name = role_name
+        # bot_settings.load_role_template()
         
-        # update command book
-        if bot_settings.class_name != class_name:
-            file = bot_settings.get_command_book_path(class_name)
-            self.load_commands(file)
+        # # update command book
+        # if bot_settings.class_name != class_name:
+        #     file = bot_settings.get_command_book_path(class_name)
+        #     self.load_commands(file)
 
         if not gui_setting.auto.load_map:
             self.prepared = True
@@ -104,9 +106,10 @@ class Bot(Subject):
 
         # update routine
         map_name = detector.identify_map_name()
-        map_routine_path = f'{bot_settings.get_routines_dir()}/{map_name}.csv'
-        if map_routine_path != routine.path:
-            routine.load(map_routine_path, self.command_book)
+        if map_name is not None:
+            map_routine_path = f'{bot_settings.get_routines_dir()}/{map_name}.csv'
+            if map_routine_path != routine.path:
+                routine.load(map_routine_path, self.command_book)
 
         self.prepared = True
 
