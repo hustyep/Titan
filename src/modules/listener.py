@@ -94,13 +94,13 @@ class Listener(Configurable, Subject):
         bot_status.reset()
         # notifier.notice_time_record.clear()
 
-        if not bot_status.enabled:
+        bot.prepared = False
+        bot.toggle(not bot_status.enabled)
+        
+        if bot_status.enabled:
             bot_status.started_time = time.time()
         else:
             bot_status.started_time = None
-
-        bot.prepared = False
-        bot.toggle(not bot_status.enabled)
 
         # if bot_status.enabled:
         #     winsound.Beep(784, 333)     # G5

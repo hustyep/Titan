@@ -136,7 +136,7 @@ class Detector(Subject):
         height, width = gray.shape
         tmp = np.count_nonzero(gray_crop == 255) / height / width
         # print(tmp)
-        if tmp >= self.white_room_threshold:
+        if bot_status.started_time is not None and tmp >= self.white_room_threshold:
             self.on_next((BotFatal.WHITE_ROOM,))
 
     def check_alert(self):
