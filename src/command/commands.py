@@ -1165,6 +1165,37 @@ class RopeLift(Skill):
 #      Potion     #
 ###################
 
+class BuffPotion(Skill):
+    duration:  int = 0
+    type: SkillType = SkillType.Buff
+    icon = None
+    ready = True
+    enabled = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__class__.load()
+
+    @classmethod
+    def load(cls):
+        path = f'assets/potion/{cls.__name__}.webp'
+        if os.path.exists(path):
+            cls.icon = cv2.imread(path, 0)
+        cls.id = cls.__name__
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return cls.ready
+
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
+            return
+        if capture.frame is None:
+            return
+        cls.check_buff_enabled()
+        cls.ready = not cls.enabled
+
 
 class Potion(Command):
     """Uses each of Shadowers's potion once."""
@@ -1177,8 +1208,8 @@ class Potion(Command):
             GUILD_POTION,
             LEGION_WEALTHY,
             EXP_COUPON,
-            EXP_POTION,
-            WEALTH_POTION,
+            EXP_Potion,
+            Wealth_Potion,
         ]
 
     def main(self):
@@ -1191,7 +1222,7 @@ class Potion(Command):
         return True
 
 
-class EXP_POTION(Command):
+class EXP_Potion(BuffPotion):
     key = Keybindings.EXP_POTION
     cooldown = 7250
     backswing = 0.5
@@ -1204,7 +1235,7 @@ class EXP_POTION(Command):
         return super().canUse(next_t)
 
 
-class WEALTH_POTION(Command):
+class Wealth_Potion(BuffPotion):
     key = Keybindings.WEALTH_POTION
     cooldown = 7250
     backswing = 0.5
