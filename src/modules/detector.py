@@ -1,5 +1,5 @@
 """A module for detecting and notifying the user of dangerous in-game events."""
-
+import os
 import time
 import string
 import threading
@@ -485,6 +485,7 @@ class Detector(Subject):
         return role_name, class_name
 
     def identify_map_name(self):
+        
         frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
         # utils.show_image(frame)
         name = utils.image_2_str(frame).replace('\n', '')
@@ -493,8 +494,8 @@ class Detector(Subject):
                 name = name.replace(i, '')
         result = name
         best = 0
-        # TODO: 遍历地图文件夹
-        for value in Map_Names:
+        map_names = get_routines(bot_settings.class_name)
+        for value in map_names:
             ratio = utils.string_similar(name, value)
             if ratio == 1:
                 result = value
@@ -554,3 +555,12 @@ def distance_to_minal(point):
     if isinstance(point, Point) and point.interval == 0:
         return utils.distance(bot_status.minal_pos, point.location)
     return float('inf')
+
+def get_routines(command_name) -> list:
+    routines = []
+    folder = bot_settings.get_routines_dir(command_name)
+    for root, ds, fs in os.walk(folder):
+        for f in fs:
+            if f.endswith(".csv"):
+                routines.append(f[:-4])
+    return routines
