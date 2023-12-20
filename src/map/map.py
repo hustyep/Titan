@@ -241,7 +241,7 @@ class Map:
             return (x, y)
         return p
 
-    def is_continuous(self, p1, p2, max_gap=10):
+    def is_continuous(self, p1, p2, max_gap=0):
         if self.data_available:
             if p1[1] != p2[1]:
                 return False

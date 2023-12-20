@@ -376,13 +376,6 @@ class Detector(Subject):
             bot_status.rune_closest_pos = None
             return
 
-        filtered = utils.filter_color(minimap, RUNE_RANGES)
-        matches = utils.multi_match(filtered, RUNE_TEMPLATE, threshold=0.9)
-        if len(matches) == 0:
-            bot_status.rune_pos = None
-            bot_status.rune_closest_pos = None
-            return
-
         rune_buff = utils.multi_match(
             frame[:150, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
         if len(rune_buff) == 0:
@@ -391,6 +384,11 @@ class Detector(Subject):
         if rune_buff:
             bot_status.rune_pos = None
             bot_status.rune_closest_pos = None
+            return
+        
+        filtered = utils.filter_color(minimap, RUNE_RANGES)
+        matches = utils.multi_match(filtered, RUNE_TEMPLATE, threshold=0.9)
+        if len(matches) == 0:
             return
 
         if routine.sequence:

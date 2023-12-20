@@ -60,9 +60,13 @@ def validate_arrows(key):
     :param key:     The key to check.
     :return:        KEY in lowercase if it is a valid arrow key.
     """
+    if key is None:
+        return None
 
     if isinstance(key, str):
         key = key.lower()
+        if key == 'none':
+            return None
         if key in ['up', 'down', 'left', 'right']:
             return key
     raise ValueError(f"'{key}' is not a valid arrow key.")
