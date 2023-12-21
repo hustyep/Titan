@@ -38,6 +38,14 @@ DEAD_OK_TEMPLATE = cv2.imread(
 
 SKULL_TEMPLATE = cv2.imread(f'{ASSETS_PATH}exceptions/skull_template.png', 0)
 
+# tabbar icon
+TABBAR_MAPLE_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/icon_maplestory_template.png', 0)
+TABBAR_WECHAT_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/icon_wechat_template.png', 0)
+TABBAR_NX_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/icon_nx_launcher_template.png', 0)
+
 # The Elite Boss's warning sign
 ELITE_TEMPLATE = cv2.imread(f'{ASSETS_PATH}exceptions/elite_template.jpg', 0)
 

@@ -135,7 +135,8 @@ class Bot(Subject):
         bot_status.minal_closest_pos = None
 
         capture.calibrated = False
-        notifier.notice_time_record.clear()
+        if enabled:
+            notifier.notice_time_record.clear()
         
         releaseAll()
         bot_status.enabled = enabled

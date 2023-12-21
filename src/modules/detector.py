@@ -184,7 +184,8 @@ class Detector(Subject):
         
 
     def check_forground(self):
-        if capture.frame is None:
+        frame = capture.camera.get_latest_frame()
+        if frame is None:
             return
         capture.find_window()
         hwnd = capture.hwnd
@@ -195,18 +196,22 @@ class Detector(Subject):
         '''Check if window is forground'''
         if hwnd != win32gui.GetForegroundWindow():
             self.on_next((BotWarnning.BACKGROUND, ))
-            try:
-                pythoncom.CoInitialize()
-                shell = client.Dispatch("WScript.Shell")
-                shell.SendKeys('%')
-                if win32gui.IsIconic(capture.hwnd):
-                    win32gui.SendMessage(
-                        capture.hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
-                    time.sleep(0.1)
-                win32gui.SetForegroundWindow(capture.hwnd)
-            except Exception as e:
-                print(e)
-            time.sleep(0.5)
+            mathes = utils.multi_match(frame[-50:, ], TABBAR_MAPLE_TEMPLATE, threshold=0.9)
+            if mathes:
+                height = frame.shape[0]
+                ActionSimulator.mouse_left_click((mathes[0][0], height - 25), delay=1)
+            # try:
+            #     pythoncom.CoInitialize()
+            #     shell = client.Dispatch("WScript.Shell")
+            #     shell.SendKeys('%')
+            #     if win32gui.IsIconic(capture.hwnd):
+            #         win32gui.SendMessage(
+            #             capture.hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
+            #         time.sleep(0.1)
+            #     win32gui.SetForegroundWindow(capture.hwnd)
+            # except Exception as e:
+            #     print(e)
+            # time.sleep(0.5)
 
     def check_minimap(self):
         capture.find_window()

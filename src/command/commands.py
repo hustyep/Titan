@@ -286,30 +286,26 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
 
     d_x = target[0] - start[0]
     d_y = target[1] - start[1]
+    
+    tmp_x = (target[0], start[1])
+    tmp_y = (start[0], target[1])
     if abs(d_x) <= tolerance:
         return target
     elif d_y < 0:
-        tmp_x = (target[0], start[1])
-        if target_reached(tmp_x, target, tolerance):
-            return tmp_x
-        if map.on_the_platform(tmp_x):
-            if map.is_continuous(start, tmp_x) or abs(d_x) >= 26:
-                return tmp_x
-        tmp_y = (start[0], target[1])
         if map.is_continuous(tmp_y, target):
             return tmp_y
+        if map.is_continuous(start, tmp_x):
+            return tmp_x
         return map.platform_point(tmp_x)
     else:
         # if abs(d_x) >= 20 and abs(d_y) >= 20:
         #     p = (start[0] + (20 if d_x > 0 else -20), target[1])
         #     if map.on_the_platform(p):
         #         return p
-        tmp_x = (target[0], start[1])
-        if map.is_continuous(tmp_x, target):
-            return tmp_x
-        tmp_y = (start[0], target[1])
-        if map.on_the_platform(tmp_y):
+        if map.is_continuous(tmp_y, target):
             return tmp_y
+        if map.is_continuous(start, tmp_x):
+            return tmp_x
         return map.platform_point(tmp_y)
 
 
