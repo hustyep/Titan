@@ -214,7 +214,9 @@ class Map:
             if point_type == MapPointType.Floor or point_type == MapPointType.FloorRope:
                 return False
             else:
-                return self.point_type((location[0], location[1] + 3)) == MapPointType.Rope
+                for i in range(1, 7):
+                    if self.point_type((location[0], location[1] + i)) == MapPointType.Rope:
+                        return True 
         return False
 
     def on_the_platform(self, location: tuple[int, int]):
