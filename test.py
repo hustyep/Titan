@@ -191,15 +191,15 @@ def mob_detect_test(accurate=True):
 
 
 def buff_test():
-    frame = cv2.imread(".test/Maple_231119_130543.png")
-    template = cv2.imread('assets/skills/HardHitter.png', 0)
+    frame = cv2.imread(".test/Maple_231218_153012.png")
+    template = cv2.imread('assets/potion/Exp_Potion.png', 0)
     # ShadowWalker ErdaShower SuddenRaid
     # template =Image.open('assets/skills/shadower/ShadowWalker.png').convert('RGBA')
     # template = utils.add_mask(template, (0,0,28,28), fill=(0,0,0,int(0.0*255)))
 
-    template = template[8:,]
+    template = template[:12,]
     rune_buff = utils.multi_match(
-        frame[-200:, -600:], template, threshold=0.98, debug=True)
+        frame[:200, 200:], template, threshold=0.985, debug=True)
 
     # rune_buff = utils.multi_match(
     #     frame[-200:, -600:], template, threshold=0.9, debug=True)
@@ -291,8 +291,8 @@ if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
     # wechat_test()
-    # buff_test()
+    buff_test()
     # minimap_test()
     # msg_test()
     # mob_detect_test()
-    auto_login_test()
+    # auto_login_test()

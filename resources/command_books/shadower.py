@@ -157,7 +157,7 @@ class JumpUp(Command):
 
     def main(self):
         # TODO too long
-        time.sleep(0.3)
+        time.sleep(0.5)
         evade_rope(self.target)
 
         dy = bot_status.player_pos[1] - self.target[1]
@@ -279,7 +279,7 @@ class ShadowAssault(Skill):
             cls.ready = len(matchs) > 0
             if not cls.ready:
                 cls.usable_times = 0
-        print(f"ShadowAssault: canuse={cls.ready}")
+        # print(f"ShadowAssault: canuse={cls.ready}")
 
     def main(self):
         if self.distance == 0:

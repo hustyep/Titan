@@ -2,9 +2,9 @@ $, target=move_tolerance, value=10
 $, target=mini_margin, value=44
 
 ~, label=Summon, interval=40, skip=False
-*, x=45, y=57, interval=0, tolerance=2, detect=True, skip=True
+*, x=46, y=57, interval=0, tolerance=2, detect=True, skip=True
     ShadowVeil, direction=left
-*, x=22, y=16, interval=0, tolerance=2, detect=False, skip=False
+*, x=24, y=16, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.05
     ErdaShower, direction=right
 *, x=85, y=16, interval=0, tolerance=2, detect=False, skip=False
@@ -18,6 +18,6 @@ $, target=mini_margin, value=44
 
 @, label=Bottom mobbing
 *, x=6, y=57, interval=12000, tolerance=10, detect=False, skip=True
-    Relogin, channel=37
+    Relogin, channel=32
 *, x=9, y=57, interval=0, tolerance=5, detect=True, skip=False
 *, x=139, y=57, interval=0, tolerance=5, detect=True, skip=False
