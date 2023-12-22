@@ -86,31 +86,30 @@ class Auto(LabelFrame):
         print("_start_cube")
         bot_status.cubing = True
         
-        width = 262
-        height = 70
-        frame = capture.camera.get_latest_frame()
-        matchs1 = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.95, debug=False)
+        width = 90
+        height = 44
+        frame = capture.frame
+        matchs1 = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.8, debug=False)
         matchs2 = utils.multi_match(frame, POTENTIAL_AFTER_TEMPLATE, threshold=0.95, debug=False)
         if matchs1:
             pos = matchs1[0]
-            x = pos[0] - 35
-            y = pos[1] + 38
+            x = pos[0] - 23
+            y = pos[1] + 23
         elif matchs2:
             pos = matchs2[0]
-            x = pos[0] - 32
-            y = pos[1] + 38
+            x = pos[0] - 23
+            y = pos[1] + 23
         else:
             self._stop_cube()
             return
         
+        rect = (x, y, width, height)
         while bot_status.cubing:
-            frame = capture.camera.get_latest_frame()
-            frame = frame[y:y+height, x:x+width]
-            if self._cube_result(frame):
+            if self._cube_result(rect):
                 self._stop_cube()
                 break
             else:
-                self._cube_onemore()
+                self._cube_onemore(rect)
             
     @bot_status.run_if_disabled('')
     def _stop_cube(self):
@@ -118,9 +117,15 @@ class Auto(LabelFrame):
         bot_status.cubing = False
     
     @bot_status.run_if_disabled('')
-    def _cube_result(self, frame):
-        matchs1 = utils.multi_match(frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95)
-        matchs2 = utils.multi_match(frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95)
+    def _cube_result(self, rect):
+        x, y, width, height = rect
+
+        while len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) == 0:
+            time.sleep(0.05)
+        time.sleep(1)
+        result_frame = capture.frame[y:y+height, x:x+width]
+        matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=False)
+        matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=False)
         print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
 
         if len(matchs1) + len(matchs2) >= 2:
@@ -129,12 +134,16 @@ class Auto(LabelFrame):
             return False
     
     @bot_status.run_if_disabled('')
-    def _cube_onemore(self):
+    def _cube_onemore(self, rect):
         print("_cube_onemore")
         hid.mouse_left_click()
-        time.sleep(1)
+        time.sleep(0.5)
         for _ in range(0, 3):
             hid.key_press('enter')
-            time.sleep(0.2)
-        time.sleep(4)
-           
+            time.sleep(0.1)
+            
+        x, y, width, height = rect
+        while len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) > 0:
+            time.sleep(0.05)
+        
+        

@@ -67,6 +67,8 @@ POTENTIAL_RESULT_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/cube_result.png', 0)
 POTENTIAL_AFTER_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/cube_after.png', 0)
+POTENTIAL_LEGENDARY_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/legendary.png', 0)
 
 #####################
 #      mineral      #
