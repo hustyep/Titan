@@ -158,8 +158,16 @@ class JumpUp(Command):
     def main(self):
         # TODO too long
         time.sleep(0.5)
+        
+        target_left = (self.target[0] - 1, self.target[1])
+        target_right = (self.target[0] + 1, self.target[1])
+        if not map.on_the_platform(target_left):
+            press('right', 0.3)
+        elif not map.on_the_platform(target_right):
+            press('left', 0.3)
+        
         evade_rope(self.target)
-
+            
         dy = bot_status.player_pos[1] - self.target[1]
         press(Keybindings.JUMP)
         key_down('up')
