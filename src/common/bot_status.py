@@ -36,6 +36,9 @@ minal_pos = None
 minal_closest_pos = None
 mineral_type = None
 
+# cube
+cubing = False
+
 def reset():
     global player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, rune_solving, minal_pos, minal_closest_pos, mineral_type
 

@@ -287,11 +287,32 @@ def get_channel_pos(channel):
     channel_column = (channel - 1) % column
     return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
 
+def cube_test(): 
+    # frame = cv2.imread(".test/Maple_231222_091726.png")
+    # frame = cv2.imread(".test/Maple_231222_091756.png")
+    frame = cv2.imread(".test/Maple_231222_092115.png")
+    width = 262
+    height = 70
+    matchs1 = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.95)
+    matchs2 = utils.multi_match(frame, POTENTIAL_AFTER_TEMPLATE, threshold=0.95)
+    if matchs1:
+        pos = matchs1[0]
+        x = pos[0] - 35
+        y = pos[1] + 38
+        frame = frame[y:y+height, x:x+width]
+    elif matchs2:
+        pos = matchs2[0]
+        x = pos[0] - 32
+        y = pos[1] + 38
+        frame = frame[y:y+height, x:x+width]
+    matchs1 = utils.multi_match(frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=True)
+    matchs2 = utils.multi_match(frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=True)
+
 if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
     # wechat_test()
-    buff_test()
+    cube_test()
     # minimap_test()
     # msg_test()
     # mob_detect_test()

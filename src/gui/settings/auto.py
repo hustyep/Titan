@@ -1,7 +1,15 @@
 import tkinter as tk
 from src.gui.interfaces import LabelFrame, Frame
-from src.common import bot_settings
+from src.common import bot_status
 from src.common.gui_setting import gui_setting
+from src.common import utils
+from src.common.image_template import *
+from src.modules.capture import capture
+from src.common.action_simulator import ActionSimulator
+import keyboard
+from src.common.hid import hid
+import time
+import threading
 
 class Auto(LabelFrame):
     def __init__(self, parent, **kwargs):
@@ -47,6 +55,9 @@ class Auto(LabelFrame):
                          width=15,
                          takefocus=False)
         self.channel_entry.pack(side=tk.LEFT, padx=(15, 5))
+        
+        keyboard.on_press_key('f2', self.on_cube)
+
 
     def _on_change(self):
         for i in range(len(self.check_boxes)):
@@ -59,3 +70,71 @@ class Auto(LabelFrame):
         value = self.display_var.get()
         self.settings.set('Channel', value)
         self.settings.save_config()
+
+
+    @bot_status.run_if_disabled('')
+    def on_cube(self, event):
+        if not gui_setting.auto.cube:
+            return
+        if bot_status.cubing:
+            self._stop_cube()
+        else:
+            threading.Thread(target=self._start_cube,).start()
+            
+    @bot_status.run_if_disabled('')
+    def _start_cube(self):
+        print("_start_cube")
+        bot_status.cubing = True
+        
+        width = 262
+        height = 70
+        frame = capture.camera.get_latest_frame()
+        matchs1 = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.95, debug=False)
+        matchs2 = utils.multi_match(frame, POTENTIAL_AFTER_TEMPLATE, threshold=0.95, debug=False)
+        if matchs1:
+            pos = matchs1[0]
+            x = pos[0] - 35
+            y = pos[1] + 38
+        elif matchs2:
+            pos = matchs2[0]
+            x = pos[0] - 32
+            y = pos[1] + 38
+        else:
+            self._stop_cube()
+            return
+        
+        while bot_status.cubing:
+            frame = capture.camera.get_latest_frame()
+            frame = frame[y:y+height, x:x+width]
+            if self._cube_result(frame):
+                self._stop_cube()
+                break
+            else:
+                self._cube_onemore()
+            
+    @bot_status.run_if_disabled('')
+    def _stop_cube(self):
+        print("_stop_cube")
+        bot_status.cubing = False
+    
+    @bot_status.run_if_disabled('')
+    def _cube_result(self, frame):
+        matchs1 = utils.multi_match(frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95)
+        matchs2 = utils.multi_match(frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95)
+        print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
+
+        if len(matchs1) + len(matchs2) >= 2:
+            return True
+        else:
+            return False
+    
+    @bot_status.run_if_disabled('')
+    def _cube_onemore(self):
+        print("_cube_onemore")
+        hid.mouse_left_click()
+        time.sleep(1)
+        for _ in range(0, 3):
+            hid.key_press('enter')
+            time.sleep(0.2)
+        time.sleep(4)
+           

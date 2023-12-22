@@ -58,6 +58,16 @@ WECHAT_CALL_TEMPLATE = cv2.imread(
 WECHAT_CALL_TEMPLATE_2X = cv2.imread(
     f'{ASSETS_PATH}exceptions/wechat_call@2x.png', 0)
 
+# cube
+POTENTIAL_ATT12_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/att12.png', 0)
+POTENTIAL_ATT9_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/att9.png', 0)
+POTENTIAL_RESULT_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/cube_result.png', 0)
+POTENTIAL_AFTER_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/cube_after.png', 0)
+
 #####################
 #      mineral      #
 #####################

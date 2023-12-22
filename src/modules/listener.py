@@ -144,6 +144,7 @@ class Listener(Configurable, Subject):
         pos = bot_status.player_pos
         game_map.add_rope_point((pos[0], pos[1] + 7))
         time.sleep(0.5)
+            
 
     def on_new_command(self, command: ChatBotCommand, *args):
         match (command):
