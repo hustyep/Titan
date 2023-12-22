@@ -81,14 +81,14 @@ class Command():
             self.kwargs.pop('__class__')
             self.kwargs.pop('self')
         self.id = self.__class__.__name__
-
+        
     def update(self, *args, **kwargs):
         """Updates this Component's constructor arguments with new arguments."""
 
         # Validate arguments before actually updating values
         self.__class__(*args, **kwargs)
         self.__init__(*args, **kwargs)
-
+        
     def __str__(self):
         variables = self.__dict__
         result = '    ' + self.id
@@ -286,26 +286,30 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
 
     d_x = target[0] - start[0]
     d_y = target[1] - start[1]
-    
-    tmp_x = (target[0], start[1])
-    tmp_y = (start[0], target[1])
     if abs(d_x) <= tolerance:
         return target
     elif d_y < 0:
+        tmp_x = (target[0], start[1])
+        if target_reached(tmp_x, target, tolerance):
+            return tmp_x
+        tmp_y = (start[0], target[1])
         if map.is_continuous(tmp_y, target):
             return tmp_y
-        if map.is_continuous(start, tmp_x):
-            return tmp_x
+        if map.on_the_platform(tmp_x):
+            if map.is_continuous(start, tmp_x) or abs(d_x) >= 26:
+                return tmp_x
         return map.platform_point(tmp_x)
     else:
         # if abs(d_x) >= 20 and abs(d_y) >= 20:
         #     p = (start[0] + (20 if d_x > 0 else -20), target[1])
         #     if map.on_the_platform(p):
         #         return p
-        if map.is_continuous(tmp_y, target):
-            return tmp_y
-        if map.is_continuous(start, tmp_x):
+        tmp_x = (target[0], start[1])
+        if map.is_continuous(tmp_x, target):
             return tmp_x
+        tmp_y = (start[0], target[1])
+        if map.on_the_platform(tmp_y):
+            return tmp_y
         return map.platform_point(tmp_y)
 
 
@@ -453,31 +457,11 @@ class Walk(Command):
                 time.sleep(0.02)
                 press_acc(new_direction, down_time=0.02, up_time=0.02)
                 direction = new_direction
-
+                
             walk_counter += 1
             d_x = self.target_x - bot_status.player_pos[0]
         key_up(direction)
         print(f"end dx={d_x}")
-
-
-class Jump(Command):
-
-    def __init__(self, duration, direction=None, forward=False, attack=False):
-        super().__init__(locals())
-        self.duration = float(duration)
-        self.direction = bot_settings.validate_arrows(direction)
-        self.forward = bot_settings.validate_boolean(forward)
-        self.attack = bot_settings.validate_boolean(attack)
-
-    def main(self):
-        if self.direction:
-            press(self.direction, down_time=0.01)
-        press_acc(Keybindings.JUMP, down_time=0.01, up_time=self.duration)
-        if self.forward:
-            press(Keybindings.JUMP)
-        if self.attack:
-            Attack().execute()
-        sleep_in_the_air()
 
 
 class Wait(Command):
@@ -493,28 +477,25 @@ class Wait(Command):
 
 
 class Detect(Command):
-    def __init__(self, count=1, top=300, bottom=100, left=800, right=800):
+    def __init__(self, count=1):
         super().__init__(locals())
         self.count = int(count)
-        self.top = int(top)
-        self.bottom = int(bottom)
-        self.left = int(left)
-        self.right = int(right)
 
     def main(self):
         anchor = capture.locate_player_fullscreen(accurate=True)
         start = time.time()
         while True:
-            mobs = detect_mobs(insets=AreaInsets(top=self.top, bottom=self.bottom, left=self.left, right=self.right),
-                               anchor=anchor,
-                               multy_match=False,
-                               debug=False)
+            mobs = detect_mobs(insets=AreaInsets(top=350, bottom=100, left=1200 if bot_status.player_pos == 'left' else -300, right=1100 if bot_status.player_pos == 'right' else -300),
+                                            anchor=anchor,
+                                            multy_match=False,
+                                            debug=False)
             if len(mobs) >= self.count:
                 break
             time.sleep(0.1)
             if time.time() - start > 6:
                 break
-
+        
+    
 
 class FeedPet(Command):
     cooldown = 600
@@ -540,11 +521,10 @@ class Fall(Command):
     Performs a down-jump and then free-falls until the player exceeds a given distance
     from their starting position.
     """
-
     def __init__(self, attack=False):
         super().__init__(locals())
         self.attack = bot_settings.validate_boolean(attack)
-
+        
     def main(self):
         evade_rope()
         key_down('down')
@@ -834,7 +814,7 @@ class AutoLogin(Command):
         while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
             hid.key_press("enter")
             time.sleep(2)
-
+            
         while bot_status.lost_minimap:
             print("cc: lost mimimap")
             time.sleep(0.1)
@@ -856,7 +836,7 @@ class Relogin(Command):
 
     def main(self):
         bot_status.enabled = False
-
+        
         hid.key_press('esc')
         time.sleep(0.5)
         hid.key_press('up')
@@ -894,59 +874,6 @@ class MapTeleport(Command):
 ###########################
 #      Abstract Skill     #
 ###########################
-
-
-class Summon(Command):
-    """'Summon' command for the default command book."""
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return False
-
-
-class DotAoe(Command):
-    """'DotAoe' command for the default command book."""
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return False
-
-
-class Aoe(Command):
-    """'Aoe' command for the default command book."""
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return False
-
-
-class Attack(Command):
-    """Undefined 'Attack' command for the default command book."""
-
-    def main(self):
-        print(
-            "\n[!] 'Attack' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
-
-
-class DoubleJump(Command):
-    """Undefined 'FlashJump' command for the default command book."""
-
-    def __init__(self, target: tuple[int, int], attack_if_needed=False):
-        super().__init__(locals())
-
-        self.target = target
-        self.attack_if_needed = attack_if_needed
-
-    def main(self):
-        print(
-            "\n[!] 'FlashJump' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
-
-
-#########################
-#      Common Skill     #
-#########################
 
 class SkillType(Enum):
     Buff = 'buff'
@@ -1015,6 +942,58 @@ class Skill(Command):
             matchs = utils.multi_match(
                 capture.buff_frame, cls.icon[16:-2, 16:-2], threshold=0.9)
         cls.enabled = len(matchs) > 0
+
+class Summon(Command):
+    """'Summon' command for the default command book."""
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return False
+
+
+class DotAoe(Command):
+    """'DotAoe' command for the default command book."""
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return False
+
+
+class Aoe(Skill):
+    """'Aoe' command for the default command book."""
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return False
+
+
+class Attack(Command):
+    """Undefined 'Attack' command for the default command book."""
+
+    def main(self):
+        print(
+            "\n[!] 'Attack' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
+
+class DoubleJump(Skill):
+    """Undefined 'FlashJump' command for the default command book."""
+
+    def __init__(self, target: tuple[int, int], attack_if_needed=False):
+        super().__init__(locals())
+
+        self.target = target
+        self.attack_if_needed = attack_if_needed
+
+    def main(self):
+        print(
+            "\n[!] 'FlashJump' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
+
+#########################
+#      Common Skill     #
+#########################
 
 
 class MapleWorldGoddessBlessing(Skill):
@@ -1182,11 +1161,10 @@ class RopeLift(Skill):
             press(Keybindings.JUMP, up_time=0.1)
             press(self.__class__.key)
             sleep_in_the_air(n=20)
-
+            
 ###################
 #      Potion     #
 ###################
-
 
 class BuffPotion(Skill):
     duration:  int = 0
@@ -1201,7 +1179,7 @@ class BuffPotion(Skill):
 
     @classmethod
     def load(cls):
-        path = f'assets/potion/{cls.__name__}.webp'
+        path = f'assets/potion/{cls.__name__}.png'
         if os.path.exists(path):
             cls.icon = cv2.imread(path, 0)
         cls.id = cls.__name__
@@ -1218,6 +1196,15 @@ class BuffPotion(Skill):
             return
         cls.check_buff_enabled()
         cls.ready = not cls.enabled
+        
+    @classmethod
+    def check_buff_enabled(cls):
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[:12,], threshold=0.98)
+        if not matchs:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[-12:, 16:], threshold=0.97)
+        cls.enabled = len(matchs) > 0 
 
 
 class Potion(Command):
@@ -1245,7 +1232,7 @@ class Potion(Command):
         return True
 
 
-class EXP_Potion(BuffPotion):
+class EXP_Potion(Command):
     key = Keybindings.EXP_POTION
     cooldown = 7250
     backswing = 0.5
@@ -1258,7 +1245,7 @@ class EXP_Potion(BuffPotion):
         return super().canUse(next_t)
 
 
-class Wealth_Potion(BuffPotion):
+class Wealth_Potion(Command):
     key = Keybindings.WEALTH_POTION
     cooldown = 7250
     backswing = 0.5
