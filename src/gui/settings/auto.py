@@ -143,7 +143,10 @@ class Auto(LabelFrame):
             time.sleep(0.1)
             
         x, y, width, height = rect
+        start = time.time()
         while len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) > 0:
             time.sleep(0.05)
+            if time.time() - start > 5:
+                break
         
         

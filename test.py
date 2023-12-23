@@ -159,11 +159,11 @@ def rune_test():
             frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9, debug=True)
 
 
-def mob_detect_test(accurate=True):
-    image_path = ".test/Maple_231119_130543.png"
+def mob_detect_test(accurate=False):
+    image_path = ".test/Maple_231217_074852.png"
     frame = cv2.imread(image_path)
 
-    player_pos = minimap_to_window_test(image_path)
+    # player_pos = minimap_to_window_test(image_path)
 
     if accurate:
         PLAYER_SLLEE_TEMPLATE = cv2.imread('assets/roles/player_sllee_template.png', 0)
@@ -176,9 +176,10 @@ def mob_detect_test(accurate=True):
         cv2.circle(frame, player_pos, 10, (0, 255, 0), 2)
         # utils.show_image(frame)
         
-    crop = frame[player_pos[1]-200:player_pos[1]+100, player_pos[0]-10:player_pos[0]+650]
+    # crop = frame[player_pos[1]-200:player_pos[1]+100, player_pos[0]-10:player_pos[0]+650]
+    crop = frame
     # utils.show_image(crop)
-    MOB_TEMPLATE_L = cv2.imread('assets/mobs/Laboratory Behind Locked Door 1@normal.png', 0)
+    MOB_TEMPLATE_L = cv2.imread('assets/mobs/Harsh Winter 4@normal.png', 0)
     MOB_TEMPLATE_R = cv2.flip(MOB_TEMPLATE_L, 1)
     # h, w = MOB_TEMPLATE_L.shape
     # MOB_TEMPLATE_ELITE = cv2.resize(MOB_TEMPLATE_L, (w * 2, h * 2))
@@ -312,8 +313,8 @@ if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
     # wechat_test()
-    cube_test()
+    # cube_test()
     # minimap_test()
     # msg_test()
-    # mob_detect_test()
+    mob_detect_test()
     # auto_login_test()
