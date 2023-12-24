@@ -124,6 +124,8 @@ class CommandBook():
                 commands.Aoe = new_cb["aoe"]
             else:
                 commands.Aoe = commands.Skill
+            if new_cb["buff"]:
+                commands.Buff = new_cb["buff"]
 
             for command in (commands.Summon, commands.DotAoe, commands.Aoe):
                 name = command.__name__

@@ -364,11 +364,12 @@ class Routine(Subject):
         element.execute()
 
     def _on_loop_begin(self):
+        pass
         # Feed Pet
-        self.command_book.FeedPet().execute()
+        # self.command_book.FeedPet().execute()
         # Use Buff and Potion
-        self.command_book.Potion().execute()
-        self.command_book.Buff().execute()
+        # self.command_book.Potion().execute()
+        # self.command_book.Buff().execute()
 
     def _on_command_complete(self, c: Command):
         if isinstance(c, Move) and not target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):

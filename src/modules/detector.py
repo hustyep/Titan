@@ -122,7 +122,7 @@ class Detector(Subject):
         if frame is None:
             return
         height, width, _ = frame.shape
-        if width < 400 and height < 400:
+        if width < 400 or height < 400:
             return
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

@@ -63,11 +63,11 @@ def step(target, tolerance):
         if ShadowAssault.canUse():
             ShadowAssault(target=target).execute()
             return
-    if d_y in ShadowAssault.y_range:
+    if d_y in ShadowAssault.y_range or d_y > 10 and abs(d_x) > 100:
         if ShadowAssault.canUse():
             ShadowAssault(target=target).execute()
             return
-    if abs(d_x) >= 26:
+    if abs(d_x) >= 22:
         hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
         return
 
@@ -90,7 +90,7 @@ def step(target, tolerance):
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 26:
+    elif abs(d_x) >= 24:
         hit_and_run(direction, next_p, tolerance)
     # elif abs(d_x) >= 20:
     #     DoubleJump(next_p).execute()
@@ -162,9 +162,9 @@ class JumpUp(Command):
         target_left = (self.target[0] - 1, self.target[1])
         target_right = (self.target[0] + 1, self.target[1])
         if not map.on_the_platform(target_left):
-            press('right', 0.3)
+            press('right')
         elif not map.on_the_platform(target_right):
-            press('left', 0.3)
+            press('left')
         
         evade_rope(self.target)
             
@@ -212,11 +212,11 @@ class DoubleJump(Skill):
             # detect = AsyncTask(
             #     target=self.detect_mob, args=(direction, ))
             # detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+            press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.02)
             # mobs_detected = detect.join()
             mobs_detected = True
             times = 2 if mobs_detected else 1
-            press(self.key, 1, down_time=0.03, up_time=0.03)
+            press_acc(self.key, 1, down_time=0.02, up_time=0.02)
             if mobs_detected:
                 Attack().execute()
         else:
@@ -230,8 +230,11 @@ class DoubleJump(Skill):
                 press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
             press(self.key, times, down_time=0.03, up_time=0.03)
 
-        key_up(direction)
+        # if start_y == 68:
+        #     time.sleep(0.1)
+        # else:
         sleep_in_the_air(n=1, start_y=start_y)
+        key_up(direction)
         # time.sleep(0.01)
 
 
@@ -245,9 +248,10 @@ class ShadowAssault(Skill):
     type = SkillType.Move
     backswing = 0.5
     max_times = 5
-    usable_times = 5
+    usable_times = 0
     cooldown = 60
-    x_range = range(15, 36)
+    ready = False
+    x_range = range(15, 50)
     y_range = range(18, 42)
 
     def __init__(self, direction='up', jump='True', distance=80, target=None):
@@ -265,7 +269,7 @@ class ShadowAssault(Skill):
                 self.jump = True
             elif dy > 0 and abs(dx) >= 15:
                 self.direction = 'downright' if dx > 0 else 'downleft'
-                self.jump = True
+                self.jump = abs(dy) > 40
             elif dy == 0:
                 self.direction = 'left' if dx < 0 else 'right'
                 self.jump = False
@@ -376,7 +380,7 @@ class CruelStab(Skill):
             return
         self.__class__.castedTime = time.time()
         jumped = not map.on_the_platform(bot_status.player_pos)
-        press(self.key, 1, up_time=0.3)
+        press_acc(self.key, 1, up_time=0.25)
         MesoExplosion().execute()
         time.sleep(0.5 if not jumped else self.backswing)
 
@@ -387,7 +391,7 @@ class MesoExplosion(Skill):
     type = SkillType.Attack
 
     def main(self):
-        press(self.key, down_time=0.01, up_time=0.01)
+        press_acc(self.key, down_time=0.01, up_time=0.01)
 
 
 class DarkFlare(Skill):
@@ -538,12 +542,12 @@ class Buff(Command):
             PickPocket,
         ]
 
-    def main(self):
+    def main(self, wait=True):
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!use buff")
         for buff in self.buffs:
             if buff.canUse():
                 print(buff)
-                result = buff().execute()
+                result = buff().main(wait)
                 if result:
                     break
 
@@ -554,10 +558,6 @@ class ShadowWalker(Skill):
     precast = 0.3
     backswing = 0.8
     type = SkillType.Buff
-
-    def main(self):
-        super().main()
-        # bot_status.hide_start = time.time()
 
 
 class EPIC_ADVENTURE(Skill):

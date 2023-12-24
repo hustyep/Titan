@@ -112,7 +112,7 @@ class Command():
     @bot_status.run_if_enabled
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
-        #     print(str(self))
+        print(str(self))
         result = self.main()
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)
@@ -129,7 +129,7 @@ class Command():
 
         return False
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
             return False
 
@@ -138,7 +138,7 @@ class Command():
 
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
-        press_acc(self.__class__.key, up_time=self.__class__.backswing)
+        press_acc(self.__class__.key, up_time=self.__class__.backswing if wait else 0)
         return True
 
 
@@ -246,7 +246,7 @@ def sleep_while_move_y(interval=0.02, n=15):
 
 
 @bot_status.run_if_enabled
-def sleep_in_the_air(interval=0.02, n=3, start_y=0):
+def sleep_in_the_air(interval=0.005, n=4, start_y=0):
     if map.minimap_data is None or len(map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
         return
@@ -379,13 +379,14 @@ def detect_mobs(insets: AreaInsets = None,
                 bot_status.player_pos)
         crop = frame[max(0, anchor[1]-insets.top):anchor[1]+insets.bottom,
                      max(0, anchor[0]-insets.left):anchor[0]+insets.right]
+        # utils.show_image(crop)
 
     mobs = []
     for mob_template in mob_templates:
         mobs_tmp = utils.multi_match(
             crop,
             mob_template,
-            threshold=0.99 if type == MobType.NORMAL else 0.9,
+            threshold=0.95 if type == MobType.NORMAL else 0.9,
             debug=debug)
         if len(mobs_tmp) > 0:
             for mob in mobs_tmp:
@@ -432,7 +433,7 @@ class Walk(Command):
         self.interval = bot_settings.validate_nonnegative_float(interval)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
         self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
-        print(str(self))
+        # print(str(self))
 
     def main(self):
         d_x = self.target_x - bot_status.player_pos[0]
@@ -477,7 +478,7 @@ class Wait(Command):
 
 
 class Detect(Command):
-    def __init__(self, count=1, top=200, bottom=100, left=600, right=600):
+    def __init__(self, count=1, top=315, bottom=0, left=500, right=500):
         super().__init__(locals())
         self.count = int(count)
         self.top = int(top)
@@ -486,7 +487,8 @@ class Detect(Command):
         self.right = int(right)
 
     def main(self):
-        anchor = capture.locate_player_fullscreen(accurate=True)
+        # anchor = capture.locate_player_fullscreen(accurate=True)
+        anchor = (469, 490)
         start = time.time()
         while True:
             mobs = detect_mobs(insets=AreaInsets(top=self.top, bottom=self.bottom, left=self.left, right=self.right),
@@ -545,9 +547,11 @@ class Fall(Command):
     from their starting position.
     """
 
-    def __init__(self, attack=False):
+    def __init__(self, attack=False, forward=False, buff=False):
         super().__init__(locals())
         self.attack = bot_settings.validate_boolean(attack)
+        self.forward = bot_settings.validate_boolean(forward)
+        self.buff = bot_settings.validate_boolean(buff)
 
     def main(self):
         evade_rope()
@@ -557,7 +561,14 @@ class Fall(Command):
         key_up('down')
         if self.attack:
             Attack().main()
-        sleep_in_the_air(n=2)
+        elif self.forward:
+            time.sleep(0.15)
+            press(Keybindings.JUMP, down_time=0.02, up_time=0.02)
+            press(Keybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
+        if self.buff:
+            Buff().main(wait=False)
+            
+        sleep_in_the_air(n=1)
 
 
 class SolveRune(Command):
@@ -721,7 +732,9 @@ class Mining(Command):
 class Buff(Command):
     """Undefined 'buff' command for the default command book."""
 
-    def main(self):
+
+
+    def main(self, wait=True):
         print(
             "\n[!] 'Buff' command not implemented in current command book, aborting process.")
         bot_status.enabled = False
@@ -1099,7 +1112,8 @@ class ErdaShower(Skill):
             return
         if self.direction:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
-        press(Keybindings.ERDA_SHOWER, 2)
+        time.sleep(0.3)
+        press(Keybindings.ERDA_SHOWER, 1)
         self.__class__.castedTime = time.time()
         time.sleep(self.__class__.backswing)
 
