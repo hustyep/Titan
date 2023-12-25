@@ -181,7 +181,9 @@ class Detector(Subject):
         if maple_reward:
             ActionSimulator.mouse_left_click(get_full_pos((1351, 586)), delay=1)
 
-        
+        adv = utils.multi_match(frame[190:200, 1000:1100], ADV_CLOSE_TEMPLATE, threshold=0.9)
+        if adv:
+            ActionSimulator.mouse_left_click(get_full_pos(adv[0]), delay=1)
 
     def check_forground(self):
         frame = capture.camera.get_latest_frame()
