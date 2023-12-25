@@ -197,7 +197,7 @@ class ActionSimulator:
             
     @staticmethod
     def auto_login(channel=33):
-        chat_bot.send_message(f'auto login:{channel}')
+        chat_bot.send_message(f'try auto login:{channel}')
 
         if channel not in range(1, 41):
             chat_bot.send_message(f'auto login failed: wrong channel:{channel}')

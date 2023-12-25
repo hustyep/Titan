@@ -870,6 +870,8 @@ class Relogin(Command):
         self.channel = bot_settings.validate_nonnegative_int(channel)
 
     def main(self):
+        chat_bot.send_message(f'Relogin:{self.channel}')
+        
         bot_status.enabled = False
 
         hid.key_press('esc')
