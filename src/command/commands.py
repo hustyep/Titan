@@ -290,8 +290,6 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         return target
     elif d_y < 0:
         tmp_x = (target[0], start[1])
-        if target_reached(tmp_x, target, tolerance):
-            return tmp_x
         tmp_y = (start[0], target[1])
         if map.is_continuous(tmp_y, target):
             return tmp_y

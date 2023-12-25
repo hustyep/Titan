@@ -2,6 +2,7 @@
 
 import time
 import math
+import threading
 from src.common.interfaces import AsyncTask
 from src.command.commands import *
 from src.common.vkeys import *
@@ -230,10 +231,10 @@ class DoubleJump(Skill):
                 press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
             press(self.key, times, down_time=0.03, up_time=0.03)
 
-        # if start_y == 68:
-        #     time.sleep(0.1)
-        # else:
-        sleep_in_the_air(n=1, start_y=start_y)
+        if start_y == 68:
+            time.sleep(0.001)
+        else:
+            sleep_in_the_air(n=1, start_y=start_y)
         key_up(direction)
         # time.sleep(0.01)
 
@@ -251,7 +252,7 @@ class ShadowAssault(Skill):
     usable_times = 0
     cooldown = 60
     ready = False
-    x_range = range(15, 50)
+    x_range = range(0, 50)
     y_range = range(18, 42)
 
     def __init__(self, direction='up', jump='True', distance=80, target=None):
@@ -350,7 +351,6 @@ class ShadowAssault(Skill):
 class Attack(Command):
     key = Keybindings.CRUEL_STAB
     type = SkillType.Attack
-    backswing = 0.1
 
     def main(self):
         CruelStab().execute()
@@ -373,15 +373,16 @@ class CruelStab(Skill):
     key = Keybindings.CRUEL_STAB
     type = SkillType.Attack
     # cooldown = 0.5
-    backswing = 0.1
+    backswing = 0.01
 
     def main(self):
         if not self.canUse():
             return
         self.__class__.castedTime = time.time()
         jumped = not map.on_the_platform(bot_status.player_pos)
-        press_acc(self.key, 1, up_time=0.25)
-        MesoExplosion().execute()
+        press_acc(self.key, 1)
+        threading.Timer(0.3, MesoExplosion().execute, ).start()
+        # MesoExplosion().execute()
         time.sleep(0.5 if not jumped else self.backswing)
 
 
