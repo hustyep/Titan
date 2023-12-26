@@ -1,6 +1,7 @@
 """A module for detecting and notifying the user of dangerous in-game events."""
 import os
 import time
+from datetime import datetime
 import string
 import threading
 import operator
@@ -184,6 +185,13 @@ class Detector(Subject):
         adv = utils.multi_match(frame[190:200, 1000:1100], ADV_CLOSE_TEMPLATE, threshold=0.9)
         if adv:
             ActionSimulator.mouse_left_click(get_full_pos(adv[0]), delay=1)
+        
+        
+        today = datetime.now().weekday()
+        if today == 6:
+            sunday = utils.multi_match(frame[180:235, 630:700], SUNNY_SUNDAY_TEMPLATE, threshold=0.9)
+            if sunday:
+                ActionSimulator.mouse_left_click(get_full_pos((890, 330)), delay=1)
 
     def check_forground(self):
         frame = capture.camera.get_latest_frame()
