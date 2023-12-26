@@ -1,10 +1,11 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=1
-*, x=28, y=39, interval=120000, tolerance=8, detect=False, skip=True
-    Relogin, channel=34
+*, x=28, y=39, interval=5000, tolerance=8, detect=False, skip=True
+    GoArdentmill
 
 ~, label=Summon Loop, interval=42, skip=False
 *, x=28, y=39, interval=0, tolerance=8, detect=False, skip=False
+    Direction, direction=right
     Fall, attack=False, forward=True, buff=False
 *, x=46, y=54, interval=0, tolerance=2, detect=False, skip=False
     ShadowVeil, direction=right
@@ -12,9 +13,10 @@ $, target=mini_margin, value=1
 *, x=151, y=39, interval=0, tolerance=2, detect=False, skip=False
     ErdaShower
 *, x=91, y=39, interval=0, tolerance=2, detect=False, skip=False
-    DarkFlare, direction=left
-*, x=91, y=68, interval=0, tolerance=8, detect=False, skip=False
-*, x=178, y=68, interval=0, tolerance=12, detect=False, skip=False
+    Wait, duration=0.3
+    DarkFlare
+*, x=115, y=68, interval=0, tolerance=8, detect=False, skip=False
+*, x=176, y=68, interval=0, tolerance=12, detect=False, skip=False
     Fall, attack=False, forward=False, buff=False
     Wait, duration=0.5
 #

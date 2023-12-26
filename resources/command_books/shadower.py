@@ -321,7 +321,7 @@ class ShadowAssault(Skill):
         if self.jump:
             if self.direction.startswith('down'):
                 key_down('down')
-                press(Keybindings.JUMP, 1, down_time=0.2, up_time=0.2)
+                press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.2)
                 key_up("down")
             else:
                 press(Keybindings.JUMP)

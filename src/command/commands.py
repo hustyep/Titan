@@ -907,7 +907,55 @@ class MapTeleport(Command):
             time.sleep(0.1)
         time.sleep(2)
         bot_status.enabled = True
-
+        
+class Direction(Command):
+    def __init__(self, direction):
+        super().__init__(locals())
+        self.direction = bot_settings.validate_arrows(direction)
+        
+    def main(self):
+        press(self.direction, down_time=0.01, up_time=0.02)
+        
+class GoArdentmill(Command):
+    def main(self):
+        bot_status.enabled = False
+        hid.key_press("=")
+        time.sleep(3)
+        hid.key_press("'")
+        time.sleep(0.5)
+        hid.mouse_abs_move(*get_full_pos((936, 150)))
+        time.sleep(0.5)
+        hid.mouse_left_click()
+        time.sleep(0.5)
+        hid.key_press("enter")
+        time.sleep(1)
+        frame = capture.frame
+        x = (frame.shape[1] - 260) // 2
+        y = (frame.shape[0] - 220) // 2
+        ok_btn = utils.multi_match(
+            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+        if ok_btn:
+            hid.key_press('esc')
+            time.sleep(1)
+            GoArdentmill().main()
+            return
+        
+        while (not bot_status.lost_minimap):
+            time.sleep(0.1)
+        while (bot_status.lost_minimap):
+            time.sleep(0.1)
+        time.sleep(2)
+        hid.key_press('up')
+        time.sleep(0.5)
+        while (not bot_status.lost_minimap):
+            hid.key_press('up')
+            time.sleep(0.3)
+        while (bot_status.lost_minimap):
+            time.sleep(0.1)
+        time.sleep(2)
+        hid.key_press('esc')
+        bot_status.enabled = True
+    
 ###########################
 #      Abstract Skill     #
 ###########################
