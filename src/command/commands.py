@@ -555,12 +555,12 @@ class Fall(Command):
         evade_rope()
         key_down('down')
         time.sleep(0.03)
-        press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.1)
+        press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.05)
         key_up('down')
         if self.attack:
             Attack().main()
         elif self.forward:
-            time.sleep(0.15)
+            time.sleep(0.2)
             press(Keybindings.JUMP, down_time=0.02, up_time=0.02)
             press(Keybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
         if self.buff:
@@ -917,32 +917,53 @@ class Direction(Command):
         press(self.direction, down_time=0.01, up_time=0.02)
         
 class GoArdentmill(Command):
+    def __init__(self, invisible=True):
+        super().__init__(locals())
+        self.invisible = invisible
+        
     def main(self):
         bot_status.enabled = False
-        hid.key_press("=")
-        time.sleep(3)
+        if self.invisible:
+            hid.key_press("=")
+            time.sleep(3)
         hid.key_press("'")
         time.sleep(0.5)
         hid.mouse_abs_move(*get_full_pos((936, 150)))
         time.sleep(0.5)
         hid.mouse_left_click()
         time.sleep(0.5)
-        hid.key_press("enter")
-        time.sleep(1)
+
         frame = capture.frame
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 220) // 2
         ok_btn = utils.multi_match(
             frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
-        if ok_btn:
+        cancel_btn = utils.multi_match(
+            frame[y:y+220, x:x+260], BUTTON_CANCEL_TEMPLATE, threshold=0.9)
+        if cancel_btn:
+            print("ok")
+            hid.key_press("enter")
+            time.sleep(1)
+        elif ok_btn:
             hid.key_press('esc')
             time.sleep(1)
-            GoArdentmill().main()
+            print("not ok")
+            GoArdentmill(False).main()
             return
-        
+        else:
+            print("nothing")
+            GoArdentmill(False).main()
+            return
+        start = time.time()
         while (not bot_status.lost_minimap):
             time.sleep(0.1)
+            print("not lost_minimap")
+
+            if time.time() - start > 3:
+                GoArdentmill(False).main()
+                return
         while (bot_status.lost_minimap):
+            print("lost_minimap")
             time.sleep(0.1)
         time.sleep(2)
         hid.key_press('up')

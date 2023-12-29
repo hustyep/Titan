@@ -270,7 +270,7 @@ class ShadowAssault(Skill):
                 self.jump = True
             elif dy > 0 and abs(dx) >= 15:
                 self.direction = 'downright' if dx > 0 else 'downleft'
-                self.jump = abs(dy) > 40
+                self.jump = abs(dy) > 25
             elif dy == 0:
                 self.direction = 'left' if dx < 0 else 'right'
                 self.jump = False
@@ -305,10 +305,10 @@ class ShadowAssault(Skill):
 
         if self.direction.endswith('left'):
             if bot_status.player_direction != 'left':
-                press('left', down_time=0.1)
+                press('left', down_time=0.01,up_time=0.01)
         elif self.direction.endswith("right"):
             if bot_status.player_direction != 'right':
-                press("right", down_time=0.1)
+                press("right", down_time=0.01,up_time=0.01)
         elif self.direction != 'left' and self.direction != 'right':
             time.sleep(0.2)
             evade_rope(self.target)
@@ -321,7 +321,8 @@ class ShadowAssault(Skill):
         if self.jump:
             if self.direction.startswith('down'):
                 key_down('down')
-                press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.2)
+                time.sleep(0.01)
+                press_acc(Keybindings.JUMP, down_time=0.2, up_time=0.1)
                 key_up("down")
             else:
                 press(Keybindings.JUMP)
@@ -331,7 +332,7 @@ class ShadowAssault(Skill):
                     time.sleep(0.2 if abs(dy) >= 39 else 0.05)
 
         key_down(self.direction)
-        time.sleep(0.03)
+        time.sleep(0.02)
 
         self.__class__.usable_times -= 1
         press(self.key)

@@ -1,7 +1,7 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=1
-*, x=28, y=39, interval=5000, tolerance=8, detect=False, skip=True
-    GoArdentmill
+*, x=28, y=39, interval=30000, tolerance=8, detect=False, skip=True
+    GoArdentmill, invisible=True
 
 ~, label=Summon Loop, interval=42, skip=False
 *, x=28, y=39, interval=0, tolerance=8, detect=False, skip=False
@@ -12,7 +12,7 @@ $, target=mini_margin, value=1
 *, x=176, y=68, interval=0, tolerance=5, detect=False, skip=False
 *, x=151, y=39, interval=0, tolerance=2, detect=False, skip=False
     ErdaShower
-*, x=91, y=39, interval=0, tolerance=2, detect=False, skip=False
+*, x=90, y=39, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.3
     DarkFlare
 *, x=115, y=68, interval=0, tolerance=8, detect=False, skip=False
@@ -32,4 +32,4 @@ $, target=mini_margin, value=1
 *, x=28, y=68, interval=0, tolerance=8, detect=False, skip=False
 *, x=164, y=68, interval=0, tolerance=10, detect=False, skip=False
     Fall, attack=False, forward=False, buff=True
-    Wait, duration=0.6
+    Wait, duration=0.65
