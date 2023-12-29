@@ -450,6 +450,9 @@ class SuddenRaid(Skill):
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         usable = super().canUse()
+        if not gui_setting.detection.detect_mob:
+            return usable
+        
         if usable:
             mobs = detect_mobs()
             return mobs is None or len(mobs) > 0

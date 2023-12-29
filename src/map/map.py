@@ -220,10 +220,13 @@ class Map:
         return False
 
     def on_the_platform(self, location: tuple[int, int]):
-        x = location[0]
-        y = location[1] + 7
-        value = self.point_type((x, y))
-        return value == MapPointType.Floor or value == MapPointType.FloorRope
+        if self.data_available:
+            x = location[0]
+            y = location[1] + 7
+            value = self.point_type((x, y))
+            return value == MapPointType.Floor or value == MapPointType.FloorRope
+        else:
+            return True
 
     def platform_point(self, target: tuple[int, int]):
         if self.data_available:

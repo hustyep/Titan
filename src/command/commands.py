@@ -171,15 +171,15 @@ class Move(Command):
             print("-----------------------edge reached")
             pos = capture.convert_point_minimap_to_window(
                 bot_status.player_pos)
-            key_up(bot_status.player_direction)
-            if bot_status.player_direction == 'left':
-                mobs = detect_mobs(
-                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
-            else:
-                mobs = detect_mobs(
-                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
-            if mobs:
-                Attack().execute()
+            # key_up(bot_status.player_direction)
+            # if bot_status.player_direction == 'left':
+            #     mobs = detect_mobs(
+            #         anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
+            # else:
+            #     mobs = detect_mobs(
+            #         anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
+            # if mobs:
+            #     Attack().execute()
 
         Command.complete_callback(self)
 
