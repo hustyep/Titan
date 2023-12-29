@@ -1,0 +1,20 @@
+$, target=move_tolerance, value=10
+$, target=mini_margin, value=11
+
+@, label=Bottom mobbing
+*, x=1, y=65, interval=0, tolerance=10, detect=False, skip=False
+*, x=73, y=65, interval=42, tolerance=4, detect=False, skip=False
+    ShadowVeil, direction=right
+*, x=158, y=65, interval=0, tolerance=10, detect=False, skip=False
+
+@, label=Summoning
+*, x=158, y=65, interval=42, tolerance=8, detect=False, skip=False
+    Wait, duration=0.1
+*, x=132, y=36, interval=42, tolerance=2, detect=False, skip=False
+    Wait, duration=0.1
+    SuddenRaid
+    ErdaShower, direction=left
+    SuddenRaid
+*, x=42, y=37, interval=42, tolerance=2, detect=False, skip=False
+    TrickBlade, direction=left
+    DarkFlare, direction=left
