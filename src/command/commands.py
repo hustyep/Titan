@@ -1263,11 +1263,11 @@ class RopeLift(Skill):
     def main(self):
 
         if self.dy >= 45:
-            press(Keybindings.JUMP, up_time=0.2)
+            press(Keybindings.JUMP, up_time=0.5)
             press(self.__class__.key)
-            sleep_in_the_air(n=10)
+            sleep_in_the_air(n=30)
         elif self.dy >= 32:
-            press(Keybindings.JUMP, up_time=0.1)
+            press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)
             sleep_in_the_air(n=20)
 

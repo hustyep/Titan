@@ -172,7 +172,7 @@ class Detector(Subject):
         if capture.frame is None:
             return
         frame = capture.frame
-        guide = utils.multi_match(frame[0:150, 700:900], GUIDE_PLUSE_TEMPLATE, threshold=0.9)
+        guide = utils.multi_match(frame[0:150, ], GUIDE_PLUSE_TEMPLATE, threshold=0.9)
         if guide:
             hid.key_press('esc')
             time.sleep(1)
