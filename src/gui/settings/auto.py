@@ -138,9 +138,9 @@ class Auto(LabelFrame):
         print("_cube_onemore")
         hid.mouse_left_click()
         time.sleep(0.5)
-        for _ in range(0, 3):
+        for _ in range(0, 4):
             hid.key_press('enter')
-            time.sleep(0.1)
+            time.sleep(0.2)
             
         x, y, width, height = rect
         start = time.time()

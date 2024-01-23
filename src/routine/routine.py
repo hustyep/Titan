@@ -384,8 +384,7 @@ class Routine(Subject):
         if bot_status.point_checking:
             return
         bot_status.point_checking = True
-        if bot_status.rune_pos is not None \
-                and (utils.distance(p, bot_status.rune_pos) <= 25 or p == bot_status.rune_closest_pos):
+        if bot_status.rune_pos is not None:
             result, frame = self.command_book.SolveRune(
                 bot_status.rune_pos).execute()
             threading.Thread(target=self.solve_rune_callback,
@@ -417,6 +416,8 @@ class Routine(Subject):
                 ActionSimulator.cancel_rune_buff()
 
     def notify_rune_failed(self, used_frame):
+        bot_status.rune_pos = None
+        bot_status.rune_closest_pos = None
         self.on_next((BotWarnning.RUNE_FAILED, ))
         file_path = 'screenshot/rune_failed'
         utils.save_screenshot(

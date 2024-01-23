@@ -167,6 +167,11 @@ class Detector(Subject):
         if confirm_btn:
             hid.key_press('esc')
             time.sleep(0.1)
+            
+        chat_btn = utils.multi_match(
+            frame, CHAT_MINI_TEMPLATE, threshold=0.9)
+        if chat_btn:
+            ActionSimulator.mouse_left_click(get_full_pos(chat_btn[0]), delay=0.5)
 
     def check_init(self):
         if capture.frame is None:

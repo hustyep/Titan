@@ -36,6 +36,8 @@ ADV_CLOSE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/adv_close_template.png', 0)
 SUNNY_SUNDAY_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/sunny_sunday_template.png', 0)
+CHAT_MINI_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/chat_mini_template.png', 0)
 # dead alert
 DEAD_TOBBSTONE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/dead_tombstone_template.png', 0)
@@ -46,7 +48,7 @@ SKULL_TEMPLATE = cv2.imread(f'{ASSETS_PATH}exceptions/skull_template.png', 0)
 
 # tabbar icon
 TABBAR_MAPLE_TEMPLATE = cv2.imread(
-    f'{ASSETS_PATH}exceptions/icon_maplestory_win10_template.png', 0)
+    f'{ASSETS_PATH}exceptions/icon_maplestory_template.png', 0)
 TABBAR_WECHAT_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/icon_wechat_template.png', 0)
 TABBAR_NX_TEMPLATE = cv2.imread(

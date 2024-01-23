@@ -112,7 +112,7 @@ class Command():
     @bot_status.run_if_enabled
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
-        print(str(self))
+        # print(str(self))
         result = self.main()
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)
@@ -924,8 +924,8 @@ class GoArdentmill(Command):
     def main(self):
         bot_status.enabled = False
         if self.invisible:
-            hid.key_press("=")
-            time.sleep(3)
+            hid.key_press("v")
+            time.sleep(5)
         hid.key_press("'")
         time.sleep(0.5)
         hid.mouse_abs_move(*get_full_pos((936, 150)))
@@ -1357,7 +1357,7 @@ class EXP_Potion(Command):
 
 class Wealth_Potion(Command):
     key = Keybindings.WEALTH_POTION
-    cooldown = 7250
+    cooldown = 1810
     backswing = 0.5
 
     @classmethod

@@ -232,7 +232,8 @@ class DoubleJump(Skill):
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         if start_y == 68:
-            time.sleep(0.001)
+            pass
+            # time.sleep(0.001)
         else:
             sleep_in_the_air(n=1, start_y=start_y)
         key_up(direction)
@@ -374,7 +375,7 @@ class CruelStab(Skill):
     key = Keybindings.CRUEL_STAB
     type = SkillType.Attack
     # cooldown = 0.5
-    backswing = 0.01
+    backswing = 0.001
 
     def main(self):
         if not self.canUse():

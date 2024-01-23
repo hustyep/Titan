@@ -158,7 +158,7 @@ class Map:
             elif self.minimap_data[i][x] == 1 or self.minimap_data[i][x] == 3:
                 self.minimap_data[i][x] = 3
                 break
-        self.save_minimap_data()
+        self.save_minimap_data() 
 
     def load_mob_template(self):
         try:
