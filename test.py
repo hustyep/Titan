@@ -309,6 +309,11 @@ def cube_test():
     matchs1 = utils.multi_match(frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=True)
     matchs2 = utils.multi_match(frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=True)
 
+def match_test():
+    frame = cv2.imread(".test/Maple_240127_142616.png")
+    go_btn = utils.multi_match(
+            frame, Go_Ardentmill_TEMPLATE, threshold=0.9, debug=True)
+
 if __name__ == "__main__":
     # subject_test()
     # minimap_to_window_test()
@@ -316,5 +321,6 @@ if __name__ == "__main__":
     # cube_test()
     # minimap_test()
     # msg_test()
-    mob_detect_test()
+    # mob_detect_test()
     # auto_login_test()
+    match_test()

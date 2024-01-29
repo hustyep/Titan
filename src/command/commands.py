@@ -928,10 +928,20 @@ class GoArdentmill(Command):
             time.sleep(5)
         hid.key_press("'")
         time.sleep(0.5)
-        hid.mouse_abs_move(*get_full_pos((936, 150)))
-        time.sleep(0.5)
-        hid.mouse_left_click()
-        time.sleep(0.5)
+        
+        go_btn = utils.multi_match(
+            capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
+        if go_btn:
+            hid.mouse_abs_move(*get_full_pos(go_btn[0]))
+            time.sleep(0.5)
+            hid.mouse_left_click()
+            time.sleep(0.5)
+        else:
+            print("not found")
+            hid.key_press('esc')
+            time.sleep(1)
+            bot_status.enabled = True
+            return
 
         frame = capture.frame
         x = (frame.shape[1] - 260) // 2
@@ -1265,7 +1275,8 @@ class RopeLift(Skill):
         if self.dy >= 45:
             press(Keybindings.JUMP, up_time=0.5)
             press(self.__class__.key)
-            sleep_in_the_air(n=30)
+            time.sleep(1.8)
+            sleep_in_the_air(n=50)
         elif self.dy >= 32:
             press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)

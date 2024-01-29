@@ -38,6 +38,8 @@ SUNNY_SUNDAY_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/sunny_sunday_template.png', 0)
 CHAT_MINI_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/chat_mini_template.png', 0)
+Go_Ardentmill_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/GoArdentmill.png', 0)
 # dead alert
 DEAD_TOBBSTONE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/dead_tombstone_template.png', 0)

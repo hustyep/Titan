@@ -11,6 +11,7 @@ $, target=mini_margin, value=1
     ShadowVeil, direction=right
 *, x=176, y=68, interval=0, tolerance=5, detect=False, skip=False
 *, x=151, y=39, interval=0, tolerance=2, detect=False, skip=False
+    Wait, duration=0.1
     ErdaShower
 *, x=90, y=39, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.3
