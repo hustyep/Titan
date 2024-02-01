@@ -333,7 +333,7 @@ class ShadowAssault(Skill):
                     time.sleep(0.2 if abs(dy) >= 39 else 0.05)
 
         key_down(self.direction)
-        time.sleep(0.02)
+        time.sleep(0.03)
 
         self.__class__.usable_times -= 1
         press(self.key)

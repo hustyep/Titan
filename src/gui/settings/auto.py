@@ -128,7 +128,7 @@ class Auto(LabelFrame):
         matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=False)
         print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
 
-        if len(matchs1) + len(matchs2) >= 2:
+        if len(matchs1) + len(matchs2) == 3:
             return True
         else:
             return False

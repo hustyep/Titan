@@ -310,9 +310,11 @@ def cube_test():
     matchs2 = utils.multi_match(frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=True)
 
 def match_test():
-    frame = cv2.imread(".test/Maple_240127_142616.png")
+    # Maple_240201_155106
+    
+    frame = cv2.imread(".test/Maple_240201_153809.png")
     go_btn = utils.multi_match(
-            frame, Go_Ardentmill_TEMPLATE, threshold=0.9, debug=True)
+            frame, SETTING_TEMPLATE, threshold=0.9, debug=True)
 
 if __name__ == "__main__":
     # subject_test()
