@@ -312,9 +312,11 @@ def cube_test():
 def match_test():
     # Maple_240201_155106
     
-    frame = cv2.imread(".test/Maple_240201_153809.png")
+    frame = cv2.imread(".test/Maple_240201_163216.png")
+    x = (frame.shape[1] - 260) // 2
+    y = (frame.shape[0] - 220) // 2
     go_btn = utils.multi_match(
-            frame, SETTING_TEMPLATE, threshold=0.9, debug=True)
+            frame[y:y+220, x:x+260], BUTTON_CANCEL_TEMPLATE, threshold=0.9, debug=True)
 
 if __name__ == "__main__":
     # subject_test()

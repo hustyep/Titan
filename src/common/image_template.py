@@ -71,6 +71,10 @@ WECHAT_CALL_TEMPLATE_2X = cv2.imread(
     f'{ASSETS_PATH}exceptions/wechat_call@2x.png', 0)
 
 # cube
+POTENTIAL_ATT13_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/att13.png', 0)
+POTENTIAL_ATT10_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/att10.png', 0)
 POTENTIAL_ATT12_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/att12.png', 0)
 POTENTIAL_ATT9_TEMPLATE = cv2.imread(
@@ -81,6 +85,22 @@ POTENTIAL_AFTER_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/cube_after.png', 0)
 POTENTIAL_LEGENDARY_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/legendary.png', 0)
+POTENTIAL_LUK13_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/luk13.png', 0)
+POTENTIAL_LUK12_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/luk12.png', 0)
+POTENTIAL_LUK10_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/luk10.png', 0)
+POTENTIAL_LUK9_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/luk9.png', 0)
+POTENTIAL_ALL10_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/all10.png', 0)
+POTENTIAL_ALL9_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/all9.png', 0)
+POTENTIAL_ALL7_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/all7.png', 0)
+POTENTIAL_ALL6_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/all6.png', 0)
 
 #####################
 #      mineral      #

@@ -1,4 +1,5 @@
 import tkinter as tk
+from enum import Enum
 from src.gui.interfaces import LabelFrame, Frame
 from src.common import bot_status
 from src.common.gui_setting import gui_setting
@@ -10,6 +11,14 @@ import keyboard
 from src.common.hid import hid
 import time
 import threading
+
+class PotentialType(Enum):
+    ATT = 'att'
+    LUK = 'luck'
+
+class PotentialLevel(Enum):
+    HIGH = 200
+    LOW = 160
 
 class Auto(LabelFrame):
     def __init__(self, parent, **kwargs):
@@ -105,7 +114,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect):
+            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.LOW):
                 self._stop_cube()
                 break
             else:
@@ -117,21 +126,52 @@ class Auto(LabelFrame):
         bot_status.cubing = False
     
     @bot_status.run_if_disabled('')
-    def _cube_result(self, rect):
+    def _cube_result(self, rect, type: PotentialType, level: PotentialLevel):
         x, y, width, height = rect
 
         while len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) == 0:
             time.sleep(0.05)
         time.sleep(1)
         result_frame = capture.frame[y:y+height, x:x+width]
-        matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=False)
-        matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=False)
-        print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
-
-        if len(matchs1) + len(matchs2) == 3:
-            return True
+        
+        if type == PotentialType.ATT:
+            if level == PotentialLevel.HIGH:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT10_TEMPLATE, threshold=0.95, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT13_TEMPLATE, threshold=0.95, debug=False)
+                print(f"cube_result:\natt10*{len(matchs1)}\natt13*{len(matchs2)}")
+            else:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=False)
+                print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
+            if len(matchs1) + len(matchs2) >= 2:
+                return True
+            else:
+                return False
         else:
-            return False
+            if level == PotentialLevel.HIGH:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK13_TEMPLATE, threshold=0.95, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK10_TEMPLATE, threshold=0.95, debug=False)
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL10_TEMPLATE, threshold=0.95, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL7_TEMPLATE, threshold=0.95, debug=False)
+                print(f"cube_result:\nLUK13*{len(matchs1)}\nLUK10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
+                total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
+                print(f"total={total}")
+                if total >= 33:
+                    return True
+                else:
+                    return False
+            else:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK12_TEMPLATE, threshold=0.95, debug=True)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK9_TEMPLATE, threshold=0.95, debug=False)
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL9_TEMPLATE, threshold=0.95, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL6_TEMPLATE, threshold=0.95, debug=False)
+                print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
+                total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
+                print(f"total={total}")
+                if total >= 30:
+                    return True
+                else:
+                    return False
     
     @bot_status.run_if_disabled('')
     def _cube_onemore(self, rect):

@@ -173,7 +173,7 @@ class Detector(Subject):
         if chat_btn:
             ActionSimulator.mouse_left_click(get_full_pos(chat_btn[0]), delay=0.5)
             
-        setting_btn = utils.multi_match(frame, SETTING_TEMPLATE, threshold=0.9)
+        setting_btn = utils.multi_match(frame[400:600, 800:1000], SETTING_TEMPLATE, threshold=0.9)
         if setting_btn:
             hid.key_press('esc')
             time.sleep(0.1)            

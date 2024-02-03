@@ -926,8 +926,14 @@ class GoArdentmill(Command):
         if self.invisible:
             hid.key_press("v")
             time.sleep(5)
-        hid.key_press("'")
-        time.sleep(0.5)
+        
+        go_btn = utils.multi_match(
+            capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
+        if go_btn:
+            pass
+        else:
+            hid.key_press("'")
+            time.sleep(0.5)
         
         go_btn = utils.multi_match(
             capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
@@ -949,7 +955,7 @@ class GoArdentmill(Command):
         ok_btn = utils.multi_match(
             frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
         cancel_btn = utils.multi_match(
-            frame[y:y+220, x:x+260], BUTTON_CANCEL_TEMPLATE, threshold=0.9)
+            frame, BUTTON_CANCEL_TEMPLATE, threshold=0.9, debug=False)
         if cancel_btn:
             print("ok")
             hid.key_press("enter")
@@ -958,7 +964,7 @@ class GoArdentmill(Command):
             hid.key_press('esc')
             time.sleep(1)
             print("not ok")
-            GoArdentmill(False).main()
+            GoArdentmill(True).main()
             return
         else:
             print("nothing")
@@ -985,7 +991,14 @@ class GoArdentmill(Command):
             time.sleep(0.1)
         time.sleep(2)
         hid.key_press('esc')
-        bot_status.enabled = True
+        
+        map_available = chenck_map_available(instance=True)
+        
+        if map_available:
+            bot_status.enabled = True
+            bot_status.change_channel = False
+        else:
+            ChangeChannel().main()
     
 ###########################
 #      Abstract Skill     #
