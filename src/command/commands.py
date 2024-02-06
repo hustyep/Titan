@@ -968,6 +968,8 @@ class GoArdentmill(Command):
             return
         else:
             print("nothing")
+            hid.key_press('esc')
+            time.sleep(0.2)
             GoArdentmill(False).main()
             return
         start = time.time()
