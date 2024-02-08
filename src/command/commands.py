@@ -278,6 +278,7 @@ def sleep_in_the_air(interval=0.005, n=4, start_y=0):
 
 @bot_status.run_if_enabled
 def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
+    # print(f"find_next_point:\n start:{start}, target:{target}, tolerance:{tolerance}")
     if map.minimap_data is None or len(map.minimap_data) == 0:
         return target
 
@@ -924,7 +925,7 @@ class GoArdentmill(Command):
     def main(self):
         bot_status.enabled = False
         if self.invisible:
-            hid.key_press("v")
+            hid.key_press("=")
             time.sleep(5)
         
         go_btn = utils.multi_match(
@@ -1292,8 +1293,14 @@ class RopeLift(Skill):
             press(self.__class__.key)
             time.sleep(1.8)
             sleep_in_the_air(n=50)
-        elif self.dy >= 32:
+        elif self.dy > 30:
             press(Keybindings.JUMP, up_time=0.3)
+            press(self.__class__.key)
+            sleep_in_the_air(n=30)
+        else:
+            press(Keybindings.JUMP, up_time=0.3)
+            press(self.__class__.key)
+            time.sleep(0.55)
             press(self.__class__.key)
             sleep_in_the_air(n=20)
 

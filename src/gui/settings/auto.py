@@ -13,6 +13,7 @@ import time
 import threading
 
 class PotentialType(Enum):
+    MOB = 'mob'
     ATT = 'att'
     LUK = 'luck'
 
@@ -106,7 +107,7 @@ class Auto(LabelFrame):
             y = pos[1] + 23
         elif matchs2:
             pos = matchs2[0]
-            x = pos[0] - 23
+            x = pos[0] - 20
             y = pos[1] + 23
         else:
             self._stop_cube()
@@ -114,13 +115,17 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.LOW):
+            if self._cube_result(rect, PotentialType.MOB, PotentialLevel.LOW):
                 self._stop_cube()
                 break
             else:
                 self._cube_onemore(rect)
             
     @bot_status.run_if_disabled('')
+    
+    
+    
+    
     def _stop_cube(self):
         print("_stop_cube")
         bot_status.cubing = False
@@ -147,7 +152,7 @@ class Auto(LabelFrame):
                 return True
             else:
                 return False
-        else:
+        elif type == PotentialType.LUK:
             if level == PotentialLevel.HIGH:
                 matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK13_TEMPLATE, threshold=0.95, debug=False)
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK10_TEMPLATE, threshold=0.95, debug=False)
@@ -161,17 +166,54 @@ class Auto(LabelFrame):
                 else:
                     return False
             else:
-                matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK12_TEMPLATE, threshold=0.95, debug=True)
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK12_TEMPLATE, threshold=0.95, debug=False)
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK9_TEMPLATE, threshold=0.95, debug=False)
-                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL9_TEMPLATE, threshold=0.95, debug=False)
-                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL6_TEMPLATE, threshold=0.95, debug=False)
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL9_TEMPLATE, threshold=0.96, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL6_TEMPLATE, threshold=0.96, debug=False)
+                print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
+                total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
+                
+                
+                
+                
+                print(f"total={total}")
+                if total >= 30:
+                    return True
+                else:
+                    return False
+        else:
+            matchs1 = utils.multi_match(result_frame, POTENTIAL_MESOS_TEMPLATE, threshold=0.9, debug=False)
+            matchs2 = utils.multi_match(result_frame, POTENTIAL_DROP_TEMPLATE, threshold=0.9, debug=False)
+            print(f"cube_result:\nmeso*{len(matchs1)}\ndrop*{len(matchs2)}")
+            total = len(matchs1) + len(matchs2)
+            print(f"total={total}")
+            if total >= 2:
+                return True
+            
+            if level == PotentialLevel.HIGH:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK13_TEMPLATE, threshold=0.95, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK10_TEMPLATE, threshold=0.95, debug=False)
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL10_TEMPLATE, threshold=0.95, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL7_TEMPLATE, threshold=0.95, debug=False)
+                print(f"cube_result:\nLUK13*{len(matchs1)}\nLUK10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
+                total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
+                print(f"total={total}")
+                if total >= 33:
+                    return True
+                else:
+                    return False
+            else:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK12_TEMPLATE, threshold=0.95, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK9_TEMPLATE, threshold=0.95, debug=False)
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL9_TEMPLATE, threshold=0.96, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL6_TEMPLATE, threshold=0.96, debug=False)
                 print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
                 print(f"total={total}")
                 if total >= 30:
                     return True
                 else:
-                    return False
+                    return False      
     
     @bot_status.run_if_disabled('')
     def _cube_onemore(self, rect):

@@ -17,16 +17,11 @@ class Keybindings(DefaultKeybindings):
     ROPE_LIFT = 'b'
 
     # Buffs
-    GODDESS_BLESSING = '1'
-    LAST_RESORT = '2'
     EPIC_ADVENTURE = '3'
     MEMORIES = '4'
-    MAPLE_WARRIOR = '5'
     SHADOW_WALKER = 'shift'
     THROW_BLASTING = 'v'
     Throwing_Star_Barrage_Master = 'z'
-    FOR_THE_GUILD = '7'
-    HARD_HITTER = '8'
     MARK = 'f1'
 
     # Potion
@@ -73,6 +68,7 @@ def step(target, tolerance):
         return
 
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
+    print(f"next_p:{next_p}")
     if not next_p:
         return
 
@@ -175,11 +171,11 @@ class DoubleJump(Skill):
             # detect = AsyncTask(
             #     target=self.detect_mob, args=(direction, ))
             # detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.02)
             # mobs_detected = detect.join()
             mobs_detected = True
             times = 2 if mobs_detected else 1
-            press(self.key, 1, down_time=0.03, up_time=0.03)
+            press(self.key, 1, down_time=0.03, up_time=0.02)
             if mobs_detected:
                 Attack().execute()
         else:
@@ -194,7 +190,10 @@ class DoubleJump(Skill):
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        sleep_in_the_air(n=1, start_y=start_y)
+        if start_y == 68:
+            time.sleep(0.015)
+        else:
+            sleep_in_the_air(n=1, start_y=start_y)
 
 
 # 上跳
@@ -322,14 +321,14 @@ class SuddenRaid(Skill):
         cls.ready = len(matchs) > 0
 
 
-class Omen(Command):
+class Omen(Skill):
     key = Keybindings.OMEN
     type = SkillType.Buff
     cooldown = 60
     backswing = 0.8
 
 
-class Shurrikane(Command):
+class Shurrikane(Skill):
     key = Keybindings.SHURIKEN
     type = SkillType.Attack
     cooldown = 20
@@ -365,16 +364,24 @@ class Buff(Command):
             ForTheGuild,
             HardHitter,
             ShadowWalker,
-            Memories,
             ThrowBlasting,
         ]
 
-    def main(self):
+    def main(self, wait=True):
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!use buff")
         for buff in self.buffs:
             if buff.canUse():
-                buff().main()
-                break
-
+                print(buff)
+                result = buff().main(wait)
+                if result:
+                    break
+    
+class Memories(Skill):
+    key = Keybindings.MEMORIES
+    cooldown = 180
+    precast = 0.3
+    backswing = 0.8
+    type = SkillType.Buff
 
 class EPIC_ADVENTURE(Skill):
     key = Keybindings.EPIC_ADVENTURE
@@ -391,7 +398,7 @@ class ShadowWalker(Skill):
     backswing = 0.8
 
 
-class ThrowBlasting(Command):
+class ThrowBlasting(Skill):
     key = Keybindings.THROW_BLASTING
     type = SkillType.Buff
     cooldown = 180

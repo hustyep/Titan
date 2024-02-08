@@ -101,6 +101,10 @@ POTENTIAL_ALL7_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/all7.png', 0)
 POTENTIAL_ALL6_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/all6.png', 0)
+POTENTIAL_MESOS_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/mesos.png', 0)
+POTENTIAL_DROP_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/drop.png', 0)
 
 #####################
 #      mineral      #
