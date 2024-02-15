@@ -1,6 +1,6 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=1
-*, x=28, y=39, interval=9000, tolerance=8, detect=False, skip=False
+*, x=28, y=39, interval=6000, tolerance=8, detect=False, skip=False
     GoArdentmill, invisible=True
 
 ~, label=Summon Loop, interval=42, skip=False
@@ -10,13 +10,16 @@ $, target=mini_margin, value=1
 *, x=46, y=54, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.1
     Omen
+*, x=90, y=54, interval=0, tolerance=8, detect=False, skip=False
+    SuddenRaid
 *, x=90, y=39, interval=0, tolerance=2, detect=False, skip=False
-    Wait, duration=0.3
-    DarkFlare
-*, x=148, y=39, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.1
+    DarkFlare
+*, x=150, y=39, interval=0, tolerance=5, detect=False, skip=False
+    Wait, duration=0.2
     ErdaShower, direction=left
-*, x=151, y=68, interval=0, tolerance=10, detect=False, skip=False
+*, x=168, y=39, interval=0, tolerance=10, detect=False, skip=False
+*, x=168, y=68, interval=0, tolerance=10, detect=False, skip=False
 *, x=90, y=68, interval=0, tolerance=10, detect=False, skip=False
     Direction, direction=right
     Fall, attack=False, forward=False, buff=True
@@ -33,5 +36,6 @@ $, target=mini_margin, value=1
     Fall, attack=True, forward=False, buff=False
 *, x=28, y=68, interval=0, tolerance=8, detect=False, skip=False
 *, x=155, y=68, interval=0, tolerance=8, detect=False, skip=False
+    Shurrikane
     Fall, attack=False, forward=False, buff=True
     Wait, duration=0.65

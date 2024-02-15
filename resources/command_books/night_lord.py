@@ -87,11 +87,11 @@ def step(target, tolerance):
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 26:
+    elif abs(d_x) >= 24:
         hit_and_run(direction, next_p, tolerance)
     elif abs(d_x) >= 10 and ShadowSurge.ready:
         ShadowSurge(direction).execute()
-        Attack().execute()
+        # Attack().execute()
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
@@ -175,7 +175,7 @@ class DoubleJump(Skill):
             # mobs_detected = detect.join()
             mobs_detected = True
             times = 2 if mobs_detected else 1
-            press(self.key, 1, down_time=0.03, up_time=0.02)
+            press(self.key, 1, down_time=0.02, up_time=0.03)
             if mobs_detected:
                 Attack().execute()
         else:
@@ -200,7 +200,7 @@ class DoubleJump(Skill):
 class ShadowLeap(Command):
     key = Keybindings.SHADOW_LEAP
     type = SkillType.Move
-    precast = 0.5
+    precast = 0.03
     backswing = 0.9
 
     def __init__(self, jump: bool = False):
@@ -221,7 +221,7 @@ class ShadowSurge(Skill):
     type = SkillType.Move
     cooldown = 5
     precast = 0
-    backswing = 0.2
+    backswing = 0.18
 
     def __init__(self, direction):
         super().__init__(locals())
@@ -328,19 +328,22 @@ class Omen(Skill):
     backswing = 0.8
 
 
-class Shurrikane(Skill):
+class Shurrikane(Command):
     key = Keybindings.SHURIKEN
     type = SkillType.Attack
-    cooldown = 20
-    backswing = 0.8
+    cooldown = 23
+    backswing = 0.35
 
     def __init__(self, stop: float = None):
         super().__init__(locals())
         self.stop = stop
 
     def main(self):
+        if not self.canUse():
+            return
+        self.__class__.castedTime = time.time()
         press(self.__class__.key, up_time=0)
-        if self.stop is not None:
+        if self.stop is not None and self.stop != 'None':
             time.sleep(self.stop)
             press(self.__class__.key, up_time=0)
             time.sleep(max(self.__class__.backswing - self.stop, 0))

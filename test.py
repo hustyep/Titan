@@ -315,6 +315,21 @@ def match_test():
     frame = cv2.imread(".test/Maple_240207_094040.png")
     go_btn = utils.multi_match(
             frame, POTENTIAL_DROP_TEMPLATE, threshold=0.9, debug=True)
+    
+def fire_test():
+    def image_to_str(image):
+        WHITE_RANGES = (
+            ((0, 0, 100), (180, 50, 255)),
+            ((0, 0, 150), (180, 30, 255)),
+        )
+        # image = utils.filter_color(image, WHITE_RANGES)
+        # utils.show_image(image)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        text = tess.image_to_string(image_rgb, lang="eng")
+        content = text.replace("\f", "").split("\n")
+        return content
+    image = cv2.imread('.test/Untitled1.png')
+    image_to_str(image)
 
 if __name__ == "__main__":
     # subject_test()
@@ -325,4 +340,5 @@ if __name__ == "__main__":
     # msg_test()
     # mob_detect_test()
     # auto_login_test()
-    match_test()
+    # match_test()
+    fire_test()

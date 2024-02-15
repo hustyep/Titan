@@ -939,8 +939,11 @@ class GoArdentmill(Command):
         go_btn = utils.multi_match(
             capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
         if go_btn:
-            hid.mouse_abs_move(*get_full_pos(go_btn[0]))
+            x, y = go_btn[0]
+            hid.mouse_abs_move(*get_full_pos((x, y+5)))
             time.sleep(0.5)
+            hid.mouse_left_click()
+            time.sleep(0.1)
             hid.mouse_left_click()
             time.sleep(0.5)
         else:

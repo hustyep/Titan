@@ -41,7 +41,7 @@ def single_match(frame, template):
         return top_left, bottom_right
 
 
-def multi_match(frame, template, threshold=0.95, debug=False):
+def multi_match(frame, template, threshold=0.95, center=True, debug=False):
     """
     Finds all matches in FRAME that are similar to TEMPLATE by at least THRESHOLD.
     :param frame:       The image in which to search.
@@ -61,8 +61,11 @@ def multi_match(frame, template, threshold=0.95, debug=False):
     results = []
     src_copy = frame.copy()
     for p in locations:
-        x = int(round(p[0] + template.shape[1] / 2))
-        y = int(round(p[1] + template.shape[0] / 2))
+        if center:
+            x = int(round(p[0] + template.shape[1] / 2))
+            y = int(round(p[1] + template.shape[0] / 2))
+        else:
+            x, y = p
         results.append((x, y))
 
         cv2.rectangle(src_copy, p, (p[0]+template.shape[1],

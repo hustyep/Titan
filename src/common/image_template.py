@@ -105,6 +105,14 @@ POTENTIAL_MESOS_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/mesos.png', 0)
 POTENTIAL_DROP_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/drop.png', 0)
+ATT_INCREASE_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/att_increase.png', 0)
+LUK_PLUS_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/luck_plus.png', 0)
+ATT_PLUS_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/att_plus.png', 0)
+ALL_PLUS_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/all_stats_plus.png', 0)
 
 #####################
 #      mineral      #

@@ -89,7 +89,7 @@ class Detector(Subject):
                 self.check_init()
             else:
                 self.clear()
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def clear(self):
         self.player_pos_updated_time = 0

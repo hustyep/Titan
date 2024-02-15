@@ -11,6 +11,7 @@ import keyboard
 from src.common.hid import hid
 import time
 import threading
+from src.modules.chat_bot import chat_bot
 
 class PotentialType(Enum):
     MOB = 'mob'
@@ -67,6 +68,7 @@ class Auto(LabelFrame):
         self.channel_entry.pack(side=tk.LEFT, padx=(15, 5))
         
         keyboard.on_press_key('f2', self.on_cube)
+        keyboard.on_press_key('f3', self.on_flame)
 
 
     def _on_change(self):
@@ -115,17 +117,14 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.MOB, PotentialLevel.LOW):
+            if self._cube_result(rect, PotentialType.ATT, PotentialLevel.LOW):
                 self._stop_cube()
+                chat_bot.voice_call()
                 break
             else:
                 self._cube_onemore(rect)
             
     @bot_status.run_if_disabled('')
-    
-    
-    
-    
     def _stop_cube(self):
         print("_stop_cube")
         bot_status.cubing = False
@@ -148,7 +147,7 @@ class Auto(LabelFrame):
                 matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=False)
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=False)
                 print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
-            if len(matchs1) + len(matchs2) >= 2:
+            if len(matchs1) + len(matchs2) >= 3:
                 return True
             else:
                 return False
@@ -170,12 +169,8 @@ class Auto(LabelFrame):
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK9_TEMPLATE, threshold=0.95, debug=False)
                 matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL9_TEMPLATE, threshold=0.96, debug=False)
                 matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL6_TEMPLATE, threshold=0.96, debug=False)
-                print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
-                
-                
-                
-                
+                print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 print(f"total={total}")
                 if total >= 30:
                     return True
@@ -184,8 +179,8 @@ class Auto(LabelFrame):
         else:
             matchs1 = utils.multi_match(result_frame, POTENTIAL_MESOS_TEMPLATE, threshold=0.9, debug=False)
             matchs2 = utils.multi_match(result_frame, POTENTIAL_DROP_TEMPLATE, threshold=0.9, debug=False)
-            print(f"cube_result:\nmeso*{len(matchs1)}\ndrop*{len(matchs2)}")
             total = len(matchs1) + len(matchs2)
+            print(f"cube_result:\nmeso*{len(matchs1)}\ndrop*{len(matchs2)}")
             print(f"total={total}")
             if total >= 2:
                 return True
@@ -195,8 +190,8 @@ class Auto(LabelFrame):
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK10_TEMPLATE, threshold=0.95, debug=False)
                 matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL10_TEMPLATE, threshold=0.95, debug=False)
                 matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL7_TEMPLATE, threshold=0.95, debug=False)
-                print(f"cube_result:\nLUK13*{len(matchs1)}\nLUK10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
                 total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
+                print(f"cube_result:\nLUK13*{len(matchs1)}\nLUK10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
                 print(f"total={total}")
                 if total >= 33:
                     return True
@@ -207,8 +202,8 @@ class Auto(LabelFrame):
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK9_TEMPLATE, threshold=0.95, debug=False)
                 matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL9_TEMPLATE, threshold=0.96, debug=False)
                 matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL6_TEMPLATE, threshold=0.96, debug=False)
-                print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
+                print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 print(f"total={total}")
                 if total >= 30:
                     return True
@@ -231,4 +226,129 @@ class Auto(LabelFrame):
             if time.time() - start > 5:
                 break
         
+    @bot_status.run_if_disabled('')
+    def on_flame(self, event):
+        if not gui_setting.auto.cube:
+            return
+        if bot_status.cubing:
+            self._stop_flame()
+        else:
+            threading.Thread(target=self._start_flame,).start()
+
+    @bot_status.run_if_disabled('')
+    def _start_flame(self):
+        print("Start Flame>>>>>>>>>>>")
+        bot_status.cubing = True
         
+        width = 100
+        height = 80
+        frame = capture.frame
+        matchs = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.8, debug=False)
+        if matchs:
+            pos = matchs[0]
+            x = pos[0] - 28
+            y = pos[1] + 12
+        else:
+            self._stop_flame()
+            return
+        
+        rect = (x, y, width, height)
+        while bot_status.cubing:
+            if self._flame_result(rect):
+                self._stop_flame()
+                chat_bot.voice_call()
+                break
+            else:
+                time.sleep(2)
+                self._flame_onemore(rect)
+                
+    @bot_status.run_if_disabled('')
+    def _flame_result(self, rect, target=130):
+        x, y, width, height = rect
+        # utils.show_image(capture.frame[y+height:y+height+30, x:x+150])
+        while len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
+            time.sleep(0.05)
+        time.sleep(1)
+        result_frame = capture.frame[y:y+height, x:x+width]
+        
+        matchs1 = utils.multi_match(result_frame, LUK_PLUS_TEMPLATE, threshold=0.95, center=False, debug=False)
+        matchs2 = utils.multi_match(result_frame, ATT_PLUS_TEMPLATE, threshold=0.95, center=False, debug=False)
+        matchs3 = utils.multi_match(result_frame, ALL_PLUS_TEMPLATE, threshold=0.95, center=False, debug=False)
+        
+        total = 0
+        if len(matchs1) > 0:
+            x, y = matchs1[0]
+            height, width = LUK_PLUS_TEMPLATE.shape
+            try:
+                frame = result_frame[max(0, y-5): y+height+5, x+width-3:]
+                text = utils.image_2_str(frame)
+                total += int(text)
+                print(f'LUK: {int(text)}')
+            except Exception as e:
+                print(e)
+                frame = result_frame[max(0, y-5): y+height+5,]
+                text = utils.image_2_str(frame).replace('\n', '')
+                num = text.split('+')[1]
+                total += int(num)
+                print(f'LUK: {int(num)}')
+            
+        if len(matchs2) > 0:
+            x, y = matchs2[0]
+            height, width = ATT_PLUS_TEMPLATE.shape
+            frame = result_frame[max(0, y-5): y+height+5,]
+            text = utils.image_2_str(frame).replace('\n', '')
+            num = text.split('+')[1]
+            total += int(num) * 3
+            print(f'ATT: {int(num)}')
+        if len(matchs3) > 0:
+            x, y = matchs3[0]
+            height, width = ALL_PLUS_TEMPLATE.shape
+            frame = result_frame[max(0, y-5): y+height+5, x+width-3:]
+            text = utils.image_2_str(frame)
+            total += int(text[0]) * 8
+            print(f'ALL: {int(text[0])}%')
+
+        # text = utils.image_2_str(result_frame)
+        # content = text.replace("\f", "").split("\n")
+        # total = 0
+        # for item in content:
+        #     if item.startswith('LUK'):
+        #         num = item.split('+')[1]
+        #         total += int(num)
+        #         print(f'LUK: {num}')
+        #     elif item.startswith('Attack') or item.startswith('Altack') or item.startswith('Atack'):
+        #         num = item.s
+        # 
+        # 
+        # 
+        # plit('+')[1]
+        #         total += int(num) * 3
+        #         print(f'ATT: {num}')
+        #     elif item.startswith('All Stats'):
+        #         num = item.split('+')[1]
+        #         total += int(num[0]) * 8
+        #         print(f'All Stats: {num}')            
+        print(f'total={total}')
+        return total >= target
+        
+        
+    @bot_status.run_if_disabled('')
+    def _flame_onemore(self, rect):
+        print("Try Again------------------------")
+        hid.mouse_left_click()
+        time.sleep(0.5)
+        for _ in range(0, 4):
+            hid.key_press('enter')
+            time.sleep(0.2)
+            
+        x, y, width, height = rect
+        start = time.time()
+        while len(utils.multi_match(capture.frame[y:y+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) > 0:
+            time.sleep(0.05)
+            if time.time() - start > 5:
+                break
+        
+    @bot_status.run_if_disabled('')
+    def _stop_flame(self):
+        print("Stop Flame>>>>>>>>>>>>>>>")
+        bot_status.cubing = False
