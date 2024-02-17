@@ -37,5 +37,6 @@ $, target=mini_margin, value=1
 *, x=28, y=68, interval=0, tolerance=8, detect=False, skip=False
 *, x=155, y=68, interval=0, tolerance=8, detect=False, skip=False
     Shurrikane
+    Attack, detect=True
     Fall, attack=False, forward=False, buff=True
     Wait, duration=0.65

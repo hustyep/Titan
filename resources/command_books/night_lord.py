@@ -292,9 +292,25 @@ class Attack(Command):
     key = ShowDown.key
     type = SkillType.Attack
     backswing = ShowDown.backswing
-
+    
+    def __init__(self, detect = False):
+        super().__init__(locals())
+        self.detect = bot_settings.validate_boolean(detect)
+        
     def main(self):
-        ShowDown().execute()
+        if self.detect:
+            pos = capture.convert_point_minimap_to_window(
+                bot_status.player_pos)
+            if bot_status.player_direction == 'left':
+                mobs = detect_mobs(
+                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
+            else:
+                mobs = detect_mobs(
+                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
+            if len(mobs) > 0:
+                ShowDown().execute()
+        else:
+            ShowDown().execute()
 
 
 class SuddenRaid(Skill):

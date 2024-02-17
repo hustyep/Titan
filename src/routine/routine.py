@@ -328,10 +328,17 @@ class Routine(Subject):
                 print(f"{' ' * 4} -  {e}")
 
     def update_boundary_point(self, point: Point):
-        if point.location[0] < bot_settings.boundary_point_l[0]:
+        if point.location[1] > bot_settings.boundary_point_l[1]:
             bot_settings.boundary_point_l = point.location
-        elif point.location[0] > bot_settings.boundary_point_r[0]:
-            bot_settings.boundary_point_r = point.location
+        elif point.location[1] == bot_settings.boundary_point_l[1]:
+            if point.location[0] < bot_settings.boundary_point_l[0]:
+                if bot_settings.boundary_point_l[1] > bot_settings.boundary_point_r[1]:
+                    bot_settings.boundary_point_r = bot_settings.boundary_point_l
+                elif bot_settings.boundary_point_l[1] == bot_settings.boundary_point_r[1] and bot_settings.boundary_point_l[0] > bot_settings.boundary_point_r[0]:
+                    bot_settings.boundary_point_r = bot_settings.boundary_point_l
+                bot_settings.boundary_point_l = point.location
+            elif point.location[0] > bot_settings.boundary_point_r[0]:
+                bot_settings.boundary_point_r = point.location
 
     def get_all_components(self):
         """Returns a dictionary mapping all creatable Components to their names."""
