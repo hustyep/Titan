@@ -299,14 +299,13 @@ class Attack(Command):
         
     def main(self):
         if self.detect:
-            pos = capture.convert_point_minimap_to_window(
-                bot_status.player_pos)
+            pos = (800, 560)
             if bot_status.player_direction == 'left':
                 mobs = detect_mobs(
-                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
+                    anchor=pos, insets=AreaInsets(top=200, bottom=100, left=300, right=0))
             else:
                 mobs = detect_mobs(
-                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
+                    anchor=pos, insets=AreaInsets(top=200, bottom=100, left=0, right=300))
             if len(mobs) > 0:
                 ShowDown().execute()
         else:
