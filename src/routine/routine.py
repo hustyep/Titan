@@ -10,7 +10,7 @@ from src.rune import rune
 from src.common.constants import *
 from src.common import bot_settings, utils
 from src.routine.components import *
-from src.command.commands import Command, target_reached, Move
+from src.command.commands import Command, target_reached, Move, AreaInsets, edge_reached, Attack
 from src.map.map import map
 from src.command.command_book import CommandBook
 from src.common.action_simulator import *
@@ -374,6 +374,19 @@ class Routine(Subject):
     def _on_command_complete(self, c: Command):
         if isinstance(c, Move) and not target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):
             self.check_point(bot_status.player_pos)
+        
+        if edge_reached():
+            pos = capture.convert_point_minimap_to_window(
+                    bot_status.player_pos)
+            key_up(bot_status.player_direction)
+            if bot_status.player_direction == 'left':
+                mobs = detect_mobs(
+                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
+            else:
+                mobs = detect_mobs(
+                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
+            if mobs:
+                Attack().execute()
             
     def _on_component_complete(self, c: Component):
         if isinstance(c, Point):
