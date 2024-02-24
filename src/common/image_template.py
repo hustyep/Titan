@@ -105,6 +105,8 @@ POTENTIAL_MESOS_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/mesos.png', 0)
 POTENTIAL_DROP_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/drop.png', 0)
+POTENTIAL_CD8_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/critical_damage.png', 0)
 ATT_INCREASE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/att_increase.png', 0)
 LUK_PLUS_TEMPLATE = cv2.imread(

@@ -17,6 +17,7 @@ class PotentialType(Enum):
     MOB = 'mob'
     ATT = 'att'
     LUK = 'luck'
+    CD = 'critical damege'
 
 class PotentialLevel(Enum):
     HIGH = 200
@@ -117,7 +118,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.ATT, PotentialLevel.LOW):
+            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.HIGH):
                 self._stop_cube()
                 chat_bot.voice_call()
                 break
@@ -160,7 +161,7 @@ class Auto(LabelFrame):
                 print(f"cube_result:\nLUK13*{len(matchs1)}\nLUK10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
                 total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
                 print(f"total={total}")
-                if total >= 33:
+                if total >= 30:
                     return True
                 else:
                     return False
@@ -173,6 +174,13 @@ class Auto(LabelFrame):
                 print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 print(f"total={total}")
                 if total >= 30:
+                    return True
+                else:
+                    return False
+        elif type == PotentialType.CD:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_CD8_TEMPLATE, threshold=0.9, debug=False)
+                print(f"cd:{len(matchs1)}")
+                if len(matchs1) >= 2:
                     return True
                 else:
                     return False
@@ -259,11 +267,11 @@ class Auto(LabelFrame):
                 chat_bot.voice_call()
                 break
             else:
-                time.sleep(2)
+                time.sleep(1)
                 self._flame_onemore(rect)
                 
     @bot_status.run_if_disabled('')
-    def _flame_result(self, rect, target=130):
+    def _flame_result(self, rect, target=120):
         x, y, width, height = rect
         # utils.show_image(capture.frame[y+height:y+height+30, x:x+150])
         while len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
@@ -279,18 +287,18 @@ class Auto(LabelFrame):
         if len(matchs1) > 0:
             x, y = matchs1[0]
             height, width = LUK_PLUS_TEMPLATE.shape
-            try:
-                frame = result_frame[max(0, y-5): y+height+5, x+width-3:]
-                text = utils.image_2_str(frame)
-                total += int(text)
-                print(f'LUK: {int(text)}')
-            except Exception as e:
-                print(e)
-                frame = result_frame[max(0, y-5): y+height+5,]
-                text = utils.image_2_str(frame).replace('\n', '')
-                num = text.split('+')[1]
-                total += int(num)
-                print(f'LUK: {int(num)}')
+            # try:
+            #     frame = result_frame[max(0, y-6): y+height+5, x+width-2:]
+            #     text = utils.image_2_str(frame)
+            #     total += int(text)
+            #     print(f'LUK: {int(text)}')
+            # except Exception as e:
+                # print(e)
+            frame = result_frame[max(0, y-5): y+height+5,]
+            text = utils.image_2_str(frame).replace('\n', '')
+            num = text.split('+')[1]
+            total += int(num)
+            print(f'LUK: {int(num)}')
             
         if len(matchs2) > 0:
             x, y = matchs2[0]

@@ -381,19 +381,6 @@ class Routine(Subject):
     def _on_command_complete(self, c: Command):
         if isinstance(c, Move) and not target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):
             self.check_point(bot_status.player_pos)
-        
-        if edge_reached():
-            pos = capture.convert_point_minimap_to_window(
-                    bot_status.player_pos)
-            key_up(bot_status.player_direction)
-            if bot_status.player_direction == 'left':
-                mobs = detect_mobs(
-                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
-            else:
-                mobs = detect_mobs(
-                    anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
-            if mobs:
-                Attack().execute()
             
     def _on_component_complete(self, c: Component):
         if isinstance(c, Point):
