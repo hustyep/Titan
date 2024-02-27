@@ -312,9 +312,12 @@ def cube_test():
 def match_test():
     # Maple_240201_155106
     
-    frame = cv2.imread(".test/Maple_240207_094040.png")
+    frame = cv2.imread(".test/wizet-invincible-hat.png")
+    # utils.show_image(GM_HAT_W_TEMPLATE)
     go_btn = utils.multi_match(
-            frame, POTENTIAL_DROP_TEMPLATE, threshold=0.9, debug=True)
+            frame, GM_HAT_W_TEMPLATE, threshold=0.8, debug=True)
+    go_btn = utils.multi_match(
+            frame, cv2.flip(GM_HAT_W_TEMPLATE, 1), threshold=0.8, debug=True)
     
 def fire_test():
     def image_to_str(image):
@@ -340,5 +343,5 @@ if __name__ == "__main__":
     # msg_test()
     # mob_detect_test()
     # auto_login_test()
-    # match_test()
-    fire_test()
+    match_test()
+    # fire_test()

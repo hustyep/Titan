@@ -42,6 +42,10 @@ Go_Ardentmill_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/GoArdentmill.png', 0)
 SETTING_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/setting_template.png', 0)
+GM_HAT_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/GM_Hat.webp', 0)
+GM_HAT_W_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}exceptions/gm_hat_w.png', 0)
 # dead alert
 DEAD_TOBBSTONE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/dead_tombstone_template.png', 0)
@@ -52,7 +56,7 @@ SKULL_TEMPLATE = cv2.imread(f'{ASSETS_PATH}exceptions/skull_template.png', 0)
 
 # tabbar icon
 TABBAR_MAPLE_TEMPLATE = cv2.imread(
-    f'{ASSETS_PATH}exceptions/icon_maplestory_template.png', 0)
+    f'{ASSETS_PATH}exceptions/icon_maplestory_win10_template.png', 0)
 TABBAR_WECHAT_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/icon_wechat_template.png', 0)
 TABBAR_NX_TEMPLATE = cv2.imread(

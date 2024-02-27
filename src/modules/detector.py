@@ -139,7 +139,12 @@ class Detector(Subject):
         # print(tmp)
         if bot_status.started_time is not None and tmp >= self.white_room_threshold:
             self.on_next((BotFatal.WHITE_ROOM,))
-
+        
+        gm = utils.multi_match(frame, GM_HAT_W_TEMPLATE, threshold=0.8)
+        if gm:
+            self.on_next((BotFatal.WHITE_ROOM,))
+            
+            
     def check_alert(self):
         if capture.frame is None:
             return
