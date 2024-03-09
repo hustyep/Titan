@@ -16,7 +16,7 @@ $, target=mini_margin, value=1
     Wait, duration=0.1
     DarkFlare
 *, x=150, y=39, interval=0, tolerance=5, detect=False, skip=False
-    Wait, duration=0.2
+    Wait, duration=0.4
     ErdaShower, direction=left
 *, x=168, y=39, interval=0, tolerance=10, detect=False, skip=False
 *, x=168, y=68, interval=0, tolerance=10, detect=False, skip=False

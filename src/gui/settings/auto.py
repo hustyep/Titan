@@ -118,7 +118,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.HIGH):
+            if self._cube_result(rect, PotentialType.MOB, PotentialLevel.HIGH):
                 self._stop_cube()
                 chat_bot.voice_call()
                 break
@@ -276,7 +276,7 @@ class Auto(LabelFrame):
         # utils.show_image(capture.frame[y+height:y+height+30, x:x+150])
         while len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
             time.sleep(0.05)
-        time.sleep(1)
+        time.sleep(0.5)
         result_frame = capture.frame[y:y+height, x:x+width]
         
         matchs1 = utils.multi_match(result_frame, LUK_PLUS_TEMPLATE, threshold=0.95, center=False, debug=False)
@@ -295,7 +295,7 @@ class Auto(LabelFrame):
             # except Exception as e:
                 # print(e)
             frame = result_frame[max(0, y-5): y+height+5,]
-            text = utils.image_2_str(frame).replace('\n', '')
+            text = utils.image_2_str(frame).replace('\n', '').replace('.', '')
             num = text.split('+')[1]
             total += int(num)
             print(f'LUK: {int(num)}')
