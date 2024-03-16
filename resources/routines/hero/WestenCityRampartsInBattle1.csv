@@ -2,16 +2,14 @@ $, target=move_tolerance, value=10
 $, target=mini_margin, value=45
 
 @, label=Bottom mobbing
-*, x=1, y=65, interval=0, tolerance=10, detect=False, skip=False
-*, x=73, y=65, interval=42, tolerance=4, detect=False, skip=False
-*, x=146, y=65, interval=0, tolerance=10, detect=False, skip=False
+*, x=1, y=65, interval=0, tolerance=6, detect=True, skip=False
+*, x=147, y=65, interval=0, tolerance=6, detect=True, skip=False
 
-@, label=Summoning
-*, x=146, y=65, interval=42, tolerance=2, detect=False, skip=False
+~, label=Summon Loop, interval=42, skip=False
+*, x=146, y=65, interval=0, tolerance=2, detect=False, skip=False
+*, x=110, y=40, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.1
-*, x=115, y=40, interval=42, tolerance=2, detect=False, skip=False
-    Wait, duration=0.1
-    ErdaShower, direction=left
-*, x=70, y=40, interval=42, tolerance=2, detect=False, skip=False
-*, x=31, y=40, interval=42, tolerance=2, detect=False, skip=False
-    BurningSoulBlade, direction=left
+    ErdaShower, direction=right
+*, x=1, y=65, interval=0, tolerance=3, detect=False, skip=False
+*, x=147, y=65, interval=0, tolerance=6, detect=False, skip=False
+#

@@ -118,7 +118,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.MOB, PotentialLevel.HIGH):
+            if self._cube_result(rect, PotentialType.MOB, PotentialLevel.LOW):
                 self._stop_cube()
                 chat_bot.voice_call()
                 break
@@ -190,8 +190,7 @@ class Auto(LabelFrame):
             total = len(matchs1) + len(matchs2)
             print(f"cube_result:\nmeso*{len(matchs1)}\ndrop*{len(matchs2)}")
             print(f"total={total}")
-            if total >= 2:
-                return True
+            return total >= 2
             
             if level == PotentialLevel.HIGH:
                 matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK13_TEMPLATE, threshold=0.95, debug=False)

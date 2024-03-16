@@ -146,7 +146,7 @@ class Point(Component):
             key_up(direction)
         else:
             direction = bot_status.player_direction
-        if self.detect:
+        if self.detect and bot_status.player_pos[1] == self.y:
             self.detect_mob(direction)
 
     def detect_mob(self, direction):

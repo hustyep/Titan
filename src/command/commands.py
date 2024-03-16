@@ -287,7 +287,7 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
 
     d_x = target[0] - start[0]
     d_y = target[1] - start[1]
-    if abs(d_x) <= tolerance:
+    if abs(d_x) <= tolerance or d_y == 0:
         return target
     elif d_y < 0:
         tmp_x = (target[0], start[1])

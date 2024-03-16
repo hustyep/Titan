@@ -11,7 +11,7 @@ from src.command.commands import *
 class Keybindings(DefaultKeybindings):
     # Movement
     JUMP = 's'
-    FLASH_JUMP = ';'
+    FLASH_JUMP = 's'
     Upward_Charge = 'a'
     Rush = 'r'
     ROPE_LIFT = 'b'
@@ -55,7 +55,7 @@ def step(target, tolerance):
 
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) >= 26:
+    if abs(d_x) >= 20:
         hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
         return
 
@@ -77,12 +77,16 @@ def step(target, tolerance):
 
     if direction == "up":
         move_up(next_p)
+        print("move_up")
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 24:
+        print("move_down")
+    elif abs(d_x) >= 15:
         hit_and_run(direction, next_p, tolerance)
+        print("hit_and_run")
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
+        print("Walk")
 
 
 @bot_status.run_if_enabled
@@ -110,8 +114,11 @@ def move_up(target):
     p = bot_status.player_pos
     dy = abs(p[1] - target[1])
 
-    if dy <= 6:
+    if dy <= 3:
+        sleep_in_the_air(n=4)
+    elif dy <= 6:
         press(Keybindings.JUMP)
+        sleep_in_the_air(n=4)
     elif dy <= 20:
         UpwardCharge(True if dy > 15 else False).execute()
     else:
@@ -127,7 +134,7 @@ def move_down(target):
 
 class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
-    key = Keybindings.FLASH_JUMP
+    key = Keybindings.JUMP
     type = SkillType.Move
     # cooldown = 0.1
 
@@ -160,10 +167,10 @@ class DoubleJump(Skill):
             # detect = AsyncTask(
             #     target=self.detect_mob, args=(direction, ))
             # detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.02)
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.07)
             # mobs_detected = detect.join()
             mobs_detected = True
-            press(self.key, 1, down_time=0.02, up_time=0.03)
+            press(self.key, 1, down_time=0.02, up_time=0.05)
             if mobs_detected:
                 Attack().execute()
         else:
@@ -276,10 +283,9 @@ class RagingBlow(Command):
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
 
 class Puncture(Command):
-    key = Keybindings.RagingBlow
+    key = Keybindings.Puncture
     type = SkillType.Attack
     backswing = 0.6
-
     def main(self):
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
