@@ -925,7 +925,7 @@ class GoArdentmill(Command):
     def main(self):
         bot_status.enabled = False
         if self.invisible:
-            hid.key_press("=")
+            hid.key_press("w")
             time.sleep(5)
         
         go_btn = utils.multi_match(
@@ -940,10 +940,8 @@ class GoArdentmill(Command):
             capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
         if go_btn:
             x, y = go_btn[0]
-            hid.mouse_abs_move(*get_full_pos((x, y+5)))
+            hid.mouse_abs_move(*get_full_pos((x, y+3)))
             time.sleep(0.5)
-            hid.mouse_left_click()
-            time.sleep(0.1)
             hid.mouse_left_click()
             time.sleep(0.5)
         else:

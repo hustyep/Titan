@@ -81,7 +81,7 @@ def step(target, tolerance):
     elif direction == "down":
         move_down(next_p)
         print("move_down")
-    elif abs(d_x) >= 15:
+    elif abs(d_x) >= 20:
         hit_and_run(direction, next_p, tolerance)
         print("hit_and_run")
     else:
@@ -196,7 +196,7 @@ class UpwardCharge(Command):
     key = Keybindings.Upward_Charge
     type = SkillType.Move
     precast = 0.03
-    backswing = 0.9
+    backswing = 1
 
     def __init__(self, jump: bool = False):
         super().__init__(locals())
@@ -208,7 +208,7 @@ class UpwardCharge(Command):
             press_acc(Keybindings.JUMP, down_time=0.05, up_time=0.06)
 
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
-
+        sleep_in_the_air(n=20)
 
 # 水平位移
 class Rush(Skill):

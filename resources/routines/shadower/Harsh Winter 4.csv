@@ -31,6 +31,6 @@ $, target=mini_margin, value=1
 *, x=28, y=54, interval=0, tolerance=8, detect=False, skip=False
     Fall, attack=True, forward=False, buff=False
 *, x=28, y=68, interval=0, tolerance=8, detect=False, skip=False
-*, x=164, y=68, interval=0, tolerance=10, detect=False, skip=False
+*, x=160, y=68, interval=0, tolerance=10, detect=False, skip=False
     Fall, attack=False, forward=False, buff=True
     Wait, duration=0.65

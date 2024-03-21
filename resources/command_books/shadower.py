@@ -382,7 +382,7 @@ class CruelStab(Skill):
             return
         self.__class__.castedTime = time.time()
         jumped = not map.on_the_platform(bot_status.player_pos)
-        press_acc(self.key, 1)
+        press_acc(self.key, 1, down_time=0.02, up_time=0.02)
         threading.Timer(0.3, MesoExplosion().execute, ).start()
         # MesoExplosion().execute()
         time.sleep(0.5 if not jumped else self.backswing)
@@ -394,7 +394,7 @@ class MesoExplosion(Skill):
     type = SkillType.Attack
 
     def main(self):
-        press_acc(self.key, down_time=0.01, up_time=0.01)
+        press_acc(self.key, down_time=0.005, up_time=0.005)
 
 
 class DarkFlare(Skill):
