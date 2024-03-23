@@ -925,7 +925,7 @@ class GoArdentmill(Command):
     def main(self):
         bot_status.enabled = False
         if self.invisible:
-            hid.key_press("w")
+            hid.key_press("5")
             time.sleep(5)
         
         go_btn = utils.multi_match(

@@ -22,7 +22,6 @@ class Minimap(LabelFrame):
 
     def display_minimap(self):
         """Updates the Main page with the current minimap."""
-        pass
         minimap = capture.minimap_display
         if minimap is not None:
             rune_pos = capture.convert_to_absolute_minimap_point(bot_status.rune_pos)

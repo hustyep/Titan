@@ -167,10 +167,10 @@ class DoubleJump(Skill):
             # detect = AsyncTask(
             #     target=self.detect_mob, args=(direction, ))
             # detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.07)
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.18)
             # mobs_detected = detect.join()
             mobs_detected = True
-            press(self.key, 1, down_time=0.02, up_time=0.05)
+            press(self.key, 1, down_time=0.02, up_time=0.03)
             if mobs_detected:
                 Attack().execute()
         else:
@@ -185,7 +185,7 @@ class DoubleJump(Skill):
             press(self.key, times, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        if start_y == 68:
+        if start_y == 58:
             time.sleep(0.015)
         else:
             sleep_in_the_air(n=1, start_y=start_y)
@@ -238,7 +238,7 @@ class Rush(Skill):
 #######################
 
 
-class BurningSoulBlade(Skill):
+class BurningSoulBlade(Command):
     """
     Uses 'DarkFlare' in a given direction, or towards the center of the map if
     no direction is specified.
@@ -246,20 +246,28 @@ class BurningSoulBlade(Skill):
     key = Keybindings.BurningSoulBlade
     type = SkillType.Summon
     cooldown = 118
-    backswing = 1
+    backswing = 1.3
     duration = 75
 
-    def __init__(self, direction=None):
-        super().__init__(locals())
-        if direction is None:
-            self.direction = direction
-        else:
-            self.direction = bot_settings.validate_horizontal_arrows(direction)
+    # def __init__(self, direction=None):
+    #     super().__init__(locals())
+    #     if direction is None:
+    #         self.direction = direction
+    #     else:
+    #         self.direction = bot_settings.validate_horizontal_arrows(direction)
+            
+    # @classmethod
+    # def check(cls):
+    #     if capture.frame is None:
+    #         return
+    #     matchs = utils.multi_match(
+    #         capture.skill_frame, cls.icon[8:, : -14], threshold=0.96)
+    #     cls.ready = len(matchs) > 0
 
-    def main(self):
-        if self.direction is not None:
-            press_acc(self.direction, down_time=0.03, up_time=0.03)
-        super().main()
+    # def main(self):
+    #     if self.direction is not None:
+    #         press_acc(self.direction, down_time=0.03, up_time=0.03)
+    #     super().main()
 
 
 #######################
@@ -314,32 +322,32 @@ class Attack(Command):
         else:
             Puncture().execute()
 
-class BeamBlade(Command):
+class BeamBlade(Skill):
     key = Keybindings.BeamBlade
     type = SkillType.Attack
     cooldown = 7
     backswing = 0.35
 
-    def __init__(self, stop: float = None):
+    def __init__(self, direction='up'):
         super().__init__(locals())
-        self.stop = stop
-
+        self.direction = direction
+        
     def main(self):
         if not self.canUse():
             return
-        self.__class__.castedTime = time.time()
-        press(self.__class__.key, up_time=0)
-        time.sleep(self.__class__.backswing)
+        key_down(self.direction)
+        time.sleep(0.03)
+        press(self.key)
+        time.sleep(self.backswing)
 
 class RisingRage(Command):
     key = Keybindings.RisingRage
     type = SkillType.Attack
     cooldown = 10
-    backswing = 0.35
+    backswing = 1.2
 
-    def __init__(self, stop: float = None):
+    def __init__(self):
         super().__init__(locals())
-        self.stop = stop
 
     def main(self):
         if not self.canUse():
