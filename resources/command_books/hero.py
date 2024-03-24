@@ -216,7 +216,7 @@ class Rush(Skill):
     type = SkillType.Move
     cooldown = 5
     precast = 0
-    backswing = 0.18
+    backswing = 1
 
     def __init__(self, direction):
         super().__init__(locals())
@@ -228,9 +228,9 @@ class Rush(Skill):
 
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
-        key_down(self.direction)
+        # key_down(self.direction)
+        press(self.key)
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
-        key_up(self.direction)
         return True
 
 #######################
@@ -326,7 +326,7 @@ class BeamBlade(Skill):
     key = Keybindings.BeamBlade
     type = SkillType.Attack
     cooldown = 7
-    backswing = 0.35
+    backswing = 0.5
 
     def __init__(self, direction='up'):
         super().__init__(locals())
@@ -338,6 +338,7 @@ class BeamBlade(Skill):
         key_down(self.direction)
         time.sleep(0.03)
         press(self.key)
+        key_up(self.direction)
         time.sleep(self.backswing)
 
 class RisingRage(Command):

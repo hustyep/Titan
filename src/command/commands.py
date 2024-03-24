@@ -51,6 +51,13 @@ class AreaInsets:
         self.left = left
         self.right = right
 
+class Rect:
+    def __init__(self, x=0, y=0, width=0, height=0) -> None:
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
 
 class Command():
     id = 'Command Superclass'
@@ -349,6 +356,7 @@ class MobType(Enum):
 
 def detect_mobs(insets: AreaInsets = None,
                 anchor: tuple[int, int] = None,
+                rect: Rect = None,
                 type: MobType = MobType.NORMAL,
                 multy_match=False,
                 debug=False):
@@ -372,7 +380,9 @@ def detect_mobs(insets: AreaInsets = None,
             return []
 
     crop = frame
-    if insets is not None:
+    if rect is not None:
+        crop = frame[rect.y:rect.y+rect.height, rect.x+rect.width]
+    elif insets is not None:
         if anchor is None:
             anchor = capture.convert_point_minimap_to_window(
                 bot_status.player_pos)
@@ -477,23 +487,29 @@ class Wait(Command):
 
 
 class Detect(Command):
-    def __init__(self, count=1, top=315, bottom=0, left=500, right=500):
+    def __init__(self, count=1, top=315, bottom=0, left=500, right=500, isRerct=0):
         super().__init__(locals())
         self.count = int(count)
         self.top = int(top)
         self.bottom = int(bottom)
         self.left = int(left)
         self.right = int(right)
+        self.isRect = bool(isRerct)
 
     def main(self):
         # anchor = capture.locate_player_fullscreen(accurate=True)
         anchor = (469, 490)
         start = time.time()
         while True:
-            mobs = detect_mobs(insets=AreaInsets(top=self.top, bottom=self.bottom, left=self.left, right=self.right),
-                               anchor=anchor,
-                               multy_match=False,
-                               debug=False)
+            if self.isRect:
+                mobs = detect_mobs(rect=Rect(self.top, self.bottom, self.left, self.right),
+                                multy_match=False,
+                                debug=False)
+            else:
+                mobs = detect_mobs(insets=AreaInsets(top=self.top, bottom=self.bottom, left=self.left, right=self.right),
+                                anchor=anchor,
+                                multy_match=False,
+                                debug=False)
             if len(mobs) >= self.count:
                 break
             time.sleep(0.1)
@@ -1292,7 +1308,7 @@ class RopeLift(Skill):
         if self.dy >= 45:
             press(Keybindings.JUMP, up_time=0.5)
             press(self.__class__.key)
-            time.sleep(1.8)
+            time.sleep(2)
             sleep_in_the_air(n=50)
         elif self.dy > 30:
             press(Keybindings.JUMP, up_time=0.3)

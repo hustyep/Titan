@@ -1,22 +1,25 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=36
-*, x=10, y=58, interval=3600, tolerance=8, detect=False, skip=False
+*, x=4, y=54, interval=3600, tolerance=8, detect=False, skip=True
     GoArdentmill, invisible=True
 
 @, label=Bottom mobbing
-*, x=6, y=58, interval=0, tolerance=4, detect=True, skip=False
-    Potion
-*, x=162, y=58, interval=0, tolerance=4, detect=True, skip=False
-
-~, label=Summon Loop, interval=42, skip=False
-*, x=150, y=58, interval=0, tolerance=2, detect=False, skip=False
-*, x=150, y=31, interval=0, tolerance=10, detect=False, skip=False
-    BurningSoulBlade
-*, x=86, y=33, interval=0, tolerance=2, detect=False, skip=False
-    Wait, duration=0.1
-    ErdaShower, direction=left
-*, x=6, y=58, interval=0, tolerance=6, detect=False, skip=False
-*, x=162, y=58, interval=0, tolerance=4, detect=False, skip=False
+*, x=4, y=54, interval=0, tolerance=4, detect=False, skip=False
+    Direction, direction=right
+*, x=38, y=54, interval=0, tolerance=4, detect=True, skip=False
+    BeamBlade, direction=up
+*, x=133, y=54, interval=0, tolerance=4, detect=False, skip=False
     Direction, direction=left
-    RisingRage
+*, x=38, y=54, interval=0, tolerance=4, detect=True, skip=False
+    BeamBlade, direction=up
+*, x=4, y=54, interval=0, tolerance=4, detect=False, skip=False
+
+~, label=Summon Loop, interval=46, skip=False
+*, x=26, y=54, interval=0, tolerance=4, detect=False, skip=False
+*, x=29, y=29, interval=0, tolerance=4, detect=False, skip=False
+    BurningSoulBlade
+*, x=66, y=29, interval=0, tolerance=12, detect=False, skip=False
+    Rush, direction=right
+    ErdaShower, direction=right
+*, x=133, y=54, interval=0, tolerance=10, detect=False, skip=False
 #

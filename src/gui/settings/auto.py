@@ -99,7 +99,7 @@ class Auto(LabelFrame):
         print("_start_cube")
         bot_status.cubing = True
         
-        width = 90
+        width = 100
         height = 44
         frame = capture.frame
         matchs1 = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.8, debug=False)

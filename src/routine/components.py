@@ -152,11 +152,11 @@ class Point(Component):
     def detect_mob(self, direction):
         start_time = time.time()
         anchor = capture.locate_player_fullscreen(accurate=True)
-        matchs = commands.detect_mobs(insets=commands.AreaInsets(top=250, bottom=100, left=300, right=300),
-                                      anchor=anchor)
-        if matchs:
-            print("use aoe")
-            commands.Aoe().execute()
+        # matchs = commands.detect_mobs(insets=commands.AreaInsets(top=250, bottom=100, left=300, right=300),
+        #                               anchor=anchor)
+        # if matchs:
+        #     print("use aoe")
+        #     commands.Aoe().execute()
         commands.Command.loop_begin_callback()
         cast_time = time.time() - start_time
         time.sleep(max(1 - cast_time, 0))
@@ -178,11 +178,11 @@ class Point(Component):
 
             mobs = commands.detect_mobs(insets=commands.AreaInsets(top=350, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
                                         anchor=anchor,
-                                        multy_match=False,
+                                        multy_match=True,
                                         debug=False)
             if len(mobs):
                 print(f"mobs count = {len(mobs)}")
-            if len(mobs) > 0:
+            if len(mobs) > 1:
                 break
             if time.time() - start_time > 6:
                 break
