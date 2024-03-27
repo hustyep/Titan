@@ -19,6 +19,7 @@ class DefaultKeybindings:
     Attack = 'insert'
     JUMP = 's'
     FLASH_JUMP = ';'
+    Go_Ardentmill = '='
 
     # Potion
     EXP_POTION = '0'
@@ -50,6 +51,7 @@ class AreaInsets:
         self.bottom = bottom
         self.left = left
         self.right = right
+
 
 class Rect:
     def __init__(self, x=0, y=0, width=0, height=0) -> None:
@@ -145,7 +147,8 @@ class Command():
 
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
-        press_acc(self.__class__.key, up_time=self.__class__.backswing if wait else 0)
+        press_acc(self.__class__.key,
+                  up_time=self.__class__.backswing if wait else 0)
         return True
 
 
@@ -173,20 +176,6 @@ class Move(Command):
 
         bot_status.path = [bot_status.player_pos, self.target]
         step(self.target, self.tolerance)
-
-        if edge_reached():
-            print("-----------------------edge reached")
-            pos = capture.convert_point_minimap_to_window(
-                bot_status.player_pos)
-            # key_up(bot_status.player_direction)
-            # if bot_status.player_direction == 'left':
-            #     mobs = detect_mobs(
-            #         anchor=pos, insets=AreaInsets(top=100, bottom=80, left=300, right=0))
-            # else:
-            #     mobs = detect_mobs(
-            #         anchor=pos, insets=AreaInsets(top=100, bottom=80, left=0, right=300))
-            # if mobs:
-            #     Attack().execute()
 
         Command.complete_callback(self)
 
@@ -228,13 +217,14 @@ def pre_detect(direction):
 def climb_rope(isUP=True):
     step = 0
     key = 'up' if isUP else 'down'
+    key_down(key)
+    time.sleep(0.1)
     while not map.on_the_platform(bot_status.player_pos):
-        key_down(key)
         time.sleep(0.1)
-        key_up(key)
         step += 1
         if step > 50:
             break
+    key_up(key)
 
 
 @bot_status.run_if_enabled
@@ -428,6 +418,43 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
     # else:
     return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
 
+
+#############################
+#      Abstract Command     #
+#############################
+
+class Attack(Command):
+    """Undefined 'Attack' command for the default command book."""
+
+    def main(self):
+        print(
+            "\n[!] 'Attack' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
+
+class DoubleJump(Command):
+    """Undefined 'FlashJump' command for the default command book."""
+
+    def __init__(self, target: tuple[int, int], attack_if_needed=False):
+        super().__init__(locals())
+
+        self.target = target
+        self.attack_if_needed = attack_if_needed
+
+    def main(self):
+        print(
+            "\n[!] 'FlashJump' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
+
+class Buff(Command):
+    """Undefined 'buff' command for the default command book."""
+
+    def main(self, wait=True):
+        print(
+            "\n[!] 'Buff' command not implemented in current command book, aborting process.")
+        bot_status.enabled = False
+
 #############################
 #      Common Command       #
 #############################
@@ -503,13 +530,13 @@ class Detect(Command):
         while True:
             if self.isRect:
                 mobs = detect_mobs(rect=Rect(self.top, self.bottom, self.left, self.right),
-                                multy_match=False,
-                                debug=False)
+                                   multy_match=False,
+                                   debug=False)
             else:
                 mobs = detect_mobs(insets=AreaInsets(top=self.top, bottom=self.bottom, left=self.left, right=self.right),
-                                anchor=anchor,
-                                multy_match=False,
-                                debug=False)
+                                   anchor=anchor,
+                                   multy_match=False,
+                                   debug=False)
             if len(mobs) >= self.count:
                 break
             time.sleep(0.1)
@@ -582,7 +609,7 @@ class Fall(Command):
             press(Keybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
         if self.buff:
             Buff().main(wait=False)
-            
+
         sleep_in_the_air(n=1)
 
 
@@ -623,21 +650,6 @@ class SolveRune(Command):
         time.sleep(0.5)
         # Inherited from Configurable
         press(Keybindings.INTERACT, 1, down_time=0.2, up_time=0.8)
-        # interact_result = False
-        # for _ in range(3):
-        #     interact_result = rune.rune_interact_result(capture.frame)
-        #     if interact_result:
-        #         break
-        #     else:
-        #         time.sleep(0.2)
-
-        # if interact_result:
-        #     pass
-        # elif self.attempts < 2:
-        #     return SolveRune(target=self.target, attempts=self.attempts+1).execute()
-        # else:
-        #     bot_status.rune_solving = False
-        #     return 0, None
 
         print('\nSolving rune:')
         used_frame = None
@@ -742,17 +754,6 @@ class Mining(Command):
         bot_status.minal_active = False
         bot_status.minal_pos = None
         bot_status.minal_closest_pos = None
-
-
-class Buff(Command):
-    """Undefined 'buff' command for the default command book."""
-
-
-
-    def main(self, wait=True):
-        print(
-            "\n[!] 'Buff' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
 
 
 class ChangeChannel(Command):
@@ -888,7 +889,7 @@ class Relogin(Command):
 
     def main(self):
         chat_bot.send_message(f'Relogin:{self.channel}')
-        
+
         bot_status.enabled = False
 
         hid.key_press('esc')
@@ -924,26 +925,24 @@ class MapTeleport(Command):
             time.sleep(0.1)
         time.sleep(2)
         bot_status.enabled = True
-        
+
+
 class Direction(Command):
     def __init__(self, direction):
         super().__init__(locals())
         self.direction = bot_settings.validate_arrows(direction)
-        
+
     def main(self):
         press(self.direction, down_time=0.01, up_time=0.02)
-        
+
+
 class GoArdentmill(Command):
-    def __init__(self, invisible=True):
-        super().__init__(locals())
-        self.invisible = invisible
-        
+
     def main(self):
         bot_status.enabled = False
-        if self.invisible:
-            hid.key_press("5")
-            time.sleep(5)
-        
+        hid.key_press(Keybindings.Go_Ardentmill)
+        time.sleep(5)            
+
         go_btn = utils.multi_match(
             capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
         if go_btn:
@@ -951,7 +950,7 @@ class GoArdentmill(Command):
         else:
             hid.key_press("'")
             time.sleep(0.5)
-        
+
         go_btn = utils.multi_match(
             capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
         if go_btn:
@@ -1011,15 +1010,15 @@ class GoArdentmill(Command):
             time.sleep(0.1)
         time.sleep(2)
         hid.key_press('esc')
-        
+
         map_available = chenck_map_available(instance=True)
-        
+
         if map_available:
             bot_status.enabled = True
             bot_status.change_channel = False
         else:
             ChangeChannel().main()
-    
+
 ###########################
 #      Abstract Skill     #
 ###########################
@@ -1094,7 +1093,7 @@ class Skill(Command):
         cls.enabled = len(matchs) > 0
 
 
-class Summon(Command):
+class Summon(Skill):
     """'Summon' command for the default command book."""
 
     @classmethod
@@ -1102,7 +1101,7 @@ class Summon(Command):
         return False
 
 
-class DotAoe(Command):
+class DotAoe(Skill):
     """'DotAoe' command for the default command book."""
 
     @classmethod
@@ -1116,30 +1115,6 @@ class Aoe(Skill):
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         return False
-
-
-class Attack(Command):
-    """Undefined 'Attack' command for the default command book."""
-
-    def main(self):
-        print(
-            "\n[!] 'Attack' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
-
-
-class DoubleJump(Skill):
-    """Undefined 'FlashJump' command for the default command book."""
-
-    def __init__(self, target: tuple[int, int], attack_if_needed=False):
-        super().__init__(locals())
-
-        self.target = target
-        self.attack_if_needed = attack_if_needed
-
-    def main(self):
-        print(
-            "\n[!] 'FlashJump' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
 
 
 #########################
@@ -1325,48 +1300,6 @@ class RopeLift(Skill):
 #      Potion     #
 ###################
 
-
-class BuffPotion(Skill):
-    duration:  int = 0
-    type: SkillType = SkillType.Buff
-    icon = None
-    ready = True
-    enabled = False
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.__class__.load()
-
-    @classmethod
-    def load(cls):
-        path = f'assets/potion/{cls.__name__}.png'
-        if os.path.exists(path):
-            cls.icon = cv2.imread(path, 0)
-        cls.id = cls.__name__
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return cls.ready
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        if capture.frame is None:
-            return
-        cls.check_buff_enabled()
-        cls.ready = not cls.enabled
-
-    @classmethod
-    def check_buff_enabled(cls):
-        matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[:12,], threshold=0.98)
-        if not matchs:
-            matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[-12:, 16:], threshold=0.97)
-        cls.enabled = len(matchs) > 0
-
-
 class Potion(Command):
     """Uses each of Shadowers's potion once."""
 
@@ -1394,7 +1327,7 @@ class Potion(Command):
 
 class EXP_Potion(Command):
     key = Keybindings.EXP_POTION
-    cooldown = 7250
+    cooldown = 1810
     backswing = 0.5
 
     @classmethod
@@ -1459,7 +1392,7 @@ class CANDIED_APPLE(Command):
 
 class LEGION_WEALTHY(Command):
     key = Keybindings.LEGION_WEALTHY
-    cooldown = 1810
+    cooldown = 610
     backswing = 0.5
 
     @classmethod
@@ -1472,7 +1405,7 @@ class LEGION_WEALTHY(Command):
 
 class EXP_COUPON(Command):
     key = Keybindings.EXP_COUPON
-    cooldown = 1810
+    cooldown = 610
     backswing = 0.5
 
     @classmethod

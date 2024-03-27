@@ -17,6 +17,7 @@ class Keybindings(DefaultKeybindings):
     FLASH_JUMP = ';'
     SHADOW_ASSAULT = 'g'
     ROPE_LIFT = 'b'
+    Go_Ardentmill = 'v'
 
     # Buffs
     GODDESS_BLESSING = '1'

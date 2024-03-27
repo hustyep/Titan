@@ -15,6 +15,7 @@ class Keybindings(DefaultKeybindings):
     SHADOW_LEAP = 'a'
     SHADOW_SURGE = 'g'
     ROPE_LIFT = 'b'
+    Go_Ardentmill = '='
 
     # Buffs
     EPIC_ADVENTURE = '3'

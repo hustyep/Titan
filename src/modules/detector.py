@@ -109,7 +109,7 @@ class Detector(Subject):
 
             if bot_status.enabled and frame is not None and minimap is not None:
                 self.check_rune_status(frame, minimap)
-                self.check_mineral(frame, minimap)
+                # self.check_mineral(frame, minimap)
             time.sleep(0.5)
 
     def on_event(self, args):
@@ -134,7 +134,7 @@ class Detector(Subject):
 
         # Check for white room
         gray_crop = gray[100:-100, 50:-50]
-        height, width = gray.shape
+        height, width = gray_crop.shape
         tmp = np.count_nonzero(gray_crop == 255) / height / width
         # print(tmp)
         if bot_status.started_time is not None and tmp >= self.white_room_threshold:
@@ -185,7 +185,7 @@ class Detector(Subject):
 
     def check_init(self):
         if capture.frame is None:
-            returs;dn
+            return
         frame = capture.frame
         guide = utils.multi_match(frame[0:150, ], GUIDE_PLUSE_TEMPLATE, threshold=0.9)
         if guide:
