@@ -13,26 +13,13 @@ class CommandBook():
     def __init__(self, file):
         # importlib.reload(commands)
         self.name = splitext(basename(file))[0]
-        self.Move = commands.Move
-        self.Walk = commands.Walk
-        self.Wait = commands.Wait
-        self.ErdaShower = commands.ErdaShower
-        self.SolveRune = commands.SolveRune
-        self.Mining = commands.Mining
-        self.FeedPet = commands.FeedPet
-
-        self.Summon = commands.Summon
-        self.Aoe = commands.Aoe
-        self.DotAoe = commands.DotAoe
-        self.Buff = commands.Buff
-        self.Potion = commands.Potion
-
-        self.step = commands.step
 
         result = self._load_commands(file)
         if result is None:
             raise ValueError(f"Invalid command book at '{file}'")
-        self.dict, self.module = result
+        self.dict, self.func_dict, self.module = result
+        self.__load_default_commands()
+
         bot_settings.class_name = self.name
 
     def _load_commands(self, file):
@@ -51,6 +38,7 @@ class CommandBook():
         try:
             module = importlib.import_module(target)
             module = importlib.reload(module)
+            commands = importlib.reload(commands)
         except ImportError:     # Display errors in the target Command Book
             print(' !  Errors during compilation:\n')
             for line in traceback.format_exc().split('\n'):
@@ -92,7 +80,8 @@ class CommandBook():
         for func_name in ['step']:
             if func_name not in new_func:
                 required_function_found = False
-                raise ValueError(f" !  Error: Must implement required function '{func_name}'.")
+                raise ValueError(
+                    f" !  Error: Must implement required function '{func_name}'.")
 
         # Check if required commands have been implemented and overridden
         required_command_found = True
@@ -101,45 +90,41 @@ class CommandBook():
             if name not in new_cb:
                 required_command_found = False
                 new_cb[name] = command
-                raise ValueError(f" !  Error: Must implement required command '{name}'.")
+                raise ValueError(
+                    f" !  Error: Must implement required command '{name}'.")
 
         if required_command_found and required_function_found:
-            self.Buff = new_cb['buff']
-            # self.Potion = commands.Potion
-
-            self.step = new_func['step']
-            commands.step = self.step
-            commands.Attack = new_cb["attack"]
-            commands.DoubleJump = new_cb["doublejump"]
-
-            if new_cb["summon"]:
-                commands.Summon = new_cb["summon"]
-            else:
-                commands.Summon = commands.Skill
-            if new_cb["dotaoe"]:
-                commands.DotAoe = new_cb["dotaoe"]
-            else:
-                commands.DotAoe = commands.Skill
-            if new_cb["aoe"]:
-                commands.Aoe = new_cb["aoe"]
-            else:
-                commands.Aoe = commands.Skill
-            if new_cb["buff"]:
-                commands.Buff = new_cb["buff"]
-
-            for command in (commands.Summon, commands.DotAoe, commands.Aoe):
-                name = command.__name__
-                if name.lower() in new_cb:
-                    self.__setattr__(name, new_cb[name.lower()])
-
-            # pre load
-            for skill in new_cb.values():
-                if issubclass(skill, commands.Skill):
-                    skill.load()
             print(f" ~  Successfully loaded command book '{self.name}'")
-            return new_cb, module
+            return new_cb, new_func, module
         else:
             print(f" !  Command book '{self.name}' was not loaded")
+            
+    
+    def __load_default_commands(self):
+        commands.step = self.func_dict['step']
+        commands.Attack = self.dict["attack"]
+        commands.DoubleJump = self.dict["doublejump"]
+
+        if self.dict["summon"]:
+            commands.Summon = self.dict["summon"]
+        else:
+            commands.Summon = commands.Skill
+        if self.dict["dotaoe"]:
+            commands.DotAoe = self.dict["dotaoe"]
+        else:
+            commands.DotAoe = commands.Skill
+        if self.dict["aoe"]:
+            commands.Aoe = self.dict["aoe"]
+        else:
+            commands.Aoe = commands.Skill
+        if self.dict["buff"]:
+            commands.Buff = self.dict["buff"]
+
+        # pre load
+        for skill in self.dict.values():
+            if issubclass(skill, commands.Skill):
+                skill.load()
+    
 
     def reset(self):
         for name, command in inspect.getmembers(self.module, inspect.isclass):
