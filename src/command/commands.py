@@ -419,6 +419,24 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
     return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
 
 
+def mouse_move(template, rect: Rect=None):
+    frame = capture.frame
+    if frame is None:
+        return False
+    if rect is not None:
+        frame = frame[rect.y:rect.y+rect.height, rect.x:rect.x+rect.width]
+    match = utils.multi_match(frame, template, threshold=0.9)
+    if match:
+        x, y = match[0]
+        if rect is not None:
+            x += rect.x
+            y += rect.y
+        hid.mouse_abs_move(*get_full_pos((x, y)))
+        time.sleep(0.5)
+        return True
+    return False
+    
+
 #############################
 #      Abstract Command     #
 #############################
