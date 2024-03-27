@@ -7,7 +7,7 @@ from src.common import utils, bot_status
 from src.common.hid import hid
 from src.common.image_template import *
 from src.modules.capture import capture
-from src.command.commands import Keybindings, detect_mobs
+from src.command import commands
 from src.modules.chat_bot import chat_bot
 import threading
 
@@ -138,7 +138,7 @@ class ActionSimulator:
     @staticmethod
     def _change_channel(num: int = 0, enable=True, instance = True) -> None:
 
-        ActionSimulator.click_key(Keybindings.Change_Channel)
+        ActionSimulator.click_key(commands.Keybindings.Change_Channel)
 
         if num > 0:
             item_width = 50
@@ -274,7 +274,7 @@ def chenck_map_available(instance=True):
     if instance:
         start_time = time.time()
         while time.time() - start_time <= 5:
-            if detect_mobs():
+            if commands.detect_mobs():
                 return True
             time.sleep(0.1)
         return False
