@@ -10,7 +10,7 @@ from src.rune import rune
 from src.common.constants import *
 from src.common import bot_settings, utils
 from src.routine.components import *
-from src.command.commands import Command, target_reached, Move, AreaInsets, edge_reached, Attack
+from src.command import commands
 from src.map.map import map
 from src.command.command_book import CommandBook
 from src.common.action_simulator import *
@@ -74,7 +74,7 @@ class Routine(Subject):
 
     @dirty
     @update
-    def append_command(self, i, c: Command):
+    def append_command(self, i, c: commands.Command):
         """Appends Command object C to the Point at index I in the sequence."""
 
         target = self.sequence[i]
@@ -256,8 +256,8 @@ class Routine(Subject):
 
         self.clear()
         self.command_book = command_book
-        Command.loop_begin_callback = self._on_loop_begin
-        Command.complete_callback = self._on_command_complete
+        commands.Command.loop_begin_callback = self._on_loop_begin
+        commands.Command.complete_callback = self._on_command_complete
         Component.complete_callback = self._on_component_complete
 
         # Compile and Link
@@ -280,7 +280,7 @@ class Routine(Subject):
             for row in csv_reader:
                 result = self._eval(row, line)
                 if result:
-                    if isinstance(result, Command):
+                    if isinstance(result, commands.Command):
                         if curr_point:
                             curr_point.commands.append(result)
                     elif isinstance(result, Sequence):
@@ -378,8 +378,8 @@ class Routine(Subject):
         # self.command_book.Potion().execute()
         # self.command_book.Buff().execute()
 
-    def _on_command_complete(self, c: Command):
-        if isinstance(c, Move) and not target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):
+    def _on_command_complete(self, c: commands.Command):
+        if isinstance(c, commands.Move) and not commands.target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):
             self.check_point(bot_status.player_pos)
             
     def _on_component_complete(self, c: Component):
