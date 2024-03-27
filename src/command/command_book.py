@@ -36,9 +36,9 @@ class CommandBook():
         # Import the desired command book file
         target = '.'.join(['resources', 'command_books', self.name])
         try:
+            importlib.reload(commands)
             module = importlib.import_module(target)
             module = importlib.reload(module)
-            importlib.reload(commands)
         except ImportError:     # Display errors in the target Command Book
             print(' !  Errors during compilation:\n')
             for line in traceback.format_exc().split('\n'):

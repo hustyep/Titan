@@ -4,7 +4,7 @@ import inspect
 import tkinter as tk
 from src.modules.bot import bot
 from src.routine.components import Point
-from src.command.commands import Command
+from src.command import commands
 from src.gui.edit.minimap import Minimap
 from src.gui.edit.record import Record
 from src.gui.edit.routine import Routine
@@ -286,7 +286,7 @@ class Editor(LabelFrame):
 
             try:
                 obj = component(**new_kwargs)
-                if isinstance(obj, Command):
+                if isinstance(obj, commands.Command):
                     if len(selects) > 0:
                         index = int(selects[0])
                         if isinstance(routine[index], Point):

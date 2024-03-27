@@ -16,7 +16,7 @@ from src.modules.detector import detector
 from src.modules.chat_bot import chat_bot
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
-from src.command.commands import Skill
+from src.command import commands
 
 
 class BotUpdateType(Enum):
@@ -72,7 +72,7 @@ class Bot(Subject):
         while True:
             if self.command_book is not None and bot_status.enabled and capture.frame is not None:
                 for skill in self.command_book.dict.values():
-                    if issubclass(skill, Skill) and skill.key is not None and skill.cooldown > 0:
+                    if issubclass(skill, commands.Skill) and skill.key is not None and skill.cooldown > 0:
                         skill.check()
             time.sleep(0.2)
 
