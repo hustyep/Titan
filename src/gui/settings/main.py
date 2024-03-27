@@ -6,6 +6,7 @@ from src.gui.settings.pets import Pets
 from src.gui.settings.crontab import Crontab
 from src.gui.settings.buffs import Buffs
 from src.gui.settings.auto import Auto
+from src.gui.settings.mode import Mode
 from src.gui.settings.detection import Detection
 from src.gui.settings.notification import Notification
 from src.gui.interfaces import Tab, Frame
@@ -23,6 +24,8 @@ class Settings(Tab):
         self.column1 = Frame(self)
         self.column1.grid(row=0, column=1, sticky=tk.N, padx=10, pady=10)
 
+        self.mode = Mode(self.column1)
+        self.mode.pack(side=tk.TOP, fill='x', expand=True, pady=(10, 0))
         self.auto = Auto(self.column1)
         self.auto.pack(side=tk.TOP, fill='x', expand=True, pady=(10, 0))
         self.detection = Detection(self.column1)

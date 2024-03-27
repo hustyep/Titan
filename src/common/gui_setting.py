@@ -35,6 +35,18 @@ class AutoSettings(Configurable):
         else:
             return 0
 
+class ModeSettings(Configurable):
+    DEFAULT_CONFIG = {
+        'type': 'mob'
+    }
+    
+    @property
+    def type(self):
+        return self.get('type')
+    
+    @type.setter
+    def type(self, value):
+        self.set("type", value) 
 
 class DetectSettings(Configurable):
     DEFAULT_CONFIG = {
@@ -120,6 +132,7 @@ class ShadowerSettings(Configurable):
 
 class Gui_Setting():
     def __init__(self):
+        self.mode = ModeSettings('mode')
         self.auto = AutoSettings('auto')
         self.detection = DetectSettings('detection')
         self.buff = BuffSettings('buff')
