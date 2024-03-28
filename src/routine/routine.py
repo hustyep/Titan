@@ -221,7 +221,7 @@ class Routine(Subject):
         self.path = ''
         self.labels = {}
         self.command_book = None
-        map.clear()
+        shared_map.clear()
         bot_settings.reset()
 
         self.on_next((RoutineUpdateType.cleared, ))
@@ -263,7 +263,7 @@ class Routine(Subject):
 
         # Compile and Link
         self.compile(file)
-        map.load_data(map_name)
+        shared_map.load_data(map_name)
 
         self.dirty = False
         self.path = file

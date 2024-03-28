@@ -2,7 +2,7 @@ import tkinter as tk
 import keyboard
 import time
 import threading
-from common.bot_action import *
+from src.common.bot_action import *
 
 from src.gui.interfaces import LabelFrame, Frame
 from src.common.gui_setting import gui_setting
