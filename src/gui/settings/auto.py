@@ -6,7 +6,6 @@ from src.common.gui_setting import gui_setting
 from src.common import utils
 from src.common.image_template import *
 from src.modules.capture import capture
-from src.common.action_simulator import ActionSimulator
 import keyboard
 from src.common.hid import hid
 import time

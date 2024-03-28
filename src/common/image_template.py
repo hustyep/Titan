@@ -9,11 +9,9 @@ RUNE_BUFF_TEMPLATE = cv2.imread(f'{ASSETS_PATH}rune/rune_buff_template.png', 0)
 RUNE_BUFF_GRAY_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}rune/rune_buff_gray_template.png', 0)
 
-########################
-#      exceptions      #
-########################
-
-# Alert button
+######################
+#     system UI      #
+######################
 BUTTON_CONFIRM_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/btn_confirm_template.png', 0)
 BUTTON_OK_TEMPLATE = cv2.imread(
@@ -42,6 +40,12 @@ Go_Ardentmill_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/GoArdentmill.png', 0)
 SETTING_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/setting_template.png', 0)
+QUEST_BUBBLE_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}common/quest_bubble.png', 0)
+
+########################
+#      exceptions      #
+########################
 GM_HAT_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/GM_Hat.webp', 0)
 GM_HAT_W_TEMPLATE = cv2.imread(

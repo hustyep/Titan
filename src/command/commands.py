@@ -2,9 +2,10 @@ import time
 import os
 from enum import Enum
 from src.common.vkeys import *
-from src.common import bot_status, bot_settings, utils
+from src.common import bot_status, bot_settings, utils, bot_action
 from src.common.gui_setting import gui_setting
-from src.map.map import map, run_if_map_available, MapPointType
+from src.common.bot_helper import *
+from src.map.map import shared_map, run_if_map_available, MapPointType
 from src.rune import rune
 from src.modules.capture import capture
 from src.common.image_template import *
@@ -43,22 +44,6 @@ class DefaultKeybindings:
 
 class Keybindings(DefaultKeybindings):
     """ 'Keybindings' must be implemented in command book."""
-
-
-class AreaInsets:
-    def __init__(self, top=0, bottom=0, left=0, right=0) -> None:
-        self.top = top
-        self.bottom = bottom
-        self.left = left
-        self.right = right
-
-
-class Rect:
-    def __init__(self, x=0, y=0, width=0, height=0) -> None:
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
 
 
 class Command():
@@ -219,7 +204,7 @@ def climb_rope(isUP=True):
     key = 'up' if isUP else 'down'
     key_down(key)
     time.sleep(0.1)
-    while not map.on_the_platform(bot_status.player_pos):
+    while not shared_map.on_the_platform(bot_status.player_pos):
         time.sleep(0.1)
         step += 1
         if step > 50:
@@ -338,64 +323,6 @@ def evade_rope(target: tuple[int, int] = None):
             Walk(target_r[0], tolerance=0).execute()
 
 
-class MobType(Enum):
-    NORMAL = 'normal mob'
-    ELITE = 'elite mob'
-    BOSS = 'boss mob'
-
-
-def detect_mobs(insets: AreaInsets = None,
-                anchor: tuple[int, int] = None,
-                rect: Rect = None,
-                type: MobType = MobType.NORMAL,
-                multy_match=False,
-                debug=False):
-    frame = capture.frame
-
-    if frame is None:
-        return []
-
-    match (type):
-        case (MobType.BOSS):
-            mob_templates = map.boss_templates
-        case (MobType.ELITE):
-            mob_templates = map.elite_templates
-        case (_):
-            mob_templates = map.mob_templates
-
-    if len(mob_templates) == 0:
-        if type == MobType.NORMAL:
-            raise ValueError(f"Missing {type.value} template")
-        else:
-            return []
-
-    crop = frame
-    if rect is not None:
-        crop = frame[rect.y:rect.y+rect.height, rect.x+rect.width]
-    elif insets is not None:
-        if anchor is None:
-            anchor = capture.convert_point_minimap_to_window(
-                bot_status.player_pos)
-        crop = frame[max(0, anchor[1]-insets.top):anchor[1]+insets.bottom,
-                     max(0, anchor[0]-insets.left):anchor[0]+insets.right]
-        # utils.show_image(crop)
-
-    mobs = []
-    for mob_template in mob_templates:
-        mobs_tmp = utils.multi_match(
-            crop,
-            mob_template,
-            threshold=0.95 if type == MobType.NORMAL else 0.9,
-            debug=debug)
-        if len(mobs_tmp) > 0:
-            for mob in mobs_tmp:
-                mobs.append(mob)
-                if not multy_match:
-                    return mobs
-
-    return mobs
-
-
 def direction_changed(direction) -> bool:
     if direction == 'left':
         return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
@@ -417,24 +344,6 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
     #     return utils.distance(start, target) <= tolerance
     # else:
     return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
-
-
-def mouse_move(template, rect: Rect=None):
-    frame = capture.frame
-    if frame is None:
-        return False
-    if rect is not None:
-        frame = frame[rect.y:rect.y+rect.height, rect.x:rect.x+rect.width]
-    match = utils.multi_match(frame, template, threshold=0.9)
-    if match:
-        x, y = match[0]
-        if rect is not None:
-            x += rect.x
-            y += rect.y
-        hid.mouse_abs_move(*get_full_pos((x, y)))
-        time.sleep(0.5)
-        return True
-    return False
     
 
 #############################
@@ -1432,38 +1341,3 @@ class EXP_COUPON(Command):
         if not enabled:
             return False
         return super().canUse(next_t)
-
-
-def get_full_pos(pos):
-    return pos[0] + capture.window['left'], pos[1] + capture.window['top']
-
-
-def get_channel_pos(channel):
-    x = 334 + capture.window['left']
-    y = 290 + capture.window['top']
-    width = 360
-    height = 244
-    column = 5
-    row = 8
-    cell_width = width // column
-    cell_height = height // row
-
-    channel_row = (channel - 1) // column
-    channel_column = (channel - 1) % column
-    return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
-
-
-def chenck_map_available(instance=True):
-    if instance:
-        start_time = time.time()
-        while time.time() - start_time <= 5:
-            if detect_mobs():
-                return True
-            time.sleep(0.1)
-        return False
-    else:
-        for i in range(5):
-            if bot_status.stage_fright:
-                return False
-            time.sleep(1)
-        return True

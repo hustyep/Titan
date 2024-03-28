@@ -9,7 +9,7 @@ from rx.subject import Subject
 from src.common import utils, bot_status, bot_settings
 from src.common.gui_setting import gui_setting
 from src.common.constants import *
-from src.common.action_simulator import *
+from src.common import bot_action
 from src.common.vkeys import key_up, key_down, releaseAll
 from src.modules.capture import capture
 from src.modules.notifier import notifier
@@ -18,6 +18,7 @@ from src.modules.chat_bot import chat_bot
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
 from src.command import commands
+from src.common.image_template import TEXT_WHITE_RANGES
 
 
 class BotUpdateType(Enum):
@@ -181,7 +182,7 @@ class Bot(Subject):
         elif isinstance(event_type, BotWarnning):
             match event_type:
                 case BotWarnning.NO_MOVEMENT:
-                    ActionSimulator.jump_down()
+                    bot_action.jump_down()
                 # case BotWarnning.OTHERS_STAY_OVER_30S:
                 #     words = ['cc pls', 'cc pls ', ' cc pls']
                 #     random_word = random.choice(words)
@@ -199,7 +200,7 @@ class Bot(Subject):
         elif isinstance(event_type, BotVerbose):
             match event_type:
                 case BotVerbose.BOSS_APPEAR:
-                    threading.Timer(180, ActionSimulator.open_boss_box).start()
+                    threading.Timer(180, bot_action.open_boss_box).start()
         elif isinstance(event_type, BotDebug):
             pass
 

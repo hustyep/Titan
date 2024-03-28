@@ -5,7 +5,7 @@ from src.common import utils, bot_status
 import keyboard
 import time
 import threading
-from src.common.action_simulator import ActionSimulator as sim
+from src.common import bot_action
 
 
 class Shadower(LabelFrame):
@@ -64,12 +64,12 @@ class Shadower(LabelFrame):
                 keyboard.unhook_key(hotkey)
 
     def meso_explosion(self, event):
-        threading.Timer(0.1, sim.click_key, ('d', )).start()
+        threading.Timer(0.1, bot_action.click_key, ('d', )).start()
 
     @bot_status.run_if_disabled
     def trickblade(self) -> None:
-        sim.click_key('v')
-        sim.click_key('a')
+        bot_action.click_key('v')
+        bot_action.click_key('a')
 
 
 class ShadowerMacrosSettings(Configurable):

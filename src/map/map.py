@@ -290,4 +290,4 @@ def run_if_map_available(function):
     return helper
 
 
-map = Map()
+shared_map = Map()

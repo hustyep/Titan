@@ -2,6 +2,7 @@
 
 import csv
 import os
+import threading
 from os.path import splitext, basename
 from enum import Enum
 from rx.subject import Subject
@@ -11,9 +12,9 @@ from src.common.constants import *
 from src.common import bot_settings, utils
 from src.routine.components import *
 from src.command import commands
-from src.map.map import map
+from src.map.map import shared_map
 from src.command.command_book import CommandBook
-from src.common.action_simulator import *
+from src.common import bot_action
 
 
 class RoutineUpdateType(Enum):
@@ -420,7 +421,7 @@ class Routine(Subject):
         else:
             self.on_next((BotInfo.RUNE_LIBERATED, rune_type))
             if rune_type == 'Rune of Might':
-                ActionSimulator.cancel_rune_buff()
+                bot_action.cancel_rune_buff()
 
     def notify_rune_failed(self, used_frame):
         bot_status.rune_pos = None

@@ -7,9 +7,6 @@ import numpy as np
 import win32gui
 import win32con
 import win32com.client as client
-import win32gui
-import win32con
-import win32com.client as client
 import pythoncom
 from rx.subject import Subject
 
@@ -20,9 +17,10 @@ from src.common.image_template import *
 from src.common.constants import *
 from src.common.hid import hid
 from src.modules.capture import capture
-from src.map.map import map as game_map
+from src.map.map import shared_map as game_map
 from src.common.gui_setting import gui_setting
-from src.common.action_simulator import *
+from src.common import bot_action, bot_helper
+from src.modules.chat_bot import chat_bot
 
 class Detector(Subject):
 
@@ -174,7 +172,7 @@ class Detector(Subject):
         chat_btn = utils.multi_match(
             frame, CHAT_MINI_TEMPLATE, threshold=0.9)
         if chat_btn:
-            ActionSimulator.mouse_left_click(get_full_pos(chat_btn[0]), delay=0.5)
+            bot_action.mouse_left_click(bot_helper.get_full_pos(chat_btn[0]), delay=0.5)
             
         setting_btn = utils.multi_match(frame[400:600, 800:1000], SETTING_TEMPLATE, threshold=0.9)
         if setting_btn:
@@ -193,18 +191,18 @@ class Detector(Subject):
         
         maple_reward = utils.multi_match(frame[-200:, -50:], MAPLE_REWARD_TEMPLATE, threshold=0.9)
         if maple_reward:
-            ActionSimulator.mouse_left_click(get_full_pos((1351, 586)), delay=1)
+            bot_action.mouse_left_click(bot_helper.get_full_pos((1351, 586)), delay=1)
 
         adv = utils.multi_match(frame[190:200, 1000:1100], ADV_CLOSE_TEMPLATE, threshold=0.9)
         if adv:
-            ActionSimulator.mouse_left_click(get_full_pos(adv[0]), delay=1)
+            bot_action.mouse_left_click(bot_helper.get_full_pos(adv[0]), delay=1)
         
         
         today = datetime.now().weekday()
         if today == 6:
             sunday = utils.multi_match(frame[180:235, 630:700], SUNNY_SUNDAY_TEMPLATE, threshold=0.9)
             if sunday:
-                ActionSimulator.mouse_left_click(get_full_pos((890, 330)), delay=1)
+                bot_action.mouse_left_click(bot_helper.get_full_pos((890, 330)), delay=1)
 
     def check_forground(self):
         frame = capture.camera.get_latest_frame()
@@ -222,7 +220,7 @@ class Detector(Subject):
             mathes = utils.multi_match(frame[-50:, ], TABBAR_MAPLE_TEMPLATE, threshold=0.9)
             if mathes:
                 height = frame.shape[0]
-                ActionSimulator.mouse_left_click((mathes[0][0], height - 25), delay=1)
+                bot_action.mouse_left_click((mathes[0][0], height - 25), delay=1)
             # try:
             #     pythoncom.CoInitialize()
             #     shell = client.Dispatch("WScript.Shell")
@@ -276,7 +274,7 @@ class Detector(Subject):
                 capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
             if region_matchs:
                 chat_bot.send_message('disconnected...')
-                ActionSimulator.auto_login(gui_setting.auto.auto_login_channel)
+                bot_action.auto_login(gui_setting.auto.auto_login_channel)
                 return True
             time.sleep(0.5)
         else:

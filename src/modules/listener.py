@@ -12,9 +12,9 @@ from src.modules.capture import capture
 from src.modules.bot import bot
 from src.routine.routine import routine
 from src.chat_bot.chat_bot_entity import ChatBotCommand
-from src.common.action_simulator import ActionSimulator
+from src.common import bot_action
 from rx.subject import Subject
-from src.map.map import map as game_map
+from src.map.map import shared_map as game_map
 
 
 class Listener(Configurable, Subject):
@@ -164,7 +164,7 @@ class Listener(Configurable, Subject):
                     capture.camera.get_latest_frame())
                 return None, filepath
             case ChatBotCommand.CLICK:
-                ActionSimulator.click_key(args[0])
+                bot_action.click_key(args[0])
                 filepath = utils.save_screenshot(capture.frame)
                 return "done", filepath
             case ChatBotCommand.LEVEL:
@@ -173,20 +173,20 @@ class Listener(Configurable, Subject):
                 #  TODO update UI
                 return "done", None
             case ChatBotCommand.SAY:
-                ActionSimulator.say_to_all(args[0])
+                bot_action.say_to_all(args[0])
                 filepath = utils.save_screenshot(capture.frame)
                 return f'said: "{args[0]}"', filepath
             case ChatBotCommand.TP:
-                ActionSimulator.go_home()
+                bot_action.go_home()
                 return "tp...", None
             case ChatBotCommand.CHANGE_CHANNEL:
                 channel_num = 0
                 if len(args) > 0:
                     channel_num = int(args[0])
-                ActionSimulator.change_channel(channel_num, bot_status.enabled)
+                bot_action.change_channel(channel_num, bot_status.enabled)
                 return "changing channel...", None
             case ChatBotCommand.TEST:
-                ActionSimulator.auto_login(args[0])
+                bot_action.auto_login(args[0])
                 filepath = utils.save_screenshot(capture.frame)
                 return "login", filepath
 

@@ -63,9 +63,29 @@ class BotDebug(Enum):
     PLAYER_LOCATION_UPDATE = auto()
 
 #############################
-#       Mineral Type        #
+#       Common Type        #
 #############################
 
+class AreaInsets:
+    def __init__(self, top=0, bottom=0, left=0, right=0) -> None:
+        self.top = top
+        self.bottom = bottom
+        self.left = left
+        self.right = right
+
+
+class Rect:
+    def __init__(self, x=0, y=0, width=0, height=0) -> None:
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+class MobType(Enum):
+    NORMAL = 'normal mob'
+    ELITE = 'elite mob'
+    BOSS = 'boss mob'
+    
 
 class MineralType(Enum):
     HEART = 'heart mineral'
@@ -80,13 +100,32 @@ class BotRunMode(Enum):
     Cube = 'Cube'
     Mapping = 'Mapping'
 
+
 #############################
 #       Role & Class        #
 #############################
 Name_Class_Map = {'Sllee': 'shadower',
                   'issl': 'night_lord',
-                  'ggswift': 'shadower', 
+                  'ggswift': 'shadower',
                   'ermin': 'hero'}
+
+Charactor_Daily_Map = {
+    'Sllee': [
+        'Outlaw-Infested Wastes 2',
+        'Laboratory Behind Locked Door 1',
+        'Ink-winged Owl',
+    ],
+    'issl': [
+        'Outlaw-Infested Wastes 2',
+        'Laboratory Behind Locked Door 1',
+        'Ink-winged Owl',
+    ],
+    'ermin': [
+        'Outlaw-Infested Wastes 2',
+        'Laboratory Behind Locked Door 1',
+        'Ink-winged Owl',
+    ]
+}
 
 #############################
 #          Map Name         #

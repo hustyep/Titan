@@ -97,6 +97,12 @@ SETTING_VALIDATORS = {
     'mini_margin': int,
 }
 
+class SystemKeybindings:
+    INTERACT = 'space'
+    FEED_PET = 'L'
+    Change_Channel = 'o'
+    Attack = 'f'
+    JUMP = 's'
 
 def reset():
     """Resets all settings to their default values."""

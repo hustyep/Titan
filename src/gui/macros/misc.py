@@ -2,7 +2,7 @@ import tkinter as tk
 import keyboard
 import time
 import threading
-from src.common.action_simulator import ActionSimulator as sim
+from common.bot_action import *
 
 from src.gui.interfaces import LabelFrame, Frame
 from src.common.gui_setting import gui_setting
@@ -70,12 +70,3 @@ class Misc(LabelFrame):
                 self.open_herb()
             case 1:
                 self.open_herb()
-            case 2:
-                self.reset_potential()
-    
-    def reset_potential(self):
-        while(self.running):
-            sim.mouse_left_click()
-            sim.click_key('enter')
-            sim.click_key('enter')
-            sim.click_key('enter')
