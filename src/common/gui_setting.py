@@ -1,5 +1,5 @@
 from src.common.interfaces import Configurable
-
+from src.common.constants import BotRunMode
 
 class AutoSettings(Configurable):
     DEFAULT_CONFIG = {
@@ -37,12 +37,12 @@ class AutoSettings(Configurable):
 
 class ModeSettings(Configurable):
     DEFAULT_CONFIG = {
-        'type': 'mob'
+        'type': 'Farm'
     }
     
     @property
     def type(self):
-        return self.get('type')
+        return BotRunMode[self.get('type')]
     
     @type.setter
     def type(self, value):

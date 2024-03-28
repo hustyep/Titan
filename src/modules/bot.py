@@ -2,6 +2,7 @@
 
 import threading
 import time
+import os
 from enum import Enum
 from rx.subject import Subject
 
@@ -84,32 +85,31 @@ class Bot(Subject):
             time.sleep(0.5)
             return
 
-        # role_name, class_name = detector.identify_role()
-        
-        # if not role_name or not class_name:
-        #     return
+        role_name, class_name = self.identify_role()
+        print(f"identify name:{role_name}, class:{class_name}")
 
-        # print(f"identify name:{role_name}, class:{class_name}")
-      
-        # # update role template      
-        # bot_settings.role_name = role_name
-        # bot_settings.load_role_template()
-        
-        # # update command book
-        # if bot_settings.class_name != class_name:
-        #     file = bot_settings.get_command_book_path(class_name)
-        #     self.load_commands(file)
-
-        if not gui_setting.auto.load_map:
-            self.prepared = True
+        if not role_name or not class_name:
+            self.toggle(False, 'role name error')
             return
+      
+        # update role template      
+        bot_settings.role_name = role_name
+        bot_settings.load_role_template()
+        
+        # update command book
+        if bot_settings.class_name != class_name:
+            file = bot_settings.get_command_book_path(class_name)
+            self.load_commands(file)
 
         # update routine
-        map_name = detector.identify_map_name()
+        map_name = self.identify_map_name()
         if map_name is not None:
             map_routine_path = f'{bot_settings.get_routines_dir()}/{map_name}.csv'
             if map_routine_path != routine.path:
                 routine.load(map_routine_path, self.command_book)
+        else:
+            self.toggle(False, 'identify map error')
+            return
 
         self.prepared = True
 
@@ -143,6 +143,17 @@ class Bot(Subject):
         utils.print_state(enabled)
         print(reason)
 
+    def identify_role(self):
+        name = utils.image_match_text(capture.name_frame, Name_Class_Map.keys())
+        if name is not None:
+            return name, Name_Class_Map[name]
+
+    def identify_map_name(self):
+        
+        frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
+        # utils.show_image(frame)
+        available_map_names = get_routines(bot_settings.class_name)
+        return utils.image_match_text(frame, available_map_names)
 
     def on_event(self, args):
         event_type = args[0]
@@ -200,5 +211,14 @@ class Bot(Subject):
             f"reason: {ext}\n"
         )
         return message
+
+def get_routines(command_name) -> list:
+    routines = []
+    folder = bot_settings.get_routines_dir(command_name)
+    for root, ds, fs in os.walk(folder):
+        for f in fs:
+            if f.endswith(".csv"):
+                routines.append(f[:-4])
+    return routines
 
 bot = Bot()

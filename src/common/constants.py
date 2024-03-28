@@ -74,12 +74,19 @@ class MineralType(Enum):
     HERB_PURPLE = 'purple herb'
 
 
+class BotRunMode(Enum):
+    Farm = 'Farm'
+    Daily = 'Daily'
+    Cube = 'Cube'
+    Mapping = 'Mapping'
+
 #############################
 #       Role & Class        #
 #############################
 Name_Class_Map = {'Sllee': 'shadower',
                   'issl': 'night_lord',
-                  'ggswift': 'shadower', }
+                  'ggswift': 'shadower', 
+                  'ermin': 'hero'}
 
 #############################
 #          Map Name         #

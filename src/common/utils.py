@@ -6,17 +6,18 @@ import math
 import queue
 import os
 import threading
+import string
 from datetime import datetime, timedelta
 from random import random
 import win32gui
 import win32ui
 import win32con
-import win32api
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 import pytesseract as tess
 import difflib
+
 
 def single_match(frame, template):
     """
@@ -100,14 +101,15 @@ def filter_color(img, ranges):
 
 
 def add_mask(img, pos, **kwargs):
-    transp = Image.new('RGBA', img.size, (0,0,0,0))
+    transp = Image.new('RGBA', img.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(transp, "RGBA")
     draw.rectangle(pos, **kwargs)
     new_img = Image.alpha_composite(img, transp).convert('RGB')
-    open_cv_image = np.array(new_img) 
-    # Convert RGB to BGR 
-    open_cv_image = open_cv_image[:, :, ::-1].copy() 
+    open_cv_image = np.array(new_img)
+    # Convert RGB to BGR
+    open_cv_image = open_cv_image[:, :, ::-1].copy()
     return open_cv_image
+
 
 def trans_point(point: tuple[int, int], ratio: float):
     return int(point[0] * ratio), int(point[1] * ratio)
@@ -314,20 +316,42 @@ def maple_screenshot():
         img = window_capture(hwnd, img_name)
         return img
 
+
 def image_2_str(image) -> str:
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     text = tess.image_to_string(image_rgb, lang="eng")
     content = text.replace("\f", "")
     return content
 
+
+def image_match_text(frame, list: list[str], threshold=0.7, filter=['-']):
+    text = image_2_str(frame).replace(" ", "").replace('\n', '').lower()
+    for i in string.punctuation:
+        if i not in filter:
+            text = text.replace(i, '')
+    best = 0
+    result: str = None
+    for value in list:
+        ratio = string_similar(text, value)
+        if ratio == 1:
+            return value
+        elif ratio > best:
+            best = ratio
+            result = value
+    if best >= threshold:
+        return result
+
+
 def show_image(image, title=''):
     cv2.imshow(title, image)
     cv2.waitKey()
-    
+
+
 def string_similar(s1, s2):
     seq = difflib.SequenceMatcher(None, s1, s2)
     ratio = seq.ratio()
     return ratio
+
 
 def cvt2Plt(cv_image):
     rgb_img = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)

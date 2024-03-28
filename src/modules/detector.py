@@ -1,8 +1,6 @@
 """A module for detecting and notifying the user of dangerous in-game events."""
-import os
 import time
 from datetime import datetime
-import string
 import threading
 import operator
 import numpy as np
@@ -492,49 +490,6 @@ class Detector(Subject):
                 index = np.argmin(distances)
                 bot_status.minal_closest_pos = routine[index].location
 
-    def identify_role(self):
-        role_name = ''
-        class_name = ''
-
-        name = utils.image_2_str(capture.name_frame).replace(
-            " ", "").replace('\n', '').lower()
-
-        best = 0
-        for key, value in Name_Class_Map.items():
-            ratio = utils.string_similar(name, key.lower())
-            if ratio == 1:
-                class_name = value
-                role_name = key
-                break
-            elif ratio > best:
-                best = ratio
-                class_name = value
-                role_name = key
-
-        return role_name, class_name
-
-    def identify_map_name(self):
-        
-        frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
-        # utils.show_image(frame)
-        name = utils.image_2_str(frame).replace('\n', '')
-        for i in string.punctuation:
-            if i not in ['-']:
-                name = name.replace(i, '')
-        result = name
-        best = 0
-        map_names = get_routines(bot_settings.class_name)
-        for value in map_names:
-            ratio = utils.string_similar(name, value)
-            if ratio == 1:
-                result = value
-                break
-            elif ratio > best:
-                best = ratio
-                result = value
-        return result if ratio >= 0.8 else None
-
-
 detector = Detector()
 
 
@@ -584,12 +539,3 @@ def distance_to_minal(point):
     if isinstance(point, Point) and point.interval == 0:
         return utils.distance(bot_status.minal_pos, point.location)
     return float('inf')
-
-def get_routines(command_name) -> list:
-    routines = []
-    folder = bot_settings.get_routines_dir(command_name)
-    for root, ds, fs in os.walk(folder):
-        for f in fs:
-            if f.endswith(".csv"):
-                routines.append(f[:-4])
-    return routines
