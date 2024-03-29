@@ -236,10 +236,10 @@ class Map:
 
     def platform_point(self, target: tuple[int, int]):
         if self.data_available:
-            height, _ = map.minimap_data.shape
+            height, _ = shared_map.minimap_data.shape
             for y in range(target[1] - 7, height - 1):
                 p = (target[0], y)
-                if map.on_the_platform(p):
+                if shared_map.on_the_platform(p):
                     return p
 
         return target
@@ -285,7 +285,7 @@ def run_if_map_available(function):
     """
 
     def helper(*args, **kwargs):
-        if map.data_available:
+        if shared_map.data_available:
             return function(*args, **kwargs)
     return helper
 

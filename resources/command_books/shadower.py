@@ -163,9 +163,9 @@ class JumpUp(Command):
         
         target_left = (self.target[0] - 1, self.target[1])
         target_right = (self.target[0] + 1, self.target[1])
-        if not map.on_the_platform(target_left):
+        if not shared_map.on_the_platform(target_left):
             press('right')
-        elif not map.on_the_platform(target_right):
+        elif not shared_map.on_the_platform(target_right):
             press('left')
         
         evade_rope(self.target)
@@ -315,7 +315,7 @@ class ShadowAssault(Skill):
             time.sleep(0.2)
             evade_rope(self.target)
 
-        if self.direction == 'up' and not map.on_the_platform((bot_status.player_pos[0], self.target[1])):
+        if self.direction == 'up' and not shared_map.on_the_platform((bot_status.player_pos[0], self.target[1])):
             Walk(target_x=self.target[0], tolerance=0).execute()
 
         dx = self.target[0] - bot_status.player_pos[0]
@@ -382,7 +382,7 @@ class CruelStab(Skill):
         if not self.canUse():
             return
         self.__class__.castedTime = time.time()
-        jumped = not map.on_the_platform(bot_status.player_pos)
+        jumped = not shared_map.on_the_platform(bot_status.player_pos)
         press_acc(self.key, 1, down_time=0.02, up_time=0.02)
         threading.Timer(0.3, MesoExplosion().execute, ).start()
         # MesoExplosion().execute()

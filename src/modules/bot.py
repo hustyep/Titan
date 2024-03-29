@@ -119,7 +119,7 @@ class Bot(Subject):
         # update routine
         map_name = bot_helper.identify_map_name()
         if map_name is not None:
-            map_routine_path = f'{bot_settings.get_routines_dir()}/{map_name}.csv'
+            map_routine_path = f'{bot_settings.get_routines_dir()}\\{map_name}.csv'
             if map_routine_path != routine.path:
                 routine.load(map_routine_path, self.command_book)
         else:

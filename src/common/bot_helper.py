@@ -161,7 +161,7 @@ def chenck_map_available(instance=True):
     if instance:
         start_time = time.time()
         while time.time() - start_time <= 5:
-            if detect_mobs(capture.fr):
+            if detect_mobs(capture.frame):
                 return True
             time.sleep(0.1)
         return False
