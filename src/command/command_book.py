@@ -52,7 +52,8 @@ class CommandBook():
         new_cb = {}
         # load default Fuction
         for name, func in inspect.getmembers(commands, inspect.isfunction):
-            if inspect.getmodule(func).__name__ == commands.__name__:
+            module_name = inspect.getmodule(inspect.unwrap(func)).__name__
+            if module_name == commands.__name__:
                 new_func[name] = func
 
         # load default Command
@@ -62,7 +63,8 @@ class CommandBook():
 
         # Populate the new command book
         for name, func in inspect.getmembers(module, inspect.isfunction):
-            if inspect.getmodule(func).__name__ == module.__name__:
+            module_name = inspect.getmodule(inspect.unwrap(func)).__name__
+            if module_name == module.__name__:
                 new_func[name] = func
 
         for name, command in inspect.getmembers(module, inspect.isclass):
@@ -73,7 +75,8 @@ class CommandBook():
         required_function_found = True
         for func_name in ['step']:
             func = new_func[func_name]
-            if inspect.getmodule(func).__name__ == commands.__name__:
+            module_name = inspect.getmodule(inspect.unwrap(func)).__name__
+            if module_name == commands.__name__:
                 required_function_found = False
                 raise ValueError(
                     f" !  Error: Must implement required function '{func_name}'.")

@@ -1,5 +1,4 @@
-
-
+from functools import wraps
 
 #################################
 #       Global Variables        #
@@ -62,7 +61,7 @@ def run_if_enabled(function):
     :param function:    The function to decorate.
     :return:            The decorated function.
     """
-
+    @wraps(function)
     def helper(*args, **kwargs):
         if enabled:
             return function(*args, **kwargs)

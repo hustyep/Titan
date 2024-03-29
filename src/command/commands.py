@@ -277,19 +277,26 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
 #      Abstract Command     #
 #############################
 
-class Attack(Command, ABC):
+class Attack(ABC):
     """Undefined 'Attack' command for the default command book."""
+    @abstractmethod
+    def main():
+        pass
 
 
-class DoubleJump(Command, ABC):
+class DoubleJump(ABC):
     """Undefined 'FlashJump' command for the default command book."""
 
     @abstractmethod
     def __init__(self, target: tuple[int, int], attack_if_needed=False):
         pass
 
-class Buff(Command, ABC):
+
+class Buff(ABC):
     """Undefined 'buff' command for the default command book."""
+    @abstractmethod
+    def main():
+        pass
 
 #############################
 #      Common Command       #
