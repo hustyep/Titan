@@ -72,16 +72,16 @@ class CommandBook():
         # Check if required functions have been implemented and overridden
         required_function_found = True
         for func_name in ['step']:
-            if func_name not in new_func:
+            func = new_func[func_name]
+            if inspect.getmodule(func).__name__ == commands.__name__:
                 required_function_found = False
                 raise ValueError(
                     f" !  Error: Must implement required function '{func_name}'.")
 
         # Check if required commands have been implemented and overridden
         required_command_found = True
-        for command in [commands.Buff, commands.Attack, commands.DoubleJump]:
-            name = command.__name__
-            if name not in new_cb:
+        for name, cls in new_cb.items():
+            if inspect.isabstract(cls):
                 required_command_found = False
                 raise ValueError(
                     f" !  Error: Must implement required command '{name}'.")

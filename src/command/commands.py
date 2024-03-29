@@ -1,5 +1,6 @@
 import time
 import os
+from abc import ABC, abstractmethod
 from enum import Enum
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils, bot_action
@@ -171,6 +172,7 @@ class Move(Command):
 #      Shared Functions     #
 #############################
 
+@abstractmethod
 def step(target, tolerance):
     """
     The default 'step' function. If not overridden, immediately stops the bot.
@@ -275,37 +277,19 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
 #      Abstract Command     #
 #############################
 
-class Attack(Command):
+class Attack(Command, ABC):
     """Undefined 'Attack' command for the default command book."""
 
-    def main(self):
-        print(
-            "\n[!] 'Attack' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
 
-
-class DoubleJump(Command):
+class DoubleJump(Command, ABC):
     """Undefined 'FlashJump' command for the default command book."""
 
+    @abstractmethod
     def __init__(self, target: tuple[int, int], attack_if_needed=False):
-        super().__init__(locals())
+        pass
 
-        self.target = target
-        self.attack_if_needed = attack_if_needed
-
-    def main(self):
-        print(
-            "\n[!] 'FlashJump' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
-
-
-class Buff(Command):
+class Buff(Command, ABC):
     """Undefined 'buff' command for the default command book."""
-
-    def main(self, wait=True):
-        print(
-            "\n[!] 'Buff' command not implemented in current command book, aborting process.")
-        bot_status.enabled = False
 
 #############################
 #      Common Command       #
