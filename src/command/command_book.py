@@ -52,19 +52,21 @@ class CommandBook():
         new_cb = {}
         # load default Fuction
         for name, func in inspect.getmembers(commands, inspect.isfunction):
-            new_func[name] = func
+            if inspect.getmodule(func).__name__ == commands.__name__:
+                new_func[name] = func
 
         # load default Command
         for name, command in inspect.getmembers(commands, inspect.isclass):
-            if issubclass(command, commands.Command):
+            if inspect.getmodule(command).__name__ == commands.__name__:
                 new_cb[name] = command
 
         # Populate the new command book
         for name, func in inspect.getmembers(module, inspect.isfunction):
-            new_func[name] = func
+            if inspect.getmodule(func).__name__ == module.__name__:
+                new_func[name] = func
 
         for name, command in inspect.getmembers(module, inspect.isclass):
-            if issubclass(command, commands.Command):
+            if inspect.getmodule(command).__name__ == module.__name__:
                 new_cb[name] = command
 
         # Check if required functions have been implemented and overridden
@@ -92,12 +94,12 @@ class CommandBook():
 
     def __update_default_commands(self):
         # replace function
-        for func_name, func in self.func_dict:
+        for func_name, func in self.func_dict.items():
             if hasattr(commands, func_name):
                 setattr(commands, func_name, func)
 
         # replace class
-        for class_name, cls in self.dict:
+        for class_name, cls in self.dict.items():
             if hasattr(commands, class_name):
                 setattr(commands, class_name, cls)
 
