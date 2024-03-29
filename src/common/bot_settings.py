@@ -99,6 +99,7 @@ SETTING_VALIDATORS = {
 
 class SystemKeybindings:
     INTERACT = 'space'
+    ITEM = 'i'
     FEED_PET = 'L'
     Change_Channel = 'o'
     Attack = 'f'

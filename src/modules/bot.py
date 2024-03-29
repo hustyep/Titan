@@ -15,6 +15,7 @@ from src.modules.capture import capture
 from src.modules.notifier import notifier
 from src.modules.detector import detector
 from src.modules.chat_bot import chat_bot
+from src.modules.daily import *
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
 from src.command import commands
@@ -34,6 +35,7 @@ class Bot(Subject):
         super().__init__()
         self.command_book: CommandBook = None
         self.prepared = False
+        self.daily: Daily = None
 
         self.check_thread = threading.Thread(target=self._main_check)
         self.check_thread.daemon = True
@@ -62,9 +64,11 @@ class Bot(Subject):
         while True:
             if bot_status.enabled:
                 if not self.prepared:
-                    self.pre_load()
+                    self.prepare()
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
+                    if self.daily is not None:
+                        self.daily.check()
                 else:
                     time.sleep(0.01)
             else:
@@ -78,7 +82,7 @@ class Bot(Subject):
                         skill.check()
             time.sleep(0.2)
 
-    def pre_load(self):
+    def prepare(self):
         if self.prepared:
             return
         
@@ -86,7 +90,7 @@ class Bot(Subject):
             time.sleep(0.5)
             return
 
-        role_name, class_name = self.identify_role()
+        role_name, class_name = bot_helper.identify_role()
         print(f"identify name:{role_name}, class:{class_name}")
 
         if not role_name or not class_name:
@@ -101,9 +105,19 @@ class Bot(Subject):
         if bot_settings.class_name != class_name:
             file = bot_settings.get_command_book_path(class_name)
             self.load_commands(file)
-
+            self.daily = None            
+            
+        match gui_setting.mode:
+            case BotRunMode.Daily:
+                if self.daily is None:
+                    self.daily = Daily(role_name)
+                self.daily.start()
+            case BotRunMode.Mapping, BotRunMode.Cube:
+                time.sleep(1)
+                return
+            
         # update routine
-        map_name = self.identify_map_name()
+        map_name = bot_helper.identify_map_name()
         if map_name is not None:
             map_routine_path = f'{bot_settings.get_routines_dir()}/{map_name}.csv'
             if map_routine_path != routine.path:
@@ -111,6 +125,9 @@ class Bot(Subject):
         else:
             self.toggle(False, 'identify map error')
             return
+
+        if not bot_helper.chenck_map_available():
+            bot_action.change_channel()
 
         self.prepared = True
 
@@ -143,18 +160,6 @@ class Bot(Subject):
         bot_status.enabled = enabled
         utils.print_state(enabled)
         print(reason)
-
-    def identify_role(self):
-        name = utils.image_match_text(capture.name_frame, Name_Class_Map.keys())
-        if name is not None:
-            return name, Name_Class_Map[name]
-
-    def identify_map_name(self):
-        
-        frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
-        # utils.show_image(frame)
-        available_map_names = get_routines(bot_settings.class_name)
-        return utils.image_match_text(frame, available_map_names)
 
     def on_event(self, args):
         event_type = args[0]
@@ -212,14 +217,5 @@ class Bot(Subject):
             f"reason: {ext}\n"
         )
         return message
-
-def get_routines(command_name) -> list:
-    routines = []
-    folder = bot_settings.get_routines_dir(command_name)
-    for root, ds, fs in os.walk(folder):
-        for f in fs:
-            if f.endswith(".csv"):
-                routines.append(f[:-4])
-    return routines
 
 bot = Bot()

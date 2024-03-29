@@ -98,8 +98,7 @@ class CommandBook():
             return new_cb, new_func, module
         else:
             print(f" !  Command book '{self.name}' was not loaded")
-            
-    
+
     def __load_default_commands(self):
         commands.step = self.func_dict['step']
         commands.Attack = self.dict["attack"]
@@ -124,7 +123,6 @@ class CommandBook():
         for skill in self.dict.values():
             if issubclass(skill, commands.Skill):
                 skill.load()
-    
 
     def reset(self):
         for name, command in inspect.getmembers(self.module, inspect.isclass):

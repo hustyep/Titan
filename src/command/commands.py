@@ -10,7 +10,6 @@ from src.rune import rune
 from src.modules.capture import capture
 from src.common.image_template import *
 from src.common.constants import *
-from src.modules.chat_bot import chat_bot
 
 
 class DefaultKeybindings:
@@ -141,7 +140,7 @@ class Move(Command):
 
     def __init__(self, x, y, tolerance, step=1, max_steps=15):
         super().__init__(locals())
-        self.target = map.platform_point((int(x), int(y)))
+        self.target = shared_map.platform_point((int(x), int(y)))
         self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
         self.step = bot_settings.validate_nonnegative_int(step)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
@@ -150,14 +149,14 @@ class Move(Command):
         if self.step > self.max_steps:
             return
 
-        if map.minimap_data is not None and len(map.minimap_data) > 0:
+        if shared_map.minimap_data is not None and len(shared_map.minimap_data) > 0:
             if target_reached(bot_status.player_pos, self.target, self.tolerance):
                 return
         elif utils.distance(bot_status.player_pos, self.target) <= self.tolerance:
             return
 
-        if map.on_the_rope(bot_status.player_pos):
-            climb_rope(self.target[1] < bot_status.player_pos[1])
+        if shared_map.on_the_rope(bot_status.player_pos):
+            bot_action.climb_rope(self.target[1] < bot_status.player_pos[1])
 
         bot_status.path = [bot_status.player_pos, self.target]
         step(self.target, self.tolerance)
@@ -184,84 +183,10 @@ def step(target, tolerance):
     bot_status.enabled = False
 
 
-def pre_detect(direction):
-    anchor = capture.locate_player_fullscreen(accurate=True)
-    insets = AreaInsets(top=150,
-                        bottom=50,
-                        left=-620 if direction == 'right' else 1000,
-                        right=1000 if direction == 'right' else -620)
-    matchs = []
-    if gui_setting.detection.detect_elite:
-        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
-    if not matchs and gui_setting.detection.detect_boss:
-        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.BOSS)
-    return len(matchs) > 0
-
-
-@run_if_map_available
-def climb_rope(isUP=True):
-    step = 0
-    key = 'up' if isUP else 'down'
-    key_down(key)
-    time.sleep(0.1)
-    while not shared_map.on_the_platform(bot_status.player_pos):
-        time.sleep(0.1)
-        step += 1
-        if step > 50:
-            break
-    key_up(key)
-
-
-@bot_status.run_if_enabled
-def sleep_while_move_y(interval=0.02, n=15):
-    player_y = bot_status.player_pos[1]
-    count = 0
-    while True:
-        time.sleep(interval)
-        if player_y == bot_status.player_pos[1]:
-            count += 1
-        else:
-            count = 0
-            player_y = bot_status.player_pos[1]
-        if count == n:
-            break
-
-
-@bot_status.run_if_enabled
-def sleep_in_the_air(interval=0.005, n=4, start_y=0):
-    if map.minimap_data is None or len(map.minimap_data) == 0:
-        sleep_while_move_y(interval, n)
-        return
-    count = 0
-    step = 0
-    while True:
-        y = bot_status.player_pos[1] + 7
-        x = bot_status.player_pos[0]
-        value = map.minimap_data[y][x]
-        if value != 1 and value != 3:
-            count = 0
-        else:
-            count += 1
-        if count >= n:
-            if start_y > 0:
-                if start_y == bot_status.player_pos[1]:
-                    break
-                elif n < 8:
-                    n = 8
-                else:
-                    break
-            else:
-                break
-        step += 1
-        if step >= 250:
-            break
-        time.sleep(interval)
-
-
 @bot_status.run_if_enabled
 def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
     # print(f"find_next_point:\n start:{start}, target:{target}, tolerance:{tolerance}")
-    if map.minimap_data is None or len(map.minimap_data) == 0:
+    if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         return target
 
     if target_reached(start, target, tolerance):
@@ -274,24 +199,24 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
     elif d_y < 0:
         tmp_x = (target[0], start[1])
         tmp_y = (start[0], target[1])
-        if map.is_continuous(tmp_y, target):
+        if shared_map.is_continuous(tmp_y, target):
             return tmp_y
-        if map.on_the_platform(tmp_x):
-            if map.is_continuous(start, tmp_x) or abs(d_x) >= 26:
+        if shared_map.on_the_platform(tmp_x):
+            if shared_map.is_continuous(start, tmp_x) or abs(d_x) >= 26:
                 return tmp_x
-        return map.platform_point(tmp_x)
+        return shared_map.platform_point(tmp_x)
     else:
         # if abs(d_x) >= 20 and abs(d_y) >= 20:
         #     p = (start[0] + (20 if d_x > 0 else -20), target[1])
         #     if map.on_the_platform(p):
         #         return p
         tmp_x = (target[0], start[1])
-        if map.is_continuous(tmp_x, target):
+        if shared_map.is_continuous(tmp_x, target):
             return tmp_x
         tmp_y = (start[0], target[1])
-        if map.on_the_platform(tmp_y):
+        if shared_map.on_the_platform(tmp_y):
             return tmp_y
-        return map.platform_point(tmp_y)
+        return shared_map.platform_point(tmp_y)
 
 
 @run_if_map_available
@@ -299,27 +224,27 @@ def evade_rope(target: tuple[int, int] = None):
     if target is None:
         pos = bot_status.player_pos
         left = max(0, pos[0] - 1)
-        right = min(pos[0] + 1, map.minimap_data.shape[1] - 1)
+        right = min(pos[0] + 1, shared_map.minimap_data.shape[1] - 1)
         has_rope = False
         for x in range(left, right + 1):
-            if map.point_type((x, pos[1] + 7)) == MapPointType.FloorRope:
+            if shared_map.point_type((x, pos[1] + 7)) == MapPointType.FloorRope:
                 has_rope = True
                 break
         if has_rope:
-            target_l = map.valid_point((pos[0] - 2, pos[1]))
-            target_r = map.valid_point((pos[0] + 2, pos[1]))
-            if map.on_the_platform(target_l):
+            target_l = shared_map.valid_point((pos[0] - 2, pos[1]))
+            target_r = shared_map.valid_point((pos[0] + 2, pos[1]))
+            if shared_map.on_the_platform(target_l):
                 Walk(target_l[0], tolerance=0).execute()
-            elif map.on_the_platform(target_r):
+            elif shared_map.on_the_platform(target_r):
                 Walk(target_r[0], tolerance=0).execute()
         return
 
-    if map.near_rope(bot_status.player_pos):
-        target_l = map.valid_point((target[0] - 2, target[1]))
-        target_r = map.valid_point((target[0] + 2, target[1]))
-        if map.on_the_platform(target_l):
+    if shared_map.near_rope(bot_status.player_pos):
+        target_l = shared_map.valid_point((target[0] - 2, target[1]))
+        target_r = shared_map.valid_point((target[0] + 2, target[1]))
+        if shared_map.on_the_platform(target_l):
             Walk(target_l[0], tolerance=0).execute()
-        elif map.on_the_platform(target_r):
+        elif shared_map.on_the_platform(target_r):
             Walk(target_r[0], tolerance=0).execute()
 
 
@@ -344,7 +269,7 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
     #     return utils.distance(start, target) <= tolerance
     # else:
     return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
-    
+
 
 #############################
 #      Abstract Command     #
@@ -603,84 +528,7 @@ class SolveRune(Command):
 
 
 class Mining(Command):
-    """
-    Moves to the position of the rune and solves the arrow-key puzzle.
-    :param sct:     The mss instance object with which to take screenshots.
-    :return:        None
-    """
-    max_attempts = 3
-
-    def __init__(self, target, attempts=0):
-        super().__init__(locals())
-        self.target = target
-        self.attempts = attempts
-
-    def main(self):
-        if bot_status.invisible:
-            return
-
-        Move(x=self.target[0], y=self.target[1], tolerance=1).execute()
-        time.sleep(0.2)
-
-        mineral_template = MINAL_HEART_TEMPLATE
-        if bot_status.mineral_type == MineralType.CRYSTAL:
-            mineral_template = MINAL_CRYSTAL_TEMPLATE
-        elif bot_status.mineral_type == MineralType.HERB_YELLOW:
-            mineral_template = HERB_YELLOW_TEMPLATE
-        elif bot_status.mineral_type == MineralType.HERB_PURPLE:
-            mineral_template = HERB_PURPLE_TEMPLATE
-
-        frame = capture.frame
-        matches = utils.multi_match(frame, mineral_template)
-        player_template = bot_settings.role_template
-        player = utils.multi_match(
-            frame, player_template, threshold=0.9)
-        if len(matches) > 0 and len(player) > 0:
-            player_x = player[0][0]
-            mineral_x = matches[0][0]
-            if bot_status.mineral_type == MineralType.HERB_YELLOW or bot_status.mineral_type == MineralType.HERB_PURPLE:
-                mineral_x -= 18
-            if mineral_x > player_x:
-                if bot_status.player_direction == 'left':
-                    press('right')
-                if mineral_x - player_x >= 50:
-                    press('right', (mineral_x - player_x)//50)
-            elif mineral_x < player_x:
-                if bot_status.player_direction == 'right':
-                    press('left')
-                if player_x - mineral_x >= 50:
-                    press('left', (player_x - mineral_x)//50)
-            else:
-                if bot_status.player_direction == 'right':
-                    press('right')
-                    press('left')
-                else:
-                    press('left')
-                    press('right')
-        else:
-            if bot_status.player_direction == 'right':
-                press('right', 2)
-                press('left')
-            else:
-                press('left', 2)
-                press('right')
-        time.sleep(0.3)
-
-        # Inherited from Configurable
-        press(Keybindings.INTERACT, 1, down_time=0.2, up_time=0.8)
-
-        print('\n mining:')
-        frame = capture.frame
-        solution = rune.show_magic(frame)
-        if solution is not None:
-            print(', '.join(solution))
-            print('Solution found, entering result')
-            for arrow in solution:
-                press(arrow, 1, down_time=0.1)
-        time.sleep(3.5)
-        bot_status.minal_active = False
-        bot_status.minal_pos = None
-        bot_status.minal_closest_pos = None
+    pass
 
 
 class ChangeChannel(Command):
@@ -691,64 +539,7 @@ class ChangeChannel(Command):
         self.instance = bot_settings.validate_boolean(instance)
 
     def main(self) -> None:
-        hid.key_press(Keybindings.Change_Channel)
-
-        if self.num > 0:
-            item_width = 50
-            item_height = 40
-            channel_1 = (0, 0)
-
-            row = (self.num - 1) // 10
-            col = (self.num - 1) % 10
-
-            x = channel_1[0] + col * item_width
-            y = channel_1[1] + row * item_height
-            hid.mouse_abs_move(x, y)
-            hid.mouse_left_click()
-        else:
-            hid.key_press('down')
-            time.sleep(0.1)
-            hid.key_press('right')
-            time.sleep(0.1)
-            hid.key_press('enter')
-        time.sleep(1)
-
-        frame = capture.frame
-        x = (frame.shape[1] - 260) // 2
-        y = (frame.shape[0] - 220) // 2
-        ok_btn = utils.multi_match(
-            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
-        if ok_btn:
-            hid.key_press('esc')
-            time.sleep(1)
-            ChangeChannel(self.num, self.enable, self.instance).main()
-            return
-
-        delay = 0
-        while not bot_status.lost_minimap:
-            print("changging channel")
-            delay += 0.1
-            if delay > 5:
-                ChangeChannel(0, self.enable, self.instance).main()
-                return
-            time.sleep(0.1)
-
-        while bot_status.lost_minimap:
-            print("cc: lost mimimap")
-            time.sleep(0.1)
-
-        if not self.enable:
-            return
-
-        chat_bot.send_message('channel changed', capture.frame)
-        time.sleep(3)
-        map_available = chenck_map_available(instance=self.instance)
-
-        if map_available:
-            bot_status.enabled = True
-            bot_status.change_channel = False
-        else:
-            ChangeChannel(0, self.enable, self.instance).main()
+        bot_action.change_channel(self.num, self.enable, self.instance)
 
 
 class AutoLogin(Command):
@@ -758,54 +549,7 @@ class AutoLogin(Command):
         self.channel = bot_settings.validate_nonnegative_int(channel)
 
     def main(self):
-        print("AutoLogin")
-
-        chat_bot.send_message(f'auto login:{self.channel}')
-
-        if self.channel not in range(1, 41):
-            chat_bot.send_message(
-                f'auto login failed: wrong channel:{self.channel}')
-            return
-        bot_status.enabled = False
-
-        matches = utils.multi_match(
-            capture.frame, BUTTON_ERROR_OK_TEMPLATE, 0.9)
-        if matches:
-            hid.key_press('esc', delay=1)
-
-        pos = get_full_pos((968, 192))
-        print(f"positon: {pos}")
-        hid.mouse_abs_move(pos[0], pos[1])
-        time.sleep(0.5)
-        hid.mouse_left_click()
-        time.sleep(2)
-        channel_pos = get_channel_pos(self.channel)
-        hid.mouse_abs_move(channel_pos[0], channel_pos[1])
-        time.sleep(0.2)
-        hid.mouse_left_click()
-        time.sleep(1)
-        hid.mouse_left_click()
-
-        while len(utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98)) == 0:
-            time.sleep(0.1)
-
-        time.sleep(2)
-
-        while utils.multi_match(capture.frame, END_PLAY_TEMPLATE, 0.98):
-            hid.key_press("enter")
-            time.sleep(2)
-
-        while bot_status.lost_minimap:
-            print("cc: lost mimimap")
-            time.sleep(0.1)
-
-        time.sleep(1)
-        map_available = chenck_map_available()
-        if map_available:
-            bot_status.enabled = True
-            chat_bot.send_message(f'auto login:{self.channel}. success')
-        else:
-            ChangeChannel(0, enable=True).main()
+        bot_action.auto_login(self.channel)
 
 
 class Relogin(Command):
@@ -815,23 +559,7 @@ class Relogin(Command):
         self.channel = bot_settings.validate_nonnegative_int(channel)
 
     def main(self):
-        chat_bot.send_message(f'Relogin:{self.channel}')
-
-        bot_status.enabled = False
-
-        hid.key_press('esc')
-        time.sleep(0.5)
-        hid.key_press('up')
-        time.sleep(0.5)
-        hid.key_press('enter')
-        time.sleep(0.2)
-        hid.key_press('enter')
-        time.sleep(2)
-        while len(utils.multi_match(capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.95)) == 0:
-            time.sleep(0.1)
-            print("wait regoin")
-        time.sleep(2)
-        AutoLogin(self.channel).main()
+        bot_action.relogin(self.channel)
 
 
 class MapTeleport(Command):
@@ -868,7 +596,7 @@ class GoArdentmill(Command):
     def main(self):
         bot_status.enabled = False
         hid.key_press(Keybindings.Go_Ardentmill)
-        time.sleep(5)            
+        time.sleep(5)
 
         go_btn = utils.multi_match(
             capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
@@ -1226,6 +954,7 @@ class RopeLift(Skill):
 ###################
 #      Potion     #
 ###################
+
 
 class Potion(Command):
     """Uses each of Shadowers's potion once."""

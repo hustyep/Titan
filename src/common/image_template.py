@@ -42,6 +42,14 @@ SETTING_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/setting_template.png', 0)
 QUEST_BUBBLE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}common/quest_bubble.png', 0)
+ITEM_CASH_TAB_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}common/item_cash_tab.png', 0)
+ITEM_CASH_TAB_HIGHLIGHT_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}common/item_cash_tab_highlight.png', 0)
+TELEPORT_STONE_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}common/teleport_stone.png', 0)
+TELEPORT_STONE_MOVE_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}common/teleport_stone_move_button.png', 0)
 
 ########################
 #      exceptions      #

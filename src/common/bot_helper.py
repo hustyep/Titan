@@ -1,5 +1,8 @@
 import time
+import os
+
 from src.common import utils, bot_status, bot_settings
+from src.common.gui_setting import gui_setting
 from src.common.constants import *
 from src.common.image_template import *
 from src.modules.capture import capture
@@ -79,6 +82,81 @@ def detect_mobs(frame,
     return mobs
 
 
+def pre_detect(direction):
+    anchor = capture.locate_player_fullscreen(accurate=True)
+    insets = AreaInsets(top=150,
+                        bottom=50,
+                        left=-620 if direction == 'right' else 1000,
+                        right=1000 if direction == 'right' else -620)
+    matchs = []
+    if gui_setting.detection.detect_elite:
+        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
+    if not matchs and gui_setting.detection.detect_boss:
+        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.BOSS)
+    return len(matchs) > 0
+
+
+@bot_status.run_if_enabled
+def sleep_while_move_y(interval=0.02, n=15):
+    player_y = bot_status.player_pos[1]
+    count = 0
+    while True:
+        time.sleep(interval)
+        if player_y == bot_status.player_pos[1]:
+            count += 1
+        else:
+            count = 0
+            player_y = bot_status.player_pos[1]
+        if count == n:
+            break
+
+
+@bot_status.run_if_enabled
+def sleep_in_the_air(interval=0.005, n=4, start_y=0):
+    if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
+        sleep_while_move_y(interval, n)
+        return
+    count = 0
+    step = 0
+    while True:
+        y = bot_status.player_pos[1] + 7
+        x = bot_status.player_pos[0]
+        value = shared_map.minimap_data[y][x]
+        if value != 1 and value != 3:
+            count = 0
+        else:
+            count += 1
+        if count >= n:
+            if start_y > 0:
+                if start_y == bot_status.player_pos[1]:
+                    break
+                elif n < 8:
+                    n = 8
+                else:
+                    break
+            else:
+                break
+        step += 1
+        if step >= 250:
+            break
+        time.sleep(interval)
+
+
+def wait_until_map_changed(timeout=10):
+    start = time.time()
+    while (not bot_status.lost_minimap):
+        time.sleep(0.5)
+        print("not lost_minimap")
+
+        if time.time() - start > timeout:
+            return
+    while (bot_status.lost_minimap):
+        print("lost_minimap")
+        time.sleep(0.5)
+        if time.time() - start > timeout:
+            return
+
+
 def chenck_map_available(instance=True):
     if instance:
         start_time = time.time()
@@ -93,6 +171,30 @@ def chenck_map_available(instance=True):
                 return False
             time.sleep(1)
         return True
+
+
+def get_available_routines(command_name) -> list:
+    routines = []
+    folder = bot_settings.get_routines_dir(command_name)
+    for root, ds, fs in os.walk(folder):
+        for f in fs:
+            if f.endswith(".csv"):
+                routines.append(f[:-4])
+    return routines
+
+
+def identify_role():
+    name = utils.image_match_text(capture.name_frame, Name_Class_Map.keys())
+    if name is not None:
+        return name, Name_Class_Map[name]
+
+
+def identify_map_name():
+
+    frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
+    # utils.show_image(frame)
+    available_map_names = get_available_routines(bot_settings.class_name)
+    return utils.image_match_text(frame, available_map_names)
 
 
 def get_full_pos(pos):
