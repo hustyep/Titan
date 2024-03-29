@@ -302,7 +302,7 @@ class Routine(Subject):
 
     def _eval(self, row, i):
         if row and isinstance(row, list):
-            first, rest = row[0].lower(), row[1:]
+            first, rest = row[0], row[1:]
             args, kwargs = utils.separate_args(rest)
             line_error = f' !  Line {i}: '
 
@@ -346,7 +346,7 @@ class Routine(Subject):
 
         options = self.command_book.dict.copy()
         for e in (Point, Label, Sequence, Setting, End):
-            options[e.__name__.lower()] = e
+            options[e.__name__] = e
         return options
 
     def __getitem__(self, i):

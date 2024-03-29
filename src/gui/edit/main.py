@@ -146,18 +146,18 @@ class Editor(LabelFrame):
         var = tk.StringVar(value=tuple(options.keys()))
 
         def update_search(*_):
-            value = input_var.get().strip().lower()
+            value = input_var.get().strip()
             if value == '':
                 var.set(tuple(options.keys()))
             else:
                 new_options = []
                 for key in options:
-                    if key.lower().startswith(value):
+                    if key.startswith(value):
                         new_options.append(key)
                 var.set(new_options)
 
         def on_entry_return(e):
-            value = e.widget.get().strip().lower()
+            value = e.widget.get().strip()
             if value in options:
                 self.create_add_ui(options[value], sticky=True)
             else:

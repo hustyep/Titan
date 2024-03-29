@@ -18,7 +18,7 @@ class CommandBook():
         if result is None:
             raise ValueError(f"Invalid command book at '{file}'")
         self.dict, self.func_dict, self.module = result
-        self.__load_default_commands()
+        self.__update_default_commands()
 
         bot_settings.class_name = self.name
 
@@ -52,28 +52,20 @@ class CommandBook():
         new_cb = {}
         # load default Fuction
         for name, func in inspect.getmembers(commands, inspect.isfunction):
-            new_func[name.lower()] = func
+            new_func[name] = func
 
         # load default Command
         for name, command in inspect.getmembers(commands, inspect.isclass):
             if issubclass(command, commands.Command):
-                new_cb[name.lower()] = command
+                new_cb[name] = command
 
         # Populate the new command book
         for name, func in inspect.getmembers(module, inspect.isfunction):
-            new_func[name.lower()] = func
+            new_func[name] = func
 
         for name, command in inspect.getmembers(module, inspect.isclass):
             if issubclass(command, commands.Command):
-                new_cb[name.lower()] = command
-
-        # Load key map
-        if hasattr(module, 'Keybindings'):
-            commands.Keybindings = module.Keybindings
-        else:
-            print(
-                f" !  Error loading command book '{self.name}', keymap class 'Keybindings' is missing")
-            return
+                new_cb[name] = command
 
         # Check if required functions have been implemented and overridden
         required_function_found = True
@@ -86,10 +78,9 @@ class CommandBook():
         # Check if required commands have been implemented and overridden
         required_command_found = True
         for command in [commands.Buff, commands.Attack, commands.DoubleJump]:
-            name = command.__name__.lower()
+            name = command.__name__
             if name not in new_cb:
                 required_command_found = False
-                new_cb[name] = command
                 raise ValueError(
                     f" !  Error: Must implement required command '{name}'.")
 
@@ -99,25 +90,16 @@ class CommandBook():
         else:
             print(f" !  Command book '{self.name}' was not loaded")
 
-    def __load_default_commands(self):
-        commands.step = self.func_dict['step']
-        commands.Attack = self.dict["attack"]
-        commands.DoubleJump = self.dict["doublejump"]
+    def __update_default_commands(self):
+        # replace function
+        for func_name, func in self.func_dict:
+            if hasattr(commands, func_name):
+                setattr(commands, func_name, func)
 
-        if self.dict["summon"]:
-            commands.Summon = self.dict["summon"]
-        else:
-            commands.Summon = commands.Skill
-        if self.dict["dotaoe"]:
-            commands.DotAoe = self.dict["dotaoe"]
-        else:
-            commands.DotAoe = commands.Skill
-        if self.dict["aoe"]:
-            commands.Aoe = self.dict["aoe"]
-        else:
-            commands.Aoe = commands.Skill
-        if self.dict["buff"]:
-            commands.Buff = self.dict["buff"]
+        # replace class
+        for class_name, cls in self.dict:
+            if hasattr(commands, class_name):
+                setattr(commands, class_name, cls)
 
         # pre load
         for skill in self.dict.values():
