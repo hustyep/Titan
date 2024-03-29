@@ -393,13 +393,13 @@ class Routine(Subject):
             return
         bot_status.point_checking = True
         if bot_status.rune_pos is not None:
-            result, frame = self.command_book.SolveRune(
+            result, frame = commands.SolveRune(
                 bot_status.rune_pos).execute()
             threading.Thread(target=self.solve_rune_callback,
                              args=(result, frame)).start()
-        if bot_status.minal_pos \
-                and (utils.distance(p, bot_status.minal_pos) <= 25 or p == bot_status.minal_closest_pos):
-            self.command_book.Mining(bot_status.minal_pos).execute()
+        # if bot_status.minal_pos \
+        #         and (utils.distance(p, bot_status.minal_pos) <= 25 or p == bot_status.minal_closest_pos):
+        #     self.command_book.Mining(bot_status.minal_pos).execute()
         bot_status.point_checking = False
 
     def solve_rune_callback(self, result, frame):

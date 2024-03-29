@@ -38,7 +38,7 @@ class Daily:
         map_list = Charactor_Daily_Map[self.role_name]
         if map_list is not None:
             for map in map_list:
-                self.quest_list.add(Quest(map))
+                self.quest_list.append(Quest(map))
         else:
             raise ValueError(f"Invalid daily map list")
 
@@ -46,10 +46,10 @@ class Daily:
         while has_quest():
             bot_action.mouse_move(QUEST_BUBBLE_TEMPLATE,
                                   Rect(0, 200, 100, 100))
-            bot_action.mouse_left_click()
-            bot_action.press_key(bot_settings.SystemKeybindings.INTERACT)
-            bot_action.press_key('y')
-            bot_action.press_key(bot_settings.SystemKeybindings.INTERACT)
+            bot_action.mouse_left_click(delay=0.3)
+            bot_action.click_key(bot_settings.SystemKeybindings.INTERACT, delay=0.3)
+            bot_action.click_key('y', delay=0.3)
+            bot_action.click_key(bot_settings.SystemKeybindings.INTERACT, delay=1)
         self.ready = True
 
     def __start_quest(self):
@@ -76,7 +76,7 @@ class Quest:
             return True
         if self.start_time == 0:
             return False
-        return self.last_time + time.time - self.start_time >= self.duration
+        return self.last_time + time.time() - self.start_time >= self.duration
 
     def start(self):
         self.__prepare()

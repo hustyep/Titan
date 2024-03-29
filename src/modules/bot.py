@@ -107,17 +107,20 @@ class Bot(Subject):
             self.load_commands(file)
             self.daily = None            
             
-        match gui_setting.mode:
+        match gui_setting.mode.type:
             case BotRunMode.Daily:
                 if self.daily is None:
                     self.daily = Daily(role_name)
+                bot_status.enabled = False
                 self.daily.start()
+                bot_status.enabled = True
             case BotRunMode.Mapping, BotRunMode.Cube:
                 time.sleep(1)
                 return
             
         # update routine
         map_name = bot_helper.identify_map_name()
+        print(f"identify map:{map_name}")
         if map_name is not None:
             map_routine_path = f'{bot_settings.get_routines_dir()}\\{map_name}.csv'
             if map_routine_path != routine.path:

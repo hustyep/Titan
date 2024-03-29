@@ -121,8 +121,8 @@ Charactor_Daily_Map = {
         'Ink-winged Owl',
     ],
     'ermin': [
-        'Outlaw-Infested Wastes 2',
-        'Laboratory Behind Locked Door 1',
+        'Westen City Ramparts in Battle 1',
+        'Train with No Destination 5',
         'Ink-winged Owl',
     ]
 }

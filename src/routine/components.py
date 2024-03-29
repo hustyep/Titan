@@ -2,9 +2,9 @@
 
 import time
 from src.command import commands
-from src.common import utils, bot_settings, bot_status
-from src.common.gui_setting import gui_setting
+from src.common import bot_settings, bot_status, bot_helper
 from src.common.vkeys import *
+from src.common.constants import *
 from src.modules.capture import capture
 from src.common.interfaces import AsyncTask
 
@@ -175,11 +175,13 @@ class Point(Component):
             #                                   type=commands.MobType.ELITE)
             # if matchs:
                 # SonicBlow().execute()
+            mobs = bot_helper.detect_mobs_around_anchor(
+                insets=AreaInsets(top=350, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
+                anchor=anchor,
+                multy_match=True,
+                debug=False
+            )
 
-            mobs = commands.detect_mobs(insets=commands.AreaInsets(top=350, bottom=100, left=1200 if direction == 'left' else -300, right=1100 if direction == 'right' else -300),
-                                        anchor=anchor,
-                                        multy_match=True,
-                                        debug=False)
             if len(mobs):
                 print(f"mobs count = {len(mobs)}")
             if len(mobs) > 1:
