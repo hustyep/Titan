@@ -217,7 +217,7 @@ class Rush(Skill):
     type = SkillType.Move
     cooldown = 5
     precast = 0
-    backswing = 1
+    backswing = 0.8
 
     def __init__(self, direction):
         super().__init__(locals())

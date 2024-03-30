@@ -69,8 +69,8 @@ class Bot(Subject):
                     self.prepare()
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
-                    if self.daily is not None:
-                        self.daily.check()
+                    if self.daily is not None and self.daily.check():
+                        self.prepared = False
                 else:
                     time.sleep(0.01)
             else:

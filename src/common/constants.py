@@ -123,7 +123,7 @@ Charactor_Daily_Map = {
     'ermin': [
         'Western City Ramparts in Battle 1',
         'Train with No Destination 5',
-        'Ink-winged Owl',
+        # "Road to the Castle's Gate 1",
     ]
 }
 

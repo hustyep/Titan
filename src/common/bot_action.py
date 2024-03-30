@@ -73,7 +73,7 @@ def mouse_double_click(position=None, delay=0.05):
         time.sleep(0.3)
 
     hid.mouse_left_click()
-    time.sleep(delay * (1 + random()))
+    time.sleep(0.05 * (1 + random()))
     hid.mouse_left_click()
     time.sleep(delay * (1 + random()))
 
@@ -148,9 +148,13 @@ def open_teleport_stone() -> bool:
         else:
             mouse_move(ITEM_CASH_TAB_TEMPLATE)
             mouse_left_click(delay=1)
-            return open_teleport_stone()
+            stone_match = utils.multi_match(capture.frame, TELEPORT_STONE_TEMPLATE)
+            if len(stone_match) > 0:
+                return open_teleport_stone()
+            chat_bot.voice_call()
+            return False
     else:
-        mouse_double_click(delay=0.2)
+        mouse_double_click(delay=0.1)
         return is_opend()
 
 
@@ -163,15 +167,17 @@ def close_teleport_stone():
 def teleport_to_map(map_name: str):
     bot_status.enabled = False
     if open_teleport_stone():
+        click_key('esc')
+        mouse_move_relative(300, 0)
         map_template_path = f'assets/teleport/{map_name}.png'
         map_template = cv2.imread(map_template_path, 0)
         if not mouse_move(map_template):
-            print("[error]cant fine stored map")
+            print("[error]cant find stored map")
             teleport_random_town()
             return False
-        mouse_left_click()
+        mouse_left_click(delay=0.3)
         if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
-            print("[error]cant fined move button")
+            print("[error]cant find move button")
             close_teleport_stone()
             return False
         mouse_left_click()
@@ -194,9 +200,9 @@ def teleport_random_town():
         press_key("down")
         time.sleep(1)
         release_key('down')
-        click_key('enter')
+        click_key('enter', delay=0.5)
         if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
-            print("[error]cant fined move button")
+            print("[error]cant find move button")
             close_teleport_stone()
             go_home()
             return

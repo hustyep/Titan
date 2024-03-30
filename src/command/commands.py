@@ -372,14 +372,17 @@ class Detect(Command):
         start = time.time()
         while True:
             if self.isRect:
-                mobs = detect_mobs(rect=Rect(self.top, self.bottom, self.left, self.right),
-                                   multy_match=False,
-                                   debug=False)
+                mobs = detect_mobs_in_rect(
+                    rect=Rect(self.top, self.bottom, self.left, self.right),
+                    multy_match=False,
+                    debug=False)
             else:
-                mobs = detect_mobs(insets=AreaInsets(top=self.top, bottom=self.bottom, left=self.left, right=self.right),
-                                   anchor=anchor,
-                                   multy_match=False,
-                                   debug=False)
+                mobs = detect_mobs_around_anchor(
+                    anchor=anchor,
+                    insets=AreaInsets(
+                        top=self.top, bottom=self.bottom, left=self.left, right=self.right),
+                    multy_match=False,
+                    debug=False)
             if len(mobs) >= self.count:
                 break
             time.sleep(0.1)

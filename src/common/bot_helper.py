@@ -194,7 +194,7 @@ def identify_map_name():
     frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
     # utils.show_image(frame)
     available_map_names = get_available_routines(bot_settings.class_name)
-    return utils.image_match_text(frame, available_map_names)
+    return utils.image_match_text(frame, available_map_names, 0.8)
 
 
 def get_full_pos(pos):

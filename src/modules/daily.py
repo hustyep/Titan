@@ -1,4 +1,5 @@
 import time
+import random
 
 from src.common.constants import Charactor_Daily_Map
 from src.modules.capture import capture
@@ -6,6 +7,7 @@ from src.common import utils, bot_settings, bot_action, bot_helper, bot_status
 from src.common.image_template import *
 from src.common.constants import *
 from src.modules.chat_bot import chat_bot
+
 
 class Daily:
 
@@ -30,13 +32,13 @@ class Daily:
 
     def check(self):
         cur_quest = self.quest_list[self.cur_quest_index]
-        if cur_quest.isDone:
-            self.cur_quest_index += 1
-            self.__start_quest()
+        if cur_quest.isDone and self.cur_quest_index == len(self.quest_list) - 1:
+            return False
+        return cur_quest.isDone
 
     def __load_quest(self):
         map_list = Charactor_Daily_Map[self.role_name]
-        if map_list is not None: 
+        if map_list is not None:
             for map in map_list:
                 self.quest_list.append(Quest(map))
         else:
@@ -45,13 +47,15 @@ class Daily:
     def __take_quest(self):
         while has_quest():
             bot_action.mouse_move(QUEST_BUBBLE_TEMPLATE,
-                                  YELLOW_RANGES,
-                                  Rect(0, 200, 100, 100))
+                                  Rect(0, 200, 100, 100),
+                                  YELLOW_RANGES)
             bot_action.mouse_left_click(delay=0.3)
-            bot_action.click_key(bot_settings.SystemKeybindings.INTERACT, delay=0.3)
+            bot_action.click_key(
+                bot_settings.SystemKeybindings.INTERACT, delay=0.3)
             bot_action.click_key('y', delay=0.3)
-            bot_action.click_key(bot_settings.SystemKeybindings.INTERACT, delay=0.3)
-            bot_action.mouse_move_relative(20, 0)
+            bot_action.click_key(
+                bot_settings.SystemKeybindings.INTERACT, delay=0.3)
+            bot_action.mouse_move_relative(10*(1 + random()), 5*(1 + random()))
         self.ready = True
 
     def __start_quest(self):
@@ -65,7 +69,7 @@ class Daily:
 
 
 class Quest:
-    def __init__(self, map_name: str, duration=150):
+    def __init__(self, map_name: str, duration=120):
         self.map_name = map_name
         self.duration = duration
 
@@ -90,14 +94,11 @@ class Quest:
             return
         self.last_time += time.time() - self.start_time
         self.start_time = 0
-        
+
     def __prepare(self):
         bot_status.enabled = False
-        if self.__check_map():
-            self.__check_channel()
-        else:
+        if not self.__check_map():
             chat_bot.voice_call()
-            
 
     def __check_map(self):
         cur_map_name = bot_helper.identify_map_name()
@@ -105,14 +106,10 @@ class Quest:
             return bot_action.teleport_to_map(self.map_name)
         else:
             return True
-        
-    def __check_channel(self):
-        if not bot_helper.chenck_map_available():
-            bot_action.change_channel(enable=True)
-        else:
-            bot_status.enabled = True
-        
+
+
 def has_quest():
     frame = capture.frame[100:300, 0:200]
-    match = utils.multi_match(frame, QUEST_BUBBLE_TEMPLATE)
+    frame = utils.filter_color(frame, YELLOW_RANGES)
+    match = utils.multi_match(frame, QUEST_BUBBLE_TEMPLATE,debug=False)
     return len(match) > 0

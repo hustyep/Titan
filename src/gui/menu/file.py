@@ -58,7 +58,7 @@ class File(MenuBarItem):
         #     state=tk.DISABLED
         # )
 
-        threading.Timer(1, self.loadDefault).start()
+        # threading.Timer(1, self.loadDefault).start()
 
     def loadDefault(self):
 
