@@ -369,10 +369,10 @@ class Buff(Command):
         super().__init__(locals())
         self.buffs = [
             ComboAttack,
-            MapleWarrior,
-            MapleWorldGoddessBlessing,
-            ForTheGuild,
-            HardHitter,
+            # MapleWarrior,
+            # MapleWorldGoddessBlessing,
+            # ForTheGuild,
+            # HardHitter,
         ]
 
     def main(self, wait=True):

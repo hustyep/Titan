@@ -6,6 +6,7 @@ $, target=mini_margin, value=51
 @, label=Bottom mobbing
 *, x=1, y=65, interval=0, tolerance=6, detect=True, skip=False
     Potion
+    Buff
 *, x=147, y=65, interval=0, tolerance=6, detect=True, skip=False
 
 ~, label=Summon Loop, interval=42, skip=False
