@@ -2,10 +2,10 @@ import time
 
 from src.common.constants import Charactor_Daily_Map
 from src.modules.capture import capture
-from src.common import utils, bot_settings, bot_action, bot_helper
+from src.common import utils, bot_settings, bot_action, bot_helper, bot_status
 from src.common.image_template import *
 from src.common.constants import *
-
+from src.modules.chat_bot import chat_bot
 
 class Daily:
 
@@ -90,13 +90,28 @@ class Quest:
             return
         self.last_time += time.time() - self.start_time
         self.start_time = 0
-
+        
     def __prepare(self):
+        bot_status.enabled = False
+        if self.__check_map():
+            self.__check_channel()
+        else:
+            chat_bot.voice_call()
+            
+
+    def __check_map(self):
         cur_map_name = bot_helper.identify_map_name()
         if cur_map_name != self.map_name:
-            bot_action.teleport_to_map(self.map_name)
-
-
+            return bot_action.teleport_to_map(self.map_name)
+        else:
+            return True
+        
+    def __check_channel(self):
+        if not bot_helper.chenck_map_available():
+            bot_action.change_channel(enable=True)
+        else:
+            bot_status.enabled = True
+        
 def has_quest():
     frame = capture.frame[100:300, 0:200]
     match = utils.multi_match(frame, QUEST_BUBBLE_TEMPLATE)

@@ -85,7 +85,15 @@ ITEM_CASH_TAB_HIGHLIGHT_TEMPLATE = cv2.imread(
 TELEPORT_STONE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}common/teleport_stone.png', 0)
 TELEPORT_STONE_MOVE_TEMPLATE = cv2.imread(
-    f'{ASSETS_PATH}common/teleport_stone_move_button.png', 0)
+    f'{ASSETS_PATH}teleport/telepot_move.png', 0)
+TELEPORT_STONE_SCROLL_DOWN_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}teleport/list_scroll_down.png', 0)
+TELEPORT_STONE_CLOSE_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}teleport/teleport_close.png', 0)
+TELEPORT_STONE_SHOW_TOWNS_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}teleport/show_towns.png', 0)
+TELEPORT_STONE_LIST_ICON_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}teleport/teleport_stone_list_icon.png', 0)
 
 ########################
 #      exceptions      #

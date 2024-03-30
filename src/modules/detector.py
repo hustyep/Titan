@@ -110,7 +110,7 @@ class Detector(Subject):
 
     def on_event(self, args):
         event = args[0]
-        if event == BotInfo.RUNE_LIBERATED:
+        if event == BotInfo.RUNE_LIBERATED or BotWarnning.RUNE_FAILED:
             bot_status.rune_pos = None
             bot_status.rune_closest_pos = None
 

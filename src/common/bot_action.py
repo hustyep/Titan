@@ -33,7 +33,7 @@ def release_key(key, delay=0.05):
     time.sleep(delay * (1 + 0.2 * random()))
 
 
-def mouse_move(template, rect: Rect = None, ranges=None):
+def mouse_move(template, rect: Rect = None, ranges=None, threshold=0.9):
     frame = capture.frame
     if frame is None:
         return False
@@ -41,7 +41,7 @@ def mouse_move(template, rect: Rect = None, ranges=None):
         frame = frame[rect.y:rect.y+rect.height, rect.x:rect.x+rect.width]
     if ranges is not None:
         frame = utils.filter_color(frame, ranges)
-    match = utils.multi_match(frame, template, threshold=0.9)
+    match = utils.multi_match(frame, template, threshold)
     if match:
         x, y = match[0]
         if rect is not None:
@@ -52,9 +52,11 @@ def mouse_move(template, rect: Rect = None, ranges=None):
         return True
     return False
 
+
 def mouse_move_relative(x, y):
     hid.mouse_relative_move(x, y)
     time.sleep(0.3 + 0.2 * random())
+
 
 def mouse_left_click(position=None, delay=0.05):
     if position:
@@ -128,32 +130,82 @@ def climb_rope(isUP=True):
     release_key(key)
 
 
-def teleport_to_map(map_name: str):
+def open_teleport_stone() -> bool:
+    def is_opend():
+        match = utils.multi_match(
+            capture.frame, TELEPORT_STONE_LIST_ICON_TEMPLATE)
+        return len(match) > 0
+
     bot_status.enabled = False
+    if is_opend():
+        return True
+
     if not mouse_move(TELEPORT_STONE_TEMPLATE):
         cash_tab = utils.multi_match(capture.frame, ITEM_CASH_TAB_TEMPLATE)
         if not cash_tab:
             click_key(bot_settings.SystemKeybindings.ITEM, 0.5)
-            teleport_to_map(map_name)
+            return open_teleport_stone()
         else:
             mouse_move(ITEM_CASH_TAB_TEMPLATE)
             mouse_left_click(delay=1)
-            teleport_to_map(map_name)
+            return open_teleport_stone()
     else:
-        mouse_double_click()
-        map_template_path = f'assets/exceptions/{map_name}_stone_template.png'
+        mouse_double_click(delay=0.2)
+        return is_opend()
+
+
+def close_teleport_stone():
+    mouse_move(TELEPORT_STONE_CLOSE_TEMPLATE,
+               Rect(700, 200, 100, 30), threshold=0.8)
+    mouse_left_click()
+
+
+def teleport_to_map(map_name: str):
+    bot_status.enabled = False
+    if open_teleport_stone():
+        map_template_path = f'assets/teleport/{map_name}.png'
         map_template = cv2.imread(map_template_path, 0)
         if not mouse_move(map_template):
             print("[error]cant fine stored map")
-            return
+            teleport_random_town()
+            return False
         mouse_left_click()
         if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
-            print("[error]cant fine move button")
+            print("[error]cant fined move button")
+            close_teleport_stone()
+            return False
+        mouse_left_click()
+        click_key('enter')
+        wait_until_map_changed()
+        return True
+    else:
+        print("[error]cant open teleport stone")
+        return False
+
+
+def teleport_random_town():
+    if open_teleport_stone():
+        if not mouse_move(TELEPORT_STONE_SHOW_TOWNS_TEMPLATE):
+            print("[error]cant fined TELEPORT_STONE_SHOW_TOWNS_TEMPLATE")
+            close_teleport_stone()
+            go_home()
+            return
+        mouse_left_click()
+        press_key("down")
+        time.sleep(1)
+        release_key('down')
+        click_key('enter')
+        if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
+            print("[error]cant fined move button")
+            close_teleport_stone()
+            go_home()
             return
         mouse_left_click()
         click_key('enter')
         wait_until_map_changed()
-        bot_status.enabled = True
+    else:
+        print("[error]cant open teleport stone")
+        go_home()
 
 
 def go_home():
@@ -279,6 +331,7 @@ def auto_login(channel=33):
     else:
         change_channel()
 
+
 def relogin(channel=33):
     chat_bot.send_message(f'Relogin:{channel}')
 
@@ -297,6 +350,7 @@ def relogin(channel=33):
         print("wait regoin")
     time.sleep(2)
     auto_login(channel)
+
 
 def run_maplestory():
     capture.find_window()
