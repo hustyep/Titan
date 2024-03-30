@@ -15,7 +15,7 @@ class Keybindings(DefaultKeybindings):
     Upward_Charge = 'a'
     Rush = 'r'
     ROPE_LIFT = 'b'
-    Go_Ardentmill = '='
+    Go_Ardentmill = '5'
 
     # Skills
     RagingBlow = 'f'

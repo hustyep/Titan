@@ -1,7 +1,7 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=36
-*, x=4, y=54, interval=1800, tolerance=8, detect=False, skip=True
-    GoArdentmill, invisible=True
+*, x=4, y=54, interval=1800, tolerance=8, detect=False, skip=False
+    GoArdentmill
 
 @, label=Bottom mobbing
 *, x=4, y=54, interval=0, tolerance=4, detect=False, skip=False

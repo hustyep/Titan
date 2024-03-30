@@ -4,6 +4,42 @@ from src.common import utils
 
 ASSETS_PATH = 'assets/'
 
+###########################
+#      common ranges      #
+###########################
+
+GREEN_RANGES = (
+    ((50, 200, 46), (77, 255, 255)),
+)
+RED_RANGES = (
+    ((0, 43, 46), (10, 255, 255)),
+    ((156, 43, 46), (180, 255, 255)),
+)
+YELLOW_RANGES = (
+    ((26, 43, 46), (34, 255, 255)),
+)
+BLUE_RANGES = (
+    ((100, 43, 46), (124, 255, 255)),
+)
+ORANGE_RANGES = (
+    ((11, 43, 46), (25, 255, 255)),
+)
+WHITE_RANGES = (
+    ((0, 0, 150), (180, 30, 255)),
+)
+GRAY_RANGES = (
+    ((0, 0, 46), (180, 43, 255)),
+)
+BLACK_RANGES = (
+    ((0, 0, 0), (180, 255, 46)),
+)
+TEXT_WHITE_RANGES = (
+    ((0, 0, 150), (180, 30, 255)),
+    ((0, 0, 46), (180, 43, 255)),
+)
+
+# https://blog.csdn.net/weixin_45946270/article/details/124827045
+
 # The rune's buff
 RUNE_BUFF_TEMPLATE = cv2.imread(f'{ASSETS_PATH}rune/rune_buff_template.png', 0)
 RUNE_BUFF_GRAY_TEMPLATE = cv2.imread(
@@ -40,8 +76,8 @@ Go_Ardentmill_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/GoArdentmill.png', 0)
 SETTING_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/setting_template.png', 0)
-QUEST_BUBBLE_TEMPLATE = cv2.imread(
-    f'{ASSETS_PATH}common/quest_bubble.png', 0)
+QUEST_BUBBLE_TEMPLATE = utils.filter_color(cv2.imread(
+    f'{ASSETS_PATH}common/quest_bubble.png'), YELLOW_RANGES)
 ITEM_CASH_TAB_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}common/item_cash_tab.png', 0)
 ITEM_CASH_TAB_HIGHLIGHT_TEMPLATE = cv2.imread(
@@ -186,40 +222,3 @@ PLAYER_TEMPLATE_L = cv2.imread(
     f'{ASSETS_PATH}minimap/minimap_player_template_l.png', 0)
 PLAYER_TEMPLATE_R = cv2.imread(
     f'{ASSETS_PATH}minimap/minimap_player_template_r.png', 0)
-
-
-###########################
-#      common ranges      #
-###########################
-
-GREEN_RANGES = (
-    ((50, 200, 46), (77, 255, 255)),
-)
-RED_RANGES = (
-    ((0, 43, 46), (10, 255, 255)),
-    ((156, 43, 46), (180, 255, 255)),
-)
-YELLOW_RANGES = (
-    ((26, 43, 46), (34, 255, 255)),
-)
-BLUE_RANGES = (
-    ((100, 43, 46), (124, 255, 255)),
-)
-ORANGE_RANGES = (
-    ((11, 43, 46), (25, 255, 255)),
-)
-WHITE_RANGES = (
-    ((0, 0, 150), (180, 30, 255)),
-)
-GRAY_RANGES = (
-    ((0, 0, 46), (180, 43, 255)),
-)
-BLACK_RANGES = (
-    ((0, 0, 0), (180, 255, 46)),
-)
-TEXT_WHITE_RANGES = (
-    ((0, 0, 150), (180, 30, 255)),
-    ((0, 0, 46), (180, 43, 255)),
-)
-
-# https://blog.csdn.net/weixin_45946270/article/details/124827045

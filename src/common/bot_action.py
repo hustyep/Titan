@@ -33,12 +33,14 @@ def release_key(key, delay=0.05):
     time.sleep(delay * (1 + 0.2 * random()))
 
 
-def mouse_move(template, rect: Rect = None):
+def mouse_move(template, rect: Rect = None, ranges=None):
     frame = capture.frame
     if frame is None:
         return False
     if rect is not None:
         frame = frame[rect.y:rect.y+rect.height, rect.x:rect.x+rect.width]
+    if ranges is not None:
+        frame = utils.filter_color(frame, ranges)
     match = utils.multi_match(frame, template, threshold=0.9)
     if match:
         x, y = match[0]
@@ -46,10 +48,13 @@ def mouse_move(template, rect: Rect = None):
             x += rect.x
             y += rect.y
         hid.mouse_abs_move(*get_full_pos((x, y)))
-        time.sleep(0.3 + 0.2 * random())
+        time.sleep(0.2 + 0.1 * random())
         return True
     return False
 
+def mouse_move_relative(x, y):
+    hid.mouse_relative_move(x, y)
+    time.sleep(0.3 + 0.2 * random())
 
 def mouse_left_click(position=None, delay=0.05):
     if position:
@@ -128,14 +133,14 @@ def teleport_to_map(map_name: str):
     if not mouse_move(TELEPORT_STONE_TEMPLATE):
         cash_tab = utils.multi_match(capture.frame, ITEM_CASH_TAB_TEMPLATE)
         if not cash_tab:
-            click_key(bot_settings.SystemKeybindings.ITEM, 1)
+            click_key(bot_settings.SystemKeybindings.ITEM, 0.5)
             teleport_to_map(map_name)
         else:
             mouse_move(ITEM_CASH_TAB_TEMPLATE)
             mouse_left_click(delay=1)
             teleport_to_map(map_name)
     else:
-        mouse_double_click(delay=1)
+        mouse_double_click()
         map_template_path = f'assets/exceptions/{map_name}_stone_template.png'
         map_template = cv2.imread(map_template_path, 0)
         if not mouse_move(map_template):

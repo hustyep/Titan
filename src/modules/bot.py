@@ -63,7 +63,9 @@ class Bot(Subject):
         self.ready = True
         while True:
             if bot_status.enabled:
-                if not self.prepared:
+                if bot_status.white_room:
+                    time.sleep(1)
+                elif not self.prepared:
                     self.prepare()
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
@@ -174,6 +176,7 @@ class Bot(Subject):
             if event_type == BotFatal.BLACK_SCREEN:
                 pass
             else:
+                bot_status.white_room = True
                 self.toggle(False, event_type.value)
                 chat_bot.voice_call()
 

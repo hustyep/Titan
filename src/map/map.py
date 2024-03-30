@@ -51,7 +51,6 @@ class Map:
         self.load_minimap_data()
         self.load_mob_template()
 
-    @bot_status.run_if_disabled('')
     def load_minimap_data(self):
         map_dir = get_maps_dir(self.name)
         minimap_data_path = f'{map_dir}.txt'
@@ -75,7 +74,6 @@ class Map:
         elif os.path.exists(minimap_sample_path):
             self.minimap_sample = cv2.imread(minimap_sample_path)
 
-    @bot_status.run_if_disabled('')
     def save_minimap_data(self):
         try:
             minimap_data_file = f'{get_maps_dir(self.name)}.txt'
@@ -86,7 +84,6 @@ class Map:
         else:
             print(f" ~ Finished saving map data '{self.name}'")
 
-    @bot_status.run_if_disabled('')
     def create_minimap_data(self):
         if capture.minimap_actual is not None and len(capture.minimap_actual) > 0:
             width = capture.minimap_actual.shape[1] + 1

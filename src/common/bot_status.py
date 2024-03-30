@@ -24,6 +24,7 @@ elite_boss_detected = False
 
 lost_minimap = False
 point_checking = False
+white_room = False
 
 # Rune status
 rune_pos = None
@@ -39,13 +40,14 @@ mineral_type = None
 cubing = False
 
 def reset():
-    global player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, rune_solving, minal_pos, minal_closest_pos, mineral_type
+    global white_room, player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, rune_solving, minal_pos, minal_closest_pos, mineral_type
 
     player_pos = (0, 0)
     player_direction = 'right'
     path = []
     lost_minimap = False
     point_checking = False
+    white_room = False
     
     rune_solving = False
     rune_pos = None

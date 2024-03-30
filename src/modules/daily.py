@@ -36,7 +36,7 @@ class Daily:
 
     def __load_quest(self):
         map_list = Charactor_Daily_Map[self.role_name]
-        if map_list is not None:
+        if map_list is not None: 
             for map in map_list:
                 self.quest_list.append(Quest(map))
         else:
@@ -45,11 +45,13 @@ class Daily:
     def __take_quest(self):
         while has_quest():
             bot_action.mouse_move(QUEST_BUBBLE_TEMPLATE,
+                                  YELLOW_RANGES,
                                   Rect(0, 200, 100, 100))
             bot_action.mouse_left_click(delay=0.3)
             bot_action.click_key(bot_settings.SystemKeybindings.INTERACT, delay=0.3)
             bot_action.click_key('y', delay=0.3)
-            bot_action.click_key(bot_settings.SystemKeybindings.INTERACT, delay=1)
+            bot_action.click_key(bot_settings.SystemKeybindings.INTERACT, delay=0.3)
+            bot_action.mouse_move_relative(20, 0)
         self.ready = True
 
     def __start_quest(self):
@@ -96,6 +98,6 @@ class Quest:
 
 
 def has_quest():
-    frame = capture.frame[100:-100, 0:200]
+    frame = capture.frame[100:300, 0:200]
     match = utils.multi_match(frame, QUEST_BUBBLE_TEMPLATE)
     return len(match) > 0

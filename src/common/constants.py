@@ -113,7 +113,7 @@ Charactor_Daily_Map = {
     'Sllee': [
         'Outlaw-Infested Wastes 2',
         'Laboratory Behind Locked Door 1',
-        'Ink-winged Owl',
+        'Harsh Winter 4',
     ],
     'issl': [
         'Outlaw-Infested Wastes 2',
@@ -121,7 +121,7 @@ Charactor_Daily_Map = {
         'Ink-winged Owl',
     ],
     'ermin': [
-        'Westen City Ramparts in Battle 1',
+        'Western City Ramparts in Battle 1',
         'Train with No Destination 5',
         'Ink-winged Owl',
     ]

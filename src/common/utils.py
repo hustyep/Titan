@@ -332,7 +332,7 @@ def image_match_text(frame, list: list[str], threshold=0.7, filter=['-']):
     best = 0
     result: str = None
     for value in list:
-        ratio = string_similar(text, value)
+        ratio = string_similar(text, value.lower())
         if ratio == 1:
             return value
         elif ratio > best:

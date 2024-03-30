@@ -627,13 +627,13 @@ class GoArdentmill(Command):
             hid.key_press('esc')
             time.sleep(1)
             print("not ok")
-            GoArdentmill(True).main()
+            GoArdentmill().main()
             return
         else:
             print("nothing")
             hid.key_press('esc')
             time.sleep(0.2)
-            GoArdentmill(False).main()
+            GoArdentmill().main()
             return
         start = time.time()
         while (not bot_status.lost_minimap):
@@ -641,7 +641,7 @@ class GoArdentmill(Command):
             print("not lost_minimap")
 
             if time.time() - start > 3:
-                GoArdentmill(False).main()
+                GoArdentmill().main()
                 return
         while (bot_status.lost_minimap):
             print("lost_minimap")
