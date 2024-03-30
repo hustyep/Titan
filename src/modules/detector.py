@@ -256,6 +256,8 @@ class Detector(Subject):
                     if not self.try_auto_login():
                         self.on_next(
                             (BotError.LOST_MINI_MAP, time.time() - self.lost_minimap_time))
+            else:
+                self.lost_minimap_time = 0
         else:
             self.lost_minimap_time = 0
             bot_status.lost_minimap = False
