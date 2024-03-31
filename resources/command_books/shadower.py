@@ -456,7 +456,7 @@ class SuddenRaid(Skill):
             return usable
         
         if usable:
-            mobs = detect_mobs()
+            mobs = detect_mobs(capture.frame)
             return mobs is None or len(mobs) > 0
         else:
             return False

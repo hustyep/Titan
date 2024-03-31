@@ -73,7 +73,7 @@ def mouse_double_click(position=None, delay=0.05):
         time.sleep(0.3)
 
     hid.mouse_left_click()
-    time.sleep(0.05 * (1 + random()))
+    time.sleep(0.03 * (1 + random()))
     hid.mouse_left_click()
     time.sleep(delay * (1 + random()))
 
@@ -155,6 +155,9 @@ def open_teleport_stone() -> bool:
             return False
     else:
         mouse_double_click(delay=0.1)
+        if not is_opend():
+            mouse_left_click()
+            mouse_double_click(delay=0.1)
         return is_opend()
 
 

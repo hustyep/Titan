@@ -115,8 +115,8 @@ Charactor_Daily_Map = {
     'Sllee': {
         'default': 'Harsh Winter 4',
         'quest': [
-            'Train with No Destination 5',
-            'Laboratory Behind Locked Door 1',
+            # 'Train with No Destination 5',
+            # 'Laboratory Behind Locked Door 1',
             'Combat Zone Outskirts 1',
             'Calm Beach 2',
             'Harsh Winter 4',

@@ -1,7 +1,7 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=1
 *, x=28, y=39, interval=6000, tolerance=8, detect=False, skip=True
-    GoArdentmill, invisible=True
+    GoArdentmill
 
 ~, label=Summon Loop, interval=42, skip=False
 *, x=28, y=39, interval=0, tolerance=8, detect=False, skip=False
