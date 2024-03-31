@@ -582,7 +582,10 @@ class Direction(Command):
         self.direction = bot_settings.validate_arrows(direction)
 
     def main(self):
-        press(self.direction, down_time=0.01, up_time=0.02)
+        if not self.direction:
+            return
+        if bot_status.player_direction != self.direction:
+            press(self.direction, down_time=0.01, up_time=0.02)
 
 
 class GoArdentmill(Command):
@@ -847,7 +850,7 @@ class ErdaShower(Skill):
         if not self.canUse():
             return
         if self.direction:
-            press_acc(self.direction, down_time=0.03, up_time=0.03)
+            Direction(self.direction).execute()
         time.sleep(0.3)
         press(Keybindings.ERDA_SHOWER, 1)
         self.__class__.castedTime = time.time()
@@ -944,7 +947,7 @@ class RopeLift(Skill):
             press(self.__class__.key)
             time.sleep(0.55)
             press(self.__class__.key)
-            sleep_in_the_air(n=20)
+            sleep_in_the_air(n=30)
 
 ###################
 #      Potion     #
@@ -1030,7 +1033,7 @@ class GUILD_POTION(Command):
 
 class CANDIED_APPLE(Command):
     key = Keybindings.CANDIED_APPLE
-    cooldown = 1800
+    cooldown = 1810
     backswing = 0.5
 
     @classmethod
@@ -1043,7 +1046,7 @@ class CANDIED_APPLE(Command):
 
 class LEGION_WEALTHY(Command):
     key = Keybindings.LEGION_WEALTHY
-    cooldown = 610
+    cooldown = 310
     backswing = 0.5
 
     @classmethod
@@ -1056,7 +1059,7 @@ class LEGION_WEALTHY(Command):
 
 class EXP_COUPON(Command):
     key = Keybindings.EXP_COUPON
-    cooldown = 610
+    cooldown = 310
     backswing = 0.5
 
     @classmethod

@@ -229,7 +229,7 @@ class Rush(Skill):
 
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
-        # key_down(self.direction)
+        Direction(self.direction).execute()
         press(self.key)
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
         return True

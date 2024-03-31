@@ -125,7 +125,7 @@ Charactor_Daily_Map = {
         'quest': [
             'Outlaw-Infested Wastes 2',
             'Laboratory Behind Locked Door 1',
-            'Ink-winged Owl',
+            'Harsh Winter 4',
         ]},
     'ermin': {
         'default': 'Train with No Destination 5',
