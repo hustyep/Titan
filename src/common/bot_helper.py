@@ -155,6 +155,7 @@ def wait_until_map_changed(timeout=10):
         time.sleep(0.5)
         if time.time() - start > timeout:
             return
+    time.sleep(0.5)
 
 
 def chenck_map_available(instance=True):
