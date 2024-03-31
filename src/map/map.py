@@ -8,6 +8,8 @@ from os.path import join, isfile, splitext, basename
 from src.common.constants import *
 from src.modules.capture import capture
 from src.common import bot_status
+from src.common.gui_setting import gui_setting
+
 
 class MapPointType(Enum):
     Unknown = -1
@@ -75,6 +77,8 @@ class Map:
             self.minimap_sample = cv2.imread(minimap_sample_path)
 
     def save_minimap_data(self):
+        if gui_setting.mode.type != BotRunMode.Mapping:
+            return
         try:
             minimap_data_file = f'{get_maps_dir(self.name)}.txt'
             np.savetxt(minimap_data_file, self.minimap_data,
@@ -85,6 +89,8 @@ class Map:
             print(f" ~ Finished saving map data '{self.name}'")
 
     def create_minimap_data(self):
+        if gui_setting.mode.type != BotRunMode.Mapping:
+            return
         if capture.minimap_actual is not None and len(capture.minimap_actual) > 0:
             width = capture.minimap_actual.shape[1] + 1
             height = capture.minimap_actual.shape[0] + 1
@@ -107,6 +113,8 @@ class Map:
 
     @bot_status.run_if_disabled('')
     def add_start_point(self, point: tuple[int, int]):
+        if gui_setting.mode.type != BotRunMode.Mapping:
+            return
         print(f'\n[~] add start point {point}')
 
         self.create_minimap_data()
@@ -129,6 +137,8 @@ class Map:
 
     @bot_status.run_if_disabled('')
     def add_end_point(self, point: tuple[int, int]):
+        if gui_setting.mode.type != BotRunMode.Mapping:
+            return
         print(f'\n[~] add end point {point}')
         self.create_minimap_data()
         x = point[0]
@@ -150,6 +160,8 @@ class Map:
 
     @bot_status.run_if_disabled('')
     def add_rope_point(self, point: tuple[int, int]):
+        if gui_setting.mode.type != BotRunMode.Mapping:
+            return
         print(f'\n[~] add rope point {point}')
         self.create_minimap_data()
         x = point[0]
@@ -161,7 +173,7 @@ class Map:
             elif self.minimap_data[i][x] == 1 or self.minimap_data[i][x] == 3:
                 self.minimap_data[i][x] = 3
                 break
-        self.save_minimap_data() 
+        self.save_minimap_data()
 
     def load_mob_template(self):
         try:
@@ -219,7 +231,7 @@ class Map:
             else:
                 for i in range(1, 7):
                     if self.point_type((location[0], location[1] + i)) == MapPointType.Rope:
-                        return True 
+                        return True
         return False
 
     def on_the_platform(self, location: tuple[int, int]):
