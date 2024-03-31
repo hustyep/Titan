@@ -129,7 +129,7 @@ class Bot(Subject):
                 routine.load(map_routine_path, self.command_book)
         else:
             default_map = Charactor_Daily_Map[role_name]['default']
-            bot_action.teleport_to_map(default_map)
+            bot_status.enabled = bot_action.teleport_to_map(default_map)
             return
 
         if not bot_helper.chenck_map_available():

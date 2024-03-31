@@ -1,5 +1,5 @@
 import time
-import random
+from random import random
 
 from src.common.constants import Charactor_Daily_Map
 from src.modules.capture import capture
