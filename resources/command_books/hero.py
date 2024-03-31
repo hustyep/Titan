@@ -239,7 +239,7 @@ class Rush(Skill):
 #######################
 
 
-class BurningSoulBlade(Command):
+class BurningSoulBlade(Skill):
     """
     Uses 'DarkFlare' in a given direction, or towards the center of the map if
     no direction is specified.
@@ -250,25 +250,30 @@ class BurningSoulBlade(Command):
     backswing = 1.3
     duration = 75
 
-    # def __init__(self, direction=None):
-    #     super().__init__(locals())
-    #     if direction is None:
-    #         self.direction = direction
-    #     else:
-    #         self.direction = bot_settings.validate_horizontal_arrows(direction)
-            
-    # @classmethod
-    # def check(cls):
-    #     if capture.frame is None:
-    #         return
-    #     matchs = utils.multi_match(
-    #         capture.skill_frame, cls.icon[8:, : -14], threshold=0.96)
-    #     cls.ready = len(matchs) > 0
+    def __init__(self, direction=None):
+        super().__init__(locals())
+        if direction is None:
+            self.direction = direction
+        else:
+            self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    # def main(self):
-    #     if self.direction is not None:
-    #         press_acc(self.direction, down_time=0.03, up_time=0.03)
-    #     super().main()
+    @classmethod
+    def check(cls):
+        if capture.frame is None:
+            return
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[10:, : -15], threshold=0.94, debug=False)
+        cls.ready = len(matchs) > 0
+
+    def main(self):
+        if not self.canUse():
+            return
+        if self.direction:
+            Direction(self.direction).execute()
+        time.sleep(0.3)
+        press(Keybindings.BurningSoulBlade, 1)
+        self.__class__.castedTime = time.time()
+        time.sleep(self.__class__.backswing)
 
 
 #######################

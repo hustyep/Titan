@@ -132,7 +132,7 @@ Charactor_Daily_Map = {
         'quest': [
             'Western City Ramparts in Battle 1',
             'Train with No Destination 5',
-            # "Road to the Castle's Gate 1",
+            "Road to the Castle's Gate 1",
         ]
     }
 }

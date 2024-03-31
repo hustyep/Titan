@@ -323,7 +323,7 @@ class SuddenRaid(Skill):
     def canUse(cls, next_t: float = 0) -> bool:
         usable = super().canUse()
         if usable:
-            mobs = detect_mobs()
+            mobs = detect_mobs(capture.frame)
             return mobs is None or len(mobs) > 0
         else:
             return False

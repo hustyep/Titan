@@ -69,7 +69,7 @@ class Daily:
 
 
 class Quest:
-    def __init__(self, map_name: str, duration=120):
+    def __init__(self, map_name: str, duration=150):
         self.map_name = map_name
         self.duration = duration
 
