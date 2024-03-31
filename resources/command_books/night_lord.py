@@ -302,10 +302,10 @@ class Attack(Command):
         if self.detect:
             pos = (800, 560)
             if bot_status.player_direction == 'left':
-                mobs = detect_mobs(
+                mobs = detect_mobs_around_anchor(
                     anchor=pos, insets=AreaInsets(top=200, bottom=100, left=300, right=0))
             else:
-                mobs = detect_mobs(
+                mobs = detect_mobs_around_anchor(
                     anchor=pos, insets=AreaInsets(top=200, bottom=100, left=0, right=300))
             if len(mobs) > 0:
                 ShowDown().execute()
