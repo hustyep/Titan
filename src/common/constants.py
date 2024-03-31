@@ -66,6 +66,7 @@ class BotDebug(Enum):
 #       Common Type        #
 #############################
 
+
 class AreaInsets:
     def __init__(self, top=0, bottom=0, left=0, right=0) -> None:
         self.top = top
@@ -81,11 +82,12 @@ class Rect:
         self.width = width
         self.height = height
 
+
 class MobType(Enum):
     NORMAL = 'normal mob'
     ELITE = 'elite mob'
     BOSS = 'boss mob'
-    
+
 
 class MineralType(Enum):
     HEART = 'heart mineral'
@@ -110,21 +112,29 @@ Name_Class_Map = {'Sllee': 'shadower',
                   'ermin': 'hero'}
 
 Charactor_Daily_Map = {
-    'Sllee': [
-        'Outlaw-Infested Wastes 2',
-        'Laboratory Behind Locked Door 1',
-        'Harsh Winter 4',
-    ],
-    'issl': [
-        'Outlaw-Infested Wastes 2',
-        'Laboratory Behind Locked Door 1',
-        'Ink-winged Owl',
-    ],
-    'ermin': [
-        'Western City Ramparts in Battle 1',
-        'Train with No Destination 5',
-        # "Road to the Castle's Gate 1",
-    ]
+    'Sllee': {
+        'default': 'Harsh Winter 4',
+        'quest': [
+            'Outlaw-Infested Wastes 2',
+            'Laboratory Behind Locked Door 1',
+            'Harsh Winter 4',
+        ]
+    },
+    'issl': {
+        'default': 'Harsh Winter 4',
+        'quest': [
+            'Outlaw-Infested Wastes 2',
+            'Laboratory Behind Locked Door 1',
+            'Ink-winged Owl',
+        ]},
+    'ermin': {
+        'default': 'Train with No Destination 5',
+        'quest': [
+            'Western City Ramparts in Battle 1',
+            'Train with No Destination 5',
+            # "Road to the Castle's Gate 1",
+        ]
+    }
 }
 
 #############################

@@ -37,7 +37,7 @@ class Daily:
         return cur_quest.isDone
 
     def __load_quest(self):
-        map_list = Charactor_Daily_Map[self.role_name]
+        map_list = Charactor_Daily_Map[self.role_name]['quest']
         if map_list is not None:
             for map in map_list:
                 self.quest_list.append(Quest(map))
