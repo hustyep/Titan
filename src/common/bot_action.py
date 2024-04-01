@@ -156,9 +156,8 @@ def open_teleport_stone() -> bool:
     else:
         mouse_double_click(delay=0.1)
         if not is_opend():
-            mouse_left_click()
-            mouse_double_click(delay=0.1)
-        return is_opend()
+            open_teleport_stone()
+        return True
 
 
 def close_teleport_stone():

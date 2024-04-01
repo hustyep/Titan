@@ -8,12 +8,13 @@ $, target=mini_margin, value=14
     Potion
 *, x=158, y=68, interval=0, tolerance=4, detect=True, skip=False
     Direction, direction=left
+#
 
 ~, label=Summon Loop, interval=46, skip=False
-*, x=4, y=68, interval=0, tolerance=3, detect=False, skip=False
-*, x=32, y=37, interval=0, tolerance=3, detect=False, skip=False
-    DarkFlare
+*, x=158, y=68, interval=0, tolerance=10, detect=False, skip=False
 *, x=120, y=36, interval=0, tolerance=4, detect=False, skip=False
     ErdaShower, direction=right
-*, x=158, y=68, interval=0, tolerance=10, detect=False, skip=False
+*, x=32, y=37, interval=0, tolerance=3, detect=False, skip=False
+    DarkFlare
+*, x=4, y=68, interval=0, tolerance=3, detect=False, skip=False
 #
