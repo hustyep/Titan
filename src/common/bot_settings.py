@@ -176,6 +176,7 @@ role_template = None
 
 boundary_point_l = (100, 0)
 boundary_point_r = (0, 0)
+base_y = 0
 
 file_setting: File_Setting = None
 

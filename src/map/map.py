@@ -7,7 +7,7 @@ import numpy as np
 from os.path import join, isfile, splitext, basename
 from src.common.constants import *
 from src.modules.capture import capture
-from src.common import bot_status
+from src.common import bot_status, bot_settings
 from src.common.gui_setting import gui_setting
 
 
@@ -31,6 +31,7 @@ class Map:
         self.name = ''
         self.minimap_data = None
         self.minimap_sample = None
+        self.base_y = 0
         self.mob_templates = []
         self.elite_templates = []
         self.boss_templates = []
@@ -61,6 +62,12 @@ class Map:
             try:
                 self.minimap_data = np.loadtxt(
                     minimap_data_path, delimiter=',').astype(int)
+                height, _ = self.minimap_data.shape
+                for i in range(height-1, -1, -1):
+                    if self.minimap_data[i][0] > 0:
+                        self.base_y = height
+                        bot_settings.base_y = height
+                        break
             except Exception as e:
                 print(f'[!] load map: {minimap_data_path} failed! \n{e}')
             else:
