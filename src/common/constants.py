@@ -115,8 +115,8 @@ Charactor_Daily_Map = {
     'Sllee': {
         'default': 'Harsh Winter 4',
         'quest': [
-            # 'Train with No Destination 5',
-            # 'Laboratory Behind Locked Door 1',
+            'Train with No Destination 5',
+            'Laboratory Behind Locked Door 1',
             'Combat Zone Outskirts 1',
             'Calm Beach 2',
             'Harsh Winter 4',
@@ -149,6 +149,10 @@ Map_Names = [
     'End Of The World 1-6',
     'End Of The World 1-7',
     'Outlaw-Infested Wastes 2',
-    'Laboratory Behind Locked Door 1',
     'Ink-winged Owl',
+    'Train with No Destination 5',
+    'Laboratory Behind Locked Door 1',
+    'Combat Zone Outskirts 1',
+    'Calm Beach 2',
+    'Harsh Winter 4',
 ]

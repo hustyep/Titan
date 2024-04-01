@@ -356,33 +356,54 @@ class Wait(Command):
         time.sleep(self.duration)
 
 
-class Detect(Command):
-    def __init__(self, count=1, top=315, bottom=0, left=500, right=500, isRerct=0):
+class DetectAnchor(Command):
+    def __init__(self, count=1, x=0, y=0, top=315, bottom=0, left=500, right=500):
         super().__init__(locals())
         self.count = int(count)
+        self.x = int(x)
+        self.y = int(y)
         self.top = int(top)
         self.bottom = int(bottom)
         self.left = int(left)
         self.right = int(right)
-        self.isRect = bool(isRerct)
 
     def main(self):
-        # anchor = capture.locate_player_fullscreen(accurate=True)
-        anchor = (469, 490)
+        # (469, 490)
+        if self.x == 0 and self.y == 0:
+            anchor = capture.locate_player_fullscreen(accurate=True)
+        else:
+            anchor = (self.x, self.y)
         start = time.time()
         while True:
-            if self.isRect:
-                mobs = detect_mobs_in_rect(
-                    rect=Rect(self.top, self.bottom, self.left, self.right),
-                    multy_match=False,
-                    debug=False)
-            else:
-                mobs = detect_mobs_around_anchor(
-                    anchor=anchor,
-                    insets=AreaInsets(
-                        top=self.top, bottom=self.bottom, left=self.left, right=self.right),
-                    multy_match=False,
-                    debug=False)
+            mobs = detect_mobs_around_anchor(
+                anchor=anchor,
+                insets=AreaInsets(
+                    top=self.top, bottom=self.bottom, left=self.left, right=self.right),
+                multy_match=self.count > 0,
+                debug=False)
+            if len(mobs) >= self.count:
+                break
+            time.sleep(0.1)
+            if time.time() - start > 6:
+                break
+
+
+class DetectRect(Command):
+    def __init__(self, count=1, x=0, y=0, width=500, height=500):
+        super().__init__(locals())
+        self.count = int(count)
+        self.x = int(x)
+        self.y = int(y)
+        self.width = int(width)
+        self.height = int(height)
+
+    def main(self):
+        start = time.time()
+        while True:
+            mobs = detect_mobs_in_rect(
+                rect=Rect(self.x, self.y, self.width, self.height),
+                multy_match=self.count > 0,
+                debug=False)
             if len(mobs) >= self.count:
                 break
             time.sleep(0.1)

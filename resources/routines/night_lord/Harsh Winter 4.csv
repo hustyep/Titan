@@ -30,7 +30,7 @@ $, target=mini_margin, value=1
 *, x=28, y=39, interval=0, tolerance=8, detect=False, skip=False
     Potion
     FeedPet
-    Detect, count=1, top=315, bottom=0, left=210, right=700
+    DetectAnchor, count=1, x=469, y=490, top=315, bottom=0, left=210, right=700
     Jump, duration=0.25, direction=None, forward=False, attack=True
 *, x=28, y=54, interval=0, tolerance=8, detect=False, skip=False
     Fall, attack=True, forward=False, buff=False

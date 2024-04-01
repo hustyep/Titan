@@ -22,7 +22,7 @@ class Daily:
     def start(self):
         if not self.ready:
             self.__take_quest()
-        self.__start_quest()
+        return self.__start_quest()
 
     def pause(self):
         cur_quest = self.quest_list[self.cur_quest_index]
@@ -64,8 +64,8 @@ class Daily:
             if cur_quest.isDone:
                 self.cur_quest_index += 1
             else:
-                cur_quest.start()
-                break
+                return  cur_quest.start()
+        return True
 
 
 class Quest:
@@ -85,9 +85,9 @@ class Quest:
         return self.last_time + time.time() - self.start_time >= self.duration
 
     def start(self):
-        self.__prepare()
         if self.start_time == 0:
             self.start_time = time.time()
+        return self.__prepare()
 
     def pause(self):
         if self.start_time == 0:
@@ -97,8 +97,7 @@ class Quest:
 
     def __prepare(self):
         bot_status.enabled = False
-        if not self.__check_map():
-            chat_bot.voice_call()
+        return self.__check_map()
 
     def __check_map(self):
         cur_map_name = bot_helper.identify_map_name()
@@ -111,5 +110,5 @@ class Quest:
 def has_quest():
     frame = capture.frame[100:300, 0:200]
     frame = utils.filter_color(frame, YELLOW_RANGES)
-    match = utils.multi_match(frame, QUEST_BUBBLE_TEMPLATE,debug=False)
+    match = utils.multi_match(frame, QUEST_BUBBLE_TEMPLATE, debug=False)
     return len(match) > 0
