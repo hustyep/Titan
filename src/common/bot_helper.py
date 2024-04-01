@@ -186,16 +186,14 @@ def get_available_routines(command_name) -> list:
 
 def identify_role():
     name = utils.image_match_text(capture.name_frame, Name_Class_Map.keys())
-    if name is not None:
-        return name, Name_Class_Map[name]
+    return name
 
 
 def identify_map_name():
-
     frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
     # utils.show_image(frame)
     available_map_names = get_available_routines(bot_settings.class_name)
-    return utils.image_match_text(frame, available_map_names, 0.8)
+    return utils.image_match_text(frame, available_map_names, 0.8, filter=[])
 
 
 def get_full_pos(pos):

@@ -257,7 +257,6 @@ class Routine(Subject):
 
         self.clear()
         self.command_book = command_book
-        commands.Command.loop_begin_callback = self._on_loop_begin
         commands.Command.complete_callback = self._on_command_complete
         Component.complete_callback = self._on_component_complete
 
@@ -371,13 +370,6 @@ class Routine(Subject):
         # Execute next Point in the routine
         element.execute()
 
-    def _on_loop_begin(self):
-        pass
-        # Feed Pet
-        # self.command_book.FeedPet().execute()
-        # Use Buff and Potion
-        # self.command_book.Potion().execute()
-        # self.command_book.Buff().execute()
 
     def _on_command_complete(self, c: commands.Command):
         if isinstance(c, commands.Move) and not commands.target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):

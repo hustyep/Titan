@@ -94,7 +94,6 @@ class Listener(Configurable, Subject):
         bot_status.reset()
         # notifier.notice_time_record.clear()
 
-        bot.prepared = False
         bot.toggle(not bot_status.enabled)
         
         if bot_status.enabled:
@@ -115,7 +114,7 @@ class Listener(Configurable, Subject):
 
         routine.clear()
         capture.calibrate = False
-        bot.prepared = False
+        bot_status.prepared = False
         winsound.Beep(523, 200)     # C5
         winsound.Beep(659, 200)     # E5
         winsound.Beep(784, 200)     # G5

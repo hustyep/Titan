@@ -34,7 +34,6 @@ class Bot(Subject):
 
         super().__init__()
         self.command_book: CommandBook = None
-        self.prepared = False
         self.daily: Daily = None
 
         self.check_thread = threading.Thread(target=self._main_check)
@@ -65,12 +64,12 @@ class Bot(Subject):
             if bot_status.enabled:
                 if bot_status.white_room:
                     time.sleep(1)
-                elif not self.prepared:
+                elif not bot_status.prepared:
                     self.prepare()
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
                     if self.daily is not None and self.daily.check():
-                        self.prepared = False
+                        bot_status.prepared = False
                 else:
                     time.sleep(0.01)
             else:
@@ -85,41 +84,30 @@ class Bot(Subject):
             time.sleep(0.2)
 
     def prepare(self):
-        if self.prepared:
+        if bot_status.prepared:
             return
-        
+
         if capture.minimap_display is None:
             time.sleep(0.5)
             return
 
-        role_name, class_name = bot_helper.identify_role()
-        print(f"identify name:{role_name}, class:{class_name}")
-
-        if not role_name or not class_name:
+        role_name = self.identify_role()
+        if not role_name:
             self.toggle(False, 'role name error')
             return
-      
-        # update role template      
-        bot_settings.role_name = role_name
-        bot_settings.load_role_template()
-        
-        # update command book
-        if bot_settings.class_name != class_name:
-            file = bot_settings.get_command_book_path(class_name)
-            self.load_commands(file)
-            self.daily = None            
-            
+
         match gui_setting.mode.type:
             case BotRunMode.Daily:
                 if self.daily is None:
-                    self.daily = Daily(role_name)
-                bot_status.enabled = False
-                self.daily.start()
-                bot_status.enabled = True
+                    self.daily = Daily(bot_settings.role_name)                
+                bot_status.enabled = self.daily.start()
+                if not bot_status.enabled:
+                    chat_bot.voice_call()
+                    return
             case BotRunMode.Mapping, BotRunMode.Cube:
                 time.sleep(1)
                 return
-            
+
         # update routine
         map_name = bot_helper.identify_map_name()
         print(f"identify map:{map_name}")
@@ -135,7 +123,26 @@ class Bot(Subject):
         if not bot_helper.chenck_map_available():
             bot_action.change_channel()
 
-        self.prepared = True
+        bot_status.prepared = True
+        
+    def identify_role(self):
+        role_name = bot_helper.identify_role()
+        if not role_name:
+            return
+        class_name = Name_Class_Map[role_name]
+        print(f"identify name:{role_name}, class:{class_name}")
+
+        # update role template
+        if bot_settings.role_name != role_name:
+            bot_settings.role_name = role_name
+            bot_settings.load_role_template()
+            self.daily = None
+
+        # update command book
+        if bot_settings.class_name != class_name:
+            file = bot_settings.get_command_book_path(class_name)
+            self.load_commands(file)
+        return role_name
 
     def load_commands(self, file):
         try:
@@ -158,10 +165,14 @@ class Bot(Subject):
         bot_status.minal_pos = None
         bot_status.minal_closest_pos = None
 
+        bot_status.prepared = False
         capture.calibrated = False
         if enabled:
             notifier.notice_time_record.clear()
-        
+        else:
+            if self.daily is not None:
+                self.daily.pause()
+
         releaseAll()
         bot_status.enabled = enabled
         utils.print_state(enabled)
@@ -224,5 +235,6 @@ class Bot(Subject):
             f"reason: {ext}\n"
         )
         return message
+
 
 bot = Bot()

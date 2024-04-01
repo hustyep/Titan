@@ -157,7 +157,6 @@ class Point(Component):
         # if matchs:
         #     print("use aoe")
         #     commands.Aoe().execute()
-        commands.Command.loop_begin_callback()
         cast_time = time.time() - start_time
         time.sleep(max(1 - cast_time, 0))
 
