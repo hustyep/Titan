@@ -55,7 +55,6 @@ class Command():
     castedTime: float = 0
     precast: float = 0
     backswing: float = 0.5
-    loop_begin_callback = None
     complete_callback = None
 
     def __init__(self, *args, **kwargs):
@@ -328,14 +327,14 @@ class Walk(Command):
             if self.tolerance > 2 or abs(d_x) > 2:
                 if new_direction != direction:
                     key_up(direction)
-                    time.sleep(0.03)
+                    time.sleep(0.02)
                 key_down(new_direction)
                 direction = new_direction
                 time.sleep(self.interval)
             else:
                 key_up(direction)
-                time.sleep(0.02)
-                press_acc(new_direction, down_time=0.02, up_time=0.02)
+                time.sleep(0.01)
+                press_acc(new_direction, down_time=0.01, up_time=0.01)
                 direction = new_direction
 
             walk_counter += 1
@@ -517,6 +516,7 @@ class SolveRune(Command):
         time.sleep(0.5)
         # Inherited from Configurable
         press(Keybindings.INTERACT, 1, down_time=0.2, up_time=0.8)
+        self.__class__.castedTime = time.time()
 
         print('\nSolving rune:')
         used_frame = None
@@ -533,7 +533,6 @@ class SolveRune(Command):
                 find_solution = True
                 for arrow in solution:
                     press(arrow, 1, down_time=0.1)
-                self.__class__.castedTime = time.time()
                 break
             time.sleep(0.1)
         time.sleep(0.2)
@@ -608,89 +607,20 @@ class Direction(Command):
         if bot_status.player_direction != self.direction:
             press(self.direction, down_time=0.01, up_time=0.02)
 
-
-class GoArdentmill(Command):
+class Rest(Command):
+    def __init__(self, wait=0):
+        self.wait = wait
 
     def main(self):
         bot_status.enabled = False
-        hid.key_press(Keybindings.Go_Ardentmill)
-        time.sleep(5)
+        bot_action.teleport_random_town()
+        time.sleep(self.wait)
+        bot_status.prepared = False
+        bot_status.enabled = True
 
-        go_btn = utils.multi_match(
-            capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
-        if go_btn:
-            pass
-        else:
-            hid.key_press("'")
-            time.sleep(0.5)
-
-        go_btn = utils.multi_match(
-            capture.frame, Go_Ardentmill_TEMPLATE, threshold=0.9)
-        if go_btn:
-            x, y = go_btn[0]
-            hid.mouse_abs_move(*get_full_pos((x, y+3)))
-            time.sleep(0.5)
-            hid.mouse_left_click()
-            time.sleep(0.5)
-        else:
-            print("not found")
-            hid.key_press('esc')
-            time.sleep(1)
-            bot_status.enabled = True
-            return
-
-        frame = capture.frame
-        x = (frame.shape[1] - 260) // 2
-        y = (frame.shape[0] - 220) // 2
-        ok_btn = utils.multi_match(
-            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
-        cancel_btn = utils.multi_match(
-            frame, BUTTON_CANCEL_TEMPLATE, threshold=0.9, debug=False)
-        if cancel_btn:
-            print("ok")
-            hid.key_press("enter")
-            time.sleep(1)
-        elif ok_btn:
-            hid.key_press('esc')
-            time.sleep(1)
-            print("not ok")
-            GoArdentmill().main()
-            return
-        else:
-            print("nothing")
-            hid.key_press('esc')
-            time.sleep(0.2)
-            GoArdentmill().main()
-            return
-        start = time.time()
-        while (not bot_status.lost_minimap):
-            time.sleep(0.1)
-            print("not lost_minimap")
-
-            if time.time() - start > 3:
-                GoArdentmill().main()
-                return
-        while (bot_status.lost_minimap):
-            print("lost_minimap")
-            time.sleep(0.1)
-        time.sleep(2)
-        hid.key_press('up')
-        time.sleep(0.5)
-        while (not bot_status.lost_minimap):
-            hid.key_press('up')
-            time.sleep(0.3)
-        while (bot_status.lost_minimap):
-            time.sleep(0.1)
-        time.sleep(2)
-        hid.key_press('esc')
-
-        map_available = chenck_map_available(instance=True)
-
-        if map_available:
-            bot_status.enabled = True
-            bot_status.change_channel = False
-        else:
-            ChangeChannel().main()
+class GoArdentmill(Command):
+    def main(self):
+        bot_action.go_ardentmill()
 
 ###########################
 #      Abstract Skill     #

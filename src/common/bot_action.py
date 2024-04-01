@@ -148,7 +148,8 @@ def open_teleport_stone() -> bool:
         else:
             mouse_move(ITEM_CASH_TAB_TEMPLATE)
             mouse_left_click(delay=1)
-            stone_match = utils.multi_match(capture.frame, TELEPORT_STONE_TEMPLATE)
+            stone_match = utils.multi_match(
+                capture.frame, TELEPORT_STONE_TEMPLATE)
             if len(stone_match) > 0:
                 return open_teleport_stone()
             chat_bot.voice_call()
@@ -244,6 +245,53 @@ def cancel_rune_buff():
 
 def open_boss_box():
     pass
+
+
+def go_ardentmill(key):
+    bot_status.enabled = False
+    click_key(key)
+    time.sleep(5)
+
+    if not mouse_move(Go_Ardentmill_TEMPLATE):
+        click_key(bot_settings.SystemKeybindings.Go_Ardentmill, delay=0.5)
+    if not mouse_move(Go_Ardentmill_TEMPLATE):
+        print("cool down")
+        hid.key_press('esc')
+        time.sleep(1)
+        bot_status.enabled = True
+        return
+    mouse_left_click()
+
+    frame = capture.frame
+    x = (frame.shape[1] - 260) // 2
+    y = (frame.shape[0] - 220) // 2
+    ok_btn = utils.multi_match(
+        frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+    cancel_btn = utils.multi_match(
+        frame, BUTTON_CANCEL_TEMPLATE, threshold=0.9, debug=False)
+    if cancel_btn:
+        print("ok")
+        hid.key_press("enter")
+        time.sleep(1)
+    else:
+        print("not ok")
+        hid.key_press('esc')
+        time.sleep(0.2)
+        return
+
+    wait_until_map_changed()
+    time.sleep(2)
+    hid.key_press('up')
+    time.sleep(0.5)
+    while (not bot_status.lost_minimap):
+        hid.key_press('up')
+        time.sleep(0.3)
+    while (bot_status.lost_minimap):
+        time.sleep(0.1)
+    time.sleep(2)
+    hid.key_press('esc')
+    bot_status.prepared = False
+    bot_status.enabled = True
 
 
 def change_channel(num: int = 0, enable=True, instance=True):

@@ -34,7 +34,6 @@ class Bot(Subject):
 
         super().__init__()
         self.command_book: CommandBook = None
-        self.prepared = False
         self.daily: Daily = None
 
         self.check_thread = threading.Thread(target=self._main_check)
@@ -65,12 +64,12 @@ class Bot(Subject):
             if bot_status.enabled:
                 if bot_status.white_room:
                     time.sleep(1)
-                elif not self.prepared:
+                elif not bot_status.prepared:
                     self.prepare()
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
                     if self.daily is not None and self.daily.check():
-                        self.prepared = False
+                        bot_status.prepared = False
                 else:
                     time.sleep(0.01)
             else:
@@ -85,7 +84,7 @@ class Bot(Subject):
             time.sleep(0.2)
 
     def prepare(self):
-        if self.prepared:
+        if bot_status.prepared:
             return
 
         if capture.minimap_display is None:
@@ -124,7 +123,7 @@ class Bot(Subject):
         if not bot_helper.chenck_map_available():
             bot_action.change_channel()
 
-        self.prepared = True
+        bot_status.prepared = True
         
     def identify_role(self):
         role_name = bot_helper.identify_role()
@@ -166,7 +165,7 @@ class Bot(Subject):
         bot_status.minal_pos = None
         bot_status.minal_closest_pos = None
 
-        self.prepared = False
+        bot_status.prepared = False
         capture.calibrated = False
         if enabled:
             notifier.notice_time_record.clear()

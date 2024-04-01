@@ -102,6 +102,7 @@ class SystemKeybindings:
     ITEM = 'i'
     FEED_PET = 'L'
     Change_Channel = 'o'
+    Go_Ardentmill = "'"
     Attack = 'f'
     JUMP = 's'
 

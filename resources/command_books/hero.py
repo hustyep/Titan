@@ -19,7 +19,7 @@ class Keybindings(DefaultKeybindings):
 
     # Skills
     RagingBlow = 'f'
-    Puncture= 'd'
+    Puncture = 'd'
     RisingRage = 'e'
     ARACHNID = 'q'
     BeamBlade = 'c'
@@ -46,6 +46,7 @@ class Keybindings(DefaultKeybindings):
 #########################
 #       Movement        #
 #########################
+
 
 @bot_status.run_if_enabled
 def step(target, tolerance):
@@ -133,11 +134,11 @@ def move_down(target):
         Fall().execute()
 
 
-class DoubleJump(Skill):
+class DoubleJump(Command):
     """Performs a flash jump in the given direction."""
     key = Keybindings.JUMP
     type = SkillType.Move
-    # cooldown = 0.1
+    cooldown = 0.35
 
     def __init__(self, target: tuple[int, int], attack_if_needed=False):
         super().__init__(locals())
@@ -165,17 +166,15 @@ class DoubleJump(Skill):
         self.__class__.castedTime = time.time()
         key_down(direction)
         if self.attack_if_needed:
-            # detect = AsyncTask(
-            #     target=self.detect_mob, args=(direction, ))
-            # detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.18)
-            # mobs_detected = detect.join()
-            mobs_detected = True
-            press(self.key, 1, down_time=0.02, up_time=0.03)
-            if mobs_detected:
-                Attack().execute()
+            if start_y == bot_settings.boundary_point_l[1]:
+                press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.18)
+                press(self.key, 1, down_time=0.02, up_time=0.03)
+                Puncture().execute()
+            else:
+                press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+                press(self.key, 1, down_time=0.02, up_time=0.03)
+                RagingBlow().execute()
         else:
-            times = 2 if abs(dx) >= 32 else 1
             if dy == 0:
                 if abs(dx) in range(20, 26):
                     press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.5)
@@ -183,10 +182,10 @@ class DoubleJump(Skill):
                     press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             else:
                 press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
-            press(self.key, times, down_time=0.03, up_time=0.03)
+            press(self.key, 1, down_time=0.03, up_time=0.03)
 
         key_up(direction)
-        if start_y == 58:
+        if start_y == bot_settings.boundary_point_l[1]:
             time.sleep(0.015)
         else:
             sleep_in_the_air(n=1, start_y=start_y)
@@ -212,6 +211,8 @@ class UpwardCharge(Command):
         sleep_in_the_air(n=20)
 
 # 水平位移
+
+
 class Rush(Skill):
     key = Keybindings.Rush
     type = SkillType.Move
@@ -286,34 +287,38 @@ class ComboAttack(Skill):
     cooldown = 1
     ready = False
 
+
 class RagingBlow(Command):
     key = Keybindings.RagingBlow
     type = SkillType.Attack
-    backswing = 0.5
+    backswing = 0.2
 
     def main(self):
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
+
 
 class Puncture(Command):
     key = Keybindings.Puncture
     type = SkillType.Attack
     backswing = 0.6
+
     def main(self):
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
 
+
 class Attack(Command):
     key = Puncture.key
     type = SkillType.Attack
     backswing = Puncture.backswing
-    
-    def __init__(self, detect = False):
+
+    def __init__(self, detect=False):
         super().__init__(locals())
         self.detect = bot_settings.validate_boolean(detect)
-        
+
     def main(self):
         if self.detect:
             pos = (800, 560)
@@ -328,6 +333,7 @@ class Attack(Command):
         else:
             Puncture().execute()
 
+
 class BeamBlade(Skill):
     key = Keybindings.BeamBlade
     type = SkillType.Attack
@@ -337,7 +343,7 @@ class BeamBlade(Skill):
     def __init__(self, direction='up'):
         super().__init__(locals())
         self.direction = direction
-        
+
     def main(self):
         if not self.canUse():
             return
@@ -346,6 +352,7 @@ class BeamBlade(Skill):
         press(self.key)
         key_up(self.direction)
         time.sleep(self.backswing)
+
 
 class RisingRage(Command):
     key = Keybindings.RisingRage
@@ -362,10 +369,11 @@ class RisingRage(Command):
         self.__class__.castedTime = time.time()
         press(self.__class__.key, up_time=0)
         time.sleep(self.__class__.backswing)
-        
+
 ###################
 #      Buffs      #
 ###################
+
 
 class Buff(Command):
     """Uses each of Shadowers's buffs once."""
@@ -388,6 +396,7 @@ class Buff(Command):
                 result = buff().main(wait)
                 if result:
                     break
+
 
 class CryValhalla(Skill):
     key = Keybindings.CryValhalla
