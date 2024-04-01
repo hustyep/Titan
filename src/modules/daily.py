@@ -31,6 +31,8 @@ class Daily:
             self.cur_quest_index += 1
 
     def check(self):
+        if self.cur_quest_index >= len(self.quest_list):
+            return False
         cur_quest = self.quest_list[self.cur_quest_index]
         if cur_quest.isDone and self.cur_quest_index == len(self.quest_list) - 1:
             return False

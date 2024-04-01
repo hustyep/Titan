@@ -609,7 +609,7 @@ class Direction(Command):
 
 class Rest(Command):
     def __init__(self, wait=0):
-        self.wait = wait
+        self.wait = int(wait)
 
     def main(self):
         bot_status.enabled = False
@@ -620,7 +620,7 @@ class Rest(Command):
 
 class GoArdentmill(Command):
     def main(self):
-        bot_action.go_ardentmill()
+        bot_action.go_ardentmill(Keybindings.Go_Ardentmill)
 
 ###########################
 #      Abstract Skill     #

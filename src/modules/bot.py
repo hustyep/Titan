@@ -99,7 +99,8 @@ class Bot(Subject):
         match gui_setting.mode.type:
             case BotRunMode.Daily:
                 if self.daily is None:
-                    self.daily = Daily(bot_settings.role_name)                
+                    self.daily = Daily(bot_settings.role_name)
+                bot_status.enabled = False                
                 bot_status.enabled = self.daily.start()
                 if not bot_status.enabled:
                     chat_bot.voice_call()

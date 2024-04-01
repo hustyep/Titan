@@ -31,7 +31,6 @@ class Map:
         self.name = ''
         self.minimap_data = None
         self.minimap_sample = None
-        self.base_y = 0
         self.mob_templates = []
         self.elite_templates = []
         self.boss_templates = []
@@ -65,8 +64,7 @@ class Map:
                 height, _ = self.minimap_data.shape
                 for i in range(height-1, -1, -1):
                     if self.minimap_data[i][0] > 0:
-                        self.base_y = height
-                        bot_settings.base_y = height
+                        bot_settings.base_y = i - 7
                         break
             except Exception as e:
                 print(f'[!] load map: {minimap_data_path} failed! \n{e}')

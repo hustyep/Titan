@@ -73,7 +73,7 @@ def mouse_double_click(position=None, delay=0.05):
         time.sleep(0.3)
 
     hid.mouse_left_click()
-    time.sleep(0.03 * (1 + random()))
+    time.sleep(0.06)
     hid.mouse_left_click()
     time.sleep(delay * (1 + random()))
 

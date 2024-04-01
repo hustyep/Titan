@@ -166,7 +166,7 @@ class DoubleJump(Command):
         self.__class__.castedTime = time.time()
         key_down(direction)
         if self.attack_if_needed:
-            if start_y < bot_settings.base_y - 10:
+            if start_y >= bot_settings.base_y - 15:
                 press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.18)
                 press(self.key, 1, down_time=0.02, up_time=0.03)
                 Puncture().execute()
