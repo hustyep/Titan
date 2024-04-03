@@ -151,7 +151,7 @@ class Point(Component):
 
     def detect_mob(self, direction):
         start_time = time.time()
-        anchor = capture.locate_player_fullscreen(accurate=True)
+        anchor = bot_helper.locate_player_fullscreen(accurate=True)
         # matchs = commands.detect_mobs(insets=commands.AreaInsets(top=250, bottom=100, left=300, right=300),
         #                               anchor=anchor)
         # if matchs:
@@ -162,7 +162,7 @@ class Point(Component):
 
         start_time = time.time()
         while True:
-            anchor = capture.locate_player_fullscreen(accurate=True)
+            anchor = bot_helper.locate_player_fullscreen(accurate=True)
             # matchs = []
             # if gui_setting.detection.detect_boss:
             #     matchs = commands.detect_mobs(insets=commands.AreaInsets(top=180, bottom=-20, left=300, right=300),

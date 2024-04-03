@@ -37,7 +37,7 @@ def detect_mobs_around_anchor(
     crop = frame
     if insets is not None:
         if anchor is None:
-            anchor = capture.convert_point_minimap_to_window(
+            anchor = convert_point_minimap_to_window(
                 bot_status.player_pos)
         crop = frame[max(0, anchor[1]-insets.top):anchor[1]+insets.bottom,
                      max(0, anchor[0]-insets.left):anchor[0]+insets.right]
@@ -45,10 +45,11 @@ def detect_mobs_around_anchor(
     return detect_mobs(crop, type, multy_match, debug)
 
 
-def detect_mobs(frame,
-                type: MobType = MobType.NORMAL,
-                multy_match=False,
-                debug=False):
+def detect_mobs(
+        frame,
+        type: MobType = MobType.NORMAL,
+        multy_match=False,
+        debug=False):
     if frame is None:
         return []
 
@@ -83,7 +84,7 @@ def detect_mobs(frame,
 
 
 def pre_detect(direction):
-    anchor = capture.locate_player_fullscreen(accurate=True)
+    anchor = locate_player_fullscreen(accurate=True)
     insets = AreaInsets(top=150,
                         bottom=50,
                         left=-620 if direction == 'right' else 1000,
@@ -213,3 +214,55 @@ def get_channel_pos(channel):
     channel_row = (channel - 1) // column
     channel_column = (channel - 1) % column
     return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
+
+
+def convert_point_minimap_to_window(point: tuple[int, int]):
+    '''convent the minimap point to the window point'''
+    window_width = capture.window_rect.width
+    window_height = capture.window_rect.height
+
+    mini_height, mini_width, _ = capture.minimap_actual.shape
+
+    map_width = mini_width * MINIMAP_SCALE
+    map_height = mini_height * MINIMAP_SCALE
+
+    map_x = point[0] * MINIMAP_SCALE
+    map_y = point[1] * MINIMAP_SCALE
+
+    if map_x < window_width // 2:
+        x = map_x
+    elif map_width - map_x < window_width // 2:
+        x = map_x - (map_width - window_width)
+    else:
+        x = window_width // 2
+
+    if map_y < window_height // 2:
+        y = map_y
+    elif map_height - map_y < window_height // 2:
+        y = map_y - (map_height - window_height)
+    else:
+        y = window_height // 2
+    return (int(x), int(y))
+
+
+# -> tuple | tuple[int, int]:
+def locate_player_fullscreen(accurate=False, frame=None, role_template=None):
+    player_pos = convert_point_minimap_to_window(
+        bot_status.player_pos)
+
+    if accurate:
+        if frame is None:
+            frame = capture.frame
+        if role_template is None:
+            role_template = bot_settings.role_template
+        tl_x = player_pos[0]-50
+        tl_y = player_pos[1]
+        player_crop = frame[tl_y:tl_y+250, tl_x-150:tl_x+150]
+        matchs = utils.multi_match(player_crop,
+                                   role_template,
+                                   threshold=0.9,
+                                   debug=False)
+        if matchs:
+            player_pos = (matchs[0][0] - 5 + tl_x,
+                          matchs[0][1] - 140 + tl_y)
+    return player_pos

@@ -151,7 +151,7 @@ class DoubleJump(Command):
                             bottom=100,
                             left=650 if direction == 'left' else 10,
                             right=10 if direction == 'left' else 600)
-        anchor = capture.locate_player_fullscreen(accurate=True)
+        anchor = bot_helper.locate_player_fullscreen(accurate=True)
         mobs = detect_mobs(insets=insets, anchor=anchor)
         return mobs
 
@@ -321,17 +321,18 @@ class Attack(Command):
 
     def main(self):
         if self.detect:
-            pos = (800, 560)
             if bot_status.player_direction == 'left':
-                mobs = detect_mobs(
-                    anchor=pos, insets=AreaInsets(top=200, bottom=100, left=300, right=0))
+                mobs = detect_mobs_around_anchor(
+                    anchor=bot_helper.locate_player_fullscreen(accurate=True),
+                    insets=AreaInsets(top=200, bottom=100, left=300, right=0))
             else:
-                mobs = detect_mobs(
-                    anchor=pos, insets=AreaInsets(top=200, bottom=100, left=0, right=300))
+                mobs = detect_mobs_around_anchor(
+                    anchor=bot_helper.locate_player_fullscreen(accurate=True),
+                    insets=AreaInsets(top=200, bottom=100, left=0, right=300))
             if len(mobs) > 0:
-                Puncture().execute()
+                RagingBlow().execute()
         else:
-            Puncture().execute()
+            RagingBlow().execute()
 
 
 class BeamBlade(Skill):

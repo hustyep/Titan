@@ -154,7 +154,7 @@ class DoubleJump(Skill):
                             bottom=100,
                             left=650 if direction == 'left' else 10,
                             right=10 if direction == 'left' else 600)
-        anchor = capture.locate_player_fullscreen(accurate=True)
+        anchor = bot_helper.locate_player_fullscreen(accurate=True)
         mobs = detect_mobs(insets=insets, anchor=anchor)
         return mobs
 

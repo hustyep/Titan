@@ -6,7 +6,7 @@ import threading
 from src.common.interfaces import AsyncTask
 from src.command.commands import *
 from src.common.vkeys import *
-from src.common import bot_status, bot_settings, utils
+from src.common import bot_status, bot_settings, utils, bot_helper
 
 # List of key mappings
 
@@ -196,7 +196,7 @@ class DoubleJump(Skill):
                             bottom=100,
                             left=650 if direction == 'left' else 10,
                             right=10 if direction == 'left' else 600)
-        anchor = capture.locate_player_fullscreen(accurate=True)
+        anchor = bot_helper.locate_player_fullscreen(accurate=True)
         mobs = detect_mobs(insets=insets, anchor=anchor)
         return mobs
 
