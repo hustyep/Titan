@@ -135,8 +135,8 @@ Charactor_Daily_Map = {
         'default': 'Train with No Destination 5',
         'quest': [
             'Western City Ramparts in Battle 1',
-            'Train with No Destination 5',
             "Road to the Castle's Gate 1",
+            'Train with No Destination 5',
         ]
     }
 }

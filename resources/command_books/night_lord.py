@@ -192,7 +192,7 @@ class DoubleJump(Skill):
 
         key_up(direction)
         if start_y == 68:
-            time.sleep(0.015)
+            time.sleep(0.02)
         else:
             sleep_in_the_air(n=1, start_y=start_y)
 

@@ -608,7 +608,8 @@ class Direction(Command):
             press(self.direction, down_time=0.01, up_time=0.02)
 
 class Rest(Command):
-    def __init__(self, wait=0):
+    def __init__(self, wait):
+        super().__init__(locals())
         self.wait = int(wait)
 
     def main(self):

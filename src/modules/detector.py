@@ -158,13 +158,13 @@ class Detector(Subject):
         x = (frame.shape[1] - 520) // 2
         y = (frame.shape[0] - 400) // 2
         end_talk = utils.multi_match(
-            frame[y:y+400, x:x+520], END_TALK_TEMPLATE, threshold=0.9)
+            frame[y:y+400, x:x+520], END_TALK_TEMPLATE, threshold=0.8)
         if end_talk:
             hid.key_press('esc')
             time.sleep(0.1)
             return
         confirm_btn = utils.multi_match(
-            frame[y:y+400, x:x+520], BUTTON_CONFIRM_TEMPLATE, threshold=0.9)
+            frame[y:y+400, x:x+520], BUTTON_CONFIRM_TEMPLATE, threshold=0.8)
         if confirm_btn:
             hid.key_press('esc')
             time.sleep(0.1)
@@ -343,7 +343,7 @@ class Detector(Subject):
         if tombstone:
             self.on_next((BotError.DEAD, ))
             ok_btn = utils.multi_match(
-                image, DEAD_OK_TEMPLATE, threshold=0.9)
+                image, DEAD_OK_TEMPLATE, threshold=0.8)
             if ok_btn:
                 hid.mouse_abs_move(capture.window['left'] + ok_btn[0][0] + x,
                                    capture.window['top'] + ok_btn[0][1] + y)

@@ -18,7 +18,7 @@ from src.modules.chat_bot import chat_bot
 #      Common Actions      #
 ############################
 
-def click_key(key, delay=0):
+def click_key(key, delay=0.05):
     hid.key_press(key)
     time.sleep(delay * (1 + 0.2 * random()))
 
@@ -183,12 +183,22 @@ def teleport_to_map(map_name: str):
             print("[error]cant find move button")
             close_teleport_stone()
             return False
-        mouse_left_click()
-        click_key('enter')
-        wait_until_map_changed()
+        mouse_left_click(delay=0.3)
+        frame = capture.frame
+        x = (frame.shape[1] - 260) // 2
+        y = (frame.shape[0] - 100) // 2
+        frame = frame[y:y+100, x:x+260]
+        cancel_match = utils.multi_match(capture.frame, BUTTON_CANCEL_TEMPLATE)
+        if len(cancel_match) > 0:
+            click_key('enter', delay=0.1)
+            wait_until_map_changed()
+        else:
+            click_key('esc', delay=0.1)
+            click_key('esc', delay=0.1)
+            teleport_to_map(map_name)
         return True
     else:
-        print("[error]cant open teleport stone")
+        psrint("[error]cant open teleport stone")
         return False
 
 
@@ -201,17 +211,28 @@ def teleport_random_town():
             return
         mouse_left_click()
         press_key("down")
-        time.sleep(1)
+        time.sleep(0.3)
         release_key('down')
+        time.sleep(0.1)
         click_key('enter', delay=0.5)
         if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
             print("[error]cant find move button")
             close_teleport_stone()
             go_home()
             return
-        mouse_left_click()
-        click_key('enter')
-        wait_until_map_changed()
+        mouse_left_click(delay=0.3)
+        frame = capture.frame
+        x = (frame.shape[1] - 260) // 2
+        y = (frame.shape[0] - 100) // 2
+        frame = frame[y:y+100, x:x+260]
+        cancel_match = utils.multi_match(frame, BUTTON_CANCEL_TEMPLATE)
+        if len(cancel_match) > 0:
+            click_key('enter')
+            wait_until_map_changed()
+        else:
+            click_key('esc', delay=0.1)
+            click_key('esc')
+            teleport_random_town()
     else:
         print("[error]cant open teleport stone")
         go_home()
