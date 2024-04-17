@@ -132,11 +132,11 @@ Charactor_Daily_Map = {
             'Harsh Winter 4',
         ]},
     'ermin': {
-        'default': 'Train with No Destination 5',
+        'default': 'Laboratory Behind Locked Door 1',
         'quest': [
             'Western City Ramparts in Battle 1',
-            "Road to the Castle's Gate 1",
             'Train with No Destination 5',
+            'Laboratory Behind Locked Door 1',
         ]
     }
 }

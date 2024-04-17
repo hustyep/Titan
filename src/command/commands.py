@@ -885,7 +885,7 @@ class RopeLift(Skill):
     def main(self):
 
         time.sleep(0.2)
-        if self.dy >= 45:
+        if self.dy >= 40:
             press(Keybindings.JUMP, up_time=0.5)
             press(self.__class__.key)
             time.sleep(2)

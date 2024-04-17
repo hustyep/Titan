@@ -142,20 +142,18 @@ def open_teleport_stone() -> bool:
 
     if not mouse_move(TELEPORT_STONE_TEMPLATE):
         cash_tab = utils.multi_match(capture.frame, ITEM_CASH_TAB_TEMPLATE)
-        cash_tab_selected = utils.multi_match(capture.frame, ITEM_CASH_TAB_HIGHLIGHT_TEMPLATE)
-        if cash_tab_selected:
+            
+        if mouse_move(ITEM_CASH_TAB_TEMPLATE):
+            mouse_left_click(delay=0.5)
             stone_match = utils.multi_match(
-                capture.frame, TELEPORT_STONE_TEMPLATE)
+                    capture.frame, TELEPORT_STONE_TEMPLATE)
             if len(stone_match) > 0:
                 return open_teleport_stone()
             chat_bot.voice_call()
             return False
-        elif cash_tab:
-            mouse_move(ITEM_CASH_TAB_TEMPLATE)
-            mouse_left_click(delay=0.5)
-            return open_teleport_stone()
         else:
             click_key(bot_settings.SystemKeybindings.ITEM, 0.5)
+            mouse_move_relative(0, 20)
             return open_teleport_stone()
         
     else:

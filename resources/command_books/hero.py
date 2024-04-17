@@ -335,10 +335,10 @@ class Attack(Command):
             RagingBlow().execute()
 
 
-class BeamBlade(Skill):
+class BeamBlade(Command):
     key = Keybindings.BeamBlade
     type = SkillType.Attack
-    cooldown = 7
+    cooldown = 6
     backswing = 0.5
 
     def __init__(self, direction='up'):
@@ -350,6 +350,7 @@ class BeamBlade(Skill):
             return
         key_down(self.direction)
         time.sleep(0.03)
+        self.__class__.castedTime = time.time()
         press(self.key)
         key_up(self.direction)
         time.sleep(self.backswing)
