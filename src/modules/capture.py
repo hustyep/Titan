@@ -16,6 +16,7 @@ from src.common.constants import *
 user32 = ctypes.windll.user32
 user32.SetProcessDPIAware()
 
+
 class Capture(Subject):
 
     def __init__(self):
@@ -98,7 +99,7 @@ class Capture(Subject):
     def recalibrate(self):
         self.find_window()
         self.calibrate_msg_window()
-        
+
         ''' Calibrate screen capture'''
         # self.hwnd = win32gui.FindWindow(None, "MapleStory")
         if not self.hwnd:
@@ -117,7 +118,7 @@ class Capture(Subject):
         self.window['top'] = y1
         self.window['width'] = x2 - x1
         self.window['height'] = y2 - y1
-        
+
         top = self.window['top']
         left = self.window['left']
         width = self.window['width']
@@ -163,8 +164,7 @@ class Capture(Subject):
         new_frame = frame[top:top+height, left:left+width]
 
         # Crop the frame to only show the minimap
-        minimap = new_frame[self.mm_tl[1]
-            :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+        minimap = new_frame[self.mm_tl[1]                            :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
 
         # Determine the player's position
         player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
@@ -201,7 +201,8 @@ class Capture(Subject):
 
         self.frame = new_frame
         if len(self.window_list) > 1:
-            self.msg_frame = frame[self.msg_window[1]:self.msg_window[3], self.msg_window[0]:self.msg_window[2]]
+            self.msg_frame = frame[self.msg_window[1]
+                :self.msg_window[3], self.msg_window[0]:self.msg_window[2]]
         self.minimap_display = minimap
         self.minimap_actual = minimap[:,
                                       bot_settings.mini_margin:-bot_settings.mini_margin]
@@ -214,55 +215,6 @@ class Capture(Subject):
         if not pos:
             return None
         return (pos[0] + bot_settings.mini_margin, pos[1])
-
-    def convert_point_minimap_to_window(self, point: tuple[int, int]):
-        '''convent the minimap point to the window point'''
-        window_width = self.window['width']
-        window_height = self.window['height']
-
-        mini_height, mini_width, _ = self.minimap_actual.shape
-
-        map_width = mini_width * MINIMAP_SCALE
-        map_height = mini_height * MINIMAP_SCALE
-
-        map_x = point[0] * MINIMAP_SCALE
-        map_y = point[1] * MINIMAP_SCALE
-
-        if map_x < window_width // 2:
-            x = map_x
-        elif map_width - map_x < window_width // 2:
-            x = map_x - (map_width - window_width)
-        else:
-            x = window_width // 2
-
-        if map_y < window_height // 2:
-            y = map_y
-        elif map_height - map_y < window_height // 2:
-            y = map_y - (map_height - window_height)
-        else:
-            y = window_height // 2
-        return (int(x), int(y))
-
-    def locate_player_fullscreen(self, accurate=False, frame=None, role_template=None):# -> tuple | tuple[int, int]:
-        player_pos = self.convert_point_minimap_to_window(
-            bot_status.player_pos)
-
-        if accurate:
-            if frame is None:
-                frame = self.frame
-            if role_template is None:
-                role_template = bot_settings.role_template
-            tl_x = player_pos[0]-50
-            tl_y = player_pos[1]
-            player_crop = frame[tl_y:tl_y+250, tl_x-150:tl_x+150]
-            matchs = utils.multi_match(player_crop,
-                                       role_template,
-                                       threshold=0.9,
-                                       debug=False)
-            if matchs:
-                player_pos = (matchs[0][0] - 5 + tl_x,
-                              matchs[0][1] - 140 + tl_y)
-        return player_pos
 
     @property
     def buff_frame(self):
@@ -284,7 +236,10 @@ class Capture(Subject):
     def map_name_frame(self):
         if self.frame is not None:
             return self.frame[self.mm_tl[1] - 28:self.mm_tl[1] - 10,
-                            self.mm_tl[0] + 36:self.mm_br[0]]
+                              self.mm_tl[0] + 36:self.mm_br[0]]
 
+    @property
+    def window_rect(self):
+        return Rect(self.window['left'], self.window['top', self.window['width'], self.window['height']])
 
 capture = Capture()

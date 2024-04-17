@@ -3,7 +3,7 @@ import os
 from abc import ABC, abstractmethod
 from enum import Enum
 from src.common.vkeys import *
-from src.common import bot_status, bot_settings, utils, bot_action
+from src.common import bot_status, bot_settings, utils, bot_action, bot_helper
 from src.common.gui_setting import gui_setting
 from src.common.bot_helper import *
 from src.map.map import shared_map, run_if_map_available, MapPointType
@@ -279,7 +279,7 @@ def target_reached(start, target, tolerance=bot_settings.move_tolerance):
 class Attack(ABC):
     """Undefined 'Attack' command for the default command book."""
     @abstractmethod
-    def main():
+    def __init__(self, detect: bool):
         pass
 
 
@@ -355,7 +355,7 @@ class Wait(Command):
         time.sleep(self.duration)
 
 
-class DetectAnchor(Command):
+class DetectAroundAnchor(Command):
     def __init__(self, count=1, x=0, y=0, top=315, bottom=0, left=500, right=500):
         super().__init__(locals())
         self.count = int(count)
@@ -369,7 +369,7 @@ class DetectAnchor(Command):
     def main(self):
         # (469, 490)
         if self.x == 0 and self.y == 0:
-            anchor = capture.locate_player_fullscreen(accurate=True)
+            anchor = bot_helper.locate_player_fullscreen(accurate=True)
         else:
             anchor = (self.x, self.y)
         start = time.time()
@@ -387,7 +387,7 @@ class DetectAnchor(Command):
                 break
 
 
-class DetectRect(Command):
+class DetectInRect(Command):
     def __init__(self, count=1, x=0, y=0, width=500, height=500):
         super().__init__(locals())
         self.count = int(count)
