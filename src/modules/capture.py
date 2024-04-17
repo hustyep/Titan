@@ -240,6 +240,6 @@ class Capture(Subject):
 
     @property
     def window_rect(self):
-        return Rect(self.window['left'], self.window['top', self.window['width'], self.window['height']])
+        return Rect(self.window['left'], self.window['top'], self.window['width'], self.window['height'])
 
 capture = Capture()
