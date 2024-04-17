@@ -177,7 +177,12 @@ class Detector(Subject):
         setting_btn = utils.multi_match(frame[400:600, 800:1000], SETTING_TEMPLATE, threshold=0.9)
         if setting_btn:
             hid.key_press('esc')
-            time.sleep(0.1)            
+            time.sleep(0.1)
+        
+        inventory = utils.multi_match(frame, INVENTORY_MESO_TEMPLATE)
+        if inventory:
+            hid.key_press('esc')
+            time.sleep(0.1)    
 
     def check_init(self):
         if capture.frame is None:
