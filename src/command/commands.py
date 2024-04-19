@@ -614,6 +614,7 @@ class Rest(Command):
 
     def main(self):
         bot_status.enabled = False
+        bot_status.prepared = False
         bot_action.teleport_random_town()
         time.sleep(self.wait)
         bot_status.prepared = False

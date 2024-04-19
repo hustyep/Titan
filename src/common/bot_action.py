@@ -159,7 +159,8 @@ def open_teleport_stone() -> bool:
     else:
         mouse_double_click(delay=0.1)
         if not is_opend():
-            click_key('esc', delay=0.1)
+            click_key('i', delay=0.1)
+            mouse_move_relative(0, 20)
             open_teleport_stone()
         return True
 
@@ -173,7 +174,7 @@ def close_teleport_stone():
 def teleport_to_map(map_name: str):
     bot_status.enabled = False
     if open_teleport_stone():
-        click_key('esc')
+        click_key('i')
         mouse_move_relative(300, 0)
         map_template_path = f'assets/teleport/{map_name}.png'
         map_template = cv2.imread(map_template_path, 0)

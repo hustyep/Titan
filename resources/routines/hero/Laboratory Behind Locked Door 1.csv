@@ -1,6 +1,6 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=45
-*, x=9, y=57, interval=3000, tolerance=10, detect=False, skip=True
+*, x=9, y=57, interval=3000, tolerance=10, detect=False, skip=False
     Rest, wait=5
 
 @, label=Bottom mobbing
@@ -16,12 +16,13 @@ $, target=mini_margin, value=45
 *, x=73, y=57, interval=0, tolerance=4, detect=True, skip=False
     BeamBlade, direction=up
 
-~, label=Summon, interval=40, skip=False
+~, label=Summon, interval=44, skip=False
 *, x=9, y=57, interval=0, tolerance=4, detect=False, skip=False
-*, x=40, y=16, interval=0, tolerance=2, detect=False, skip=False
+*, x=24, y=57, interval=0, tolerance=2, detect=False, skip=False
+*, x=27, y=30, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.2
-    ErdaShower, direction=left
-*, x=73, y=16, interval=0, tolerance=2, detect=False, skip=False
+    ErdaShower, direction=right
+*, x=82, y=30, interval=0, tolerance=2, detect=False, skip=False
     BurningSoulBlade
 *, x=139, y=57, interval=0, tolerance=5, detect=False, skip=False
 #
