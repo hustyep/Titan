@@ -117,7 +117,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.MOB, PotentialLevel.LOW):
+            if self._cube_result(rect, PotentialType.ATT, PotentialLevel.HIGH):
                 self._stop_cube()
                 chat_bot.voice_call()
                 break
@@ -140,8 +140,8 @@ class Auto(LabelFrame):
         
         if type == PotentialType.ATT:
             if level == PotentialLevel.HIGH:
-                matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT10_TEMPLATE, threshold=0.95, debug=False)
-                matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT13_TEMPLATE, threshold=0.95, debug=False)
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT10_TEMPLATE, threshold=0.98, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT13_TEMPLATE, threshold=0.98, debug=False)
                 print(f"cube_result:\natt10*{len(matchs1)}\natt13*{len(matchs2)}")
             else:
                 matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=False)

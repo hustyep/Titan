@@ -1,5 +1,5 @@
 $, target=move_tolerance, value=10
-$, target=mini_margin, value=36
+$, target=mini_margin, value=31
 *, x=4, y=54, interval=2000, tolerance=8, detect=False, skip=True
     Rest, wait=5
 
