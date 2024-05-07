@@ -98,7 +98,7 @@ class Auto(LabelFrame):
         print("_start_cube")
         bot_status.cubing = True
         
-        width = 100
+        width = 80
         height = 44
         frame = capture.frame
         matchs1 = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.8, debug=False)
@@ -147,7 +147,7 @@ class Auto(LabelFrame):
                 matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=False)
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=False)
                 print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
-            if len(matchs1) + len(matchs2) >= 3:
+            if len(matchs1) + len(matchs2) >= 2:
                 return True
             else:
                 return False
