@@ -928,7 +928,7 @@ class Potion(Command):
         for potion in self.potions:
             if potion.canUse():
                 potion().execute()
-                time.sleep(0.3)
+                time.sleep(0.2)
         return True
 
 
@@ -999,7 +999,7 @@ class CANDIED_APPLE(Command):
 
 class LEGION_WEALTHY(Command):
     key = Keybindings.LEGION_WEALTHY
-    cooldown = 310
+    cooldown = 610
     backswing = 0.5
 
     @classmethod

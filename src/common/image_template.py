@@ -155,6 +155,14 @@ POTENTIAL_LUK10_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/luk10.png', 0)
 POTENTIAL_LUK9_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/luk9.png', 0)
+POTENTIAL_STR13_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/str13.png', 0)
+POTENTIAL_STR12_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/str12.png', 0)
+POTENTIAL_STR10_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/str10.png', 0)
+POTENTIAL_STR9_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/str9.png', 0)
 POTENTIAL_ALL10_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/all10.png', 0)
 POTENTIAL_ALL9_TEMPLATE = cv2.imread(
@@ -169,6 +177,8 @@ POTENTIAL_DROP_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/drop.png', 0)
 POTENTIAL_CD8_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/critical_damage.png', 0)
+POTENTIAL_CD2_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/cd2.png', 0)
 ATT_INCREASE_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/att_increase.png', 0)
 LUK_PLUS_TEMPLATE = cv2.imread(

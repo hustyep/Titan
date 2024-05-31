@@ -33,7 +33,7 @@ def release_key(key, delay=0.05):
     time.sleep(delay * (1 + 0.2 * random()))
 
 
-def mouse_move(template, rect: Rect = None, ranges=None, threshold=0.9):
+def mouse_move(template, rect: Rect = None, ranges=None, threshold=0.9, debug=False):
     frame = capture.frame
     if frame is None:
         return False
@@ -41,7 +41,7 @@ def mouse_move(template, rect: Rect = None, ranges=None, threshold=0.9):
         frame = frame[rect.y:rect.y+rect.height, rect.x:rect.x+rect.width]
     if ranges is not None:
         frame = utils.filter_color(frame, ranges)
-    match = utils.multi_match(frame, template, threshold)
+    match = utils.multi_match(frame, template, threshold, debug=debug)
     if match:
         x, y = match[0]
         if rect is not None:
@@ -174,11 +174,12 @@ def close_teleport_stone():
 def teleport_to_map(map_name: str):
     bot_status.enabled = False
     if open_teleport_stone():
-        click_key('i')
+        # click_key('i')
         mouse_move_relative(300, 0)
+        time.sleep(1)
         map_template_path = f'assets/teleport/{map_name}.png'
         map_template = cv2.imread(map_template_path, 0)
-        if not mouse_move(map_template):
+        if not mouse_move(map_template, debug=False):
             print("[error]cant find stored map")
             teleport_random_town()
             return False

@@ -16,6 +16,7 @@ class PotentialType(Enum):
     MOB = 'mob'
     ATT = 'att'
     LUK = 'luck'
+    STR = 'str'
     CD = 'critical damege'
 
 class PotentialLevel(Enum):
@@ -98,14 +99,14 @@ class Auto(LabelFrame):
         print("_start_cube")
         bot_status.cubing = True
         
-        width = 80
+        width = 110
         height = 44
         frame = capture.frame
         matchs1 = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.8, debug=False)
         matchs2 = utils.multi_match(frame, POTENTIAL_AFTER_TEMPLATE, threshold=0.95, debug=False)
         if matchs1:
             pos = matchs1[0]
-            x = pos[0] - 23
+            x = pos[0] - 20
             y = pos[1] + 23
         elif matchs2:
             pos = matchs2[0]
@@ -117,7 +118,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.ATT, PotentialLevel.HIGH):
+            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.HIGH):
                 self._stop_cube()
                 chat_bot.voice_call()
                 break
@@ -125,7 +126,7 @@ class Auto(LabelFrame):
                 self._cube_onemore(rect)
             
     @bot_status.run_if_disabled('')
-    def _stop_cube(self):
+    def _stop_cube(self):   
         print("_stop_cube")
         bot_status.cubing = False
     
@@ -133,10 +134,14 @@ class Auto(LabelFrame):
     def _cube_result(self, rect, type: PotentialType, level: PotentialLevel):
         x, y, width, height = rect
 
-        while len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) == 0:
+        while len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.94, debug=False)) == 0:
             time.sleep(0.05)
         time.sleep(1)
         result_frame = capture.frame[y:y+height, x:x+width]
+        
+        # matchs = utils.multi_match(result_frame, POTENTIAL_DROP_TEMPLATE, threshold=0.9, debug=False)
+        # if len(matchs) >= 2:
+        #     return True
         
         if type == PotentialType.ATT:
             if level == PotentialLevel.HIGH:
@@ -147,7 +152,7 @@ class Auto(LabelFrame):
                 matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=False)
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=False)
                 print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
-            if len(matchs1) + len(matchs2) >= 2:
+            if len(matchs1) + len(matchs2) > 2:
                 return True
             else:
                 return False
@@ -160,8 +165,10 @@ class Auto(LabelFrame):
                 print(f"cube_result:\nLUK13*{len(matchs1)}\nLUK10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
                 total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
                 print(f"total={total}")
-                if total >= 30:
+                if total >= 33:
                     return True
+                # elif total >= 33 and len(matchs3) + len(matchs4) > 0:
+                #     return True
                 else:
                     return False
             else:
@@ -176,10 +183,53 @@ class Auto(LabelFrame):
                     return True
                 else:
                     return False
+        elif type == PotentialType.STR:
+            if level == PotentialLevel.HIGH:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_STR13_TEMPLATE, threshold=0.95, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_STR10_TEMPLATE, threshold=0.95, debug=False)
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL10_TEMPLATE, threshold=0.95, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL7_TEMPLATE, threshold=0.95, debug=False)
+                print(f"cube_result:\nSTR13*{len(matchs1)}\nSTR10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
+                total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
+                print(f"total={total}")
+                if total >= 30:
+                    return True
+                else:
+                    return False
+            else:
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_STR12_TEMPLATE, threshold=0.95, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_STR9_TEMPLATE, threshold=0.95, debug=False)
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL9_TEMPLATE, threshold=0.96, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL6_TEMPLATE, threshold=0.96, debug=False)
+                total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
+                print(f"cube_result:\nSTR12*{len(matchs1)}\nSTR9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
+                print(f"total={total}")
+                if total >= 27:
+                    return True
+                else:
+                    return False
         elif type == PotentialType.CD:
-                matchs1 = utils.multi_match(result_frame, POTENTIAL_CD8_TEMPLATE, threshold=0.9, debug=False)
-                print(f"cd:{len(matchs1)}")
-                if len(matchs1) >= 2:
+                matchs0 = utils.multi_match(result_frame, POTENTIAL_CD2_TEMPLATE, threshold=0.95, debug=False)
+                matchs1 = utils.multi_match(result_frame, POTENTIAL_LUK13_TEMPLATE, threshold=0.95, debug=False)
+                matchs2 = utils.multi_match(result_frame, POTENTIAL_LUK10_TEMPLATE, threshold=0.95, debug=False)
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_ALL10_TEMPLATE, threshold=0.95, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_ALL7_TEMPLATE, threshold=0.95, debug=False)
+                print("cube_result:")
+                print(f"cd2:{len(matchs0)}")
+                print(f"LUK13*{len(matchs1)}\nLUK10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
+                total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
+                print(f"total={total}")
+
+                if len(matchs0) >= 2:
+                    return True
+                    # if len(matchs0) + len(matchs1) + len(matchs2) + len(matchs3) + len(matchs4) >= 3:
+                    #     return True
+                    # else:
+                    #     image_path = utils.save_screenshot(capture.frame)
+                    #     chat_bot.send_message(text="daminit", image_path=image_path)
+                    #     time.sleep(0.5)
+                    #     return False
+                elif total >= 33:
                     return True
                 else:
                     return False
@@ -269,7 +319,7 @@ class Auto(LabelFrame):
                 self._flame_onemore(rect)
                 
     @bot_status.run_if_disabled('')
-    def _flame_result(self, rect, target=120):
+    def _flame_result(self, rect, target=140):
         x, y, width, height = rect
         # utils.show_image(capture.frame[y+height:y+height+30, x:x+150])
         while len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
@@ -294,7 +344,7 @@ class Auto(LabelFrame):
                 # print(e)
             frame = result_frame[max(0, y-5): y+height+5,]
             text = utils.image_2_str(frame).replace('\n', '').replace('.', '')
-            num = text.split('+')[1]
+            num = text.split('+')[1].replace(',', '').replace('.', '')
             total += int(num)
             print(f'LUK: {int(num)}')
             
