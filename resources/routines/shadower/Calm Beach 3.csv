@@ -1,19 +1,29 @@
 $, target=move_tolerance, value=10
 $, target=mini_margin, value=1
+*, x=5, y=60, interval=3000, tolerance=10, detect=False, skip=True
+    Rest, wait=5
+
+~, label=Summon Loop, interval=25, skip=False
+*, x=4, y=60, interval=0, tolerance=4, detect=True, skip=False
+*, x=130, y=60, interval=0, tolerance=10, detect=True, skip=False
+    ShadowVeil, direction=right
+*, x=165, y=60, interval=0, tolerance=8, detect=False, skip=False
+*, x=140, y=30, interval=0, tolerance=4, detect=False, skip=False
+    Wait, duration=0.1
+    ErdaShower, direction=left
+*, x=76, y=23, interval=0, tolerance=3, detect=False, skip=False
+    DarkFlare
+    TrickBlade
+*, x=52, y=45, interval=0, tolerance=3, detect=False, skip=False
+    SuddenRaid
+*, x=5, y=60, interval=0, tolerance=4, detect=False, skip=False
+*, x=183, y=60, interval=0, tolerance=4, detect=True, skip=False
+#
 
 @, label=Bottom mobbing
-*, x=4, y=68, interval=0, tolerance=4, detect=True, skip=False
+*, x=4, y=60, interval=0, tolerance=4, detect=True, skip=False
     Direction, direction=right
     Buff
     Potion
-*, x=178, y=68, interval=0, tolerance=4, detect=True, skip=False
+*, x=183, y=60, interval=0, tolerance=4, detect=True, skip=False
     Direction, direction=left
-
-~, label=Summon Loop, interval=46, skip=False
-*, x=178, y=68, interval=0, tolerance=4, detect=False, skip=False
-*, x=114, y=28, interval=0, tolerance=4, detect=False, skip=False
-    DarkFlare
-*, x=56, y=28, interval=0, tolerance=3, detect=False, skip=False
-    ErdaShower, direction=right
-*, x=4, y=68, interval=0, tolerance=4, detect=False, skip=False
-#

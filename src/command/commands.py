@@ -333,8 +333,7 @@ class Walk(Command):
                 time.sleep(self.interval)
             else:
                 key_up(direction)
-                time.sleep(0.01)
-                press_acc(new_direction, down_time=0.01, up_time=0.01)
+                press_acc(new_direction, down_time=0.02, up_time=0.02)
                 direction = new_direction
 
             walk_counter += 1

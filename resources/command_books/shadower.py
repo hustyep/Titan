@@ -69,7 +69,7 @@ def step(target, tolerance):
         if ShadowAssault.canUse():
             ShadowAssault(target=target).execute()
             return
-    if abs(d_x) >= 22:
+    if abs(d_x) >= 20:
         hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
         return
 
@@ -214,11 +214,11 @@ class DoubleJump(Skill):
             # detect = AsyncTask(
             #     target=self.detect_mob, args=(direction, ))
             # detect.start()
-            press_acc(Keybindings.JUMP, 1, down_time=0.015, up_time=0.02)
+            press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.05)
             # mobs_detected = detect.join()
             mobs_detected = True
             times = 2 if mobs_detected else 1
-            press_acc(self.key, 1, down_time=0.015, up_time=0.02)
+            press_acc(self.key, 1, down_time=0.02, up_time=0.02)
             if mobs_detected:
                 Attack().execute()
         else:
@@ -232,11 +232,11 @@ class DoubleJump(Skill):
                 press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
             press(self.key, times, down_time=0.03, up_time=0.03)
 
-        if start_y <= 75:
-            # print("pass")
-            time.sleep(0.025)
-        else:
-            sleep_in_the_air(n=4, start_y=start_y)
+        # if start_y > 55:
+        #     # print("pass")
+        #     time.sleep(0.03)
+        # else:
+        sleep_in_the_air(n=4, start_y=start_y)
         key_up(direction)
         # time.sleep(0.01)
 

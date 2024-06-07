@@ -118,7 +118,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.HIGH):
+            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.LOW):
                 self._stop_cube()
                 chat_bot.voice_call()
                 break
@@ -179,7 +179,7 @@ class Auto(LabelFrame):
                 total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
                 print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 print(f"total={total}")
-                if total >= 30:
+                if total >= 27:
                     return True
                 else:
                     return False
@@ -192,7 +192,7 @@ class Auto(LabelFrame):
                 print(f"cube_result:\nSTR13*{len(matchs1)}\nSTR10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
                 total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
                 print(f"total={total}")
-                if total >= 30:
+                if total >= 33:
                     return True
                 else:
                     return False
@@ -204,7 +204,7 @@ class Auto(LabelFrame):
                 total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
                 print(f"cube_result:\nSTR12*{len(matchs1)}\nSTR9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 print(f"total={total}")
-                if total >= 27:
+                if total >= 30:
                     return True
                 else:
                     return False

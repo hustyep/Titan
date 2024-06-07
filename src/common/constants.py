@@ -113,19 +113,18 @@ Name_Class_Map = {'Sllee': 'shadower',
 
 Charactor_Daily_Map = {
     'Sllee': {
-        'default': 'Harsh Winter 4',
+        'default': 'Calm Beach 3',
         'quest': [
             'Train with No Destination 5',
             'Laboratory Behind Locked Door 1',
             'Combat Zone Outskirts 1',
-            'Calm Beach 2',
+            'Calm Beach 3',
             'Harsh Winter 4',
         ]
     },
     'issl': {
         'default': 'Harsh Winter 4',
         'quest': [
-            'Train with No Destination 5',
             'Laboratory Behind Locked Door 1',
             'Combat Zone Outskirts 1',
             'Calm Beach 2',
