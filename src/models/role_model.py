@@ -1,7 +1,7 @@
 import cv2
 from character_model import *
 from src.common.constants import *
-
+from src.modules.daily import *
 
 class RoleModel:
 
@@ -10,6 +10,7 @@ class RoleModel:
         self.character_type = Name_Class_Map[name]
         self.character = CharacterModel(self.character_type)
         self.name_template = self.load_role_template()
+        self.daily = Daily(name)
 
     def load_role_template(self):
         if len(self.name) > 0:

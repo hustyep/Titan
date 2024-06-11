@@ -196,8 +196,10 @@ def identify_map_name():
     # utils.show_image(frame)
     
     file_path = f"{RESOURCES_DIR}/maps/maplestory_maps.xlsx"
-    map_list = utils.iter_excel_calamine(file_path)
-    available_map_names = map_list.keys()
+    map_list = utils.load_excel(file_path)
+    available_map_names = []
+    for map in map_list:
+        available_map_names.append(map["Map Name"])
     return utils.image_match_text(frame, available_map_names, 0.8, filter=[])
 
 

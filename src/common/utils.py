@@ -360,9 +360,12 @@ def cvt2Plt(cv_image):
     image = Image.fromarray(rgb_img)
     return image
 
-def iter_excel_calamine(file: str):
+def load_excel(file: str):
     workbook = CalamineWorkbook.from_path(file)
     rows = iter(workbook.get_sheet_by_index(0).to_python())
     headers = list(map(str, next(rows)))
+    result = []
     for row in rows:
-        yield dict(zip(headers, row))
+        item = dict(zip(headers, row))
+        result.append(item)
+    return result

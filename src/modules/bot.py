@@ -5,7 +5,7 @@ import time
 from enum import Enum
 from rx.subject import Subject
 
-from src.common import utils, bot_status, bot_settings
+from src.common import utils, bot_status, bot_settings, bot_helper
 from src.common.gui_setting import gui_setting
 from src.common.constants import *
 from src.common import bot_action
@@ -14,7 +14,6 @@ from src.modules.capture import capture
 from src.modules.notifier import notifier
 from src.modules.detector import detector
 from src.modules.chat_bot import chat_bot
-from src.modules.daily import *
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
 from src.models.role_model import RoleModel
@@ -32,7 +31,6 @@ class Bot(Subject):
 
         super().__init__()
         self.role: RoleModel = None
-        self.daily: Daily = None
 
         self.check_thread = threading.Thread(target=self._main_check)
         self.check_thread.daemon = True
@@ -96,8 +94,6 @@ class Bot(Subject):
 
         match gui_setting.mode.type:
             case BotRunMode.Daily:
-                if self.daily is None:
-                    self.daily = Daily(bot_settings.role_name)
                 bot_status.enabled = False
                 bot_status.enabled = self.daily.start()
                 if not bot_status.enabled:
