@@ -64,7 +64,7 @@ class Bot(Subject):
                     self.prepare()
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
-                    if self.daily is not None and self.daily.check():
+                    if self.role is not None and self.role.daily.check():
                         bot_status.prepared = False
                 else:
                     time.sleep(0.01)
@@ -73,7 +73,7 @@ class Bot(Subject):
 
     def _main_check(self):
         while True:
-            if self.role.character is not None and bot_status.enabled and capture.frame is not None:
+            if self.role is not None and bot_status.enabled and capture.frame is not None:
                 self.role.character.update_skill_status()
             time.sleep(0.2)
 
@@ -83,22 +83,23 @@ class Bot(Subject):
 
         if capture.minimap_display is None:
             time.sleep(0.5)
-            return
+            return 
 
         role_name = self.identify_role()
         if not role_name:
             chat_bot.send_message("role identify error", capture.frame)
-            if self.role is None:
-                self.toggle(False, 'role identify error')
-                return
+        if self.role is None:
+            self.toggle(False, 'role identify error')
+            return
 
         match gui_setting.mode.type:
             case BotRunMode.Daily:
                 bot_status.enabled = False
-                bot_status.enabled = self.daily.start()
-                if not bot_status.enabled:
+                ready = self.role.daily.start()
+                if not ready:
                     chat_bot.voice_call()
                     return
+                bot_status.enabled = True
             case BotRunMode.Mapping, BotRunMode.Cube:
                 time.sleep(1)
                 return
@@ -131,7 +132,6 @@ class Bot(Subject):
 
         # update role
         if self.role == None or self.role.name != role_name:
-            self.daily = None
             self.role = RoleModel(role_name)
             routine.clear()
             self.on_next(BotUpdateType.role_loaded)
@@ -153,9 +153,8 @@ class Bot(Subject):
         capture.calibrated = False
         if enabled:
             notifier.notice_time_record.clear()
-        else:
-            if self.daily is not None:
-                self.daily.pause()
+        elif self.role is not None:
+            self.role.daily.pause()
 
         releaseAll()
         bot_status.enabled = enabled

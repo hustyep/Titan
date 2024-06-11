@@ -324,7 +324,7 @@ def change_channel(num: int = 0, enable=True, instance=True):
     bot_status.change_channel = True
     bot_status.rune_pos = None
     bot_status.rune_closest_pos = None
-    threading.Timer(5, _change_channel, (num, enable, instance)).start()
+    threading.Timer(2, _change_channel, (num, enable, instance)).start()
     chat_bot.send_message('changing channel...')
 
 

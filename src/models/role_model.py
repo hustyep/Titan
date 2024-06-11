@@ -1,5 +1,5 @@
 import cv2
-from character_model import *
+from src.models.character_model import *
 from src.common.constants import *
 from src.modules.daily import *
 
