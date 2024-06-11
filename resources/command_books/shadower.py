@@ -69,7 +69,7 @@ def step(target, tolerance):
         if ShadowAssault.canUse():
             ShadowAssault(target=target).execute()
             return
-    if abs(d_x) >= 20:
+    if abs(d_x) >= 24:
         hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
         return
 
@@ -234,11 +234,11 @@ class DoubleJump(Skill):
 
         # if start_y > 55:
         #     # print("pass")
-        #     time.sleep(0.03)
+        #     time.sleep(0.055)
         # else:
-        sleep_in_the_air(n=4, start_y=start_y)
+        sleep_in_the_air(n=1, start_y=start_y)
         key_up(direction)
-        # time.sleep(0.01)
+            # time.sleep(0.01)
 
 
 class ShadowAssault(Skill):
@@ -249,7 +249,7 @@ class ShadowAssault(Skill):
     id = 'ShadowAssault'
     key = Keybindings.SHADOW_ASSAULT
     type = SkillType.Move
-    backswing = 0.5
+    backswing = 0.6
     max_times = 5
     usable_times = 0
     cooldown = 60
@@ -313,7 +313,7 @@ class ShadowAssault(Skill):
                 press("right", down_time=0.01,up_time=0.01)
         elif self.direction != 'left' and self.direction != 'right':
             time.sleep(0.2)
-            evade_rope(self.target)
+            # evade_rope(self.target)
 
         if self.direction == 'up' and not shared_map.on_the_platform((bot_status.player_pos[0], self.target[1])):
             Walk(target_x=self.target[0], tolerance=0).execute()
@@ -340,7 +340,7 @@ class ShadowAssault(Skill):
         press(self.key)
         key_up(self.direction)
         sleep_in_the_air()
-        time.sleep(self.backswing if abs(dy) < 40 else 0.6)
+        time.sleep(self.backswing)
         MesoExplosion().execute()
 
         # if bot_settings.record_layout:
@@ -395,7 +395,7 @@ class MesoExplosion(Skill):
     type = SkillType.Attack
 
     def main(self):
-        press_acc(self.key, down_time=0.005, up_time=0.005)
+        press_acc(self.key, down_time=0.005, up_time=0.01)
 
 
 class DarkFlare(Skill):

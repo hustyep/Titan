@@ -603,8 +603,8 @@ class Direction(Command):
     def main(self):
         if not self.direction:
             return
-        if bot_status.player_direction != self.direction:
-            press(self.direction, down_time=0.01, up_time=0.02)
+        # if bot_status.player_direction != self.direction:
+        press(self.direction, n=2, down_time=0.01, up_time=0.01)
 
 class Rest(Command):
     def __init__(self, wait):
@@ -880,7 +880,7 @@ class RopeLift(Skill):
 
     def __init__(self, dy: int = 20):
         super().__init__(locals())
-        self.dy = abs(dy)
+        self.dy = abs(int(dy))
 
     def main(self):
 
@@ -897,7 +897,7 @@ class RopeLift(Skill):
         else:
             press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)
-            time.sleep(0.55)
+            time.sleep(0.58)
             press(self.__class__.key)
             sleep_in_the_air(n=30)
 

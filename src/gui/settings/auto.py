@@ -99,7 +99,7 @@ class Auto(LabelFrame):
         print("_start_cube")
         bot_status.cubing = True
         
-        width = 110
+        width = 150
         height = 44
         frame = capture.frame
         matchs1 = utils.multi_match(frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.8, debug=False)
@@ -118,7 +118,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.LOW):
+            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.HIGH):
                 self._stop_cube()
                 chat_bot.voice_call()
                 break
@@ -151,8 +151,12 @@ class Auto(LabelFrame):
             else:
                 matchs1 = utils.multi_match(result_frame, POTENTIAL_ATT9_TEMPLATE, threshold=0.95, debug=False)
                 matchs2 = utils.multi_match(result_frame, POTENTIAL_ATT12_TEMPLATE, threshold=0.95, debug=False)
-                print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}")
-            if len(matchs1) + len(matchs2) > 2:
+                matchs3 = utils.multi_match(result_frame, POTENTIAL_BOSS40_TEMPLATE, threshold=0.95, debug=False)
+                matchs4 = utils.multi_match(result_frame, POTENTIAL_BOSS3x_TEMPLATE, threshold=0.95, debug=False)
+                matchs5 = utils.multi_match(result_frame, POTENTIAL_DEF_TEMPLATE, threshold=0.95, debug=False)
+                print(f"cube_result:\natt9*{len(matchs1)}\natt12*{len(matchs2)}\nboss40*{len(matchs3)}\nboss3X*{len(matchs4)}\nDEF*{len(matchs5)}")
+            # if len(matchs1) + len(matchs2) + len(matchs3) + len(matchs4) + len(matchs5) > 2:
+            if len(matchs1) + len(matchs2) > 1:
                 return True
             else:
                 return False
@@ -165,7 +169,7 @@ class Auto(LabelFrame):
                 print(f"cube_result:\nLUK13*{len(matchs1)}\nLUK10*{len(matchs2)}\nALL10*{len(matchs3)}\nALL7*{len(matchs4)}")
                 total = len(matchs1) * 13 + len(matchs2) * 10 + len(matchs3) * 10 + len(matchs4) * 7
                 print(f"total={total}")
-                if total >= 33:
+                if total > 30:
                     return True
                 # elif total >= 33 and len(matchs3) + len(matchs4) > 0:
                 #     return True
@@ -319,7 +323,7 @@ class Auto(LabelFrame):
                 self._flame_onemore(rect)
                 
     @bot_status.run_if_disabled('')
-    def _flame_result(self, rect, target=140):
+    def _flame_result(self, rect, target=120):
         x, y, width, height = rect
         # utils.show_image(capture.frame[y+height:y+height+30, x:x+150])
         while len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
