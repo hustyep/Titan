@@ -325,7 +325,6 @@ class Auto(LabelFrame):
     @bot_status.run_if_disabled('')
     def _flame_result(self, rect, target=120):
         x, y, width, height = rect
-        # utils.show_image(capture.frame[y+height:y+height+30, x:x+150])
         while len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
             time.sleep(0.05)
         time.sleep(0.5)
@@ -339,13 +338,7 @@ class Auto(LabelFrame):
         if len(matchs1) > 0:
             x, y = matchs1[0]
             height, width = LUK_PLUS_TEMPLATE.shape
-            # try:
-            #     frame = result_frame[max(0, y-6): y+height+5, x+width-2:]
-            #     text = utils.image_2_str(frame)
-            #     total += int(text)
-            #     print(f'LUK: {int(text)}')
-            # except Exception as e:
-                # print(e)
+
             frame = result_frame[max(0, y-5): y+height+5,]
             text = utils.image_2_str(frame).replace('\n', '').replace('.', '')
             num = text.split('+')[1].replace(',', '').replace('.', '')
@@ -367,45 +360,34 @@ class Auto(LabelFrame):
             text = utils.image_2_str(frame)
             total += int(text[0]) * 8
             print(f'ALL: {int(text[0])}%')
-
-        # text = utils.image_2_str(result_frame)
-        # content = text.replace("\f", "").split("\n")
-        # total = 0
-        # for item in content:
-        #     if item.startswith('LUK'):
-        #         num = item.split('+')[1]
-        #         total += int(num)
-        #         print(f'LUK: {num}')
-        #     elif item.startswith('Attack') or item.startswith('Altack') or item.startswith('Atack'):
-        #         num = item.s
-        # 
-        # 
-        # 
-        # plit('+')[1]
-        #         total += int(num) * 3
-        #         print(f'ATT: {num}')
-        #     elif item.startswith('All Stats'):
-        #         num = item.split('+')[1]
-        #         total += int(num[0]) * 8
-        #         print(f'All Stats: {num}')            
+                     
         print(f'total={total}')
         return total >= target
         
-        
     @bot_status.run_if_disabled('')
     def _flame_onemore(self, rect):
+        if not bot_status.cubing:
+            return
         print("Try Again------------------------")
         hid.mouse_left_click()
         time.sleep(0.5)
         for _ in range(0, 4):
+            if not bot_status.cubing:
+                return
             hid.key_press('enter')
             time.sleep(0.2)
+            if not bot_status.cubing:
+                return
             
         x, y, width, height = rect
         start = time.time()
         while len(utils.multi_match(capture.frame[y:y+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) > 0:
+            if not bot_status.cubing:
+                break
             time.sleep(0.05)
             if time.time() - start > 5:
+                break
+            if not bot_status.cubing:
                 break
         
     @bot_status.run_if_disabled('')

@@ -29,19 +29,20 @@ class BotError(Enum):
     LOST_PLAYER = 'Lost Player'
     LOST_WINDOW = 'Lost Window'
     LOST_MINI_MAP = 'Lost Minimap'
+    IDENTIFY_ROLE_FAILED = 'Identify role failed'
     OTHERS_STAY_OVER_120S = 'Someone stay over 120s'
 
 
 class BotWarnning(Enum):
-    RUNE_INTERACT_FAILED = 'Rune Interact Failed'
     RUNE_FAILED = 'Rune Failed'
+    BINDED = 'Binded'
+    NO_MOVEMENT = 'No Movement'
+    BACKGROUND = 'background'
+    # not used
+    RUNE_INTERACT_FAILED = 'Rune Interact Failed'
     OTHERS_COMMING = 'Someone\'s comming'
     OTHERS_STAY_OVER_30S = 'Someone stay over 30s'
     OTHERS_STAY_OVER_60S = 'Someone stay over 60s'
-    BINDED = 'Binded'
-    NO_MOVEMENT = 'No Movement'
-    RUNE_ERROR = 'Rune Error'
-    BACKGROUND = 'background'
 
 
 class BotInfo(Enum):
@@ -103,13 +104,48 @@ class BotRunMode(Enum):
     Mapping = 'Mapping'
 
 
+class MainStatType(Enum):
+    STR = "STR"
+    LUK = "LUK"
+    INT = "INT"
+    DEX = "DEX"
+
+
+class CharacterType(Enum):
+    Shadower = "shadower"
+    NightLord = "night_lord"
+    Hero = "hero"
+    NightWalker = "night_walker"
+
+
+class CharacterBranchType(Enum):
+    Thief = "Thief"
+    Warrior = "Warrior"
+    Magician = "Magician"
+    Bowman = "Bowman"
+    Pirate = "Pirate"
+    NONE = "NONE"
+
+
+class CharacterGroupType(Enum):
+    Explorer = "Explorer"
+    Cygnus = "Cygnus"
+    Resistance = "Resistance"
+    Heroes = "Heroes"
+    Nova = "Nova"
+    Flora = "Flora"
+    Other = "Other"
+
+
 #############################
 #       Role & Class        #
 #############################
-Name_Class_Map = {'Sllee': 'shadower',
-                  'issl': 'night_lord',
-                  'ggswift': 'shadower',
-                  'ermin': 'hero'}
+Name_Class_Map = {
+    'Sllee': CharacterType.Shadower,
+    'issl': CharacterType.NightLord,
+    'ggswift': CharacterType.Shadower,
+    'ermin': CharacterType.Hero
+}
 
 Charactor_Daily_Map = {
     'Sllee': {

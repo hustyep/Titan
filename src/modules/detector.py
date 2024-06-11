@@ -498,25 +498,6 @@ class Detector(Subject):
 detector = Detector()
 
 
-def exception_hook(exc_type, exc_value, tb):
-    print('Traceback:')
-    filename = tb.tb_frame.f_code.co_filename
-    name = tb.tb_frame.f_code.co_name
-    line_no = tb.tb_lineno
-    info = (
-        f"File {filename} line {line_no}, in {name}\n"
-        f"{exc_type.__name__}, Message: {exc_value}\n"
-    )
-    detector.on_next((BotFatal.CRASH, info))
-
-    print(f"File {filename} line {line_no}, in {name}")
-
-    # Exception type 和 value
-    print(f"{exc_type.__name__}, Message: {exc_value}")
-
-
-# sys.excepthook = exception_hook
-
 #################################
 #       Helper Functions        #
 #################################

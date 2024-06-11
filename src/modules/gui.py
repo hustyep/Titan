@@ -100,11 +100,10 @@ class GUI():
 
     def on_bot_update(self, type: BotUpdateType):
         match (type):
-            case (BotUpdateType.command_loaded):
+            case (BotUpdateType.role_loaded):
                 self.settings.update_class_bindings()
                 self.menu.file.enable_routine_state()
-                self.view.status.set_cb(bot.command_book.name)
-                self.view.status.set_role(bot_settings.role_name)
+                self.view.status.set_role(bot.role)
 
     def on_routine_update(self, args):
         match (args[0]):

@@ -28,11 +28,9 @@ class Status(LabelFrame):
         self.role_entry = tk.Entry(self, textvariable=self.curr_role, state=tk.DISABLED)
         self.role_entry.grid(row=2, column=2, padx=(0, 5), pady=(0, 5), sticky=tk.EW)
 
-    def set_cb(self, string):
-        self.curr_cb.set(string)
-
     def set_routine(self, string):
         self.curr_routine.set(string)
 
-    def set_role(self, string):
-        self.curr_role.set(string)
+    def set_role(self, role):
+        self.curr_role.set(role.name)
+        self.curr_cb.set(role.character_type.value)

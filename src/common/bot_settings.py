@@ -117,34 +117,6 @@ def reset():
     record_layout = False
     mini_margin = 0
 
-    # role_name = ''
-    # class_name = ''
-    # role_template = None
-    # boundary_point_l = (100, 0)
-    # boundary_point_r = (0, 0)
-
-
-def load_role_template():
-    global role_template
-
-    if len(role_name) > 0:
-        try:
-            role_template = cv2.imread(
-                f'assets/roles/player_{role_name}_template.png', 0)
-        except:
-            raise ValueError(f"role template '{role_template}' is not exists.")
-
-
-def get_command_book_path(command_name=None):
-    if command_name is None:
-        command_name = class_name
-    target = os.path.join(RESOURCES_DIR,
-                          'command_books', f'{command_name}.py')
-    if not os.path.exists(target):
-        print(f"command book '{target}' is not exists.")
-        # raise ValueError(f"command book '{target}' is not exists.")
-    return target
-
 
 def get_routines_dir(command_name=None):
     if command_name is None:

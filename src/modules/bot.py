@@ -2,7 +2,6 @@
 
 import threading
 import time
-import os
 from enum import Enum
 from rx.subject import Subject
 
@@ -18,12 +17,11 @@ from src.modules.chat_bot import chat_bot
 from src.modules.daily import *
 from src.command.command_book import CommandBook
 from src.routine.routine import routine
-from src.command import commands
-from src.common.image_template import TEXT_WHITE_RANGES
+from src.models.role_model import RoleModel
 
 
 class BotUpdateType(Enum):
-    command_loaded = 'command_loaded'
+    role_loaded = 'role_loaded'
 
 
 class Bot(Subject):
@@ -33,7 +31,7 @@ class Bot(Subject):
         """Loads a user-defined routine on start up and initializes this Bot's main thread."""
 
         super().__init__()
-        self.command_book: CommandBook = None
+        self.role: RoleModel = None
         self.daily: Daily = None
 
         self.check_thread = threading.Thread(target=self._main_check)
@@ -77,10 +75,8 @@ class Bot(Subject):
 
     def _main_check(self):
         while True:
-            if self.command_book is not None and bot_status.enabled and capture.frame is not None:
-                for skill in self.command_book.dict.values():
-                    if issubclass(skill, commands.Skill) and skill.key is not None and skill.cooldown > 0:
-                        skill.check()
+            if self.role.character is not None and bot_status.enabled and capture.frame is not None:
+                self.role.character.update_skill_status()
             time.sleep(0.2)
 
     def prepare(self):
@@ -93,14 +89,16 @@ class Bot(Subject):
 
         role_name = self.identify_role()
         if not role_name:
-            self.toggle(False, 'role name error')
-            return
+            chat_bot.send_message("role identify error", capture.frame)
+            if self.role is None:
+                self.toggle(False, 'role identify error')
+                return
 
         match gui_setting.mode.type:
             case BotRunMode.Daily:
                 if self.daily is None:
                     self.daily = Daily(bot_settings.role_name)
-                bot_status.enabled = False                
+                bot_status.enabled = False
                 bot_status.enabled = self.daily.start()
                 if not bot_status.enabled:
                     chat_bot.voice_call()
@@ -115,7 +113,7 @@ class Bot(Subject):
         if map_name is not None:
             map_routine_path = f'{bot_settings.get_routines_dir()}\\{map_name}.csv'
             if map_routine_path != routine.path:
-                routine.load(map_routine_path, self.command_book)
+                self.load_routine(map_routine_path)
         else:
             default_map = Charactor_Daily_Map[role_name]['default']
             bot_status.enabled = bot_action.teleport_to_map(default_map)
@@ -125,38 +123,27 @@ class Bot(Subject):
             bot_action.change_channel()
 
         bot_status.prepared = True
-        
+
     def identify_role(self):
-        role_name = bot_helper.identify_role()
+        role_name = bot_helper.identify_role_name()
         if not role_name:
             return
-        class_name = Name_Class_Map[role_name]
-        print(f"identify name:{role_name}, class:{class_name}")
+        character_type = Name_Class_Map[role_name]
+        if not character_type:
+            return
+        print(f"identify name:{role_name}, class:{character_type}")
 
-        # update role template
-        if bot_settings.role_name != role_name:
-            bot_settings.role_name = role_name
-            bot_settings.load_role_template()
+        # update role
+        if self.role == None or self.role.name != role_name:
             self.daily = None
+            self.role = RoleModel(role_name)
+            routine.clear()
+            self.on_next(BotUpdateType.role_loaded)
 
-        # update command book
-        if bot_settings.class_name != class_name:
-            file = bot_settings.get_command_book_path(class_name)
-            self.load_commands(file)
         return role_name
 
-    def load_commands(self, file):
-        try:
-            self.command_book = CommandBook(file)
-            routine.clear()
-        except Exception as e:
-            raise ValueError(f"load command book error '{e}'")
-        else:
-            self.on_next(BotUpdateType.command_loaded)
-            # command_book.move.step_callback = self.point_check
-
     def load_routine(self, file: str):
-        routine.load(file, self.command_book)
+        routine.load(file, self.role.character.command_book)
         bot_status.reset()
 
     def toggle(self, enabled: bool, reason: str = ''):

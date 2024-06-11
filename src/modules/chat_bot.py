@@ -5,7 +5,7 @@ from src.chat_bot.telegram_bot import TelegramBot
 from src.chat_bot.wechat_bot import WechatBot
 from src.common import bot_settings
 from src.common.gui_setting import gui_setting
-
+from src.common import utils
 
 class ChatBot():
 
@@ -34,6 +34,8 @@ class ChatBot():
         self.telegram_bot.send_image(image, image_path)
 
     def send_message(self, text=None, image=None, image_path=None):
+        if image is not None:
+            image_path = utils.save_screenshot(frame=image)
         if gui_setting.notification.telegram:
             self.telegram_bot.send_message(text=text, image_path=image_path)
         if gui_setting.notification.wechat:

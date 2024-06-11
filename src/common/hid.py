@@ -11,7 +11,7 @@ CMD_KEYBOARD_UP = "key:up"
 CMD_KEYBOARD_DOWN = "key:down"
 CMD_KEYBOARD_HID = "key:hid"
 CMD_KEYBOARD_STRING = "key:string"
-CMD_KEYBOARD_RELEASE = "key:release"
+CMD_KEYBOARD_RELEASE = "key:release,1"
 
 #鼠标CMD
 CMD_MOUSE_LEFT_CLICK = "mouse:leftclick"
@@ -97,8 +97,8 @@ class HID:
         
     # 释放所有按键
     def key_release(self):
-        # cmd = self.buildCMD(CMD_KEYBOARD_RELEASE)
-        # self.sendCMD(cmd)
+        cmd = self.buildCMD(CMD_KEYBOARD_RELEASE)
+        self.sendCMD(cmd)
         self.key_up('')
 
     def mouse_left_click(self):

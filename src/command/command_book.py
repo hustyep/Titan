@@ -4,23 +4,32 @@ import importlib
 import traceback
 from os.path import basename, splitext
 from src.common import bot_settings, utils
+from src.common.constants import CharacterType, RESOURCES_DIR
 from src.command import commands
 
 CB_KEYBINDING_DIR = os.path.join('resources', 'keybindings')
 
+def get_command_book_path(character_name: str) -> str:
+    target = os.path.join(RESOURCES_DIR,
+                        'command_books', f'{character_name}.py')
+    if not os.path.exists(target):
+        raise ValueError(f"command book '{target}' is not exists.")
+    return target
 
 class CommandBook():
-    def __init__(self, file):
+    def __init__(self, charactor: CharacterType):
         # importlib.reload(commands)
-        self.name = splitext(basename(file))[0]
+        self.charactor = charactor
+        self.character_name = charactor.value
 
-        result = self._load_commands(file)
+        file_path = get_command_book_path(self.character_name)
+        result = self._load_commands(file_path)
         if result is None:
-            raise ValueError(f"Invalid command book at '{file}'")
+            raise ValueError(f"Invalid command book at '{file_path}'")
         self.dict, self.func_dict, self.module = result
         self.__update_default_commands()
 
-        bot_settings.class_name = self.name
+        bot_settings.class_name = self.character_name
 
     def _load_commands(self, file):
         """Prompts the user to select a command module to import. Updates config's command book."""
@@ -34,7 +43,7 @@ class CommandBook():
             return
 
         # Import the desired command book file
-        target = '.'.join(['resources', 'command_books', self.name])
+        target = '.'.join(['resources', 'command_books', self.character_name])
         try:
             importlib.reload(commands)
             module = importlib.import_module(target)
@@ -45,7 +54,7 @@ class CommandBook():
                 line = line.rstrip()
                 if line:
                     print(' ' * 4 + line)
-            print(f"\n !  Command book '{self.name}' was not loaded")
+            print(f"\n !  Command book '{self.character_name}' was not loaded")
             return
 
         new_func = {}
@@ -90,10 +99,10 @@ class CommandBook():
                     f" !  Error: Must implement required command '{name}'.")
 
         if required_command_found and required_function_found:
-            print(f" ~  Successfully loaded command book '{self.name}'")
+            print(f" ~  Successfully loaded command book '{self.character_name}'")
             return new_cb, new_func, module
         else:
-            print(f" !  Command book '{self.name}' was not loaded")
+            print(f" !  Command book '{self.character_name}' was not loaded")
 
     def __update_default_commands(self):
         # replace function

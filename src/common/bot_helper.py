@@ -9,6 +9,11 @@ from src.modules.capture import capture
 from src.map.map import shared_map
 
 
+def identify_role_name():
+    name = utils.image_match_text(capture.name_frame, Name_Class_Map.keys())
+    return name
+
+
 def detect_mobs_in_rect(
         rect: Rect,
         type: MobType = MobType.NORMAL,
@@ -183,11 +188,6 @@ def get_available_routines(command_name) -> list:
             if f.endswith(".csv"):
                 routines.append(f[:-4])
     return routines
-
-
-def identify_role():
-    name = utils.image_match_text(capture.name_frame, Name_Class_Map.keys())
-    return name
 
 
 def identify_map_name():
