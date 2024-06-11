@@ -1,6 +1,6 @@
 from src.common.constants import *
 from src.command.command_book import CommandBook
-from src.command.commands import Skill
+from src.command import commands
 
 
 class CharacterModel:
@@ -15,7 +15,7 @@ class CharacterModel:
 
     def update_skill_status(self):
         for skill in self.command_book.dict.values():
-            if issubclass(skill, Skill) and skill.key is not None and skill.cooldown > 0:
+            if issubclass(skill, commands.Skill) and skill.key is not None and skill.cooldown > 0:
                 skill.check()
 
 
