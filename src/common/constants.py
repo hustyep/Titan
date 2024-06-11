@@ -175,19 +175,3 @@ Charactor_Daily_Map = {
         ]
     }
 }
-
-#############################
-#          Map Name         #
-#############################
-Map_Names = [
-    "T-Boy's Resarch Train 1",
-    'End Of The World 1-6',
-    'End Of The World 1-7',
-    'Outlaw-Infested Wastes 2',
-    'Ink-winged Owl',
-    'Train with No Destination 5',
-    'Laboratory Behind Locked Door 1',
-    'Combat Zone Outskirts 1',
-    'Calm Beach 2',
-    'Harsh Winter 4',
-]

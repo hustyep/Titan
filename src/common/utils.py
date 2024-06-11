@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 import pytesseract as tess
 import difflib
-
+from python_calamine import CalamineWorkbook
 
 def single_match(frame, template):
     """
@@ -359,3 +359,10 @@ def cvt2Plt(cv_image):
     rgb_img = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(rgb_img)
     return image
+
+def iter_excel_calamine(file: str):
+    workbook = CalamineWorkbook.from_path(file)
+    rows = iter(workbook.get_sheet_by_index(0).to_python())
+    headers = list(map(str, next(rows)))
+    for row in rows:
+        yield dict(zip(headers, row))
