@@ -9,13 +9,13 @@ from src.common import utils, bot_status, bot_settings, bot_helper
 from src.common.gui_setting import gui_setting
 from src.common.constants import *
 from src.common import bot_action
-from src.common.vkeys import key_up, key_down, releaseAll
+from src.common.vkeys import releaseAll
 from src.modules.capture import capture
 from src.modules.notifier import notifier
 from src.modules.detector import detector
 from src.modules.chat_bot import chat_bot
-from src.command.command_book import CommandBook
 from src.routine.routine import routine
+from src.map.map import shared_map
 from src.models.role_model import RoleModel
 
 
@@ -54,22 +54,30 @@ class Bot(Subject):
         The main body of Bot that executes the user's routine.
         :return:    None
         """
-
         self.ready = True
         while True:
-            if bot_status.enabled:
-                if bot_status.white_room:
+            if capture.minimap_display is None:
+                print("waiting capture...")
+                time.sleep(0.5)            
+            elif bot_status.enabled:
+                if bot_status.white_room or gui_setting.mode == BotRunMode.Mapping or gui_setting.mode == BotRunMode.Cube:
                     time.sleep(1)
                 elif not bot_status.prepared:
                     self.prepare()
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
-                    if self.role is not None and self.role.daily.check():
-                        bot_status.prepared = False
+                    if self.is_run_daily:
+                        current_quest = self.role.daily.current_quest
+                        if current_quest.isDone:
+                            bot_status.prepared = False
+                        elif not current_quest.is_running:
+                            current_quest.start()
                 else:
                     time.sleep(0.01)
             else:
-                time.sleep(0.01)
+                self.identify_role()
+                self.identify_map()
+                time.sleep(0.3)
 
     def _main_check(self):
         while True:
@@ -77,70 +85,98 @@ class Bot(Subject):
                 self.role.character.update_skill_status()
             time.sleep(0.2)
 
+    @property
+    def is_run_daily(self):
+        return gui_setting.mode.type == BotRunMode.Daily and self.role is not None and not self.role.daily.isDone
+
     def prepare(self):
         if bot_status.prepared:
             return
 
-        if capture.minimap_display is None:
-            time.sleep(0.5)
-            return 
-
-        role_name = self.identify_role()
-        if not role_name:
-            chat_bot.send_message("role identify error", capture.frame)
-        if self.role is None:
-            self.toggle(False, 'role identify error')
+        if not self.identify_role() and self.role is None:
+            chat_bot.video_call()
             return
 
-        match gui_setting.mode.type:
-            case BotRunMode.Daily:
-                bot_status.enabled = False
-                ready = self.role.daily.start()
-                if not ready:
-                    chat_bot.voice_call()
-                    return
-                bot_status.enabled = True
-            case BotRunMode.Mapping, BotRunMode.Cube:
-                time.sleep(1)
-                return
-
-        # update routine
-        map_name = bot_helper.identify_map_name()
-        print(f"identify map:{map_name}")
-        if map_name is not None:
-            map_routine_path = f'{bot_settings.get_routines_dir()}\\{map_name}.csv'
-            if map_routine_path != routine.path:
-                self.load_routine(map_routine_path)
-        else:
-            default_map = Charactor_Daily_Map[role_name]['default']
-            bot_status.enabled = bot_action.teleport_to_map(default_map)
+        if not self.check_map():
+            chat_bot.send_message("identify map failed", capture.frame)
+            chat_bot.video_call()
             return
-
-        if not bot_helper.chenck_map_available():
-            bot_action.change_channel()
 
         bot_status.prepared = True
 
     def identify_role(self):
         role_name = bot_helper.identify_role_name()
         if not role_name:
-            return
-        character_type = Name_Class_Map[role_name]
-        if not character_type:
-            return
-        print(f"identify name:{role_name}, class:{character_type}")
+            chat_bot.send_message("!!!role identify error", capture.frame)
+            time.sleep(1)
+            return False
+
+        print(f"~identify name:{role_name}, class:{Name_Class_Map[role_name]}")
 
         # update role
         if self.role == None or self.role.name != role_name:
-            self.role = RoleModel(role_name)
-            routine.clear()
-            self.on_next(BotUpdateType.role_loaded)
+            self.load_role(role_name)
+        return True
 
-        return role_name
+    def identify_map(self):
+        map_name = bot_helper.identify_map_name()
+        if map_name != shared_map.current_map_name:
+            print(f"identify map:{map_name}")
+            self.load_map(map_name)
 
-    def load_routine(self, file: str):
-        routine.load(file, self.role.character.command_book)
-        bot_status.reset()
+    def check_map(self):
+        map_name = bot_helper.identify_map_name()
+        print(f"identify map:{map_name}")
+
+        target_map = None
+        match gui_setting.mode.type:
+            case BotRunMode.Daily:
+                target_map = self.check_daily()
+            case BotRunMode.Farm:
+                target_map = map_name
+
+        if target_map == None:
+            target_map = Charactor_Daily_Map[self.role.name]['default']
+
+        # update map data
+        self.load_map(target_map)
+
+        if target_map != map_name:
+            bot_status.acting = True
+            result = bot_action.teleport_to_map(target_map)
+            bot_status.acting = False
+            if not result:
+                return False
+
+        if not bot_helper.chenck_map_available(instance=shared_map.current_map.instance):
+            bot_status.acting = True
+            bot_action.change_channel(instance=shared_map.current_map.instance)
+            bot_status.acting = False
+            return False
+        return True
+
+    def load_role(self, role_name):
+        self.role = RoleModel(role_name)
+        routine.clear()
+        self.on_next(BotUpdateType.role_loaded)
+
+    def load_map(self, map_name: str):
+        if shared_map.current_map_name != map_name:
+            shared_map.load_map(map_name)
+            bot_status.reset()
+
+        map_routine_path = f'{bot_settings.get_routines_dir()}\\{map_name}.csv'
+        if map_routine_path != routine.path:
+            routine.load(map_routine_path, self.role.character.command_book)
+            bot_status.reset()
+
+    def check_daily(self):
+        if self.role.daily.isDone:
+            return
+        if not self.role.daily.ready:
+            bot_action.take_daily_quest()
+            self.role.daily.ready = True
+        return self.role.daily.current_quest.map_name
 
     def toggle(self, enabled: bool, reason: str = ''):
         bot_status.rune_pos = None
@@ -153,8 +189,11 @@ class Bot(Subject):
         capture.calibrated = False
         if enabled:
             notifier.notice_time_record.clear()
-        elif self.role is not None:
-            self.role.daily.pause()
+            if self.is_run_daily:
+                self.role.daily.start()
+        else:
+            if self.is_run_daily:
+                self.role.daily.pause()
 
         releaseAll()
         bot_status.enabled = enabled

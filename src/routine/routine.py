@@ -262,7 +262,6 @@ class Routine(Subject):
 
         # Compile and Link
         self.compile(file)
-        shared_map.load_data(map_name)
 
         self.dirty = False
         self.path = file

@@ -30,6 +30,7 @@ class BotError(Enum):
     LOST_WINDOW = 'Lost Window'
     LOST_MINI_MAP = 'Lost Minimap'
     IDENTIFY_ROLE_FAILED = 'Identify role failed'
+    MAP_CHANGED = 'Map Changed'
     OTHERS_STAY_OVER_120S = 'Someone stay over 120s'
 
 
@@ -67,6 +68,12 @@ class BotDebug(Enum):
 #       Common Type        #
 #############################
 
+class MapPointType(Enum):
+    Unknown = -1
+    Air = 0
+    Floor = 1
+    Rope = 2
+    FloorRope = 3
 
 class AreaInsets:
     def __init__(self, top=0, bottom=0, left=0, right=0) -> None:
@@ -154,8 +161,8 @@ Charactor_Daily_Map = {
             'Train with No Destination 5',
             'Laboratory Behind Locked Door 1',
             'Combat Zone Outskirts 1',
-            'Calm Beach 3',
             'Harsh Winter 4',
+            'Calm Beach 3',
         ]
     },
     'issl': {

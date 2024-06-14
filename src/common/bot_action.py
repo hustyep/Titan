@@ -18,21 +18,25 @@ from src.modules.chat_bot import chat_bot
 #      Common Actions      #
 ############################
 
+@bot_status.run_if_enabled
 def click_key(key, delay=0.05):
     hid.key_press(key)
     time.sleep(delay * (1 + 0.2 * random()))
 
 
+@bot_status.run_if_enabled
 def press_key(key, delay=0.05):
     hid.key_down(key)
     time.sleep(delay * (1 + 0.2 * random()))
 
 
+@bot_status.run_if_enabled
 def release_key(key, delay=0.05):
     hid.key_up(key)
     time.sleep(delay * (1 + 0.2 * random()))
 
 
+@bot_status.run_if_enabled
 def mouse_move(template, rect: Rect = None, ranges=None, threshold=0.9, debug=False):
     frame = capture.frame
     if frame is None:
@@ -53,11 +57,13 @@ def mouse_move(template, rect: Rect = None, ranges=None, threshold=0.9, debug=Fa
     return False
 
 
+@bot_status.run_if_enabled
 def mouse_move_relative(x, y):
     hid.mouse_relative_move(x, y)
     time.sleep(0.3 + 0.2 * random())
 
 
+@bot_status.run_if_enabled
 def mouse_left_click(position=None, delay=0.05):
     if position:
         hid.mouse_abs_move(position[0], position[1])
@@ -67,6 +73,7 @@ def mouse_left_click(position=None, delay=0.05):
     time.sleep(delay * (1 + random()))
 
 
+@bot_status.run_if_enabled
 def mouse_double_click(position=None, delay=0.05):
     if position:
         hid.mouse_abs_move(position[0], position[1])
@@ -117,6 +124,7 @@ def jump_down():
     bot_status.enabled = True
 
 
+@bot_status.run_if_enabled
 def climb_rope(isUP=True):
     step = 0
     key = 'up' if isUP else 'down'
@@ -130,23 +138,23 @@ def climb_rope(isUP=True):
     release_key(key)
 
 
+@bot_status.run_if_enabled
 def open_teleport_stone() -> bool:
     def is_opend():
         match = utils.multi_match(
             capture.frame, TELEPORT_STONE_LIST_ICON_TEMPLATE)
         return len(match) > 0
 
-    bot_status.enabled = False
     if is_opend():
         return True
 
     if not mouse_move(TELEPORT_STONE_TEMPLATE):
         cash_tab = utils.multi_match(capture.frame, ITEM_CASH_TAB_TEMPLATE)
-            
+
         if mouse_move(ITEM_CASH_TAB_TEMPLATE):
             mouse_left_click(delay=0.5)
             stone_match = utils.multi_match(
-                    capture.frame, TELEPORT_STONE_TEMPLATE)
+                capture.frame, TELEPORT_STONE_TEMPLATE)
             if len(stone_match) > 0:
                 return open_teleport_stone()
             chat_bot.voice_call()
@@ -155,7 +163,7 @@ def open_teleport_stone() -> bool:
             click_key(bot_settings.SystemKeybindings.ITEM, 0.5)
             mouse_move_relative(0, 20)
             return open_teleport_stone()
-        
+
     else:
         mouse_double_click(delay=0.1)
         if not is_opend():
@@ -165,14 +173,15 @@ def open_teleport_stone() -> bool:
         return True
 
 
+@bot_status.run_if_enabled
 def close_teleport_stone():
     mouse_move(TELEPORT_STONE_CLOSE_TEMPLATE,
                Rect(700, 200, 100, 30), threshold=0.8)
     mouse_left_click()
 
 
+@bot_status.run_if_enabled
 def teleport_to_map(map_name: str):
-    bot_status.enabled = False
     if open_teleport_stone():
         # click_key('i')
         mouse_move_relative(300, 0)
@@ -207,6 +216,7 @@ def teleport_to_map(map_name: str):
         return False
 
 
+@bot_status.run_if_enabled
 def teleport_random_town():
     if open_teleport_stone():
         if not mouse_move(TELEPORT_STONE_SHOW_TOWNS_TEMPLATE):
@@ -243,6 +253,7 @@ def teleport_random_town():
         go_home()
 
 
+@bot_status.run_if_enabled
 def go_home():
     for i in range(0, 6):
         bot_status.enabled = False
@@ -250,6 +261,7 @@ def go_home():
     click_key('H', 5)
 
 
+@bot_status.run_if_enabled
 def cancel_rune_buff():
     for _ in range(5):
         rune_buff = utils.multi_match(
@@ -272,6 +284,7 @@ def open_boss_box():
     pass
 
 
+@bot_status.run_if_enabled
 def go_ardentmill(key):
     bot_status.enabled = False
     click_key(key)
@@ -319,19 +332,20 @@ def go_ardentmill(key):
     bot_status.enabled = True
 
 
-def change_channel(num: int = 0, enable=True, instance=True):
-    bot_status.enabled = False
-    bot_status.change_channel = True
+@bot_status.run_if_enabled
+def change_channel(num: int = 0, instance=True):
+    chat_bot.send_message('changing channel...')
+    bot_status.acting = True
     bot_status.rune_pos = None
     bot_status.rune_closest_pos = None
-    threading.Timer(2, _change_channel, (num, enable, instance)).start()
-    chat_bot.send_message('changing channel...')
+    time.sleep(2)
+    _change_channel(num, instance)
+    bot_status.acting = False
 
-
-def _change_channel(num: int = 0, enable=True, instance=True) -> None:
-
+@bot_status.run_if_enabled
+def _change_channel(num: int = 0, instance=True) -> None:  
+    bot_status.acting = True  
     click_key(bot_settings.SystemKeybindings.Change_Channel)
-
     if num > 0:
         item_width = 50
         item_height = 40
@@ -358,24 +372,24 @@ def _change_channel(num: int = 0, enable=True, instance=True) -> None:
     if ok_btn:
         click_key('esc')
         time.sleep(1)
-        _change_channel(num, enable)
+        _change_channel(num, instance)
         return
 
     wait_until_map_changed()
 
-    if not enable:
+    if not bot_status.enabled:
         return
 
     chat_bot.send_message('channel changed', capture.frame)
     time.sleep(2)
 
     if chenck_map_available(instance=instance):
-        bot_status.enabled = True
-        bot_status.change_channel = False
+        bot_status.acting = False  
     else:
-        change_channel()
+        _change_channel(num, instance)
 
 
+@bot_status.run_if_enabled
 def auto_login(channel=33):
     chat_bot.send_message(f'try auto login:{channel}')
 
@@ -414,6 +428,7 @@ def auto_login(channel=33):
         change_channel()
 
 
+@bot_status.run_if_enabled
 def relogin(channel=33):
     chat_bot.send_message(f'Relogin:{channel}')
 
@@ -434,6 +449,7 @@ def relogin(channel=33):
     auto_login(channel)
 
 
+@bot_status.run_if_enabled
 def run_maplestory():
     capture.find_window()
     hwnd = capture.hwnd
@@ -460,3 +476,24 @@ def stop_game():
     release_key('alt', 0.5)
     click_key('enter', 10)
     hid.consumer_sleep()
+
+
+@bot_status.run_if_enabled
+def take_daily_quest():
+    def has_quest():
+        frame = capture.frame[100:300, 0:200]
+        frame = utils.filter_color(frame, YELLOW_RANGES)
+        match = utils.multi_match(frame, QUEST_BUBBLE_TEMPLATE, debug=False)
+        return len(match) > 0
+
+    while has_quest():
+        mouse_move(QUEST_BUBBLE_TEMPLATE,
+                   Rect(0, 200, 100, 100),
+                   YELLOW_RANGES)
+        mouse_left_click(delay=0.3)
+        click_key(
+            bot_settings.SystemKeybindings.INTERACT, delay=0.3)
+        click_key('y', delay=0.3)
+        click_key(
+            bot_settings.SystemKeybindings.INTERACT, delay=0.3)
+        mouse_move_relative(10*(1 + random()), 5*(1 + random()))

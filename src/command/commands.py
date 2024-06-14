@@ -6,7 +6,7 @@ from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils, bot_action, bot_helper
 from src.common.gui_setting import gui_setting
 from src.common.bot_helper import *
-from src.map.map import shared_map, run_if_map_available, MapPointType
+from src.map.map import shared_map, MapPointType
 from src.rune import rune
 from src.modules.capture import capture
 from src.common.image_template import *
@@ -220,7 +220,6 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         return shared_map.platform_point(tmp_y)
 
 
-@run_if_map_available
 def evade_rope(target: tuple[int, int] = None):
     if target is None:
         pos = bot_status.player_pos

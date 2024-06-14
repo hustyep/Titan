@@ -1,213 +1,59 @@
 """A module for saving map layouts and determining shortest paths."""
 
-import os
-import cv2
-import numpy as np
-
-from os.path import join, isfile, splitext, basename
 from src.common.constants import *
-from src.modules.capture import capture
-from src.common import bot_status, bot_settings
+from src.common import  utils
 from src.common.gui_setting import gui_setting
-
-
-class MapPointType(Enum):
-    Unknown = -1
-    Air = 0
-    Floor = 1
-    Rope = 2
-    FloorRope = 3
+from src.map import map_editor
+from src.models.map_model import MapModel
 
 
 class Map:
-    """Uses a quadtree to represent possible player positions in a map layout."""
+    """Map Manager."""
 
     def __init__(self):
-        """
-        Creates a new Layout object with the given NAME.
-        :param name:     The name of this layout.
-        """
+        self.current_map: MapModel = None
+        self.available_maps = [MapModel]
+        self._load_data()
 
-        self.name = ''
-        self.minimap_data = None
-        self.minimap_sample = None
-        self.mob_templates = []
-        self.elite_templates = []
-        self.boss_templates = []
+    def _load_data(self):
+        file_path = f"{RESOURCES_DIR}/maps/maplestory_maps.xlsx"
+        map_list = utils.load_excel(file_path)
+        available_maps = [MapModel]
+        for map in map_list:
+            available_maps.append(MapModel(map))
+        self.available_maps = available_maps
 
+    @property
+    def current_map_name(self):
+        if self.current_map != None:
+            return self.current_map.name
+
+    @property
+    def minimap_data(self):
+        if self.current_map != None:
+            return self.current_map.minimap_data
+        
     @property
     def data_available(self):
         return self.minimap_data is not None and len(self.minimap_data) > 0
 
     def clear(self):
-        self.name = ''
-        self.minimap_data = None
-        self.minimap_sample = None
-        self.mob_templates = []
-        self.elite_templates = []
-        self.boss_templates = []
+        if self.current_map is not None:
+            self.current_map.clear()
+            self.current_map = None
 
-    def load_data(self, map_name):
+    def load_map(self, map_name):
         self.clear()
-        self.name = map_name
-        self.load_minimap_data()
-        self.load_mob_template()
-
-    def load_minimap_data(self):
-        map_dir = get_maps_dir(self.name)
-        minimap_data_path = f'{map_dir}.txt'
-        print(f"[~] Loading map '{minimap_data_path}'")
-        if os.path.exists(minimap_data_path):
-            try:
-                self.minimap_data = np.loadtxt(
-                    minimap_data_path, delimiter=',').astype(int)
-                height, _ = self.minimap_data.shape
-                for i in range(height-1, -1, -1):
-                    if self.minimap_data[i][0] > 0:
-                        bot_settings.base_y = i - 7
-                        break
-            except Exception as e:
-                print(f'[!] load map: {minimap_data_path} failed! \n{e}')
-            else:
-                print(f" ~ Finished loading map '{self.name}'")
-        else:
-            print(f" [!] map '{self.name}' not exist")
-
-        minimap_sample_path = os.path.join(
-            RESOURCES_DIR, 'maps', 'sample', f'{self.name}.png')
-        if capture.minimap_display is not None:
-            self.minimap_sample = capture.minimap_display
-            cv2.imwrite(minimap_sample_path, capture.minimap_display)
-        elif os.path.exists(minimap_sample_path):
-            self.minimap_sample = cv2.imread(minimap_sample_path)
-
-    def save_minimap_data(self):
-        if gui_setting.mode.type != BotRunMode.Mapping:
-            return
-        try:
-            minimap_data_file = f'{get_maps_dir(self.name)}.txt'
-            np.savetxt(minimap_data_file, self.minimap_data,
-                       fmt='%d', delimiter=",")
-        except Exception as e:
-            print(f'[!] save map: {minimap_data_file} failed! \n{e}')
-        else:
-            print(f" ~ Finished saving map data '{self.name}'")
-
-    def create_minimap_data(self):
-        if gui_setting.mode.type != BotRunMode.Mapping:
-            return
-        if capture.minimap_actual is not None and len(capture.minimap_actual) > 0:
-            width = capture.minimap_actual.shape[1] + 1
-            height = capture.minimap_actual.shape[0] + 1
-            if self.minimap_data is not None:
-                try:
-                    m_height, m_widht = self.minimap_data.shape
-                except Exception as e:
-                    print(e)
-                    self.minimap_data = np.zeros((height, width), np.uint8)
-                    print(' ~ Created new minimap data \n')
-                else:
-                    if m_widht != width or m_height != height:
-                        self.minimap_data = np.zeros((height, width), np.uint8)
-                        print(' ~ Created new minimap data \n')
-            else:
-                self.minimap_data = np.zeros((height, width), np.uint8)
-                print(' ~ Created new minimap data \n')
-        else:
-            print('[!] create minimap data failed! \n')
-
-    @bot_status.run_if_disabled('')
-    def add_start_point(self, point: tuple[int, int]):
-        if gui_setting.mode.type != BotRunMode.Mapping:
-            return
-        print(f'\n[~] add start point {point}')
-
-        self.create_minimap_data()
-        x = point[0]
-        y = point[1]
-        line = self.minimap_data[y]
-        line[x] = MapPointType.Floor.value
-
-        for i in range(x - 1, -1, -1):
-            if line[i] > 0:
-                line[i] = 0
-            else:
+        for map in self.available_maps:
+            if map.name == map_name:
+                self.current_map = map
                 break
-        for i in range(x + 1, len(line)):
-            if line[i] > 0:
-                line[i] = 0
-            else:
-                break
-        self.save_minimap_data()
-
-    @bot_status.run_if_disabled('')
-    def add_end_point(self, point: tuple[int, int]):
-        if gui_setting.mode.type != BotRunMode.Mapping:
-            return
-        print(f'\n[~] add end point {point}')
-        self.create_minimap_data()
-        x = point[0]
-        y = point[1]
-        line = self.minimap_data[y]
-        line[x] = MapPointType.Floor.value
-
-        for i in range(x - 1, -1, -1):
-            if line[i] == 0:
-                line[i] = 1
-            else:
-                break
-        for i in range(x + 1, len(line)):
-            if line[i] > 0:
-                line[i] = 0
-            else:
-                break
-        self.save_minimap_data()
-
-    @bot_status.run_if_disabled('')
-    def add_rope_point(self, point: tuple[int, int]):
-        if gui_setting.mode.type != BotRunMode.Mapping:
-            return
-        print(f'\n[~] add rope point {point}')
-        self.create_minimap_data()
-        x = point[0]
-        y = point[1]
-        self.minimap_data[y][x] = MapPointType.Rope.value
-        for i in range(y - 1, -1, -1):
-            if self.minimap_data[i][x] == 0:
-                self.minimap_data[i][x] = 2
-            elif self.minimap_data[i][x] == 1 or self.minimap_data[i][x] == 3:
-                self.minimap_data[i][x] = 3
-                break
-        self.save_minimap_data()
-
-    def load_mob_template(self):
-        try:
-            mob_template = cv2.imread(f'assets/mobs/{self.name}@normal.png', 0)
-            elite_template = cv2.imread(
-                f'assets/mobs/{self.name}@elite.png', 0)
-            boss_template = cv2.imread(f'assets/mobs/{self.name}@boss.png', 0)
-        except:
-            pass
-        if mob_template is not None:
-            self.mob_templates = [mob_template, cv2.flip(mob_template, 1)]
-
-        if elite_template is not None:
-            self.elite_templates = [
-                elite_template, cv2.flip(elite_template, 1)]
-        elif mob_template is not None:
-            elite_template = cv2.resize(mob_template, None, fx=2, fy=2)
-            self.elite_templates = [
-                elite_template, cv2.flip(elite_template, 1)]
-
-        if boss_template is not None:
-            self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
 
     def point_type(self, point: tuple[int, int]):
-        height, width = self.minimap_data.shape
-        if point[0] >= width or point[1] >= height:
-            return MapPointType.Unknown
-
         if self.data_available:
+            height, width = self.minimap_data.shape
+            if point[0] >= width or point[1] >= height:
+                return MapPointType.Unknown
             value = self.minimap_data[point[1]][point[0]]
             return MapPointType(value)
         else:
@@ -218,8 +64,8 @@ class Map:
             height, width = self.minimap_data.shape
             cur_x = location[0]
             cur_y = location[1]
-            start_x = max(0, cur_x - 3)
-            end_x = min(width - 1, cur_x + 3)
+            start_x = max(0, cur_x - 1)
+            end_x = min(width - 1, cur_x + 1)
             start_y = max(0, cur_y - 15)
             end_y = min(height - 1, cur_y + 5)
             for x in range(start_x, end_x):
@@ -234,7 +80,7 @@ class Map:
             if point_type == MapPointType.Floor or point_type == MapPointType.FloorRope:
                 return False
             else:
-                for i in range(1, 7):
+                for i in range(0, 7):
                     if self.point_type((location[0], location[1] + i)) == MapPointType.Rope:
                         return True
         return False
@@ -250,7 +96,7 @@ class Map:
 
     def platform_point(self, target: tuple[int, int]):
         if self.data_available:
-            height, _ = shared_map.minimap_data.shape
+            height, _ = self.minimap_data.shape
             for y in range(target[1] - 7, height - 1):
                 p = (target[0], y)
                 if shared_map.on_the_platform(p):
@@ -286,22 +132,31 @@ class Map:
         else:
             return True
 
+    def add_start_point(self, point: tuple[int, int]):
+        if gui_setting.mode.type != BotRunMode.Mapping:
+            return
+        if not self.data_available:
+            self.minimap_data = map_editor.create_minimap_data()
+        if not self.data_available:
+            return
+        map_editor.add_start_point(point, self.minimap_data)
+        map_editor.save_minimap_data(self.current_map.name, self.minimap_data)
 
-def get_maps_dir(name):
-    return os.path.join(RESOURCES_DIR, 'maps', name)
+    def add_end_point(self, point: tuple[int, int]):
+        if gui_setting.mode.type != BotRunMode.Mapping:
+            return
+        if not self.data_available:
+            return
+        map_editor.add_end_point(point, self.minimap_data)
+        map_editor.save_minimap_data(self.current_map.name, self.minimap_data)
 
-
-def run_if_map_available(function):
-    """
-    Decorator for functions that should only run if the bot is enabled.
-    :param function:    The function to decorate.
-    :return:            The decorated function.
-    """
-
-    def helper(*args, **kwargs):
-        if shared_map.data_available:
-            return function(*args, **kwargs)
-    return helper
+    def add_rope_point(self, point: tuple[int, int]):
+        if gui_setting.mode.type != BotRunMode.Mapping:
+            return
+        if not self.data_available:
+            return
+        map_editor.add_rope_point(point, self.minimap_data)
+        map_editor.save_minimap_data(self.current_map.name, self.minimap_data)
 
 
 shared_map = Map()

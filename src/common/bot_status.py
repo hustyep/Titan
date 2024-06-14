@@ -9,7 +9,7 @@ enabled: bool = False
 
 prepared: bool = False
 
-change_channel: bool = False
+acting: bool = False
 
 started_time = None
 
