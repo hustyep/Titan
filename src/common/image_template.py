@@ -179,6 +179,8 @@ POTENTIAL_CD8_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/critical_damage.png', 0)
 POTENTIAL_CD2_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/cd2.png', 0)
+POTENTIAL_CD1_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}potential/cd1.png', 0)
 POTENTIAL_BOSS40_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}potential/boss40.png', 0)
 POTENTIAL_BOSS3x_TEMPLATE = cv2.imread(

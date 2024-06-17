@@ -10,7 +10,7 @@ from src.common.gui_setting import gui_setting
 if __name__ != "__main__":
     from src.modules.capture import capture
     from src.modules.notifier import notifier
-    from src.modules.chat_bot import chat_bot
+    from src.chat_bot.chat_bot import chat_bot
     from src.common.gui_setting import gui_setting
     from src.common.constants import *
     from src.common import utils

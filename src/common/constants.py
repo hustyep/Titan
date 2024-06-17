@@ -108,6 +108,7 @@ class BotRunMode(Enum):
     Farm = 'Farm'
     Daily = 'Daily'
     Cube = 'Cube'
+    Flame = 'Flame'
     Mapping = 'Mapping'
 
 

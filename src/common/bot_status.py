@@ -33,16 +33,9 @@ rune_pos = None
 rune_closest_pos = None
 rune_solving = False
 
-# Minal status
-minal_pos = None
-minal_closest_pos = None
-mineral_type = None
-
-# cube
-cubing = False
 
 def reset():
-    global white_room, player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, rune_solving, minal_pos, minal_closest_pos, mineral_type
+    global white_room, player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, rune_solving
 
     player_pos = (0, 0)
     player_direction = 'right'
@@ -50,14 +43,11 @@ def reset():
     lost_minimap = False
     point_checking = False
     white_room = False
-    
+
     rune_solving = False
     rune_pos = None
     rune_closest_pos = None
-    
-    minal_pos = None
-    minal_closest_pos = None
-    mineral_type = None
+
 
 def run_if_enabled(function):
     """

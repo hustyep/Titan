@@ -11,7 +11,7 @@ from src.common.hid import hid
 from src.common.constants import *
 from src.common.image_template import *
 from src.modules.capture import capture
-from src.modules.chat_bot import chat_bot
+from src.chat_bot.chat_bot import chat_bot
 
 
 ############################

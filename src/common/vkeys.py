@@ -222,7 +222,12 @@ def press_acc(key, n: int = 1, down_time=0.05, up_time=0.05):
         key_up(key)
         time.sleep(up_time)
 
-# @bot_status.run_if_enabled
+@bot_status.run_if_enabled
+def mouse_click(button='left'):
+    if button == 'left':
+        hid.mouse_left_click()
+    else:
+        hid.mouse_right_click()
 
 
 def click(position, button='left'):

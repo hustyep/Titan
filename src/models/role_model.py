@@ -1,7 +1,7 @@
 import cv2
 from src.models.character_model import *
 from src.common.constants import *
-from src.modules.daily import *
+from src.models.daily import *
 
 class RoleModel:
 

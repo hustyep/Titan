@@ -13,10 +13,11 @@ from src.common.vkeys import releaseAll
 from src.modules.capture import capture
 from src.modules.notifier import notifier
 from src.modules.detector import detector
-from src.modules.chat_bot import chat_bot
+from src.chat_bot.chat_bot import chat_bot
 from src.routine.routine import routine
 from src.map.map import shared_map
 from src.models.role_model import RoleModel
+from src.enhance.cube import CubeManage
 
 
 class BotUpdateType(Enum):
@@ -58,9 +59,9 @@ class Bot(Subject):
         while True:
             if capture.minimap_display is None:
                 print("waiting capture...")
-                time.sleep(0.5)            
+                time.sleep(0.5)
             elif bot_status.enabled:
-                if bot_status.white_room or gui_setting.mode == BotRunMode.Mapping or gui_setting.mode == BotRunMode.Cube:
+                if gui_setting.mode == BotRunMode.Mapping or gui_setting.mode == BotRunMode.Cube:
                     time.sleep(1)
                 elif not bot_status.prepared:
                     self.prepare()
@@ -179,26 +180,43 @@ class Bot(Subject):
         return self.role.daily.current_quest.map_name
 
     def toggle(self, enabled: bool, reason: str = ''):
-        bot_status.rune_pos = None
-        bot_status.rune_closest_pos = None
+        self.reset()
 
-        bot_status.minal_pos = None
-        bot_status.minal_closest_pos = None
-
-        bot_status.prepared = False
-        capture.calibrated = False
         if enabled:
-            notifier.notice_time_record.clear()
-            if self.is_run_daily:
-                self.role.daily.start()
+            self.__start()
         else:
-            if self.is_run_daily:
-                self.role.daily.pause()
+            self.__pause()
 
-        releaseAll()
         bot_status.enabled = enabled
         utils.print_state(enabled)
         print(reason)
+
+    def reset():
+        releaseAll()
+        notifier.notice_time_record.clear()
+
+        bot_status.rune_pos = None
+        bot_status.rune_closest_pos = None
+
+        bot_status.prepared = False
+        capture.calibrated = False
+
+    def __start(self):
+        self.identify_role()
+        match gui_setting.mode.type:
+            case BotRunMode.Cube:
+                CubeManage.start(self.role)
+            case BotRunMode.Daily:
+                if self.is_run_daily:
+                    self.role.daily.start()
+
+    def __pause(self):
+        match gui_setting.mode.type:
+            case BotRunMode.Cube:
+                CubeManage.stop()
+            case BotRunMode.Daily:
+                if self.is_run_daily:
+                    self.role.daily.pause()
 
     def on_event(self, args):
         event_type = args[0]

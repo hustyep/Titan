@@ -8,7 +8,7 @@ from src.modules.capture import capture
 from src.modules.msg_capture import msg_capture
 from src.modules.detector import detector
 from src.modules.listener import listener
-from src.modules.chat_bot import chat_bot
+from src.chat_bot.chat_bot import chat_bot
 from src.modules.notifier import notifier
 from src.modules.bot import bot
 from src.modules.gui import GUI

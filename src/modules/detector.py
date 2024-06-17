@@ -20,7 +20,7 @@ from src.modules.capture import capture
 from src.map.map import shared_map as game_map
 from src.common.gui_setting import gui_setting
 from src.common import bot_action, bot_helper
-from src.modules.chat_bot import chat_bot
+from src.chat_bot.chat_bot import chat_bot
 
 class Detector(Subject):
 

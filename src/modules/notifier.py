@@ -12,7 +12,7 @@ from src.common import bot_status
 from src.common.gui_setting import gui_setting
 from src.common.image_template import *
 from src.common.constants import *
-from src.modules.chat_bot import chat_bot
+from src.chat_bot.chat_bot import chat_bot
 from src.modules.capture import capture
 from src.modules.detector import detector
 from src.routine.routine import routine
