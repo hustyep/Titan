@@ -92,8 +92,8 @@ class Cube:
                     return 999
                 return self._stat_result(result_frame, self.role.character.main_stat)
             case PotentialType.CD:
-                if self._stat_result(result_frame, self.role.character.main_stat) >= 36
-                return 999
+                if self._stat_result(result_frame, self.role.character.main_stat) >= 36:
+                    return 999
                 return self._cd_result(result_frame)
             case PotentialType.MOB:
                 return self._mob_result(result_frame)

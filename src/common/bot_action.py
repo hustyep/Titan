@@ -96,7 +96,7 @@ def setClipboard(text: str):
 #      Common Actions      #
 ############################
 
-def say(text: str):
+def __say(text: str):
     setClipboard(text)
     click_key('enter', 0.3)
     press_key("ctrl", 0.05)
@@ -106,26 +106,27 @@ def say(text: str):
     click_key('enter', 0.05)
 
 
+@bot_status.run_if_enabled
 def say_to_all(text):
-    last_status = bot_status.enabled
-    bot_status.enabled = False
+    bot_status.acting = True
     time.sleep(1)
-    say(text)
-    if last_status:
-        bot_status.enabled = True
+    __say(text)
+    time.sleep(0.5)
+    bot_status.acting = False
 
 
 def jump_down():
-    bot_status.enabled = False
+    bot_status.acting = True
     press_key('left', 0.1)
     click_key('s', 0.5)
     click_key('s', 0.5)
     release_key('left', 0.5)
-    bot_status.enabled = True
+    bot_status.acting = False
 
 
 @bot_status.run_if_enabled
 def climb_rope(isUP=True):
+    bot_status.acting = True
     step = 0
     key = 'up' if isUP else 'down'
     press_key(key)
@@ -136,6 +137,7 @@ def climb_rope(isUP=True):
         if step > 50:
             break
     release_key(key)
+    bot_status.acting = False
 
 
 @bot_status.run_if_enabled
@@ -149,16 +151,15 @@ def open_teleport_stone() -> bool:
         return True
 
     if not mouse_move(TELEPORT_STONE_TEMPLATE):
-        cash_tab = utils.multi_match(capture.frame, ITEM_CASH_TAB_TEMPLATE)
-
         if mouse_move(ITEM_CASH_TAB_TEMPLATE):
             mouse_left_click(delay=0.5)
             stone_match = utils.multi_match(
                 capture.frame, TELEPORT_STONE_TEMPLATE)
             if len(stone_match) > 0:
                 return open_teleport_stone()
-            chat_bot.voice_call()
-            return False
+            else:
+                print("[error]cant find teleport stone")
+                return False
         else:
             click_key(bot_settings.SystemKeybindings.ITEM, 0.5)
             mouse_move_relative(0, 20)
@@ -182,6 +183,7 @@ def close_teleport_stone():
 
 @bot_status.run_if_enabled
 def teleport_to_map(map_name: str):
+    bot_status.acting = True
     if open_teleport_stone():
         # click_key('i')
         mouse_move_relative(300, 0)
@@ -191,11 +193,13 @@ def teleport_to_map(map_name: str):
         if not mouse_move(map_template, debug=False):
             print("[error]cant find stored map")
             teleport_random_town()
+            bot_status.acting = False
             return False
         mouse_left_click(delay=0.3)
         if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
             print("[error]cant find move button")
             close_teleport_stone()
+            bot_status.acting = False
             return False
         mouse_left_click(delay=0.3)
         frame = capture.frame
@@ -206,13 +210,15 @@ def teleport_to_map(map_name: str):
         if len(cancel_match) > 0:
             click_key('enter', delay=0.1)
             wait_until_map_changed()
+            bot_status.acting = False
+            return True
         else:
             click_key('esc', delay=0.1)
             click_key('esc', delay=0.1)
-            teleport_to_map(map_name)
-        return True
+            return teleport_to_map(map_name)            
     else:
         print("[error]cant open teleport stone")
+        bot_status.acting = False
         return False
 
 
@@ -286,7 +292,6 @@ def open_boss_box():
 
 @bot_status.run_if_enabled
 def go_ardentmill(key):
-    bot_status.enabled = False
     click_key(key)
     time.sleep(5)
 
@@ -328,8 +333,6 @@ def go_ardentmill(key):
         time.sleep(0.1)
     time.sleep(2)
     hid.key_press('esc')
-    bot_status.prepared = False
-    bot_status.enabled = True
 
 
 @bot_status.run_if_enabled
@@ -342,9 +345,10 @@ def change_channel(num: int = 0, instance=True):
     _change_channel(num, instance)
     bot_status.acting = False
 
+
 @bot_status.run_if_enabled
-def _change_channel(num: int = 0, instance=True) -> None:  
-    bot_status.acting = True  
+def _change_channel(num: int = 0, instance=True) -> None:
+    bot_status.acting = True
     click_key(bot_settings.SystemKeybindings.Change_Channel)
     if num > 0:
         item_width = 50
@@ -384,7 +388,7 @@ def _change_channel(num: int = 0, instance=True) -> None:
     time.sleep(2)
 
     if chenck_map_available(instance=instance):
-        bot_status.acting = False  
+        bot_status.acting = False
     else:
         _change_channel(num, instance)
 
@@ -480,20 +484,13 @@ def stop_game():
 
 @bot_status.run_if_enabled
 def take_daily_quest():
-    def has_quest():
-        frame = capture.frame[100:300, 0:200]
-        frame = utils.filter_color(frame, YELLOW_RANGES)
-        match = utils.multi_match(frame, QUEST_BUBBLE_TEMPLATE, debug=False)
-        return len(match) > 0
-
-    while has_quest():
-        mouse_move(QUEST_BUBBLE_TEMPLATE,
-                   Rect(0, 200, 100, 100),
-                   YELLOW_RANGES)
-        mouse_left_click(delay=0.3)
-        click_key(
-            bot_settings.SystemKeybindings.INTERACT, delay=0.3)
-        click_key('y', delay=0.3)
-        click_key(
-            bot_settings.SystemKeybindings.INTERACT, delay=0.3)
-        mouse_move_relative(10*(1 + random()), 5*(1 + random()))
+    mouse_move(QUEST_BUBBLE_TEMPLATE,
+               Rect(0, 200, 100, 100),
+               YELLOW_RANGES)
+    mouse_left_click(delay=0.3)
+    click_key('down')
+    click_key(
+        bot_settings.SystemKeybindings.INTERACT, delay=0.3)
+    click_key('y', delay=0.3)
+    click_key(
+        bot_settings.SystemKeybindings.INTERACT, delay=0.3)

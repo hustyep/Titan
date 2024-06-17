@@ -18,6 +18,7 @@ from src.routine.routine import routine
 from src.map.map import shared_map
 from src.models.role_model import RoleModel
 from src.enhance.cube import CubeManage
+from src.enhance.flame import FlameManager
 
 
 class BotUpdateType(Enum):
@@ -61,7 +62,7 @@ class Bot(Subject):
                 print("waiting capture...")
                 time.sleep(0.5)
             elif bot_status.enabled:
-                if gui_setting.mode == BotRunMode.Mapping or gui_setting.mode == BotRunMode.Cube:
+                if gui_setting.mode != BotRunMode.Daily and gui_setting.mode != BotRunMode.Farm:
                     time.sleep(1)
                 elif not bot_status.prepared:
                     self.prepare()
@@ -142,17 +143,13 @@ class Bot(Subject):
         # update map data
         self.load_map(target_map)
 
-        if target_map != map_name:
-            bot_status.acting = True
-            result = bot_action.teleport_to_map(target_map)
-            bot_status.acting = False
-            if not result:
-                return False
+        if not bot_action.teleport_to_map(target_map):
+            chat_bot.voice_call()
+            chat_bot.send_message(f"teleport to {target_map}", capture.frame)
+            return False
 
         if not bot_helper.chenck_map_available(instance=shared_map.current_map.instance):
-            bot_status.acting = True
             bot_action.change_channel(instance=shared_map.current_map.instance)
-            bot_status.acting = False
             return False
         return True
 
@@ -206,14 +203,15 @@ class Bot(Subject):
         match gui_setting.mode.type:
             case BotRunMode.Cube:
                 CubeManage.start(self.role)
-            case BotRunMode.Daily:
-                if self.is_run_daily:
-                    self.role.daily.start()
+            case BotRunMode.Flame:
+                FlameManager.start(self.role)
 
     def __pause(self):
         match gui_setting.mode.type:
             case BotRunMode.Cube:
                 CubeManage.stop()
+            case BotRunMode.Flame:
+                FlameManager.stop()
             case BotRunMode.Daily:
                 if self.is_run_daily:
                     self.role.daily.pause()

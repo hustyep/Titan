@@ -411,8 +411,6 @@ class Routine(Subject):
             self.notify_rune_failed(used_frame)
         else:
             self.on_next((BotInfo.RUNE_LIBERATED, rune_type))
-            if rune_type == 'Rune of Might':
-                bot_action.cancel_rune_buff()
 
     def notify_rune_failed(self, used_frame):
         bot_status.rune_pos = None
