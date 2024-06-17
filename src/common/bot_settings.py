@@ -2,6 +2,7 @@ import cv2
 import os
 from src.common.constants import RESOURCES_DIR
 from src.common.file_setting import File_Setting
+from src.models.role_model import RoleModel
 
 """p
 A list of user-defined settings that can be changed by routines. Also contains a collection
@@ -110,7 +111,7 @@ def reset():
     """Resets all settings to their default values."""
 
     global move_tolerance, adjust_tolerance, record_layout, mini_margin
-    global role_name, class_name, role_template, boundary_point_l, boundary_point_r
+    global boundary_point_l, boundary_point_r
 
     move_tolerance = 13
     adjust_tolerance = 3
@@ -118,9 +119,7 @@ def reset():
     mini_margin = 0
 
 
-def get_routines_dir(command_name=None):
-    if command_name is None:
-        command_name = class_name
+def get_routines_dir(command_name):
     target = os.path.join(RESOURCES_DIR,
                           'routines', command_name)
     if not os.path.exists(target):
@@ -139,12 +138,7 @@ record_layout = False
 
 mini_margin = 0
 
-class_name = ''
-
-# The name of the role
-role_name = ''
-
-role_template = None
+role: RoleModel = None
 
 boundary_point_l = (100, 0)
 boundary_point_r = (0, 0)

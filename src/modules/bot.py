@@ -157,13 +157,14 @@ class Bot(Subject):
         self.role = RoleModel(role_name)
         routine.clear()
         self.on_next(BotUpdateType.role_loaded)
+        bot_settings.role = self.role
 
     def load_map(self, map_name: str):
         if shared_map.current_map_name != map_name:
             shared_map.load_map(map_name)
             bot_status.reset()
 
-        map_routine_path = f'{bot_settings.get_routines_dir()}\\{map_name}.csv'
+        map_routine_path = f'{bot_settings.get_routines_dir(self.role.character_type)}\\{map_name}.csv'
         if map_routine_path != routine.path:
             routine.load(map_routine_path, self.role.character.command_book)
             bot_status.reset()

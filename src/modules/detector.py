@@ -22,6 +22,7 @@ from src.common.gui_setting import gui_setting
 from src.common import bot_action, bot_helper
 from src.chat_bot.chat_bot import chat_bot
 
+
 class Detector(Subject):
 
     def __init__(self):
@@ -76,7 +77,7 @@ class Detector(Subject):
             self.check_minimap()
             if bot_status.enabled:
                 self.check_boss()
-                # self.check_binded()
+                self.check_binded()
                 self.check_dead()
                 self.check_no_movement()
                 # self.check_others()
@@ -105,7 +106,6 @@ class Detector(Subject):
 
             if bot_status.enabled and frame is not None and minimap is not None:
                 self.check_rune_status(frame, minimap)
-                # self.check_mineral(frame, minimap)
             time.sleep(0.5)
 
     def on_event(self, args):
@@ -135,12 +135,11 @@ class Detector(Subject):
         # print(tmp)
         if bot_status.started_time is not None and tmp >= self.white_room_threshold:
             self.on_next((BotFatal.WHITE_ROOM,))
-        
+
         # gm = utils.multi_match(frame, GM_HAT_W_TEMPLATE, threshold=0.8)
         # if gm:
         #     self.on_next((BotFatal.WHITE_ROOM,))
-            
-            
+
     def check_alert(self):
         if capture.frame is None:
             return
@@ -168,46 +167,54 @@ class Detector(Subject):
         if confirm_btn:
             hid.key_press('esc')
             time.sleep(0.1)
-            
+
         chat_btn = utils.multi_match(
             frame, CHAT_MINI_TEMPLATE, threshold=0.9)
         if chat_btn:
-            bot_action.mouse_left_click(bot_helper.get_full_pos(chat_btn[0]), delay=0.5)
-            
-        setting_btn = utils.multi_match(frame[400:600, 800:1000], SETTING_TEMPLATE, threshold=0.9)
+            bot_action.mouse_left_click(
+                bot_helper.get_full_pos(chat_btn[0]), delay=0.5)
+
+        setting_btn = utils.multi_match(
+            frame[400:600, 800:1000], SETTING_TEMPLATE, threshold=0.9)
         if setting_btn:
             hid.key_press('esc')
             time.sleep(0.1)
-        
+
         inventory = utils.multi_match(frame, INVENTORY_MESO_TEMPLATE)
         if inventory:
             hid.key_press('esc')
-            time.sleep(0.1)    
+            time.sleep(0.1)
 
     def check_init(self):
         if capture.frame is None:
             return
         frame = capture.frame
-        guide = utils.multi_match(frame[0:150, ], GUIDE_PLUSE_TEMPLATE, threshold=0.9)
+        guide = utils.multi_match(
+            frame[0:150, ], GUIDE_PLUSE_TEMPLATE, threshold=0.9)
         if guide:
             hid.key_press('esc')
             time.sleep(1)
             # ActionSimulator.mouse_left_click(position=get_full_pos(853, 52), delay=0.1)
-        
-        maple_reward = utils.multi_match(frame[-200:, -50:], MAPLE_REWARD_TEMPLATE, threshold=0.9)
-        if maple_reward:
-            bot_action.mouse_left_click(bot_helper.get_full_pos((1351, 586)), delay=1)
 
-        adv = utils.multi_match(frame[190:200, 1000:1100], ADV_CLOSE_TEMPLATE, threshold=0.9)
+        maple_reward = utils.multi_match(
+            frame[-200:, -50:], MAPLE_REWARD_TEMPLATE, threshold=0.9)
+        if maple_reward:
+            bot_action.mouse_left_click(
+                bot_helper.get_full_pos((1351, 586)), delay=1)
+
+        adv = utils.multi_match(
+            frame[190:200, 1000:1100], ADV_CLOSE_TEMPLATE, threshold=0.9)
         if adv:
-            bot_action.mouse_left_click(bot_helper.get_full_pos(adv[0]), delay=1)
-        
-        
+            bot_action.mouse_left_click(
+                bot_helper.get_full_pos(adv[0]), delay=1)
+
         today = datetime.now().weekday()
         if today == 6:
-            sunday = utils.multi_match(frame[180:235, 630:700], SUNNY_SUNDAY_TEMPLATE, threshold=0.9)
+            sunday = utils.multi_match(
+                frame[180:235, 630:700], SUNNY_SUNDAY_TEMPLATE, threshold=0.9)
             if sunday:
-                bot_action.mouse_left_click(bot_helper.get_full_pos((890, 330)), delay=1)
+                bot_action.mouse_left_click(
+                    bot_helper.get_full_pos((890, 330)), delay=1)
 
     def check_forground(self):
         frame = capture.camera.get_latest_frame()
@@ -222,10 +229,12 @@ class Detector(Subject):
         '''Check if window is forground'''
         if hwnd != win32gui.GetForegroundWindow():
             self.on_next((BotWarnning.BACKGROUND, ))
-            mathes = utils.multi_match(frame[-50:, ], TABBAR_MAPLE_TEMPLATE, threshold=0.9)
+            mathes = utils.multi_match(
+                frame[-50:, ], TABBAR_MAPLE_TEMPLATE, threshold=0.9)
             if mathes:
                 height = frame.shape[0]
-                bot_action.mouse_left_click((mathes[0][0], height - 25), delay=1)
+                bot_action.mouse_left_click(
+                    (mathes[0][0], height - 25), delay=1)
             # try:
             #     pythoncom.CoInitialize()
             #     shell = client.Dispatch("WScript.Shell")
@@ -269,14 +278,14 @@ class Detector(Subject):
 
     def try_auto_login(self):
         bot_status.enabled = False
-        
+
         for _ in range(0, 10):
             capture.find_window()
             hwnd = capture.hwnd
             if (hwnd == 0):
                 self.on_next((BotError.LOST_WINDOW, ))
                 return True
-        
+
             region_matchs = utils.multi_match(
                 capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
             if region_matchs:
@@ -311,7 +320,7 @@ class Detector(Subject):
         frame = capture.frame
         if frame is None:
             return
-        player_template = bot_settings.role_template
+        player_template = bot_settings.role.name_template
         player = utils.multi_match(
             frame, player_template, threshold=0.9)
         if len(player) == 0:
@@ -323,7 +332,7 @@ class Detector(Subject):
         if len(res) > 0:
             self.on_next((BotWarnning.BINDED, ))
 
-            bot_status.enabled = False
+            bot_status.acting = True
             while (len(res) > 0):
                 for _ in range(4):
                     hid.key_press('left')
@@ -333,7 +342,7 @@ class Detector(Subject):
                 crop = capture.frame[player_pos[1]-140:player_pos[1] -
                                      100, player_pos[0]+25:player_pos[0]+65]
                 res = utils.multi_match(crop, SKULL_TEMPLATE)
-            bot_status.enabled = True
+            bot_status.acting = False
 
     # Check for dead
     def check_dead(self):
@@ -419,7 +428,7 @@ class Detector(Subject):
             bot_status.rune_pos = None
             bot_status.rune_closest_pos = None
             return
-        
+
         filtered = utils.filter_color(minimap, RUNE_RANGES)
         matches = utils.multi_match(filtered, RUNE_TEMPLATE, threshold=0.9)
         if len(matches) == 0:
@@ -437,63 +446,6 @@ class Detector(Subject):
                 bot_status.rune_closest_pos = routine[index].location
                 self.on_next((BotInfo.RUNE_ACTIVE, ))
 
-    def check_mineral(self, frame, minimap):
-        if not gui_setting.auto.mining:
-            return
-
-        if frame is None or minimap is None:
-            return
-
-        if bot_status.minal_pos:
-            return
-
-        player_min = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
-        if len(player_min) == 0:
-            return
-        player_pos = player_min[0]
-
-        matches = utils.multi_match(frame, MINAL_HEART_TEMPLATE)
-        mineral_type = MineralType.HEART
-        if len(matches) == 0:
-            matches = utils.multi_match(frame, HERB_YELLOW_TEMPLATE)
-            mineral_type = MineralType.HERB_YELLOW
-        if len(matches) == 0:
-            matches = utils.multi_match(frame, HERB_PURPLE_TEMPLATE)
-            mineral_type = MineralType.HERB_PURPLE
-        if len(matches) == 0:
-            matches = utils.multi_match(frame, MINAL_CRYSTAL_TEMPLATE)
-            mineral_type = MineralType.CRYSTAL
-        if len(matches) > 0:
-            self.on_next((BotVerbose.MINE_ACTIVE, mineral_type))
-            player_template = bot_settings.role_template
-            player = utils.multi_match(
-                frame, player_template, threshold=0.9)
-            if len(player) > 0:
-                bot_status.mineral_type = mineral_type
-                minal_full_pos = matches[0]
-                if mineral_type == MineralType.HERB_YELLOW:
-                    minal_full_pos = (
-                        minal_full_pos[0] - 18, minal_full_pos[1] - 70)
-                elif mineral_type == MineralType.HERB_PURPLE:
-                    minal_full_pos = (
-                        minal_full_pos[0] - 18, minal_full_pos[1] - 40)
-                elif mineral_type == MineralType.CRYSTAL:
-                    minal_full_pos = (
-                        minal_full_pos[0] - 10, minal_full_pos[1] - 50)
-                elif mineral_type == MineralType.HEART:
-                    minal_full_pos = (
-                        minal_full_pos[0] - 10, minal_full_pos[1] - 60)
-
-                player_full_pos = player[0]
-                dx_full = minal_full_pos[0] - player_full_pos[0]
-                dy_full = minal_full_pos[1] - (player_full_pos[1] - 130)
-                minal_pos = (
-                    player_pos[0] + round(dx_full / 15.0), player_pos[1] + round(dy_full / 15.0))
-                bot_status.minal_pos = minal_pos
-                distances = list(
-                    map(distance_to_minal, routine.sequence))
-                index = np.argmin(distances)
-                bot_status.minal_closest_pos = routine[index].location
 
 detector = Detector()
 

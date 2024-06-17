@@ -29,8 +29,6 @@ class CommandBook():
         self.dict, self.func_dict, self.module = result
         self.__update_default_commands()
 
-        bot_settings.class_name = self.character_name
-
     def _load_commands(self, file):
         """Prompts the user to select a command module to import. Updates config's command book."""
 

@@ -258,7 +258,7 @@ def locate_player_fullscreen(accurate=False, frame=None, role_template=None):
         if frame is None:
             frame = capture.frame
         if role_template is None:
-            role_template = bot_settings.role_template
+            role_template = bot_settings.role.name_template
         tl_x = player_pos[0]-50
         tl_y = player_pos[1]
         player_crop = frame[tl_y:tl_y+250, tl_x-150:tl_x+150]
