@@ -12,9 +12,7 @@ from src.common.constants import *
 from src.common import bot_settings, utils
 from src.routine.components import *
 from src.command import commands
-from src.map.map import shared_map
 from src.command.command_book import CommandBook
-from src.common import bot_action
 
 
 class RoutineUpdateType(Enum):
@@ -221,7 +219,6 @@ class Routine(Subject):
         self.path = ''
         self.labels = {}
         self.command_book = None
-        shared_map.clear()
         bot_settings.reset()
 
         self.on_next((RoutineUpdateType.cleared, ))
@@ -411,6 +408,8 @@ class Routine(Subject):
             self.notify_rune_failed(used_frame)
         else:
             self.on_next((BotInfo.RUNE_LIBERATED, rune_type))
+            # if rune_type == 'Rune of Might':
+            #     bot_action.cancel_rune_buff()
 
     def notify_rune_failed(self, used_frame):
         bot_status.rune_pos = None

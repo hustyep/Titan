@@ -252,16 +252,17 @@ class Bot(Subject):
                 #     words = ['??', 'hello?', ' cc pls', 'bro?']
                 #     random_word = random.choice(words)
                 #     ActionSimulator.say_to_all(random_word)
-                # case BotWarnning.OTHERS_COMMING:
+                # case BotWarnning.OTHERS_COMMING:i
                     # pass
         elif isinstance(event_type, BotInfo):
             match event_type:
                 case BotInfo.RUNE_ACTIVE:
                     pass
         elif isinstance(event_type, BotVerbose):
-            match event_type:
-                case BotVerbose.BOSS_APPEAR:
-                    threading.Timer(180, bot_action.open_boss_box).start()
+            pass
+            # match event_type:
+            #     case BotVerbose.BOSS_APPEAR:
+            #         threading.Timer(180, bot_action.open_boss_box).start()
         elif isinstance(event_type, BotDebug):
             pass
 
