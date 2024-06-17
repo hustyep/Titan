@@ -49,15 +49,13 @@ class BotInfo(Enum):
     RUNE_ACTIVE = 'Rune Active'
     RUNE_LIBERATED = 'Rune Liberated'
     OTHERS_LEAVED = 'Someone\'s gone'
-
+    BOSS_APPEAR = 'Boss Appear'
 
 class BotVerbose(Enum):
     MINE_ACTIVE = 'Mine Active'
-    BOSS_APPEAR = 'Boss Appear'
-    BLIND = 'Blind'
     CALIBRATED = 'calibrated'
     NEW_FRAME = 'New Frame'
-
+    BLIND = 'Blind'
 
 class BotDebug(Enum):
     SCREENSHOT_FAILED = 'Screenshot Failed'

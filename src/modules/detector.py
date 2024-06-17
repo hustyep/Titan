@@ -75,7 +75,7 @@ class Detector(Subject):
         while True:
             self.check_minimap()
             if bot_status.enabled:
-                # self.check_boss()
+                self.check_boss()
                 # self.check_binded()
                 self.check_dead()
                 self.check_no_movement()
@@ -305,7 +305,7 @@ class Detector(Subject):
                             height // 4, width // 4:3 * width // 4]
         elite = utils.multi_match(elite_frame, ELITE_TEMPLATE, threshold=0.9)
         if len(elite) > 0:
-            self.on_next((BotVerbose.BOSS_APPEAR, ))
+            self.on_next((BotInfo.BOSS_APPEAR, ))
 
     def check_binded(self):
         frame = capture.frame

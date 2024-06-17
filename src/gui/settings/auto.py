@@ -118,7 +118,7 @@ class Auto(LabelFrame):
         
         rect = (x, y, width, height)
         while bot_status.cubing:
-            if self._cube_result(rect, PotentialType.LUK, PotentialLevel.HIGH):
+            if self._cube_result(rect, PotentialType.CD, PotentialLevel.HIGH):
                 self._stop_cube()
                 chat_bot.voice_call()
                 break
@@ -233,7 +233,7 @@ class Auto(LabelFrame):
                     #     chat_bot.send_message(text="daminit", image_path=image_path)
                     #     time.sleep(0.5)
                     #     return False
-                elif total >= 33:
+                elif total >= 30:
                     return True
                 else:
                     return False

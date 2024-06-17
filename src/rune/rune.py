@@ -493,7 +493,7 @@ def rune_interact_result(frame):
     return False
 
 def rune_liberate_result(frame):
-    image = frame[50:400, 50:-50]
+    image = frame[50:400, 20:-20]
     image_success = filter_color(image, RUNE_LIBERATED_TEXT_RANGES)
     # cv2.imshow("", image)
     # cv2.waitKey()
@@ -502,11 +502,11 @@ def rune_liberate_result(frame):
     text = tess.image_to_string(image_rgb, lang="eng")
     content = text.replace("\f", "").split("\n")
     for c in content:
-        if len(c) > 0 and 'rune of' in c.lower():
+        if len(c) > 0 and 'rune' in c.lower():
             print(c)
             print('\n')
-            list = c.split(":")
-            return list[0]
+            # list = c.split(":")
+            return c
 
     # image_failed = filter_color(image, RUNE_FAILED_TEXT_RANGES)
     # image_rgb = cv2.cvtColor(image_failed, cv2.COLOR_BGR2RGB)
