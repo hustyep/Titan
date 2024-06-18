@@ -4,16 +4,10 @@
 import asyncio
 import time
 import telegram
-import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 
 from src.chat_bot.chat_bot_entity import ChatBotEntity, ChatBotCommand
-
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.CRITICAL
-)
 
 def retry_on_error(func, wait=0.1, retry=0, *args, **kwargs):
     i = 0

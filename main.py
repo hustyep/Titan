@@ -1,6 +1,7 @@
 import time
 import platform
 import sys
+import logging
 
 from src.modules.bot import bot
 from src.common.dll_helper import dll_helper
@@ -13,6 +14,12 @@ from src.modules.notifier import notifier
 from src.modules.bot import bot
 from src.modules.gui import GUI
 from src.common.constants import BotFatal
+
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.CRITICAL
+)
 
 
 def exception_hook(exc_type, exc_value, tb):
