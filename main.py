@@ -18,7 +18,7 @@ from src.common.constants import BotFatal
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.CRITICAL
+    level=logging.ERROR
 )
 
 

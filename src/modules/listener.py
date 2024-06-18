@@ -182,7 +182,7 @@ class Listener(Configurable, Subject):
                 channel_num = 0
                 if len(args) > 0:
                     channel_num = int(args[0])
-                bot_action.change_channel(channel_num, bot_status.enabled)
+                bot_action.change_channel(channel_num)
                 return "changing channel...", None
             case ChatBotCommand.TEST:
                 bot_action.auto_login(args[0])

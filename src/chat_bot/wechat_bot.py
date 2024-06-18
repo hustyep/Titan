@@ -141,12 +141,12 @@ class WechatBot:
     def say_command(self, msg: str):
         list = msg.split(' ')
         if len(list) > 1:
-            message, image_path = self.command_handler(ChatBotCommand.SAY, list[1])
+            message, image_path = self.command_handler(ChatBotCommand.SAY, str(list[1]))
             self.send_message(message, imagePath=image_path)
 
     def click_command(self, msg: str):
         list = msg.split(' ')
-        message, _ = self.command_handler(ChatBotCommand.CLICK, (list[1], ))
+        message, _ = self.command_handler(ChatBotCommand.CLICK, str(list[1]))
         self.send_message(message, capture.frame)
         
     def tp_command(self):
