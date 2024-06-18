@@ -1,7 +1,7 @@
 """A module for saving map layouts and determining shortest paths."""
 
 from src.common.constants import *
-from src.common import  utils
+from src.common import utils
 from src.common.gui_setting import gui_setting
 from src.map import map_editor
 from src.models.map_model import MapModel
@@ -32,7 +32,7 @@ class Map:
     def minimap_data(self):
         if self.current_map != None:
             return self.current_map.minimap_data
-        
+
     @property
     def data_available(self):
         return self.minimap_data is not None and len(self.minimap_data) > 0
@@ -59,18 +59,25 @@ class Map:
         else:
             return MapPointType.Unknown
 
-    def near_rope(self, location: tuple[int, int]):
+    def near_rope(self, location: tuple[int, int], up=False):
         if self.data_available:
             height, width = self.minimap_data.shape
             cur_x = location[0]
             cur_y = location[1]
-            start_x = max(0, cur_x - 1)
-            end_x = min(width - 1, cur_x + 1)
-            start_y = max(0, cur_y - 15)
-            end_y = min(height - 1, cur_y + 5)
-            for x in range(start_x, end_x):
-                for y in range(start_y, end_y):
-                    if self.minimap_data[y][x] == 2:
+            if up:
+                start_x = max(0, cur_x - 1)
+                end_x = min(width - 1, cur_x + 1)
+                start_y = max(0, cur_y - 7)
+                end_y = cur_y
+                for x in range(start_x, end_x + 1):
+                    for y in range(start_y, end_y + 1):
+                        if self.point_type((x, y)) == MapPointType.Rope:
+                            return True
+            else:
+                start_x = max(0, cur_x - 1)
+                end_x = min(width - 1, cur_x + 1)
+                for x in range(start_x, end_x + 1):
+                    if self.point_type((x, cur_y + 7)) == MapPointType.FloorRope:
                         return True
         return False
 
@@ -90,18 +97,26 @@ class Map:
             x = location[0]
             y = location[1] + 7
             value = self.point_type((x, y))
-            return value == MapPointType.Floor or value == MapPointType.FloorRope
+            value_l = self.point_type((x - 1, y))
+            value_r = self.point_type((x + 1, y))
+            return self.is_floor_point(value) and self.is_floor_point(value_l) and self.is_floor_point(value_r)
         else:
             return True
 
     def platform_point(self, target: tuple[int, int]):
         if self.data_available:
             height, _ = self.minimap_data.shape
-            for y in range(target[1] - 7, height - 1):
-                p = (target[0], y)
-                if shared_map.on_the_platform(p):
-                    return p
-
+            dx = 1
+            while True:
+                p1 = (target[0], target[1] + dx)
+                p2 = (target[0], target[1] - dx)
+                if self.point_type(p1) == MapPointType.Unknown and self.point_type(p2) == MapPointType.Unknown:
+                    break
+                if self.point_type(p1) != MapPointType.Unknown and self.on_the_platform(p1):
+                    return p1
+                if self.point_type(p2) != MapPointType.Unknown and self.on_the_platform(p2):
+                    return p2
+                dx += 1
         return target
 
     def valid_point(self, p: tuple[int, int]):
@@ -112,7 +127,11 @@ class Map:
             return (x, y)
         return p
 
-    def is_continuous(self, p1, p2, max_gap=0):
+    def is_floor_point(self, point):
+        value = self.point_type(point)
+        return value == MapPointType.Unknown or value == MapPointType.Floor or value == MapPointType.FloorRope
+
+    def is_continuous(self, p1, p2):
         if self.data_available:
             if p1[1] != p2[1]:
                 return False
@@ -120,14 +139,9 @@ class Map:
                 return False
             gap = 0
             y = p1[1]
-            for x in range(p1[0], p2[0]):
-                if self.on_the_platform((x, y)):
-                    gap = 0
-                else:
-                    gap += 1
-                if gap > max_gap:
+            for x in range(p1[0] + 1, p2[0]):
+                if not self.on_the_platform((x, y)):
                     return False
-
             return True
         else:
             return True

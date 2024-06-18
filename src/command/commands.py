@@ -113,11 +113,11 @@ class Command():
 
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
-        if cls.cooldown == 0:
+        if cls.cooldown == 0 and cls.backswing == 0:
             return True
 
         cur_time = time.time()
-        if (cur_time - cls.castedTime) > cls.cooldown + cls.backswing:
+        if (cur_time + next_t - cls.castedTime) >= cls.cooldown + cls.backswing:
             return True
 
         return False
@@ -195,58 +195,51 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
 
     d_x = target[0] - start[0]
     d_y = target[1] - start[1]
-    if abs(d_x) <= tolerance or d_y == 0:
+    if abs(d_x) <= tolerance:
         return target
+    elif d_y == 0:
+        if shared_map.is_continuous(start, target):
+            return target
     elif d_y < 0:
-        tmp_x = (target[0], start[1])
         tmp_y = (start[0], target[1])
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
+        tmp_x = (target[0], start[1])
         if shared_map.on_the_platform(tmp_x):
             if shared_map.is_continuous(start, tmp_x) or abs(d_x) >= 26:
                 return tmp_x
-        return shared_map.platform_point(tmp_x)
     else:
-        # if abs(d_x) >= 20 and abs(d_y) >= 20:
-        #     p = (start[0] + (20 if d_x > 0 else -20), target[1])
-        #     if map.on_the_platform(p):
-        #         return p
         tmp_x = (target[0], start[1])
-        if shared_map.is_continuous(tmp_x, target):
+        if shared_map.is_continuous(tmp_x, start):
             return tmp_x
         tmp_y = (start[0], target[1])
-        if shared_map.on_the_platform(tmp_y):
+        if shared_map.is_continuous(tmp_y, target):
             return tmp_y
-        return shared_map.platform_point(tmp_y)
+    return shared_map.platform_point(target)
 
 
-def evade_rope(target: tuple[int, int] = None):
-    if target is None:
-        pos = bot_status.player_pos
-        left = max(0, pos[0] - 1)
-        right = min(pos[0] + 1, shared_map.minimap_data.shape[1] - 1)
-        has_rope = False
-        for x in range(left, right + 1):
-            if shared_map.point_type((x, pos[1] + 7)) == MapPointType.FloorRope:
-                has_rope = True
-                break
-        if has_rope:
-            target_l = shared_map.valid_point((pos[0] - 2, pos[1]))
-            target_r = shared_map.valid_point((pos[0] + 2, pos[1]))
-            if shared_map.on_the_platform(target_l):
-                Walk(target_l[0], tolerance=0).execute()
-            elif shared_map.on_the_platform(target_r):
-                Walk(target_r[0], tolerance=0).execute()
+def evade_rope(up = False):
+    if not shared_map.near_rope(bot_status.player_pos, up):
         return
+    pos = bot_status.player_pos
+    target_l = shared_map.valid_point((pos[0] - 2, pos[1]))
+    target_r = shared_map.valid_point((pos[0] + 2, pos[1]))
+    if shared_map.on_the_platform(target_l):
+        Walk(target_l[0], tolerance=0).execute()
+    elif shared_map.on_the_platform(target_r):
+        Walk(target_r[0], tolerance=0).execute()
 
-    if shared_map.near_rope(bot_status.player_pos):
-        target_l = shared_map.valid_point((target[0] - 2, target[1]))
-        target_r = shared_map.valid_point((target[0] + 2, target[1]))
-        if shared_map.on_the_platform(target_l):
-            Walk(target_l[0], tolerance=0).execute()
-        elif shared_map.on_the_platform(target_r):
-            Walk(target_r[0], tolerance=0).execute()
-
+def opposite_direction(direction):
+    if direction not in ['left', 'right', 'up', 'down']:
+        return None
+    if direction == "left":
+        return 'right'
+    elif direction == "right":
+        return 'left'
+    elif direction == "up":
+        return 'down'
+    else:
+        return 'up'
 
 def direction_changed(direction) -> bool:
     if direction == 'left':
@@ -304,7 +297,7 @@ class Buff(ABC):
 class Walk(Command):
     """Walks in the given direction for a set amount of time."""
 
-    def __init__(self, target_x, tolerance=5, interval=0.02, max_steps=500):
+    def __init__(self, target_x, tolerance=5, interval=0.01, max_steps=500):
         super().__init__(locals())
         self.target_x = bot_settings.validate_nonnegative_int(target_x)
         self.interval = bot_settings.validate_nonnegative_float(interval)
@@ -323,21 +316,23 @@ class Walk(Command):
         while bot_status.enabled and abs(d_x) > self.tolerance and walk_counter < self.max_steps:
             # print(f"dx={d_x}")
             new_direction = 'left' if d_x < 0 else 'right'
-            if self.tolerance > 2 or abs(d_x) > 2:
+            if self.tolerance > 0 or abs(d_x) > 1:
                 if new_direction != direction:
                     key_up(direction)
-                    time.sleep(0.02)
+                    time.sleep(0.01)
                 key_down(new_direction)
                 direction = new_direction
                 time.sleep(self.interval)
             else:
-                key_up(direction)
-                press_acc(new_direction, down_time=0.02, up_time=0.02)
-                direction = new_direction
+                if direction is not None:
+                    key_up(direction)
+                    direction = None
+                press_acc(new_direction, down_time=0.01, up_time=0.005)
 
             walk_counter += 1
             d_x = self.target_x - bot_status.player_pos[0]
-        key_up(direction)
+        if direction is not None:
+            key_up(direction)
         print(f"end dx={d_x}")
 
 
@@ -376,7 +371,7 @@ class DetectAroundAnchor(Command):
                 anchor=anchor,
                 insets=AreaInsets(
                     top=self.top, bottom=self.bottom, left=self.left, right=self.right),
-                multy_match=self.count > 0,
+                multy_match=self.count > 1,
                 debug=False)
             if len(mobs) >= self.count:
                 break
@@ -399,7 +394,7 @@ class DetectInRect(Command):
         while True:
             mobs = detect_mobs_in_rect(
                 rect=Rect(self.x, self.y, self.width, self.height),
-                multy_match=self.count > 0,
+                multy_match=self.count > 1,
                 debug=False)
             if len(mobs) >= self.count:
                 break
@@ -605,6 +600,7 @@ class Direction(Command):
         # if bot_status.player_direction != self.direction:
         press(self.direction, n=2, down_time=0.01, up_time=0.01)
 
+
 class Rest(Command):
     def __init__(self, wait):
         super().__init__(locals())
@@ -617,6 +613,7 @@ class Rest(Command):
         time.sleep(self.wait)
         bot_status.prepared = False
         bot_status.enabled = True
+
 
 class GoArdentmill(Command):
     def main(self):
@@ -659,6 +656,8 @@ class Skill(Command):
 
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
+        if cls.icon is None:
+            return super().canUse(next_t)
         return cls.ready
 
     @classmethod
@@ -671,8 +670,8 @@ class Skill(Command):
             case SkillType.Switch:
                 matchs = utils.multi_match(
                     capture.buff_frame, cls.icon[2:-2, 2:-16], threshold=0.9)
-                cls.ready = len(matchs) == 0
-                cls.enabled = not cls.ready
+                cls.enabled = len(matchs) > 0
+                cls.ready = not cls.enabled
             case SkillType.Buff:
                 cls.check_buff_enabled()
                 if cls.enabled:

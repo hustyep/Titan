@@ -24,7 +24,7 @@ class Keybindings(DefaultKeybindings):
     Shadow_Spear = 'v'
     Throwing_Star_Barrage_Master = 'z'
     Shadow_Bat = 'f1'
-    Dark_Elemental = 'f2'
+    Dark_Elemental = 'f3'
     Darkness_Ascending = '7'
 
     # Potion
@@ -63,7 +63,7 @@ def step(target, tolerance):
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
     if abs(d_x) >= 26:
-        hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
+        DoubleJump(target=target, attack_if_needed=True).execute()
         return
 
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
@@ -87,27 +87,14 @@ def step(target, tolerance):
     elif direction == "down":
         move_down(next_p)
     elif abs(d_x) >= 24:
-        hit_and_run(direction, next_p, tolerance)
-    elif abs(d_x) >= 10:
-        Shadow_Dodge(direction).execute()
-    else:
-        Walk(target_x=next_p[0], tolerance=tolerance).execute()
-
-
-@bot_status.run_if_enabled
-def hit_and_run(direction, target, tolerance):
-    if gui_setting.detection.detect_mob:
-        if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
-            t = AsyncTask(target=pre_detect, args=(direction,))
-            t.start()
-            elite_detected = t.join()
-            DoubleJump(target=target, attack_if_needed=True).execute()
-            if elite_detected:
-                pass
+        DoubleJump(target=next_p, attack_if_needed=True).execute()
+    elif shared_map.is_continuous(bot_status.player_pos, next_p):
+        if abs(d_x) >= 10:
+            Shadow_Dodge(direction).execute()
         else:
-            DoubleJump(target=target, attack_if_needed=True).execute()
+            Walk(target_x=next_p[0], tolerance=tolerance).execute()
     else:
-        DoubleJump(target=target, attack_if_needed=True).execute()
+        DoubleJump(target=next_p, attack_if_needed=True).execute()
 
 #########################
 #        Y轴移动         #
@@ -122,7 +109,7 @@ def move_up(target):
     if dy <= 6:
         press(Keybindings.JUMP)
     elif dy <= 23:
-        Jump_Up().execute()
+        Jump_Up(target).execute()
     else:
         RopeLift(dy).execute()
 
@@ -130,6 +117,7 @@ def move_up(target):
 @bot_status.run_if_enabled
 def move_down(target):
     sleep_in_the_air(n=1)
+    evade_rope()
     if target[1] > bot_status.player_pos[1]:
         Fall().execute()
 
@@ -138,22 +126,12 @@ class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
-    # cooldown = 0.1
+    backswing = 0.2
 
     def __init__(self, target: tuple[int, int], attack_if_needed=False):
         super().__init__(locals())
-
         self.target = target
         self.attack_if_needed = attack_if_needed
-
-    def detect_mob(self, direction):
-        insets = AreaInsets(top=220,
-                            bottom=100,
-                            left=650 if direction == 'left' else 10,
-                            right=10 if direction == 'left' else 600)
-        anchor = bot_helper.locate_player_fullscreen(accurate=True)
-        mobs = detect_mobs(insets=insets, anchor=anchor)
-        return mobs
 
     def main(self):
         while not self.canUse():
@@ -165,33 +143,14 @@ class DoubleJump(Skill):
 
         self.__class__.castedTime = time.time()
         key_down(direction)
+        time.sleep(0.1)
+        press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.02)
+        press(self.key, 1, down_time=0.02, up_time=0.03)
         if self.attack_if_needed:
-            # detect = AsyncTask(
-            #     target=self.detect_mob, args=(direction, ))
-            # detect.start()
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.02)
-            # mobs_detected = detect.join()
-            mobs_detected = True
-            times = 2 if mobs_detected else 1
-            press(self.key, 1, down_time=0.02, up_time=0.03)
-            if mobs_detected:
-                Attack().execute()
-        else:
-            times = 2 if abs(dx) >= 32 else 1
-            if dy == 0:
-                if abs(dx) in range(20, 26):
-                    press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.5)
-                else:
-                    press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-            else:
-                press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
-            press(self.key, times, down_time=0.03, up_time=0.03)
-
+            Attack().execute()
         key_up(direction)
-        if start_y == 68:
-            time.sleep(0.02)
-        else:
-            sleep_in_the_air(n=1, start_y=start_y)
+        time.sleep(self.backswing)
+        sleep_in_the_air(n=1, start_y=start_y)
 
 
 # 上跳
@@ -204,18 +163,13 @@ class Jump_Up(Command):
         self.target = target
 
     def main(self):
-        # TODO too long
-        time.sleep(0.5)
+        sleep_in_the_air(n=4)
+        press(opposite_direction(bot_status.player_direction))
+        # evade_rope(True)
 
-        target_left = (self.target[0] - 1, self.target[1])
-        target_right = (self.target[0] + 1, self.target[1])
-        if not shared_map.on_the_platform(target_left):
-            press('right')
-        elif not shared_map.on_the_platform(target_right):
-            press('left')
-
-        evade_rope(self.target)
-
+        up_point = (bot_status.player_pos[0], self.target[1])
+        if not shared_map.on_the_platform(up_point):
+            move_horizontal((self.target[0], bot_status.player_pos[1]), 0)
         dy = bot_status.player_pos[1] - self.target[1]
         press(Keybindings.JUMP)
         key_down('up')
@@ -224,14 +178,34 @@ class Jump_Up(Command):
         key_up('up')
         sleep_in_the_air(n=10)
 
+#########################
+#        X轴移动         #
+#########################
 
-# 水平位移
+
+@bot_status.run_if_enabled
+def move_horizontal(target, tolerance):
+    if bot_status.player_pos[1] != target[1]:
+        print("!!! move_horizontal error")
+        return
+    dx = target[0] - bot_status.player_pos[0]
+    direction = 'left' if dx < 0 else 'right'
+    while abs(dx) > tolerance:
+        if abs(dx) >= 24:
+            DoubleJump(target=target, attack_if_needed=True).execute()
+        elif abs(dx) >= 10:
+            Shadow_Dodge(direction).execute()
+        else:
+            Walk(target_x=target[0], tolerance=tolerance).execute()
+        dx = target[0] - bot_status.player_pos[0]
+
+
 class Shadow_Dodge(Skill):
     key = Keybindings.Shadow_Dodge
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 1.5
+    backswing = 1
 
     def __init__(self, direction):
         super().__init__(locals())
@@ -260,15 +234,15 @@ class Shadow_Dodge(Skill):
 class Greater_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Summon
-    cooldown = 58
+    cooldown = 60
     backswing = 0.8
-    duration = 60
+    duration = 55
 
-    def __init__(self):
-        super().__init__(locals())
-
-    def main(self):
-        super().main()
+class Replace_Dark_Servant(Skill):
+    key = Keybindings.Greater_Dark_Servant
+    type = SkillType.Move
+    cooldown = 3
+    backswing = 0.6
 
 
 #######################
@@ -281,66 +255,32 @@ class Shadow_Bat(Skill):
     cooldown = 1
     ready = False
 
+
 class Dark_Elemental(Skill):
     key = Keybindings.Dark_Elemental
     type = SkillType.Switch
     cooldown = 1
     ready = False
-    
+
+
 class Darkness_Ascending(Skill):
     key = Keybindings.Darkness_Ascending
     type = SkillType.Switch
     cooldown = 1
     ready = False
 
-class Quintuple_Star(Command):
+
+class Quintuple_Star(Skill):
     key = Keybindings.Quintuple_Star
     type = SkillType.Attack
     backswing = 0.5
-
-    def main(self):
-        time.sleep(self.__class__.precast)
-        self.__class__.castedTime = time.time()
-        press_acc(self.__class__.key, up_time=self.__class__.backswing)
-
-
-class Attack(Command):
-    key = Quintuple_Star.key
-    type = SkillType.Attack
-    backswing = Quintuple_Star.backswing
-
-    def __init__(self, detect=False):
-        super().__init__(locals())
-        self.detect = bot_settings.validate_boolean(detect)
-
-    def main(self):
-        if self.detect:
-            pos = (800, 560)
-            if bot_status.player_direction == 'left':
-                mobs = detect_mobs_around_anchor(
-                    anchor=pos, insets=AreaInsets(top=200, bottom=100, left=300, right=0))
-            else:
-                mobs = detect_mobs_around_anchor(
-                    anchor=pos, insets=AreaInsets(top=200, bottom=100, left=0, right=300))
-            if len(mobs) > 0:
-                Quintuple_Star().execute()
-        else:
-            Quintuple_Star().execute()
 
 
 class Dark_Omen(Skill):
     key = Keybindings.Dark_Omen
     type = SkillType.Attack
-    cooldown = 10
+    cooldown = 20
     backswing = 0.75
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[9:, ], threshold=0.9, debug=False)
-        cls.ready = len(matchs) > 0
 
 
 class Shadow_Bite(Skill):
@@ -361,7 +301,17 @@ class Dominion(Skill):
     key = Keybindings.Dominion
     type = SkillType.Buff
     cooldown = 180
-    backswing = 1
+
+    def main(self):
+        if not self.canUse():
+            return False
+
+        time.sleep(self.__class__.precast)
+        self.__class__.castedTime = time.time()
+        press_acc(self.__class__.key, down_time=0.01, up_time=0.03)
+        Shadow_Dodge().execute()
+        return True
+
 
 class Phalanx_Charge(Skill):
     key = Keybindings.Phalanx_Charge
@@ -370,9 +320,97 @@ class Phalanx_Charge(Skill):
     backswing = 0.75
 
 
+class Attack(Command):
+    key = Quintuple_Star.key
+    type = SkillType.Attack
+    backswing = Quintuple_Star.backswing
+
+    def main(self):
+        Quintuple_Star().execute()
+
+
+class Shadow_Attack(Command):
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        return True
+
+    def main(self):
+        if Dominion.canUse():
+            Dominion().execute()
+        elif Arachnid.canUse():
+            Arachnid().execute()
+            Dark_Omen().execute()
+        elif Shadow_Bite.canUse():
+            Shadow_Bite().execute()
+        elif Dark_Omen.canUse():
+            Dark_Omen().execute()
+        return True
+
+
+class Detect_Attack(Command):
+    def __init__(self, x=0, y=0):
+        super().__init__(locals())
+        self.x = int(x)
+        self.y = int(y)
+
+    def main(self):
+        width = 300
+        height = 100
+
+        if len(detect_mobs_in_rect(
+                capture.frame[self.y - height:self.y, self.x-width:self.x], MobType.NORMAL, multy_match=True)) > 0:
+            press('left')
+        elif len(detect_mobs_in_rect(
+                capture.frame[self.y - height:self.y, self.x:self.x+width], MobType.NORMAL, multy_match=True)) > 0:
+            press('right')
+        elif len(detect_mobs_in_rect(
+                capture.frame[height:height*2, width:width*2], MobType.NORMAL, multy_match=True)) > 0:
+            press(Keybindings.JUMP)
+            press('left')
+        elif len(detect_mobs_in_rect(
+                capture.frame[height:height*2, width*2:width*3], MobType.NORMAL, multy_match=True)) > 0:
+            press(Keybindings.JUMP)
+            press('right')
+        key_down(Keybindings.Attack)
+        time.sleep(2)
+        key_down(Keybindings.Attack)
+        return True
+
+
+class DetectAroundAnchor(Command):
+    def __init__(self, count=1, x=0, y=0, top=315, bottom=0, left=500, right=500):
+        super().__init__(locals())
+        self.count = int(count)
+        self.x = int(x)
+        self.y = int(y)
+        self.top = int(top)
+        self.bottom = int(bottom)
+        self.left = int(left)
+        self.right = int(right)
+
+    def main(self):
+        if self.x == 0 and self.y == 0:
+            anchor = bot_helper.locate_player_fullscreen(accurate=True)
+        else:
+            anchor = (self.x, self.y)
+        start = time.time()
+        while True:
+            mobs = detect_mobs_around_anchor(
+                anchor=anchor,
+                insets=AreaInsets(
+                    top=self.top, bottom=self.bottom, left=self.left, right=self.right),
+                multy_match=self.count > 1,
+                debug=False)
+            if len(mobs) >= self.count:
+                break
+            if time.time() - start > 7:
+                break
+            Detect_Attack(self.x, self.y).execute()
+
 ###################
 #      Buffs      #
 ###################
+
 
 class Buff(Command):
     """Uses each of Shadowers's buffs once."""
@@ -384,7 +422,7 @@ class Buff(Command):
             Shadow_Bat,
             Transcendent_Cygnus_Blessing,
             LastResort,
-            Glory_of_the_Guardians,
+            # Glory_of_the_Guardians,
             Shadow_Spear,
             # Shadow_Illusion,
             ForTheGuild,
