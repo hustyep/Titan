@@ -26,10 +26,7 @@ class Capture(Subject):
         self.calibrated = False
         self.window_list = []
         self.hwnd = 0
-        self.msg_hwnd = 0
         self.frame = None
-        self.msg_frame = None
-        self.minimap_actual = None
         self.minimap_display = None
         self.window = {
             'left': 0,
@@ -37,7 +34,6 @@ class Capture(Subject):
             'width': 1366,
             'height': 768
         }
-        self.msg_window = (0, 0, 0, 0)
         self.mm_tl = None
         self.mm_br = None
 
@@ -84,21 +80,13 @@ class Capture(Subject):
         self.window_list = tmp_list
         if len(self.window_list) > 1:
             self.hwnd = self.window_list[-1]
-            self.msg_hwnd = self.window_list[0]
         elif self.window_list:
             self.hwnd = self.window_list[0]
         else:
             self.hwnd = 0
-            self.msg_hwnd = 0
-
-    def calibrate_msg_window(self):
-        if not self.msg_hwnd:
-            return
-        self.msg_window = win32gui.GetWindowRect(self.msg_hwnd)  # 获取当前窗口大小
 
     def recalibrate(self):
         self.find_window()
-        self.calibrate_msg_window()
 
         ''' Calibrate screen capture'''
         # self.hwnd = win32gui.FindWindow(None, "MapleStory")
@@ -164,7 +152,7 @@ class Capture(Subject):
         new_frame = frame[top:top+height, left:left+width]
 
         # Crop the frame to only show the minimap
-        minimap = new_frame[self.mm_tl[1]                            :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+        minimap = new_frame[self.mm_tl[1]:self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
 
         # Determine the player's position
         player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
@@ -200,12 +188,7 @@ class Capture(Subject):
                         (BotError.LOST_PLAYER, now - self.lost_player_time))
 
         self.frame = new_frame
-        if len(self.window_list) > 1:
-            self.msg_frame = frame[self.msg_window[1]
-                :self.msg_window[3], self.msg_window[0]:self.msg_window[2]]
         self.minimap_display = minimap
-        self.minimap_actual = minimap[:,
-                                      bot_settings.mini_margin:-bot_settings.mini_margin]
         self.on_next((BotVerbose.NEW_FRAME, self.frame))
 
     def convert_to_relative_minimap_point(self, pos: tuple[int, int]):
@@ -239,7 +222,13 @@ class Capture(Subject):
                               self.mm_tl[0] + 36:self.mm_br[0]]
 
     @property
+    def msg_frame(self):
+        if self.frame is not None:
+            return self.frame[-40:, :400]
+
+    @property
     def window_rect(self):
         return Rect(self.window['left'], self.window['top'], self.window['width'], self.window['height'])
+
 
 capture = Capture()

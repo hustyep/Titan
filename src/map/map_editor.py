@@ -20,12 +20,12 @@ def save_minimap_data(map_name: str, data):
         print(f" ~ Finished saving map data '{map_name}'")
 
 
-def create_minimap_data():
+def create_minimap_data(minimap_actual):
     if gui_setting.mode.type != BotRunMode.Mapping:
         return
-    if capture.minimap_actual is not None and len(capture.minimap_actual) > 0:
-        width = capture.minimap_actual.shape[1] + 1
-        height = capture.minimap_actual.shape[0] + 1
+    if minimap_actual is not None and len(minimap_actual) > 0:
+        width = minimap_actual.shape[1] + 1
+        height = minimap_actual.shape[0] + 1
         print(' ~ Created new minimap data \n')
         return np.zeros((height, width), np.uint8)
     else:

@@ -95,7 +95,6 @@ SETTING_VALIDATORS = {
     'move_tolerance': int,
     'adjust_tolerance': int,
     'record_layout': validate_boolean,
-    'mini_margin': int,
 }
 
 class SystemKeybindings:
@@ -110,13 +109,12 @@ class SystemKeybindings:
 def reset():
     """Resets all settings to their default values."""
 
-    global move_tolerance, adjust_tolerance, record_layout, mini_margin
+    global move_tolerance, adjust_tolerance, record_layout
     global boundary_point_l, boundary_point_r
 
     move_tolerance = 13
     adjust_tolerance = 3
     record_layout = False
-    mini_margin = 0
 
 
 def get_routines_dir(command_name):
@@ -135,8 +133,6 @@ adjust_tolerance = 3
 
 # Whether the bot should save new player positions to the current layout
 record_layout = False
-
-mini_margin = 0
 
 role: RoleModel = None
 

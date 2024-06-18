@@ -97,7 +97,7 @@ def setClipboard(text: str):
 ############################
 
 def __say(text: str):
-    setClipboard(text)
+    setClipboard(str(text))
     click_key('enter', 0.3)
     press_key("ctrl", 0.05)
     click_key("v", 0.05)
@@ -484,6 +484,7 @@ def stop_game():
 
 @bot_status.run_if_enabled
 def take_daily_quest():
+    bot_status.acting = True
     mouse_move(QUEST_BUBBLE_TEMPLATE,
                Rect(0, 200, 100, 100),
                YELLOW_RANGES)
@@ -494,3 +495,4 @@ def take_daily_quest():
     click_key('y', delay=0.3)
     click_key(
         bot_settings.SystemKeybindings.INTERACT, delay=0.3)
+    bot_status.acting = False

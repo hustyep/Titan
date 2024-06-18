@@ -5,6 +5,7 @@ from src.common import utils
 from src.common.gui_setting import gui_setting
 from src.map import map_editor
 from src.models.map_model import MapModel
+from src.modules.capture import capture
 
 
 class Map:
@@ -36,6 +37,12 @@ class Map:
     @property
     def data_available(self):
         return self.minimap_data is not None and len(self.minimap_data) > 0
+
+    @property
+    def minimap_frame(self):
+        if capture.minimap_display is not None and self.current_map is not None:
+            return capture.minimap_display[:,
+                                           self.current_map.minimap_margin:-self.current_map.minimap_margin]
 
     def clear(self):
         if self.current_map is not None:
@@ -150,7 +157,7 @@ class Map:
         if gui_setting.mode.type != BotRunMode.Mapping:
             return
         if not self.data_available:
-            self.minimap_data = map_editor.create_minimap_data()
+            self.minimap_data = map_editor.create_minimap_data(self.minimap_frame)
         if not self.data_available:
             return
         map_editor.add_start_point(point, self.minimap_data)

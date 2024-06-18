@@ -176,7 +176,7 @@ class Listener(Configurable, Subject):
                 filepath = utils.save_screenshot(capture.frame)
                 return f'said: "{args[0]}"', filepath
             case ChatBotCommand.TP:
-                bot_action.go_home()
+                bot_action.teleport_random_town()
                 return "tp...", None
             case ChatBotCommand.CHANGE_CHANNEL:
                 channel_num = 0

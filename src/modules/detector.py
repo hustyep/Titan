@@ -75,7 +75,7 @@ class Detector(Subject):
     def _main_exception(self):
         while True:
             self.check_minimap()
-            if bot_status.enabled:
+            if bot_status.enabled and not bot_status.acting:
                 self.check_boss()
                 self.check_binded()
                 self.check_dead()
@@ -102,7 +102,7 @@ class Detector(Subject):
     def _main_event(self):
         while True:
             frame = capture.frame
-            minimap = capture.minimap_actual
+            minimap = game_map.minimap_frame
 
             if bot_status.enabled and frame is not None and minimap is not None:
                 self.check_rune_status(frame, minimap)

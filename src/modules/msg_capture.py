@@ -26,7 +26,7 @@ WORLD_MSG_RANGES = (
 )
 WHITE_RANGES = (
     # ((0, 0, 100), (180, 50, 255)),
-    ((0, 0, 150), (180, 30, 255)),
+    ((0, 0, 150), (180, 43, 255)),
 )
 MAX_MSG_HEIGHT = 100
 
@@ -126,10 +126,10 @@ class MsgCapture:
                     self.last_nomarl_msg = new_normal_msg
                     self.notify_new_msg(new_normal_msg)
 
-                new_sys_msg = self.get_new_msg(capture.msg_frame, GameMsgType.SYSTEM)
-                if new_sys_msg and new_sys_msg != self.last_system_msg:
-                    self.last_system_msg = new_sys_msg
-                    self.notify_new_msg(new_sys_msg)
+                # new_sys_msg = self.get_new_msg(capture.msg_frame, GameMsgType.SYSTEM)
+                # if new_sys_msg and new_sys_msg != self.last_system_msg:
+                #     self.last_system_msg = new_sys_msg
+                #     self.notify_new_msg(new_sys_msg)
 
                 # new_mvp_msg = self.get_new_msg(frame, GameMsgType.MVP)
                 # if new_mvp_msg and new_mvp_msg != self.last_mvp_msg:
@@ -147,8 +147,7 @@ class MsgCapture:
                 return self.get_mvp_msg(image)
 
     def get_normal_msg(self, frame):
-        image = frame[-29-MAX_MSG_HEIGHT:-29, 2:400]
-        msg_list = self.image_to_str(image)
+        msg_list = self.image_to_str(frame, WHITE_RANGES)
 
         if len(msg_list) == 0:
             return None
@@ -156,8 +155,7 @@ class MsgCapture:
         return GameMsg(new_msg, GameMsgType.NORMAL, image)
 
     def get_sys_msg(self, frame):
-        image = frame[95:95+MAX_MSG_HEIGHT, 2:400]
-        msg_list = self.image_to_str(image, SYSTEM_MSG_RANGES)
+        msg_list = self.image_to_str(frame, SYSTEM_MSG_RANGES)
 
         if msg_list:
             new_msg = msg_list.pop()
@@ -232,11 +230,11 @@ class MsgCapture:
     def notify_new_msg(self, msg: GameMsg):
         text = f'{"📢" if msg.type == GameMsgType.SYSTEM else "💬"}{msg.text}'
         print(text)
-        if (BotFatal.WHITE_ROOM in notifier.notice_time_record and notifier.notice_time_record[BotFatal.WHITE_ROOM] > 0) or gui_setting.notification.notice_level >= 4:
-            path = 'screenshot/msgs'
-            image_path = utils.save_screenshot(
-                frame=msg.image, file_path=path, compress=False)
-            chat_bot.send_message(text=text, image_path=image_path)
+        # if (BotFatal.WHITE_ROOM in notifier.notice_time_record and notifier.notice_time_record[BotFatal.WHITE_ROOM] > 0) or gui_setting.notification.notice_level >= 4:
+        path = 'screenshot/msgs'
+        image_path = utils.save_screenshot(
+            frame=msg.image, file_path=path, compress=False)
+        chat_bot.send_message(text=text, image_path=image_path)
 
     def image_to_str(self, image, ranges=None):
         if ranges:
