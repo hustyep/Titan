@@ -6,7 +6,7 @@ from src.common.gui_setting import gui_setting
 from src.map import map_editor
 from src.models.map_model import MapModel
 from src.modules.capture import capture
-
+from src.common import bot_settings
 
 class Map:
     """Map Manager."""
@@ -19,7 +19,7 @@ class Map:
     def _load_data(self):
         file_path = f"{RESOURCES_DIR}/maps/maplestory_maps.xlsx"
         map_list = utils.load_excel(file_path)
-        available_maps = [MapModel]
+        available_maps = []
         for map in map_list:
             available_maps.append(MapModel(map))
         self.available_maps = available_maps
@@ -48,12 +48,14 @@ class Map:
         if self.current_map is not None:
             self.current_map.clear()
             self.current_map = None
-
+            bot_settings.mini_margin = 0
+                
     def load_map(self, map_name):
         self.clear()
         for map in self.available_maps:
             if map.name == map_name:
                 self.current_map = map
+                bot_settings.mini_margin = map.minimap_margin
                 break
 
     def point_type(self, point: tuple[int, int]):
@@ -157,7 +159,7 @@ class Map:
         if gui_setting.mode.type != BotRunMode.Mapping:
             return
         if not self.data_available:
-            self.minimap_data = map_editor.create_minimap_data(self.minimap_frame)
+            self.current_map.minimap_data = map_editor.create_minimap_data(self.minimap_frame)
         if not self.data_available:
             return
         map_editor.add_start_point(point, self.minimap_data)

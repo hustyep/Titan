@@ -109,20 +109,21 @@ class Bot(Subject):
     def identify_role(self):
         role_name = bot_helper.identify_role_name()
         if not role_name:
-            chat_bot.send_message("!!!role identify error", capture.frame)
+            if self.role is None:
+                print("!!!role identify error")
             time.sleep(1)
             return False
-
-        print(f"~identify name:{role_name}, class:{Name_Class_Map[role_name]}")
 
         # update role
         if self.role == None or self.role.name != role_name:
             self.load_role(role_name)
+            print(f"~identify name:{role_name}, class:{Name_Class_Map[role_name]}")
+
         return True
 
     def identify_map(self):
         map_name = bot_helper.identify_map_name()
-        if map_name != shared_map.current_map_name:
+        if map_name is not None and map_name != shared_map.current_map_name:
             print(f"identify map:{map_name}")
             self.load_map(map_name)
 
@@ -164,7 +165,7 @@ class Bot(Subject):
             shared_map.load_map(map_name)
             bot_status.reset()
 
-        map_routine_path = f'{bot_settings.get_routines_dir(self.role.character_type)}\\{map_name}.csv'
+        map_routine_path = f'{bot_settings.get_routines_dir(self.role.character_type.value)}\\{map_name}.csv'
         if map_routine_path != routine.path:
             routine.load(map_routine_path, self.role.character.command_book)
             bot_status.reset()

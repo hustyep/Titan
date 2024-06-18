@@ -353,11 +353,11 @@ class Detector(Subject):
         y = (frame.shape[0] - 200) // 2
         image = frame[y:y+200, x:x+450]
         tombstone = utils.multi_match(
-            image, DEAD_TOBBSTONE_TEMPLATE, threshold=0.9)
+            image, DEAD_TOBBSTONE_TEMPLATE, threshold=0.85)
         if tombstone:
             self.on_next((BotError.DEAD, ))
             ok_btn = utils.multi_match(
-                image, DEAD_OK_TEMPLATE, threshold=0.8)
+                image, DEAD_OK_TEMPLATE, threshold=0.7)
             if ok_btn:
                 hid.mouse_abs_move(capture.window['left'] + ok_btn[0][0] + x,
                                    capture.window['top'] + ok_btn[0][1] + y)

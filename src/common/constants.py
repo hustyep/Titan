@@ -52,11 +52,13 @@ class BotInfo(Enum):
     OTHERS_LEAVED = 'Someone\'s gone'
     BOSS_APPEAR = 'Boss Appear'
 
+
 class BotVerbose(Enum):
     MINE_ACTIVE = 'Mine Active'
     CALIBRATED = 'calibrated'
     NEW_FRAME = 'New Frame'
     BLIND = 'Blind'
+
 
 class BotDebug(Enum):
     SCREENSHOT_FAILED = 'Screenshot Failed'
@@ -66,12 +68,14 @@ class BotDebug(Enum):
 #       Common Type        #
 #############################
 
+
 class MapPointType(Enum):
     Unknown = -1
     Air = 0
     Floor = 1
     Rope = 2
     FloorRope = 3
+
 
 class AreaInsets:
     def __init__(self, top=0, bottom=0, left=0, right=0) -> None:
@@ -150,7 +154,8 @@ Name_Class_Map = {
     'Sllee': CharacterType.Shadower,
     'issl': CharacterType.NightLord,
     'ggswift': CharacterType.Shadower,
-    'ermin': CharacterType.Hero
+    'ermin': CharacterType.Hero,
+    'heward': CharacterType.NightWalker
 }
 
 Charactor_Daily_Map = {
@@ -178,6 +183,11 @@ Charactor_Daily_Map = {
             'Western City Ramparts in Battle 1',
             'Train with No Destination 5',
             'Laboratory Behind Locked Door 1',
+        ]
+    },
+    'heward': {
+        'default': 'Void Current 1',
+        'quest': [
         ]
     }
 }

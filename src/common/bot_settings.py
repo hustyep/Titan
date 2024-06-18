@@ -2,7 +2,7 @@ import cv2
 import os
 from src.common.constants import RESOURCES_DIR
 from src.common.file_setting import File_Setting
-from src.models.role_model import RoleModel
+# from src.models.role_model import RoleModel
 
 """p
 A list of user-defined settings that can be changed by routines. Also contains a collection
@@ -134,7 +134,9 @@ adjust_tolerance = 3
 # Whether the bot should save new player positions to the current layout
 record_layout = False
 
-role: RoleModel = None
+role = None
+
+mini_margin = 0
 
 boundary_point_l = (100, 0)
 boundary_point_r = (0, 0)

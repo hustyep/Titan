@@ -1,5 +1,5 @@
 $, target=move_tolerance, value=10
-$, target=mini_margin, value=1
+
 *, x=5, y=60, interval=3000, tolerance=10, detect=False, skip=True
     Rest, wait=5
 
@@ -24,8 +24,9 @@ $, target=mini_margin, value=1
     Replace_Dark_Servant
 #
 
-@, label=Pick Up, interval=150, skip=True
+~, label=Pick Up, interval=150, skip=True
 *, x=25, y=35, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=1
 *, x=25, y=35, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=1
+#
