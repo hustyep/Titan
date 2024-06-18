@@ -60,11 +60,11 @@ def detect_mobs(
 
     match (type):
         case (MobType.BOSS):
-            mob_templates = shared_map.boss_templates
+            mob_templates = shared_map.current_map.boss_templates
         case (MobType.ELITE):
-            mob_templates = shared_map.elite_templates
+            mob_templates = shared_map.current_map.elite_templates
         case (_):
-            mob_templates = shared_map.mob_templates
+            mob_templates = shared_map.current_map.mob_templates
 
     if len(mob_templates) == 0:
         if type == MobType.NORMAL:

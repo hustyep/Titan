@@ -105,7 +105,7 @@ class Command():
     @bot_status.run_if_enabled
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
-        # print(str(self))
+        print(str(self))
         result = self.main()
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)
@@ -607,12 +607,8 @@ class Rest(Command):
         self.wait = int(wait)
 
     def main(self):
-        bot_status.enabled = False
-        bot_status.prepared = False
         bot_action.teleport_random_town()
         time.sleep(self.wait)
-        bot_status.prepared = False
-        bot_status.enabled = True
 
 
 class GoArdentmill(Command):

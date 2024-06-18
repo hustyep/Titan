@@ -355,7 +355,6 @@ class Detector(Subject):
         tombstone = utils.multi_match(
             image, DEAD_TOBBSTONE_TEMPLATE, threshold=0.85)
         if tombstone:
-            self.on_next((BotError.DEAD, ))
             ok_btn = utils.multi_match(
                 image, DEAD_OK_TEMPLATE, threshold=0.7)
             if ok_btn:
@@ -365,6 +364,7 @@ class Detector(Subject):
                 hid.mouse_left_click()
                 time.sleep(1)
                 hid.mouse_left_click()
+            self.on_next((BotError.DEAD, ))
 
     def check_others(self):
         minimap = capture.minimap_display

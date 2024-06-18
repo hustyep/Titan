@@ -19,13 +19,12 @@ class Keybindings(DefaultKeybindings):
     # Buffs
     Transcendent_Cygnus_Blessing = '1'
     Glory_of_the_Guardians = '2'
-    LAST_RESORT = '3'
-    Shadow_Illusion = '4'
+    Shadow_Illusion = '3'
+    LAST_RESORT = '4'
     Shadow_Spear = 'v'
-    Throwing_Star_Barrage_Master = 'z'
     Shadow_Bat = 'f1'
     Dark_Elemental = 'f3'
-    Darkness_Ascending = '7'
+    Darkness_Ascending = '6'
 
     # Potion
     EXP_POTION = '0'
@@ -39,7 +38,6 @@ class Keybindings(DefaultKeybindings):
     # Skills
     Quintuple_Star = 'f'
     Dark_Omen = 'r'
-    OMEN = 'x'
     Dominion = 'c'
     ERDA_SHOWER = '`'
     Phalanx_Charge = 'z'
@@ -47,6 +45,9 @@ class Keybindings(DefaultKeybindings):
     Shadow_Bite = 'e'
     Rapid_Throw = 'x'
     Silence = ''
+    
+    FOR_THE_GUILD = '8'
+    HARD_HITTER = '7'
 
 #########################
 #       Movement        #
@@ -207,7 +208,7 @@ class Shadow_Dodge(Skill):
     precast = 0
     backswing = 1
 
-    def __init__(self, direction):
+    def __init__(self, direction='right'):
         super().__init__(locals())
         self.direction = bot_settings.validate_horizontal_arrows(direction)
 
@@ -221,9 +222,8 @@ class Shadow_Dodge(Skill):
             direction = 'right'
         else:
             direction = "left"
-        key_down(direction)
+        press(direction)
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
-        key_up(direction)
         return True
 
 #######################
@@ -357,23 +357,23 @@ class Detect_Attack(Command):
         width = 300
         height = 100
 
-        if len(detect_mobs_in_rect(
-                capture.frame[self.y - height:self.y, self.x-width:self.x], MobType.NORMAL, multy_match=True)) > 0:
-            press('left')
-        elif len(detect_mobs_in_rect(
-                capture.frame[self.y - height:self.y, self.x:self.x+width], MobType.NORMAL, multy_match=True)) > 0:
-            press('right')
-        elif len(detect_mobs_in_rect(
-                capture.frame[height:height*2, width:width*2], MobType.NORMAL, multy_match=True)) > 0:
-            press(Keybindings.JUMP)
-            press('left')
-        elif len(detect_mobs_in_rect(
-                capture.frame[height:height*2, width*2:width*3], MobType.NORMAL, multy_match=True)) > 0:
-            press(Keybindings.JUMP)
-            press('right')
-        key_down(Keybindings.Attack)
+        # if len(detect_mobs(
+        #         capture.frame[self.y - height:self.y, self.x-width:self.x], MobType.NORMAL, multy_match=True)) > 0:
+        #     press('left')
+        # elif len(detect_mobs(
+        #         capture.frame[self.y - height:self.y, self.x:self.x+width], MobType.NORMAL, multy_match=True)) > 0:
+        #     press('right')
+        # elif len(detect_mobs(
+        #         capture.frame[height:height*2, width:width*2], MobType.NORMAL, multy_match=True)) > 0:
+        #     press(Keybindings.JUMP)
+        #     press('left')
+        # elif len(detect_mobs(
+        #         capture.frame[height:height*2, width*2:width*3], MobType.NORMAL, multy_match=True)) > 0:
+        #     press(Keybindings.JUMP)
+        #     press('right')
+        key_down(Keybindings.Quintuple_Star)
         time.sleep(2)
-        key_down(Keybindings.Attack)
+        key_down(Keybindings.Quintuple_Star)
         return True
 
 
@@ -418,15 +418,15 @@ class Buff(Command):
     def __init__(self):
         super().__init__(locals())
         self.buffs = [
-            Dark_Elemental,
-            Shadow_Bat,
-            Transcendent_Cygnus_Blessing,
-            LastResort,
+            # Dark_Elemental,
+            # Shadow_Bat,
+            # Transcendent_Cygnus_Blessing,
+            # LastResort,
             # Glory_of_the_Guardians,
-            Shadow_Spear,
+            # Shadow_Spear,
             # Shadow_Illusion,
-            ForTheGuild,
-            HardHitter,
+            # ForTheGuild,
+            # HardHitter,
         ]
 
     def main(self, wait=True):

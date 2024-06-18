@@ -62,7 +62,7 @@ class Bot(Subject):
                 print("waiting capture...")
                 time.sleep(0.5)
             elif bot_status.enabled:
-                if gui_setting.mode != BotRunMode.Daily and gui_setting.mode != BotRunMode.Farm:
+                if gui_setting.mode.type != BotRunMode.Daily and gui_setting.mode.type != BotRunMode.Farm:
                     time.sleep(1)
                 elif not bot_status.prepared:
                     self.prepare()
@@ -144,10 +144,11 @@ class Bot(Subject):
         # update map data
         self.load_map(target_map)
 
-        if not bot_action.teleport_to_map(target_map):
-            chat_bot.voice_call()
-            chat_bot.send_message(f"teleport to {target_map}", capture.frame)
-            return False
+        if target_map != map_name:
+            if not bot_action.teleport_to_map(target_map):
+                chat_bot.voice_call()
+                chat_bot.send_message(f"teleport to {target_map}", capture.frame)
+                return False
 
         if not bot_helper.chenck_map_available(instance=shared_map.current_map.instance):
             bot_action.change_channel(instance=shared_map.current_map.instance)
@@ -190,7 +191,7 @@ class Bot(Subject):
         utils.print_state(enabled)
         print(reason)
 
-    def reset():
+    def reset(self):
         releaseAll()
         notifier.notice_time_record.clear()
 

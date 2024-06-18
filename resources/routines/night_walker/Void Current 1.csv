@@ -1,32 +1,32 @@
 $, target=move_tolerance, value=10
 
-*, x=5, y=60, interval=3000, tolerance=10, detect=False, skip=True
+*, x=82, y=46, interval=3000, tolerance=10, detect=False, skip=True
     Rest, wait=5
 
 @, label=Bottom mobbing
-*, x=25, y=35, interval=0, tolerance=2, detect=False, skip=False
+*, x=82, y=46, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=1
     Buff
     Potion
-    DetectAroundAnchor, count=5, x=683, y=384, top=350, bottom=350, left=600, right=600
+    DetectAroundAnchor, count=3, x=683, y=384, top=350, bottom=350, left=600, right=600
     Shadow_Attack
     Phalanx_Charge
 
 ~, label=Summon Loop, interval=40, skip=False
-*, x=25, y=35, interval=0, tolerance=3, detect=False, skip=False
+*, x=82, y=46, interval=0, tolerance=3, detect=False, skip=False
     Greater_Dark_Servant
     Shadow_Attack
-*, x=140, y=30, interval=0, tolerance=4, detect=False, skip=False
+*, x=124, y=39, interval=0, tolerance=4, detect=False, skip=False
     Wait, duration=0.15
     ErdaShower, direction=right
-*, x=80, y=23, interval=0, tolerance=3, detect=False, skip=False
+*, x=38, y=24, interval=0, tolerance=3, detect=False, skip=False
     Dark_Omen
     Replace_Dark_Servant
 #
 
 ~, label=Pick Up, interval=150, skip=True
-*, x=25, y=35, interval=0, tolerance=2, detect=False, skip=False
+*, x=13, y=69, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=1
-*, x=25, y=35, interval=0, tolerance=2, detect=False, skip=False
+*, x=150, y=69, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=1
 #

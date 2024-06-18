@@ -54,6 +54,7 @@ class Map:
         self.clear()
         for map in self.available_maps:
             if map.name == map_name:
+                map.load_data()
                 self.current_map = map
                 bot_settings.mini_margin = map.minimap_margin
                 break
@@ -105,10 +106,10 @@ class Map:
         if self.data_available:
             x = location[0]
             y = location[1] + 7
-            value = self.point_type((x, y))
-            value_l = self.point_type((x - 1, y))
-            value_r = self.point_type((x + 1, y))
-            return self.is_floor_point(value) and self.is_floor_point(value_l) and self.is_floor_point(value_r)
+            value = self.is_floor_point((x, y))
+            value_l = self.is_floor_point((x - 1, y))
+            value_r = self.is_floor_point((x + 1, y))
+            return value and value_l and value_r
         else:
             return True
 
