@@ -10,7 +10,7 @@ from rx.subject import Subject
 
 from src.common.dll_helper import dll_helper
 from src.common.image_template import MM_TL_BMP, MM_BR_BMP, PLAYER_TEMPLATE, PLAYER_TEMPLATE_L, PLAYER_TEMPLATE_R
-from src.common import utils, bot_status, bot_settings
+from src.common import utils, bot_status
 from src.common.constants import *
 
 user32 = ctypes.windll.user32
@@ -36,6 +36,7 @@ class Capture(Subject):
         }
         self.mm_tl = None
         self.mm_br = None
+        self.minimap_margin = 0
 
         self.lost_player_time = 0
 
@@ -152,7 +153,8 @@ class Capture(Subject):
         new_frame = frame[top:top+height, left:left+width]
 
         # Crop the frame to only show the minimap
-        minimap = new_frame[self.mm_tl[1]:self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+        minimap = new_frame[self.mm_tl[1]
+            :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
 
         # Determine the player's position
         player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
@@ -189,15 +191,22 @@ class Capture(Subject):
 
         self.frame = new_frame
         self.minimap_display = minimap
-        self.on_next((BotVerbose.NEW_FRAME, self.frame))
+        # self.on_next((BotVerbose.NEW_FRAME, self.frame))
 
     def convert_to_relative_minimap_point(self, pos: tuple[int, int]):
-        return (pos[0] - bot_settings.mini_margin, pos[1])
+        return (pos[0] - self.minimap_margin, pos[1 + 7])
 
     def convert_to_absolute_minimap_point(self, pos: tuple[int, int]):
         if not pos:
             return None
-        return (pos[0] + bot_settings.mini_margin, pos[1])
+        return (pos[0] + self.minimap_margin, pos[1] - 7)
+
+    @property
+    def minimap_frame(self):
+        if self.minimap_display is not None:
+            minimap_margin = self.minimap_margin
+            return capture.minimap_display[:,
+                                           minimap_margin:-minimap_margin]
 
     @property
     def buff_frame(self):

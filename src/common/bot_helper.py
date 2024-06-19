@@ -225,7 +225,7 @@ def convert_point_minimap_to_window(point: tuple[int, int]):
     window_width = capture.window_rect.width
     window_height = capture.window_rect.height
 
-    mini_height, mini_width, _ = shared_map.minimap_frame.shape
+    mini_height, mini_width, _ = capture.minimap_frame.shape
 
     map_width = mini_width * MINIMAP_SCALE
     map_height = mini_height * MINIMAP_SCALE

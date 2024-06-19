@@ -107,7 +107,7 @@ def move_up(target):
     p = bot_status.player_pos
     dy = abs(p[1] - target[1])
 
-    if dy <= 6:
+    if dy < 5:
         press(Keybindings.JUMP)
     elif dy <= 23:
         Jump_Up(target).execute()
@@ -206,7 +206,7 @@ class Shadow_Dodge(Skill):
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 1
+    backswing = 1.5
 
     def __init__(self, direction='right'):
         super().__init__(locals())
@@ -218,12 +218,9 @@ class Shadow_Dodge(Skill):
 
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
-        if self.direction == 'left':
-            direction = 'right'
-        else:
-            direction = "left"
-        press(direction)
+        press(opposite_direction(self.direction))
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
+        press(self.direction)
         return True
 
 #######################
@@ -344,6 +341,8 @@ class Shadow_Attack(Command):
             Shadow_Bite().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
+        else:
+            Detect_Attack().execute()
         return True
 
 

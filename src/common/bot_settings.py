@@ -136,8 +136,6 @@ record_layout = False
 
 role = None
 
-mini_margin = 0
-
 boundary_point_l = (100, 0)
 boundary_point_r = (0, 0)
 base_y = 0

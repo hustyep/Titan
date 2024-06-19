@@ -215,7 +215,7 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         tmp_y = (start[0], target[1])
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
-    return shared_map.platform_point(target)
+    return shared_map.platform_point((target[0], target[1] - 1))
 
 
 def evade_rope(up = False):
@@ -877,8 +877,9 @@ class RopeLift(Skill):
         self.dy = abs(int(dy))
 
     def main(self):
-
         time.sleep(0.2)
+        while not self.canUse:
+            time.sleep(1)
         if self.dy >= 40:
             press(Keybindings.JUMP, up_time=0.5)
             press(self.__class__.key)

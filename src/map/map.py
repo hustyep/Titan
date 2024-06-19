@@ -6,7 +6,6 @@ from src.common.gui_setting import gui_setting
 from src.map import map_editor
 from src.models.map_model import MapModel
 from src.modules.capture import capture
-from src.common import bot_settings
 
 class Map:
     """Map Manager."""
@@ -38,17 +37,11 @@ class Map:
     def data_available(self):
         return self.minimap_data is not None and len(self.minimap_data) > 0
 
-    @property
-    def minimap_frame(self):
-        if capture.minimap_display is not None and self.current_map is not None:
-            return capture.minimap_display[:,
-                                           self.current_map.minimap_margin:-self.current_map.minimap_margin]
-
     def clear(self):
         if self.current_map is not None:
             self.current_map.clear()
             self.current_map = None
-            bot_settings.mini_margin = 0
+            capture.minimap_margin = 0
                 
     def load_map(self, map_name):
         self.clear()
@@ -56,7 +49,7 @@ class Map:
             if map.name == map_name:
                 map.load_data()
                 self.current_map = map
-                bot_settings.mini_margin = map.minimap_margin
+                capture.minimap_margin = map.minimap_margin
                 break
 
     def point_type(self, point: tuple[int, int]):
@@ -102,31 +95,30 @@ class Map:
                         return True
         return False
 
-    def on_the_platform(self, location: tuple[int, int]):
+    def on_the_platform(self, location: tuple[int, int], strict=False):
         if self.data_available:
             x = location[0]
             y = location[1] + 7
             value = self.is_floor_point((x, y))
-            value_l = self.is_floor_point((x - 1, y))
-            value_r = self.is_floor_point((x + 1, y))
-            return value and value_l and value_r
+            if not strict:
+                return value
+            else:
+                if value:
+                    value_l = self.is_floor_point((x - 1, y))
+                    value_r = self.is_floor_point((x + 1, y))
+                    return value_l and value_r
+                return False
         else:
             return True
 
     def platform_point(self, target: tuple[int, int]):
         if self.data_available:
             height, _ = self.minimap_data.shape
-            dx = 1
-            while True:
-                p1 = (target[0], target[1] + dx)
-                p2 = (target[0], target[1] - dx)
-                if self.point_type(p1) == MapPointType.Unknown and self.point_type(p2) == MapPointType.Unknown:
-                    break
-                if self.point_type(p1) != MapPointType.Unknown and self.on_the_platform(p1):
-                    return p1
-                if self.point_type(p2) != MapPointType.Unknown and self.on_the_platform(p2):
-                    return p2
-                dx += 1
+            for y in range(target[1], height - 1):
+                p = (target[0], y)
+                if shared_map.on_the_platform(p):
+                    return p
+
         return target
 
     def valid_point(self, p: tuple[int, int]):

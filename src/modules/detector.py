@@ -102,7 +102,7 @@ class Detector(Subject):
     def _main_event(self):
         while True:
             frame = capture.frame
-            minimap = game_map.minimap_frame
+            minimap = capture.minimap_frame
 
             if bot_status.enabled and frame is not None and minimap is not None:
                 self.check_rune_status(frame, minimap)
