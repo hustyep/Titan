@@ -136,6 +136,7 @@ class DoubleJump(Skill):
 
     def main(self):
         while not self.canUse():
+            print("double jump waiting")
             time.sleep(0.01)
         dx = self.target[0] - bot_status.player_pos[0]
         dy = self.target[1] - bot_status.player_pos[1]
@@ -164,10 +165,10 @@ class Jump_Up(Command):
         self.target = target
 
     def main(self):
-        time.sleep(0.5)
         # sleep_in_the_air(n=4)
         # press(opposite_direction(bot_status.player_direction))
         # evade_rope(True)
+        time.sleep(0.5)
 
         up_point = (bot_status.player_pos[0], self.target[1])
         if not shared_map.on_the_platform(up_point):
@@ -404,6 +405,7 @@ class DetectAroundAnchor(Command):
             if len(mobs) >= self.count:
                 break
             if time.time() - start > 7:
+                print("DetectAroundAnchor timeout")
                 break
             Detect_Attack(self.x, self.y).execute()
 

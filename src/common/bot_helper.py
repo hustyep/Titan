@@ -83,8 +83,9 @@ def detect_mobs(
             for mob in mobs_tmp:
                 mobs.append(mob)
                 if not multy_match:
+                    print(f"mobs count = {len(mobs)}")
                     return mobs
-
+    print(f"mobs count = {len(mobs)}")
     return mobs
 
 
@@ -144,6 +145,7 @@ def sleep_in_the_air(interval=0.005, n=4, start_y=0):
                 break
         step += 1
         if step >= 250:
+            print("sleep_in_the_air timeout")
             break
         time.sleep(interval)
 
