@@ -14,7 +14,6 @@ class Keybindings(DefaultKeybindings):
     Shadow_Jump = 'g'
     Shadow_Dodge = 'a'
     ROPE_LIFT = 'b'
-    Go_Ardentmill = '='
 
     # Buffs
     Transcendent_Cygnus_Blessing = '1'
@@ -165,10 +164,9 @@ class Jump_Up(Command):
         self.target = target
 
     def main(self):
-        # sleep_in_the_air(n=4)
-        # press(opposite_direction(bot_status.player_direction))
-        # evade_rope(True)
-        time.sleep(0.5)
+        sleep_in_the_air(n=4)
+        press(opposite_direction(bot_status.player_direction))
+        evade_rope(True)
 
         up_point = (bot_status.player_pos[0], self.target[1])
         if not shared_map.on_the_platform(up_point):
@@ -208,7 +206,7 @@ class Shadow_Dodge(Skill):
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 1.5
+    backswing = 1.2
 
     def __init__(self, direction='right'):
         super().__init__(locals())

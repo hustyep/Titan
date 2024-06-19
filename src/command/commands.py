@@ -888,11 +888,11 @@ class RopeLift(Skill):
         elif self.dy > 30:
             press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)
-            sleep_in_the_air(n=30)
+            sleep_in_the_air(n=50)
         else:
             press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)
-            time.sleep(0.58)
+            time.sleep(0.62)
             press(self.__class__.key)
             sleep_in_the_air(n=30)
 
