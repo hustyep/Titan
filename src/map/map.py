@@ -64,33 +64,26 @@ class Map:
 
     def near_rope(self, location: tuple[int, int], up=False):
         if self.data_available:
-            height, width = self.minimap_data.shape
             cur_x = location[0]
             cur_y = location[1]
             if up:
-                start_x = max(0, cur_x - 1)
-                end_x = min(width - 1, cur_x + 1)
-                start_y = max(0, cur_y - 7)
-                end_y = cur_y
-                for x in range(start_x, end_x + 1):
-                    for y in range(start_y, end_y + 1):
+                for x in range(cur_x - 1, cur_x + 2):
+                    for y in range(cur_y, cur_y - 7, -1):
                         if self.point_type((x, y)) == MapPointType.Rope:
                             return True
             else:
-                start_x = max(0, cur_x - 1)
-                end_x = min(width - 1, cur_x + 1)
-                for x in range(start_x, end_x + 1):
-                    if self.point_type((x, cur_y + 7)) == MapPointType.FloorRope:
+                for x in range(cur_x - 1, cur_x + 2):
+                    if self.point_type((x, cur_y)) == MapPointType.FloorRope:
                         return True
         return False
 
     def on_the_rope(self, location: tuple[int, int]):
         if self.data_available:
-            point_type = self.point_type((location[0], location[1] + 7))
+            point_type = self.point_type(location)
             if point_type == MapPointType.Floor or point_type == MapPointType.FloorRope:
                 return False
             else:
-                for i in range(0, 7):
+                for i in range(-2, 3):
                     if self.point_type((location[0], location[1] + i)) == MapPointType.Rope:
                         return True
         return False
@@ -98,8 +91,8 @@ class Map:
     def on_the_platform(self, location: tuple[int, int], strict=False):
         if self.data_available:
             x = location[0]
-            y = location[1] + 7
-            value = self.is_floor_point((x, y))
+            y = location[1]
+            value = self.is_floor_point(location)
             if not strict:
                 return value
             else:

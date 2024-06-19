@@ -148,7 +148,7 @@ def sleep_in_the_air(interval=0.005, n=4, start_y=0):
         time.sleep(interval)
 
 
-def wait_until_map_changed(timeout=10):
+def wait_until_map_changed(timeout=7):
     start = time.time()
     while (not bot_status.lost_minimap):
         time.sleep(0.5)
@@ -250,15 +250,13 @@ def convert_point_minimap_to_window(point: tuple[int, int]):
 
 
 # -> tuple | tuple[int, int]:
-def locate_player_fullscreen(accurate=False, frame=None, role_template=None):
+def locate_player_fullscreen(accurate=False):
     player_pos = convert_point_minimap_to_window(
         bot_status.player_pos)
 
     if accurate:
-        if frame is None:
-            frame = capture.frame
-        if role_template is None:
-            role_template = bot_settings.role.name_template
+        frame = capture.frame
+        role_template = bot_settings.role.name_template
         tl_x = player_pos[0]-50
         tl_y = player_pos[1]
         player_crop = frame[tl_y:tl_y+250, tl_x-150:tl_x+150]
@@ -267,6 +265,6 @@ def locate_player_fullscreen(accurate=False, frame=None, role_template=None):
                                    threshold=0.9,
                                    debug=False)
         if matchs:
-            player_pos = (matchs[0][0] - 5 + tl_x,
+            player_pos = (matchs[0][0] - 150 + tl_x,
                           matchs[0][1] - 140 + tl_y)
     return player_pos

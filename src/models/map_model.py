@@ -57,7 +57,7 @@ class MapModel:
                 height, _ = self.minimap_data.shape
                 for i in range(height-1, -1, -1):
                     if self.minimap_data[i][0] > 0:
-                        self.base_floor = i - 7
+                        self.base_floor = i
                         break
             except Exception as e:
                 print(f'[!] load map: {minimap_data_path} failed! \n{e}')
