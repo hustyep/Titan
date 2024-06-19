@@ -318,6 +318,8 @@ def maple_screenshot():
 
 
 def image_2_str(image) -> str:
+    if image is None or len(image) == 0:
+        return ""
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     text = tess.image_to_string(image_rgb, lang="eng")
     content = text.replace("\f", "")
@@ -325,6 +327,8 @@ def image_2_str(image) -> str:
 
 
 def image_match_text(frame, list: list[str], threshold=0.7, filter=[' ']):
+    if frame is None or len(frame) == 0:
+        return
     text = image_2_str(frame).replace('\n', '').lower()
     for c in filter:
         text.replace(c, '')

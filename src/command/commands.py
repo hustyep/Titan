@@ -674,11 +674,11 @@ class Skill(Command):
                     cls.ready = False
                 else:
                     matchs = utils.multi_match(
-                        capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.99)
+                        capture.skill_frame, cls.icon[10:-2, 4:-2], threshold=0.99)
                     cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.9)
+                    capture.skill_frame, cls.icon[10:-2, 4:-2], threshold=0.9)
                 cls.ready = len(matchs) > 0
 
     @classmethod
