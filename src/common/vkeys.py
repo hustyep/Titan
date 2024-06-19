@@ -152,6 +152,8 @@ def key_up(key):
     :param key:     The key to press.
     :return:        None
     """
+    if key is not str:
+        return
 
     key = key.lower()
     if key in ['upleft', 'upright', 'downleft', 'downright']:

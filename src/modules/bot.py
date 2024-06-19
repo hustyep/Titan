@@ -105,6 +105,7 @@ class Bot(Subject):
             return
 
         bot_status.prepared = True
+        print("prepared")
 
     def identify_role(self):
         role_name = bot_helper.identify_role_name()

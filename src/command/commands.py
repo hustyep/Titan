@@ -37,7 +37,7 @@ class DefaultKeybindings:
     ROPE_LIFT = 'b'
     ERDA_SHOWER = '`'
     MAPLE_WARRIOR = '3'
-    ARACHNID = 'j'
+    ARACHNID = 'w'
     GODDESS_BLESSING = '1'
     LAST_RESORT = '2'
 
@@ -84,14 +84,14 @@ class Command():
 
     def __str__(self):
         variables = self.__dict__
-        result = '    ' + self.id
-        if len(variables) - 1 > 0:
-            result += ':'
-        for key, value in variables.items():
-            if key != 'id=':
-                result += f'\n        {key}={value}'
+        result = '[Command]' + self.id
+        # if len(variables) - 1 > 0:
+        #     result += ':'
+        # for key, value in variables.items():
+        #     if key != 'id=':
+        #         result += f'\n        {key}={value}'
         # result += f'\n        kwargs={self.kwargs}'
-        result += f'\n        pos={bot_status.player_pos}'
+        # result += f'\n        pos={bot_status.player_pos}'
         return result
 
     def encode(self):
@@ -105,8 +105,9 @@ class Command():
     @bot_status.run_if_enabled
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
-        print(str(self))
         result = self.main()
+        if result:
+            print(str(self))
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)
         return result
@@ -817,6 +818,11 @@ class Arachnid(Skill):
     cooldown = 250
     backswing = 0.9
 
+    @classmethod
+    def check(cls):
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.95, debug=False)
+        cls.ready = len(matchs) > 0
 
 class ForTheGuild(Skill):
     '''工会技能'''
@@ -885,14 +891,14 @@ class RopeLift(Skill):
             press(self.__class__.key)
             time.sleep(2)
             sleep_in_the_air(n=50)
-        elif self.dy > 30:
+        elif self.dy >= 30:
             press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)
             sleep_in_the_air(n=50)
         else:
             press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)
-            time.sleep(0.62)
+            time.sleep(0.58)
             press(self.__class__.key)
             sleep_in_the_air(n=30)
 

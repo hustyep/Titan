@@ -145,13 +145,13 @@ class DoubleJump(Skill):
         self.__class__.castedTime = time.time()
         key_down(direction)
         time.sleep(0.1)
-        press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.02)
+        press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
         press(self.key, 1, down_time=0.02, up_time=0.03)
         if self.attack_if_needed:
             Attack().execute()
         key_up(direction)
-        time.sleep(self.backswing)
-        sleep_in_the_air(n=1, start_y=start_y)
+        # time.sleep(self.backswing)
+        sleep_in_the_air(n=1)
 
 
 # 上跳
@@ -206,7 +206,7 @@ class Shadow_Dodge(Skill):
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 1.2
+    backswing = 0.7
 
     def __init__(self, direction='right'):
         super().__init__(locals())
@@ -220,7 +220,8 @@ class Shadow_Dodge(Skill):
         self.__class__.castedTime = time.time()
         press(opposite_direction(self.direction))
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
-        press(self.direction)
+        # press(self.direction)
+        sleep_in_the_air()
         return True
 
 #######################
@@ -234,6 +235,7 @@ class Greater_Dark_Servant(Skill):
     cooldown = 60
     backswing = 0.8
     duration = 55
+
 
 class Replace_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
@@ -284,7 +286,19 @@ class Shadow_Bite(Skill):
     key = Keybindings.Shadow_Bite
     type = SkillType.Attack
     cooldown = 15
-    backswing = 0.5
+    backswing = 0.55
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        print(f"can use: {cls.ready}")
+        return cls.ready
+
+    @classmethod
+    def check(cls):
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
+        cls.ready = len(matchs) > 0
+        print(f"check: {cls.ready}")
 
 
 class Shadow_Spear(Skill):
@@ -296,8 +310,9 @@ class Shadow_Spear(Skill):
 
 class Dominion(Skill):
     key = Keybindings.Dominion
-    type = SkillType.Buff
+    type = SkillType.Attack
     cooldown = 180
+    ready = False
 
     def main(self):
         if not self.canUse():
@@ -305,9 +320,15 @@ class Dominion(Skill):
 
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
-        press_acc(self.__class__.key, down_time=0.01, up_time=0.03)
+        press_acc(self.__class__.key, down_time=0.01, up_time=0.01)
         Shadow_Dodge().execute()
         return True
+
+    @classmethod
+    def check(cls):
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.95, debug=False)
+        cls.ready = len(matchs) > 0
 
 
 class Phalanx_Charge(Skill):
@@ -332,12 +353,13 @@ class Shadow_Attack(Command):
         return True
 
     def main(self):
-        if Dominion.canUse():
-            Dominion().execute()
-        elif Arachnid.canUse():
-            Arachnid().execute()
-            Dark_Omen().execute()
-        elif Shadow_Bite.canUse():
+        # if Dominion.canUse():
+        #     Dominion().execute()
+        # elif Arachnid.canUse():
+        #     Arachnid().execute()
+        #     Dark_Omen().execute()
+        # el
+        if Shadow_Bite.canUse():
             Shadow_Bite().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
@@ -370,9 +392,10 @@ class Detect_Attack(Command):
         #         capture.frame[height:height*2, width*2:width*3], MobType.NORMAL, multy_match=True)) > 0:
         #     press(Keybindings.JUMP)
         #     press('right')
-        key_down(Keybindings.Quintuple_Star)
-        time.sleep(2)
-        key_down(Keybindings.Quintuple_Star)
+        # key_down(Keybindings.Quintuple_Star)
+        # time.sleep(2)
+        # key_up(Keybindings.Quintuple_Star)
+        Quintuple_Star().execute()
         return True
 
 
@@ -401,9 +424,9 @@ class DetectAroundAnchor(Command):
                 multy_match=self.count > 1,
                 debug=False)
             if len(mobs) >= self.count:
+                print(f"mobs count = {len(mobs)}")
                 break
             if time.time() - start > 7:
-                print("DetectAroundAnchor timeout")
                 break
             Detect_Attack(self.x, self.y).execute()
 
