@@ -160,7 +160,9 @@ def wait_until_map_changed(timeout=7):
         print("lost_minimap")
         time.sleep(0.5)
         if time.time() - start > timeout:
+            print("change map timeout")
             return
+    print("map loaded")
     time.sleep(0.5)
 
 

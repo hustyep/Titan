@@ -164,8 +164,9 @@ class Jump_Up(Command):
         self.target = target
 
     def main(self):
-        sleep_in_the_air(n=4)
-        press(opposite_direction(bot_status.player_direction))
+        time.sleep(0.5)
+        # sleep_in_the_air(n=4)
+        # press(opposite_direction(bot_status.player_direction))
         # evade_rope(True)
 
         up_point = (bot_status.player_pos[0], self.target[1])
@@ -175,7 +176,7 @@ class Jump_Up(Command):
         press(Keybindings.JUMP)
         key_down('up')
         time.sleep(0.06 if dy >= 20 else 0.1)
-        press(self.key, 1)
+        press(Keybindings.JUMP, 1)
         key_up('up')
         sleep_in_the_air(n=10)
 

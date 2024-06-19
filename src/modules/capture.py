@@ -63,9 +63,7 @@ class Capture(Subject):
                 time.sleep(0.1)
                 continue
 
-            while True:
-                if not self.calibrated:
-                    break
+            while self.calibrated:
                 self.locatePlayer()
 
     def emum_windows_callback(self, hwnd, window_list):
@@ -194,7 +192,7 @@ class Capture(Subject):
         # self.on_next((BotVerbose.NEW_FRAME, self.frame))
 
     def convert_to_relative_minimap_point(self, pos: tuple[int, int]):
-        return (pos[0] - self.minimap_margin, pos[1 + 7])
+        return (pos[0] - self.minimap_margin, pos[1] + 7)
 
     def convert_to_absolute_minimap_point(self, pos: tuple[int, int]):
         if not pos:
