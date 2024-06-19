@@ -126,10 +126,7 @@ def sleep_in_the_air(interval=0.005, n=4, start_y=0):
     count = 0
     step = 0
     while True:
-        y = bot_status.player_pos[1] + 7
-        x = bot_status.player_pos[0]
-        value = shared_map.minimap_data[y][x]
-        if value != 1 and value != 3:
+        if not shared_map.is_floor_point(bot_status.player_pos):
             count = 0
         else:
             count += 1
