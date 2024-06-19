@@ -173,10 +173,10 @@ def chenck_map_available(instance=True):
             time.sleep(0.1)
         return False
     else:
-        for i in range(3):
+        for i in range(4):
             if bot_status.stage_fright:
                 return False
-            time.sleep(1)
+            time.sleep(0.5)
         return True
 
 

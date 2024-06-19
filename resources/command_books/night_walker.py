@@ -44,7 +44,7 @@ class Keybindings(DefaultKeybindings):
     Shadow_Bite = 'e'
     Rapid_Throw = 'x'
     Silence = ''
-    
+
     FOR_THE_GUILD = '8'
     HARD_HITTER = '7'
 
@@ -86,10 +86,10 @@ def step(target, tolerance):
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 24:
+    elif abs(d_x) >= 22:
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif shared_map.is_continuous(bot_status.player_pos, next_p):
-        if abs(d_x) >= 10:
+        if abs(d_x) >= 11:
             Shadow_Dodge(direction).execute()
         else:
             Walk(target_x=next_p[0], tolerance=tolerance).execute()
@@ -126,7 +126,7 @@ class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
-    backswing = 0.2
+    backswing = 0.1
 
     def __init__(self, target: tuple[int, int], attack_if_needed=False):
         super().__init__(locals())
@@ -146,9 +146,9 @@ class DoubleJump(Skill):
         key_down(direction)
         time.sleep(0.1)
         press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-        press(self.key, 1, down_time=0.02, up_time=0.03)
+        press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.03)
         if self.attack_if_needed:
-            Attack().execute()
+            Quintuple_Star().execute()
         key_up(direction)
         # time.sleep(self.backswing)
         sleep_in_the_air(n=1)
@@ -206,7 +206,7 @@ class Shadow_Dodge(Skill):
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 0.7
+    backswing = 0.5
 
     def __init__(self, direction='right'):
         super().__init__(locals())
@@ -233,6 +233,7 @@ class Greater_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Summon
     cooldown = 60
+    precast = 0.3
     backswing = 0.8
     duration = 55
 
@@ -279,7 +280,7 @@ class Dark_Omen(Skill):
     key = Keybindings.Dark_Omen
     type = SkillType.Attack
     cooldown = 20
-    backswing = 0.75
+    backswing = 0.9
 
 
 class Shadow_Bite(Skill):
@@ -289,16 +290,10 @@ class Shadow_Bite(Skill):
     backswing = 0.55
 
     @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        print(f"can use: {cls.ready}")
-        return cls.ready
-
-    @classmethod
     def check(cls):
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
-        print(f"check: {cls.ready}")
 
 
 class Shadow_Spear(Skill):
@@ -336,6 +331,12 @@ class Phalanx_Charge(Skill):
     type = SkillType.Attack
     cooldown = 30
     backswing = 0.75
+    
+    @classmethod
+    def check(cls):
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
+        cls.ready = len(matchs) > 0
 
 
 class Attack(Command):
@@ -355,11 +356,11 @@ class Shadow_Attack(Command):
     def main(self):
         # if Dominion.canUse():
         #     Dominion().execute()
-        # elif Arachnid.canUse():
-        #     Arachnid().execute()
-        #     Dark_Omen().execute()
         # el
-        if Shadow_Bite.canUse():
+        if Arachnid.canUse():
+            Arachnid().execute()
+            Dark_Omen().execute()
+        elif Shadow_Bite.canUse():
             Shadow_Bite().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
@@ -392,9 +393,6 @@ class Detect_Attack(Command):
         #         capture.frame[height:height*2, width*2:width*3], MobType.NORMAL, multy_match=True)) > 0:
         #     press(Keybindings.JUMP)
         #     press('right')
-        # key_down(Keybindings.Quintuple_Star)
-        # time.sleep(2)
-        # key_up(Keybindings.Quintuple_Star)
         Quintuple_Star().execute()
         return True
 
@@ -428,7 +426,8 @@ class DetectAroundAnchor(Command):
                 break
             if time.time() - start > 7:
                 break
-            Detect_Attack(self.x, self.y).execute()
+            if len(mobs) > 0:
+                Detect_Attack(self.x, self.y).execute()
 
 ###################
 #      Buffs      #
@@ -443,8 +442,8 @@ class Buff(Command):
         self.buffs = [
             # Dark_Elemental,
             # Shadow_Bat,
-            # Transcendent_Cygnus_Blessing,
-            # LastResort,
+            Transcendent_Cygnus_Blessing,
+            LastResort,
             # Glory_of_the_Guardians,
             # Shadow_Spear,
             # Shadow_Illusion,
@@ -461,6 +460,13 @@ class Buff(Command):
                 if result:
                     break
 
+
+class LastResort(Skill):
+    key = Keybindings.LAST_RESORT
+    cooldown = 75
+    precast = 0.3
+    backswing = 0.8
+    type = SkillType.Buff
 
 class Transcendent_Cygnus_Blessing(Skill):
     key = Keybindings.Transcendent_Cygnus_Blessing

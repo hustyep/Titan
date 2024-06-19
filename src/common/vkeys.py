@@ -152,7 +152,7 @@ def key_up(key):
     :param key:     The key to press.
     :return:        None
     """
-    if key is not str:
+    if key is None:
         return
 
     key = key.lower()

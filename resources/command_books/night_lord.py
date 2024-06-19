@@ -18,6 +18,8 @@ class Keybindings(DefaultKeybindings):
     Go_Ardentmill = '='
 
     # Buffs
+    GODDESS_BLESSING = '1'
+    LAST_RESORT = '2'
     EPIC_ADVENTURE = '3'
     MEMORIES = '4'
     SHADOW_WALKER = 'shift'
