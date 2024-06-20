@@ -418,15 +418,15 @@ class Buff(Command):
     def __init__(self):
         super().__init__(locals())
         self.buffs = [
-            # Dark_Elemental,
-            # Shadow_Bat,
-            # Transcendent_Cygnus_Blessing,
-            # LastResort,
-            # Glory_of_the_Guardians,
-            # Shadow_Spear,
+            Dark_Elemental,
+            Shadow_Bat,
+            Transcendent_Cygnus_Blessing,
+            LastResort,
+            Glory_of_the_Guardians,
+            Shadow_Spear,
             # Shadow_Illusion,
-            # ForTheGuild,
-            # HardHitter,
+            ForTheGuild,
+            HardHitter,
         ]
 
     def main(self, wait=True):
@@ -465,3 +465,50 @@ class Shadow_Illusion(Skill):
     type = SkillType.Buff
     cooldown = 180
     backswing = 0.75
+
+class ForTheGuild(Skill):
+    '''工会技能'''
+    key = Keybindings.FOR_THE_GUILD
+    cooldown = 3610
+    backswing = 0.1
+    type = SkillType.Buff
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        enabled = gui_setting.buff.get('Guild Buff')
+        if not enabled:
+            return False
+
+        if HardHitter.enabled:
+            return False
+
+        return super().canUse(next_t)
+
+
+class HardHitter(Skill):
+    '''工会技能'''
+    key = Keybindings.HARD_HITTER
+    cooldown = 3610
+    backswing = 0.1
+    type = SkillType.Buff
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        enabled = gui_setting.buff.get('Guild Buff')
+        if not enabled:
+            return False
+
+        if ForTheGuild.enabled:
+            return False
+
+        return super().canUse(next_t)
+
+    @classmethod
+    def check(cls):
+        cls.check_buff_enabled()
+        if cls.enabled:
+            cls.ready = False
+        else:
+            matchs = utils.multi_match(
+                capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
+            cls.ready = len(matchs) > 0

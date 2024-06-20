@@ -892,7 +892,7 @@ class RopeLift(Skill):
         else:
             press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)
-            time.sleep(0.62)
+            time.sleep(0.65)
             press(self.__class__.key)
             sleep_in_the_air(n=30)
 

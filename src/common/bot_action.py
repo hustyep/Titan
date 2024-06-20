@@ -224,11 +224,13 @@ def teleport_to_map(map_name: str):
 
 @bot_status.run_if_enabled
 def teleport_random_town():
+    bot_status.acting = True
     if open_teleport_stone():
         if not mouse_move(TELEPORT_STONE_SHOW_TOWNS_TEMPLATE):
             print("[error]cant fined TELEPORT_STONE_SHOW_TOWNS_TEMPLATE")
             close_teleport_stone()
             go_home()
+            bot_status.acting = False
             return
         mouse_left_click()
         press_key("down")
@@ -240,6 +242,7 @@ def teleport_random_town():
             print("[error]cant find move button")
             close_teleport_stone()
             go_home()
+            bot_status.acting = False
             return
         mouse_left_click(delay=0.3)
         frame = capture.frame
@@ -257,10 +260,12 @@ def teleport_random_town():
     else:
         print("[error]cant open teleport stone")
         go_home()
+    bot_status.acting = False
 
 
 @bot_status.run_if_enabled
 def go_home():
+    bot_status.enabled = False
     for i in range(0, 6):
         bot_status.enabled = False
     click_key('H', 0.5)
