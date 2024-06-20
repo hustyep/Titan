@@ -79,7 +79,7 @@ def step(target, tolerance):
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 23 or not shared_map.is_continuous(bot_status.player_pos, next_p):
+    elif abs(d_x) >= 24 or not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= 10:
         Shadow_Dodge(direction).execute()
@@ -337,6 +337,7 @@ class Dominion(Skill):
     key = Keybindings.Dominion
     type = SkillType.Attack
     cooldown = 180
+    precast = 0.3
     ready = False
 
     def main(self):
