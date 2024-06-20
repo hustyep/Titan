@@ -218,6 +218,29 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
     return shared_map.platform_point((target[0], target[1] - 1))
 
 
+def find_first_gap(start: tuple[int, int], target: tuple[int, int]):
+    start_x = start[0]
+    end_x = target[0]
+    if start_x == end_x:
+        return
+    if start_x < end_x:
+        while True:
+            if start_x < end_x and shared_map.point_type((start_x + 1, start[1])) != MapPointType.Air:
+                start_x += 1
+            else:
+                break
+        if start_x < end_x:
+            return (start_x-2, start[1])
+    else:
+        while True:
+            if start_x > 0 and shared_map.point_type((start_x - 1, start[1])) != MapPointType.Air:
+                start_x -= 1
+            else:
+                break
+        if start_x > end_x:
+            return (start_x+2, start[1])
+
+
 def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return

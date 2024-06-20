@@ -59,13 +59,6 @@ def step(target, tolerance):
     Performs one movement step in the given DIRECTION towards TARGET.
     Should not press any arrow keys, as those are handled by Mars.
     """
-
-    d_x = target[0] - bot_status.player_pos[0]
-    d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) >= 26:
-        DoubleJump(target=target, attack_if_needed=True).execute()
-        return
-
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
     print(f"next_p:{next_p}")
     if not next_p:
@@ -86,15 +79,51 @@ def step(target, tolerance):
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 22:
+    elif abs(d_x) >= 23 or not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
-    elif shared_map.is_continuous(bot_status.player_pos, next_p):
-        if abs(d_x) >= 11:
-            Shadow_Dodge(direction).execute()
-        else:
-            Walk(target_x=next_p[0], tolerance=tolerance).execute()
+    elif abs(d_x) >= 10:
+        Shadow_Dodge(direction).execute()
     else:
-        DoubleJump(target=next_p, attack_if_needed=True).execute()
+        Walk(target_x=next_p[0], tolerance=tolerance).execute()
+
+@bot_status.run_if_enabled
+def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
+    if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
+        return target
+
+    if target_reached(start, target, tolerance):
+        return
+
+    d_x = target[0] - start[0]
+    d_y = target[1] - start[1]
+    if abs(d_x) <= tolerance:
+        return target
+    elif d_y == 0:
+        if shared_map.is_continuous(start, target):
+            return target
+        else:
+            point = find_first_gap(start, target)
+            if point is not None:
+                return point
+    elif d_y < 0:
+        tmp_y = (start[0], target[1])
+        if shared_map.is_continuous(tmp_y, target):
+            return tmp_y
+        tmp_x = (target[0], start[1])
+        if shared_map.is_continuous(start, tmp_x):
+            return tmp_x
+        if abs(d_x) <= 8 and abs(d_y) <= 8:
+            point = find_first_gap(start, target)
+            if point is not None:
+                return point
+    else:
+        tmp_x = (target[0], start[1])
+        if shared_map.is_continuous(tmp_x, start):
+            return tmp_x
+        tmp_y = (start[0], target[1])
+        if shared_map.is_continuous(tmp_y, target):
+            return tmp_y
+    return shared_map.platform_point((target[0], target[1] - 1))
 
 #########################
 #        Y轴移动         #

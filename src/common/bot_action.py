@@ -347,6 +347,7 @@ def change_channel(num: int = 0, instance=True):
     chat_bot.send_message('changing channel...')
     bot_status.acting = True
     bot_status.prepared = False
+    bot_status.stage_fright = False
     bot_status.rune_pos = None
     bot_status.rune_closest_pos = None
     time.sleep(2)
