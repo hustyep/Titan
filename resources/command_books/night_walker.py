@@ -273,7 +273,7 @@ class Darkness_Ascending(Skill):
 class Quintuple_Star(Skill):
     key = Keybindings.Quintuple_Star
     type = SkillType.Attack
-    backswing = 0.5
+    backswing = 0.4
 
 
 class Dark_Omen(Skill):
@@ -363,8 +363,7 @@ class Shadow_Attack(Command):
             Shadow_Bite().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
-        else:
-            Detect_Attack().execute()
+        Detect_Attack().execute()
         return True
 
 
@@ -489,7 +488,7 @@ class Transcendent_Cygnus_Blessing(Skill):
             cls.ready = False
         else:
             matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[2:-2, 12:-12], threshold=0.99)
+                capture.skill_frame, cls.icon[2:-2, 12:-12], threshold=0.9)
             cls.ready = len(matchs) > 0
 
     @classmethod
