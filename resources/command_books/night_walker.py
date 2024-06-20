@@ -322,7 +322,7 @@ class Dominion(Skill):
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98, debug=False)
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99, debug=False)
         cls.ready = len(matchs) > 0
 
 

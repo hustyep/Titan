@@ -16,6 +16,7 @@ $, target=move_tolerance, value=10
 *, x=82, y=53, interval=0, tolerance=3, detect=False, skip=False
     Shadow_Attack
     Greater_Dark_Servant
+*, x=90, y=53, interval=0, tolerance=3, detect=False, skip=False
 *, x=124, y=46, interval=0, tolerance=3, detect=False, skip=False
     Wait, duration=0.15
     ErdaShower, direction=right
