@@ -80,7 +80,7 @@ class Detector(Subject):
                 self.check_binded()
                 self.check_dead()
                 # self.check_no_movement()
-                # self.check_others()
+                self.check_others()
                 self.check_alert()
                 self.check_forground()
                 self.check_init()
@@ -242,7 +242,7 @@ class Detector(Subject):
             #     if win32gui.IsIconic(capture.hwnd):
             #         win32gui.SendMessage(
             #             capture.hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
-            #         time.sleep(0.1)
+            #         time.sleep(0.1) 
             #     win32gui.SetForegroundWindow(capture.hwnd)
             # except Exception as e:
             #     print(e)
@@ -366,6 +366,8 @@ class Detector(Subject):
             self.on_next((BotError.DEAD, ))
 
     def check_others(self):
+        if game_map.current_map is None or game_map.current_map.instance:
+            return
         minimap = capture.minimap_display
         filtered = utils.filter_color(minimap, OTHER_RANGES)
         others = len(utils.multi_match(
@@ -399,12 +401,12 @@ class Detector(Subject):
         elif self.others_detect_count == 2000:
             self.others_detect_count += 1
             self.on_next((BotError.OTHERS_STAY_OVER_120S, duration))
-        # elif self.others_detect_count == 200:
-        #     self.others_detect_count += 1
-        #     self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
-        # elif self.others_detect_count == 100:
-        #     self.others_detect_count += 1
-        #     self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
+        elif self.others_detect_count == 200:
+            self.others_detect_count += 1
+            self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
+        elif self.others_detect_count == 100:
+            self.others_detect_count += 1
+            self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
         elif self.others_detect_count == 50:
             self.others_detect_count += 1
             self.on_next((BotWarnning.OTHERS_COMMING, duration))

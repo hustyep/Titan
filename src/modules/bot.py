@@ -2,6 +2,7 @@
 
 import threading
 import time
+import random
 from enum import Enum
 from rx.subject import Subject
 
@@ -129,6 +130,9 @@ class Bot(Subject):
             self.load_map(map_name)
 
     def check_map(self):
+        if bot_status.lost_minimap:
+            time.sleep(0.1)
+            return False
         map_name = bot_helper.identify_map_name()
         print(f"identify map:{map_name}")
 
@@ -237,7 +241,7 @@ class Bot(Subject):
         elif isinstance(event_type, BotError):
             match (event_type):
                 case BotError.OTHERS_STAY_OVER_120S:
-                    # ActionSimulator.change_channel()
+                    bot_action.change_channel(instance=False)
                     pass
                 case BotError.LOST_PLAYER:
                     pass
@@ -246,18 +250,18 @@ class Bot(Subject):
                     chat_bot.voice_call()
         elif isinstance(event_type, BotWarnning):
             match event_type:
-                case BotWarnning.NO_MOVEMENT:
-                    bot_action.jump_down()
-                # case BotWarnning.OTHERS_STAY_OVER_30S:
-                #     words = ['cc pls', 'cc pls ', ' cc pls']
-                #     random_word = random.choice(words)
-                #     ActionSimulator.say_to_all(random_word)
-                # case BotWarnning.OTHERS_STAY_OVER_60S:
-                #     words = ['??', 'hello?', ' cc pls', 'bro?']
-                #     random_word = random.choice(words)
-                #     ActionSimulator.say_to_all(random_word)
-                # case BotWarnning.OTHERS_COMMING:i
-                    # pass
+                # case BotWarnning.NO_MOVEMENT:
+                #     bot_action.jump_down()
+                case BotWarnning.OTHERS_STAY_OVER_30S:
+                    words = ['cc pls', 'cc pls ', ' cc pls']
+                    random_word = random.choice(words)
+                    bot_action.say_to_all(random_word)
+                case BotWarnning.OTHERS_STAY_OVER_60S:
+                    words = ['?', 'hello?', ' cc pls', 'bro?']
+                    random_word = random.choice(words)
+                    bot_action.say_to_all(random_word)
+                case BotWarnning.OTHERS_COMMING:
+                    pass
         elif isinstance(event_type, BotInfo):
             match event_type:
                 case BotInfo.RUNE_ACTIVE:
