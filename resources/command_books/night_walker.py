@@ -147,10 +147,8 @@ class DoubleJump(Skill):
         time.sleep(0.1)
         press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
         press(self.key, 1, down_time=0.02, up_time=0.03)
-        if self.attack_if_needed:
+        if self.attack_if_needed and self.target[1] >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
-            if self.target[1] < start_y:
-                time.sleep(0.3)
         key_up(direction)
         # time.sleep(self.backswing)
         sleep_in_the_air(n=1)
