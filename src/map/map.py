@@ -7,6 +7,7 @@ from src.map import map_editor
 from src.models.map_model import MapModel
 from src.modules.capture import capture
 
+
 class Map:
     """Map Manager."""
 
@@ -42,7 +43,7 @@ class Map:
             self.current_map.clear()
             self.current_map = None
             capture.minimap_margin = 0
-                
+
     def load_map(self, map_name):
         self.clear()
         for map in self.available_maps:
@@ -141,11 +142,44 @@ class Map:
         else:
             return True
 
+    def boundary_point(self, point):
+        left = right = point[0]
+        left_boundary = right_boundary = None
+        while True:
+            if left > 0 and self.point_type((left - 1, point[1])) != MapPointType.Air:
+                left -= 1
+            else:
+                left_boundary = (left, point[1])
+                break
+        while True:
+            next_point = (right + 1, point[1])
+            if self.point_type(next_point) != MapPointType.Air and self.point_type(next_point) != MapPointType.Unknown:
+                right += 1
+            else:
+                right_boundary = (right, point[1])
+                break
+
+        return left_boundary, right_boundary
+    
+    def horizontal_gap(self, p1, p2):
+        if self.is_continuous(p1, p2):
+            return 0
+        left_boundary1, right_boundary1 = self.boundary_point(p1)
+        left_boundary2, right_boundary2 = self.boundary_point(p2)
+        if right_boundary1[0] < left_boundary2[0]:
+            return left_boundary2[0] - right_boundary1[0]
+        elif right_boundary2[0] < left_boundary1[0]:
+            return left_boundary1[0] - right_boundary2[0]
+        else:
+            return -1
+
+
     def add_start_point(self, point: tuple[int, int]):
         if gui_setting.mode.type != BotRunMode.Mapping:
             return
         if not self.data_available:
-            self.current_map.minimap_data = map_editor.create_minimap_data(self.minimap_frame)
+            self.current_map.minimap_data = map_editor.create_minimap_data(
+                capture.minimap_frame)
         if not self.data_available:
             return
         map_editor.add_start_point(point, self.minimap_data)

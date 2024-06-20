@@ -346,10 +346,6 @@ def go_ardentmill(key):
 def change_channel(num: int = 0, instance=True):
     chat_bot.send_message('changing channel...')
     bot_status.acting = True
-    bot_status.prepared = False
-    bot_status.stage_fright = False
-    bot_status.rune_pos = None
-    bot_status.rune_closest_pos = None
     time.sleep(2)
     _change_channel(num, instance)
     bot_status.acting = False
@@ -358,6 +354,10 @@ def change_channel(num: int = 0, instance=True):
 @bot_status.run_if_enabled
 def _change_channel(num: int = 0, instance=True) -> None:
     bot_status.acting = True
+    bot_status.prepared = False
+    bot_status.stage_fright = False
+    bot_status.rune_pos = None
+    bot_status.rune_closest_pos = None
     click_key(bot_settings.SystemKeybindings.Change_Channel)
     if num > 0:
         item_width = 50

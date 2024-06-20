@@ -101,7 +101,7 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
     elif d_y == 0:
         if shared_map.is_continuous(start, target):
             return target
-        else:
+        elif shared_map.horizontal_gap(start, target) <= 8:
             point = find_first_gap(start, target)
             if point is not None:
                 return point
@@ -112,7 +112,8 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         tmp_x = (target[0], start[1])
         if shared_map.is_continuous(start, tmp_x):
             return tmp_x
-        if abs(d_x) <= 8 and abs(d_y) <= 8:
+        gap_x = shared_map.horizontal_gap(start, target)
+        if gap_x > 0 and gap_x <= 8 and abs(d_y) <= 8:
             point = find_first_gap(start, target)
             if point is not None:
                 return point
