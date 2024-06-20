@@ -7,6 +7,7 @@ $, target=move_tolerance, value=10
 *, x=82, y=53, interval=0, tolerance=2, detect=False, skip=False
     Buff
     Potion
+    FeedPet
     DetectAroundAnchor, count=3, x=683, y=384, top=350, bottom=350, left=600, right=600
     Shadow_Attack
     Phalanx_Charge

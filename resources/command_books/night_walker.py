@@ -471,7 +471,35 @@ class Transcendent_Cygnus_Blessing(Skill):
     key = Keybindings.Transcendent_Cygnus_Blessing
     type = SkillType.Buff
     cooldown = 240
-    backswing = 0.75
+    precast = 0.3
+    backswing = 0.85
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if not Transcendent_Cygnus_Blessing.enabled:
+            return False
+        return super().canUse(next_t)
+
+    @classmethod
+    def check(cls):
+        if capture.frame is None:
+            return
+        cls.check_buff_enabled()
+        if cls.enabled:
+            cls.ready = False
+        else:
+            matchs = utils.multi_match(
+                capture.skill_frame, cls.icon[2:-2, 12:-12], threshold=0.99)
+            cls.ready = len(matchs) > 0
+
+    @classmethod
+    def check_buff_enabled(cls):
+        matchs = utils.multi_match(
+            capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+        if not matchs:
+            matchs = utils.multi_match(
+                capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+        cls.enabled = len(matchs) > 0
 
 
 class Glory_of_the_Guardians(Skill):
