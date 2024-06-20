@@ -474,12 +474,6 @@ class Transcendent_Cygnus_Blessing(Skill):
     backswing = 0.85
 
     @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        if not Transcendent_Cygnus_Blessing.enabled:
-            return False
-        return super().canUse(next_t)
-
-    @classmethod
     def check(cls):
         if capture.frame is None:
             return
@@ -488,7 +482,7 @@ class Transcendent_Cygnus_Blessing(Skill):
             cls.ready = False
         else:
             matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[2:-2, 13:-13], threshold=0.9, debug=True)
+                capture.skill_frame, cls.icon[2:-2, 13:-13], threshold=0.9, debug=False)
             cls.ready = len(matchs) > 0
 
     @classmethod
