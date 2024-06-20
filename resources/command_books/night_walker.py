@@ -273,7 +273,7 @@ class Darkness_Ascending(Skill):
 class Quintuple_Star(Skill):
     key = Keybindings.Quintuple_Star
     type = SkillType.Attack
-    backswing = 0.3
+    backswing = 0.4
 
 
 class Dark_Omen(Skill):
@@ -378,20 +378,20 @@ class Detect_Attack(Command):
         width = 300
         height = 100
 
-        if len(detect_mobs(
-                capture.frame[self.y - height:self.y, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
-            press('left', down_time=0.01, up_time=0.01)
-        elif len(detect_mobs(
-                capture.frame[self.y - height:self.y, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
-            press('right', down_time=0.01, up_time=0.01)
-        elif len(detect_mobs(
-                capture.frame[self.y - height * 2:self.y - height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
-            press(Keybindings.JUMP)
-            press('left', down_time=0.01, up_time=0.01)
-        elif len(detect_mobs(
-                capture.frame[self.y - height * 2:self.y - height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
-            press(Keybindings.JUMP)
-            press('right', down_time=0.01, up_time=0.01)
+        # if len(detect_mobs(
+        #         capture.frame[self.y - height:self.y, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
+        #     press('left', down_time=0.01, up_time=0.01)
+        # elif len(detect_mobs(
+        #         capture.frame[self.y - height:self.y, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
+        #     press('right', down_time=0.01, up_time=0.01)
+        # elif len(detect_mobs(
+        #         capture.frame[self.y - height * 2:self.y - height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
+        #     press(Keybindings.JUMP)
+        #     press('left', down_time=0.01, up_time=0.01)
+        # elif len(detect_mobs(
+        #         capture.frame[self.y - height * 2:self.y - height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
+        #     press(Keybindings.JUMP)
+        #     press('right', down_time=0.01, up_time=0.01)
         Quintuple_Star().execute()
         return True
 
