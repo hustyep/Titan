@@ -828,17 +828,17 @@ class MapleWarrior(Skill):
     type = SkillType.Buff
 
 
-class Arachnid(Skill):
+class Arachnid(Command):
     key = Keybindings.ARACHNID
     type = SkillType.Attack
     cooldown = 250
     backswing = 0.9
 
-    @classmethod
-    def check(cls):
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98, debug=False)
-        cls.ready = len(matchs) > 0
+    # @classmethod
+    # def check(cls):
+    #     matchs = utils.multi_match(
+    #         capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98, debug=False)
+    #     cls.ready = len(matchs) > 0
 
 
 class ForTheGuild(Skill):
