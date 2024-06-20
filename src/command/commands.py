@@ -104,9 +104,9 @@ class Command():
     @bot_status.run_if_enabled
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
-        result = self.main()
-        if result:
+        if self.canUse:
             print(str(self))
+        result = self.main()
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)
         return result
@@ -329,7 +329,7 @@ class Walk(Command):
                 if direction is not None:
                     key_up(direction)
                     direction = None
-                press_acc(new_direction, down_time=0.01, up_time=0.005)
+                press_acc(new_direction, down_time=0.01, up_time=0.01)
 
             walk_counter += 1
             d_x = self.target_x - bot_status.player_pos[0]
@@ -891,8 +891,8 @@ class RopeLift(Skill):
             sleep_in_the_air(n=50)
         else:
             press(Keybindings.JUMP, up_time=0.3)
-            press(self.__class__.key)
-            time.sleep(0.65)
+            press_acc(self.__class__.key)
+            time.sleep(0.7)
             press(self.__class__.key)
             sleep_in_the_air(n=30)
 

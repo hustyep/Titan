@@ -8,11 +8,11 @@ $, target=move_tolerance, value=10
     Buff
     Potion
     FeedPet
-    DetectAroundAnchor, count=3, x=683, y=384, top=350, bottom=350, left=600, right=600
+    DetectAroundAnchor, count=3, x=683, y=512, top=500, bottom=250, left=650, right=650
     Shadow_Attack
     Phalanx_Charge
 
-~, label=Summon Loop, interval=44, skip=False
+~, label=Summon Loop, interval=41, skip=False
 *, x=82, y=53, interval=0, tolerance=3, detect=False, skip=False
     Shadow_Attack
     Greater_Dark_Servant
