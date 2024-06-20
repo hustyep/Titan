@@ -488,7 +488,7 @@ class Transcendent_Cygnus_Blessing(Skill):
             cls.ready = False
         else:
             matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[2:-2, 12:-12], threshold=0.9)
+                capture.skill_frame, cls.icon[2:-2, 13:-13], threshold=0.9, debug=True)
             cls.ready = len(matchs) > 0
 
     @classmethod
