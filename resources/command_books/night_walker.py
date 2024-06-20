@@ -330,6 +330,7 @@ class Phalanx_Charge(Skill):
     key = Keybindings.Phalanx_Charge
     type = SkillType.Attack
     cooldown = 30
+    precast = 0.1
     backswing = 0.75
     
     @classmethod
@@ -363,7 +364,7 @@ class Shadow_Attack(Command):
             Shadow_Bite().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
-        Detect_Attack().execute()
+        Quintuple_Star().execute()
         return True
 
 
@@ -440,7 +441,7 @@ class Buff(Command):
         self.buffs = [
             Dark_Elemental,
             Shadow_Bat,
-            Transcendent_Cygnus_Blessing,
+            # Transcendent_Cygnus_Blessing,
             LastResort,
             Glory_of_the_Guardians,
             Shadow_Spear,
