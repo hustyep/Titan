@@ -442,7 +442,7 @@ class Detector(Subject):
                 distances = list(
                     map(distance_to_rune, routine.sequence))
                 index = np.argmin(distances)
-                bot_status.rune_closest_pos = routine[index].location
+                # bot_status.rune_closest_pos = routine[index].location
                 self.on_next((BotInfo.RUNE_ACTIVE, ))
 
 

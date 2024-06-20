@@ -37,9 +37,8 @@ class DefaultKeybindings:
     ROPE_LIFT = 'b'
     ERDA_SHOWER = '`'
     MAPLE_WARRIOR = '3'
-    ARACHNID = 'j'
+    ARACHNID = 'w'
     GODDESS_BLESSING = '1'
-    LAST_RESORT = '2'
 
 
 class Keybindings(DefaultKeybindings):
@@ -84,14 +83,14 @@ class Command():
 
     def __str__(self):
         variables = self.__dict__
-        result = '    ' + self.id
-        if len(variables) - 1 > 0:
-            result += ':'
-        for key, value in variables.items():
-            if key != 'id=':
-                result += f'\n        {key}={value}'
+        result = '[Command]' + self.id
+        # if len(variables) - 1 > 0:
+        #     result += ':'
+        # for key, value in variables.items():
+        #     if key != 'id=':
+        #         result += f'\n        {key}={value}'
         # result += f'\n        kwargs={self.kwargs}'
-        result += f'\n        pos={bot_status.player_pos}'
+        # result += f'\n        pos={bot_status.player_pos}'
         return result
 
     def encode(self):
@@ -105,8 +104,9 @@ class Command():
     @bot_status.run_if_enabled
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
-        print(str(self))
         result = self.main()
+        if result:
+            print(str(self))
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)
         return result
@@ -218,7 +218,7 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
     return shared_map.platform_point((target[0], target[1] - 1))
 
 
-def evade_rope(up = False):
+def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return
     pos = bot_status.player_pos
@@ -228,6 +228,7 @@ def evade_rope(up = False):
         Walk(target_l[0], tolerance=0).execute()
     elif shared_map.on_the_platform(target_r):
         Walk(target_r[0], tolerance=0).execute()
+
 
 def opposite_direction(direction):
     if direction not in ['left', 'right', 'up', 'down']:
@@ -240,6 +241,7 @@ def opposite_direction(direction):
         return 'down'
     else:
         return 'up'
+
 
 def direction_changed(direction) -> bool:
     if direction == 'left':
@@ -762,14 +764,6 @@ class MapleWorldGoddessBlessing(Skill):
         cls.enabled = len(matchs) > 0
 
 
-class LastResort(Skill):
-    key = Keybindings.LAST_RESORT
-    cooldown = 75
-    precast = 0.3
-    backswing = 0.8
-    type = SkillType.Buff
-
-
 class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
@@ -816,6 +810,12 @@ class Arachnid(Skill):
     type = SkillType.Attack
     cooldown = 250
     backswing = 0.9
+
+    @classmethod
+    def check(cls):
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98, debug=False)
+        cls.ready = len(matchs) > 0
 
 
 class ForTheGuild(Skill):
@@ -884,7 +884,7 @@ class RopeLift(Skill):
             press(Keybindings.JUMP, up_time=0.5)
             press(self.__class__.key)
             time.sleep(2)
-            sleep_in_the_air(n=50)
+            sleep_in_the_air(n=30)
         elif self.dy > 30:
             press(Keybindings.JUMP, up_time=0.3)
             press(self.__class__.key)
