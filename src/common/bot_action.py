@@ -184,6 +184,7 @@ def close_teleport_stone():
 @bot_status.run_if_enabled
 def teleport_to_map(map_name: str):
     bot_status.acting = True
+    bot_status.prepared = False
     if open_teleport_stone():
         # click_key('i')
         mouse_move_relative(300, 0)
@@ -215,7 +216,7 @@ def teleport_to_map(map_name: str):
         else:
             click_key('esc', delay=0.1)
             click_key('esc', delay=0.1)
-            return teleport_to_map(map_name)            
+            return teleport_to_map(map_name)
     else:
         print("[error]cant open teleport stone")
         bot_status.acting = False
@@ -225,6 +226,7 @@ def teleport_to_map(map_name: str):
 @bot_status.run_if_enabled
 def teleport_random_town():
     bot_status.acting = True
+    bot_status.prepared = False
     if open_teleport_stone():
         if not mouse_move(TELEPORT_STONE_SHOW_TOWNS_TEMPLATE):
             print("[error]cant fined TELEPORT_STONE_SHOW_TOWNS_TEMPLATE")
@@ -268,8 +270,8 @@ def go_home():
     bot_status.enabled = False
     for i in range(0, 6):
         bot_status.enabled = False
-    click_key('H', 0.5)
-    click_key('H', 5)
+        click_key('H', 0.5)
+        click_key('H', 5)
 
 
 @bot_status.run_if_enabled
@@ -344,6 +346,7 @@ def go_ardentmill(key):
 def change_channel(num: int = 0, instance=True):
     chat_bot.send_message('changing channel...')
     bot_status.acting = True
+    bot_status.prepared = False
     bot_status.rune_pos = None
     bot_status.rune_closest_pos = None
     time.sleep(2)
@@ -475,6 +478,83 @@ def run_maplestory():
         capture.camera.get_latest_frame(), BUTTON_ERROR_OK_TEMPLATE, 0.9)
     if play_matches:
         mouse_left_click(play_matches, 2)
+
+
+@bot_status.run_if_enabled
+def go_home():
+    bot_status.enabled = False
+    for i in range(0, 6):
+        bot_status.enabled = False
+    click_key('H', 0.5)
+    click_key('H', 5)
+
+
+@bot_status.run_if_enabled
+def cancel_rune_buff():
+    for _ in range(5):
+        rune_buff = utils.multi_match(
+            capture.frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
+        if len(rune_buff) <= 2:
+            break
+
+        rune_buff_pos = min(rune_buff, key=lambda p: p[0])
+        x = round(rune_buff_pos[0] + capture.window['left']) + 10
+        y = round(rune_buff_pos[1] + capture.window['top']) + 10
+        hid.mouse_abs_move(x, y)
+        time.sleep(0.06)
+        hid.mouse_right_down()
+        time.sleep(0.2)
+        hid.mouse_right_up()
+        time.sleep(0.5)
+
+
+def open_boss_box():
+    pass
+
+
+@bot_status.run_if_enabled
+def go_ardentmill(key):
+    click_key(key)
+    time.sleep(5)
+
+    if not mouse_move(Go_Ardentmill_TEMPLATE):
+        click_key(bot_settings.SystemKeybindings.Go_Ardentmill, delay=0.5)
+    if not mouse_move(Go_Ardentmill_TEMPLATE):
+        print("cool down")
+        hid.key_press('esc')
+        time.sleep(1)
+        bot_status.enabled = True
+        return
+    mouse_left_click()
+
+    frame = capture.frame
+    x = (frame.shape[1] - 260) // 2
+    y = (frame.shape[0] - 220) // 2
+    ok_btn = utils.multi_match(
+        frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+    cancel_btn = utils.multi_match(
+        frame, BUTTON_CANCEL_TEMPLATE, threshold=0.9, debug=False)
+    if cancel_btn:
+        print("ok")
+        hid.key_press("enter")
+        time.sleep(1)
+    else:
+        print("not ok")
+        hid.key_press('esc')
+        time.sleep(0.2)
+        return
+
+    wait_until_map_changed()
+    time.sleep(2)
+    hid.key_press('up')
+    time.sleep(0.5)
+    while (not bot_status.lost_minimap):
+        hid.key_press('up')
+        time.sleep(0.3)
+    while (bot_status.lost_minimap):
+        time.sleep(0.1)
+    time.sleep(2)
+    hid.key_press('esc')
 
 
 def stop_game():
