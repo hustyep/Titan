@@ -324,7 +324,7 @@ class Auto(LabelFrame):
                 self._flame_onemore(rect)
                 
     @bot_status.run_if_disabled('')
-    def _flame_result(self, rect, target=120):
+    def _flame_result(self, rect, target=100):
         x, y, width, height = rect
         while len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
             time.sleep(0.05)
