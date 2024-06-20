@@ -362,6 +362,7 @@ class Shadow_Attack(Command):
             Dark_Omen().execute()
         elif Shadow_Bite.canUse():
             Shadow_Bite().execute()
+            Quintuple_Star().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
         Quintuple_Star().execute()
@@ -379,11 +380,11 @@ class Detect_Attack(Command):
         height = 100
 
         if len(detect_mobs(
-                capture.frame[self.y - height:self.y, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
+                capture.frame[self.y - height:self.y + height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
             print("attack left")
             press('left', down_time=0.01, up_time=0.01)
         elif len(detect_mobs(
-                capture.frame[self.y - height:self.y, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
+                capture.frame[self.y - height:self.y + height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
             print("attack right")
             press('right', down_time=0.01, up_time=0.01)
         elif len(detect_mobs(
