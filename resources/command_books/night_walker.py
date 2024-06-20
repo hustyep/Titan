@@ -378,20 +378,24 @@ class Detect_Attack(Command):
         width = 300
         height = 100
 
-        # if len(detect_mobs(
-        #         capture.frame[self.y - height:self.y, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
-        #     press('left', down_time=0.01, up_time=0.01)
-        # elif len(detect_mobs(
-        #         capture.frame[self.y - height:self.y, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
-        #     press('right', down_time=0.01, up_time=0.01)
-        # elif len(detect_mobs(
-        #         capture.frame[self.y - height * 2:self.y - height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
-        #     press(Keybindings.JUMP)
-        #     press('left', down_time=0.01, up_time=0.01)
-        # elif len(detect_mobs(
-        #         capture.frame[self.y - height * 2:self.y - height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
-        #     press(Keybindings.JUMP)
-        #     press('right', down_time=0.01, up_time=0.01)
+        if len(detect_mobs(
+                capture.frame[self.y - height:self.y, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
+            print("attack left")
+            press('left', down_time=0.01, up_time=0.01)
+        elif len(detect_mobs(
+                capture.frame[self.y - height:self.y, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
+            print("attack right")
+            press('right', down_time=0.01, up_time=0.01)
+        elif len(detect_mobs(
+                capture.frame[self.y - height * 2:self.y - height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
+            print("attack up left")
+            press(Keybindings.JUMP)
+            press('left', down_time=0.01, up_time=0.01)
+        elif len(detect_mobs(
+                capture.frame[self.y - height * 2:self.y - height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
+            print("attack up right")
+            press(Keybindings.JUMP)
+            press('right', down_time=0.01, up_time=0.01)
         Quintuple_Star().execute()
         return True
 
