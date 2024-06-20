@@ -79,7 +79,7 @@ def step(target, tolerance):
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 24 or not shared_map.is_continuous(bot_status.player_pos, next_p):
+    elif abs(d_x) >= 25 or not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= 10:
         Shadow_Dodge(direction).execute()
@@ -333,28 +333,26 @@ class Shadow_Spear(Skill):
     backswing = 0.6
 
 
-class Dominion(Skill):
+class Dominion(Command):
     key = Keybindings.Dominion
     type = SkillType.Attack
-    cooldown = 180
-    precast = 0.3
+    cooldown = 175
     ready = False
 
     def main(self):
         if not self.canUse():
             return False
-
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
         press(self.__class__.key, down_time=0.01, up_time=0.01)
         Shadow_Dodge().execute()
         return True
 
-    @classmethod
-    def check(cls):
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99, debug=False)
-        cls.ready = len(matchs) > 0
+    # @classmethod
+    # def check(cls):
+    #     matchs = utils.multi_match(
+    #         capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99, debug=False)
+    #     cls.ready = len(matchs) > 0
 
 
 class Phalanx_Charge(Skill):
