@@ -243,8 +243,9 @@ class Bot(Subject):
                 case BotError.LOST_PLAYER:
                     pass
                 case (_):
-                    self.toggle(False, event_type.value)
-                    chat_bot.voice_call()
+                    if not bot_status.enabled:
+                        self.toggle(False, event_type.value)
+                        chat_bot.voice_call()
         elif isinstance(event_type, BotWarnning):
             match event_type:
                 # case BotWarnning.NO_MOVEMENT:

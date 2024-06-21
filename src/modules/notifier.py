@@ -55,7 +55,6 @@ class Notifier(Subject):
                 threading.Thread(target=self._alert, args=('siren', )).start()
                 text = f'‼️[{event.value}] {info}'
                 self.send_message(text=text, image=capture.frame)
-                # chat_bot.voice_call()
             elif event_type == BotError:
                 if gui_setting.notification.get('notice_level') < 2:
                     return

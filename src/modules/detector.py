@@ -263,7 +263,7 @@ class Detector(Subject):
         if tl == None or br == None:
             bot_status.lost_minimap = True
             capture.calibrated = False
-            if bot_status.enabled:
+            if bot_status.enabled and not bot_status.acting:
                 if self.lost_minimap_time == 0:
                     self.lost_minimap_time = time.time()
                 if time.time() - self.lost_minimap_time > self.lost_time_threshold:
