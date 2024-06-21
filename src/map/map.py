@@ -133,9 +133,8 @@ class Map:
                 return False
             if not self.on_the_platform(p1) or not self.on_the_platform(p2):
                 return False
-            gap = 0
             y = p1[1]
-            for x in range(p1[0] + 1, p2[0]):
+            for x in range(p1[0] + 1, p2[0], 1 if p2[0] > p1[0] else -1):
                 if not self.on_the_platform((x, y)):
                     return False
             return True
@@ -160,7 +159,7 @@ class Map:
                 break
 
         return left_boundary, right_boundary
-    
+
     def horizontal_gap(self, p1, p2):
         if self.is_continuous(p1, p2):
             return 0
@@ -172,7 +171,6 @@ class Map:
             return left_boundary1[0] - right_boundary2[0]
         else:
             return -1
-
 
     def add_start_point(self, point: tuple[int, int]):
         if gui_setting.mode.type != BotRunMode.Mapping:

@@ -434,7 +434,7 @@ class Detect_Attack(Command):
         return True
 
 
-class DetectAroundAnchor(Command):
+class Detect_Around_Anchor(Command):
     def __init__(self, count=1, x=0, y=0, top=315, bottom=0, left=500, right=500):
         super().__init__(locals())
         self.count = int(count)
