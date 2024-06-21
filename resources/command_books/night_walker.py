@@ -81,7 +81,7 @@ def step(target, tolerance):
         move_down(next_p)
     elif abs(d_x) >= 25 or not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
-    elif abs(d_x) >= 10:
+    elif abs(d_x) >= 11:
         Shadow_Dodge(direction).execute()
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
@@ -181,7 +181,7 @@ class DoubleJump(Skill):
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        sleep_in_the_air(n=1)
+        sleep_in_the_air(n=1 if start_y==self.target[1] else 15)
 
 
 # 上跳
@@ -199,7 +199,7 @@ class Jump_Up(Command):
         evade_rope(True)
 
         up_point = (bot_status.player_pos[0], self.target[1])
-        if not shared_map.on_the_platform(up_point):
+        if not shared_map.on_the_platform(up_point, True):
             move_horizontal((self.target[0], bot_status.player_pos[1]), 0)
         dy = bot_status.player_pos[1] - self.target[1]
         press(Keybindings.JUMP)
@@ -207,6 +207,7 @@ class Jump_Up(Command):
         time.sleep(0.06 if dy >= 20 else 0.1)
         press(Keybindings.JUMP, 1)
         key_up('up')
+        time.sleep(1)
         sleep_in_the_air(n=10)
 
 #########################
