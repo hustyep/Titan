@@ -5,7 +5,7 @@ import time
 from src.routine.components import *
 from src.common.vkeys import press, key_down, key_up, releaseAll, press_acc
 from src.command.commands import *
-
+from src.map.map_helper import *
 
 # List of key mappings
 class Keybindings(DefaultKeybindings):
@@ -86,8 +86,9 @@ def step(target, tolerance):
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
 
+
 @bot_status.run_if_enabled
-def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
+def find_next_point(start: Point, target: Point, tolerance: int):
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         return target
 
@@ -96,15 +97,20 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
 
     d_x = target[0] - start[0]
     d_y = target[1] - start[1]
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+    gap_h = platform_gap(platform_start, platform_target)
     if abs(d_x) <= tolerance:
         return target
     elif d_y == 0:
         if shared_map.is_continuous(start, target):
             return target
-        elif shared_map.horizontal_gap(start, target) <= 8:
-            point = find_first_gap(start, target)
-            if point is not None:
-                return point
+        else:
+            if gap_h <= 20:
+                if platform_start.end_x < platform_target.begin_x:
+                    return (platform_start.end_x - 2, platform_start.y)
+                else:
+                    return (platform_start.begin_x + 2, platform_start.y)
     elif d_y < 0:
         tmp_y = (start[0], target[1])
         if shared_map.is_continuous(tmp_y, target):
@@ -112,11 +118,11 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         tmp_x = (target[0], start[1])
         if shared_map.is_continuous(start, tmp_x):
             return tmp_x
-        gap_x = shared_map.horizontal_gap(start, target)
-        if gap_x > 0 and gap_x <= 8 and abs(d_y) <= 8:
-            point = find_first_gap(start, target)
-            if point is not None:
-                return point
+        if gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8:
+            if platform_start.end_x < platform_target.begin_x:
+                return (platform_start.end_x - 2, platform_start.y)
+            else:
+                return (platform_start.begin_x + 2, platform_start.y)
     else:
         tmp_x = (target[0], start[1])
         if shared_map.is_continuous(tmp_x, start):
@@ -124,6 +130,11 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
         tmp_y = (start[0], target[1])
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
+        if gap_h > 0 and gap_h <= 12:
+            if platform_start.end_x < platform_target.begin_x:
+                return (platform_start.end_x - 2, platform_start.y)
+            else:
+                return (platform_start.begin_x + 2, platform_start.y)
     return shared_map.platform_point((target[0], target[1] - 1))
 
 #########################
@@ -132,9 +143,18 @@ def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: 
 
 
 @bot_status.run_if_enabled
-def move_up(target):
+def move_up(target: Point):
     p = bot_status.player_pos
     dy = abs(p[1] - target[1])
+
+    if shared_map.on_the_platform((p[0], target[1]), strict=True):
+        pass
+    elif shared_map.on_the_platform(target, strict=True):
+        Walk(target_x=target[0], tolerance=1).execute()
+    elif target[0] >= p[0]:
+        Walk(target_x=target[0]+1, tolerance=0).execute()
+    else:
+        Walk(target_x=target[0]-1, tolerance=0).execute()
 
     if dy < 5:
         press(Keybindings.JUMP)
@@ -181,7 +201,7 @@ class DoubleJump(Skill):
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        sleep_in_the_air(n=1 if start_y==self.target[1] else 15)
+        sleep_in_the_air(n=1 if start_y == self.target[1] else 15)
 
 
 # 上跳
@@ -327,13 +347,6 @@ class Shadow_Bite(Skill):
         cls.ready = len(matchs) > 0
 
 
-class Shadow_Spear(Skill):
-    key = Keybindings.Shadow_Spear
-    type = SkillType.Buff
-    cooldown = 177
-    backswing = 0.6
-
-
 class Dominion(Command):
     key = Keybindings.Dominion
     type = SkillType.Attack
@@ -362,7 +375,7 @@ class Phalanx_Charge(Skill):
     cooldown = 30
     precast = 0.1
     backswing = 0.75
-    
+
     @classmethod
     def check(cls):
         matchs = utils.multi_match(
@@ -505,6 +518,7 @@ class LastResort(Skill):
     backswing = 0.8
     type = SkillType.Buff
 
+
 class Transcendent_Cygnus_Blessing(Skill):
     key = Keybindings.Transcendent_Cygnus_Blessing
     type = SkillType.Buff
@@ -553,6 +567,7 @@ class Shadow_Illusion(Skill):
     type = SkillType.Buff
     cooldown = 180
     backswing = 0.75
+
 
 class ForTheGuild(Skill):
     '''工会技能'''

@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import TypeVar
+from typing import TypeAlias
 
 #########################
 #       Constants       #
@@ -68,6 +68,7 @@ class BotDebug(Enum):
 #       Common Type        #
 #############################
 
+Point: TypeAlias = tuple[int, int]
 
 class MapPointType(Enum):
     Unknown = -1
@@ -91,6 +92,12 @@ class Rect:
         self.y = y
         self.width = width
         self.height = height
+        
+class Platform:
+    def __init__(self, begin_x: int, end_x: int, y:int) -> None:
+        self.begin_x = begin_x
+        self.end_x = end_x
+        self.y = y
 
 
 class MobType(Enum):
