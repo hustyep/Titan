@@ -623,7 +623,7 @@ class Direction(Command):
         if not self.direction:
             return
         # if bot_status.player_direction != self.direction:
-        press(self.direction, n=2, down_time=0.01, up_time=0.01)
+        press(self.direction, n=1, down_time=0.01, up_time=0.01)
 
 
 class Rest(Command):
