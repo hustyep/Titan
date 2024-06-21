@@ -101,8 +101,6 @@ class Bot(Subject):
             return
 
         if not self.check_map():
-            chat_bot.send_message("identify map failed", capture.frame)
-            chat_bot.video_call()
             return
 
         bot_status.prepared = True
@@ -157,7 +155,6 @@ class Bot(Subject):
 
         if not bot_helper.chenck_map_available(instance=shared_map.current_map.instance):
             bot_action.change_channel(instance=shared_map.current_map.instance)
-            return False
         return True
 
     def load_role(self, role_name):
