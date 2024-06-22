@@ -37,10 +37,10 @@ class MapModel:
         return self.type == MapType.Sacred
     
     @property
-    def base_floor(self) -> int:
+    def base_floor(self):
         if len(self.platforms) == 0:
             return 0
-        return list(self.platforms.keys())[-1]
+        return int(list(self.platforms.keys())[-1])
 
     def load_data(self):
         self._load_minimap_data()

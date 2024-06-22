@@ -421,7 +421,7 @@ class Detector(Subject):
             return
 
         rune_buff = utils.multi_match(
-            frame[:150, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
+            frame[:150, :], RUNE_BUFF_TEMPLATE[1:11, -15:-1], threshold=0.9)
         if len(rune_buff) == 0:
             rune_buff = utils.multi_match(
                 frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
