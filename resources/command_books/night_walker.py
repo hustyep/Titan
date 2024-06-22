@@ -68,6 +68,8 @@ def step(target, tolerance):
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
 
+    if not shared_map.is_floor_point(bot_status.player_pos):
+        sleep_in_the_air(n = 10)
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
     print(f"next_p:{next_p}")
     if not next_p:
@@ -106,12 +108,15 @@ def find_next_point(start: Point, target: Point, tolerance: int):
 
     d_x = target[0] - start[0]
     d_y = target[1] - start[1]
+    
+    if abs(d_x) <= tolerance:
+        return target
+    
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
     gap_h = platform_gap(platform_start, platform_target)
-    if abs(d_x) <= tolerance:
-        return target
-    elif d_y == 0:
+
+    if d_y == 0:
         if shared_map.is_continuous(start, target):
             return target
         else:
@@ -132,7 +137,7 @@ def find_next_point(start: Point, target: Point, tolerance: int):
                 return (platform_start.end_x - 2, platform_start.y)
             else:
                 return (platform_start.begin_x + 2, platform_start.y)
-        else:
+        elif gap_h > 0:
             next_platform = find_jumpable_platform(platform_start, platform_target)
             if next_platform is not None:
                 print(f"next platform: {next_platform}")
@@ -195,7 +200,7 @@ def move_up(target: Point):
 
     if dy < 5:
         press(Keybindings.JUMP)
-    elif dy <= 23:
+    elif dy <= 28:
         Jump_Up(target).execute()
     else:
         RopeLift(target[1]).execute()
@@ -261,7 +266,7 @@ class Jump_Up(Command):
         dy = bot_status.player_pos[1] - self.target[1]
         press(Keybindings.JUMP)
         key_down('up')
-        time.sleep(0.06 if dy >= 20 else 0.1)
+        time.sleep(0.06 if dy >= 20 else 0.3)
         press(Keybindings.JUMP, 1)
         key_up('up')
         time.sleep(1)
@@ -304,7 +309,7 @@ class Shadow_Dodge(Skill):
         if not self.canUse():
             return False
 
-        time.sleep(self.__class__.precast)
+        sleep_in_the_air(n=1)
         self.__class__.castedTime = time.time()
         press(opposite_direction(self.direction))
         press_acc(self.__class__.key, up_time=self.__class__.backswing)

@@ -528,12 +528,12 @@ class SolveRune(Command):
     def main(self):
         if not self.canUse():
             return -1, None
-
         bot_status.rune_solving = True
         Move(x=self.target[0], y=self.target[1], tolerance=1).execute()
+        sleep_in_the_air(n=50)
         time.sleep(0.5)
         # Inherited from Configurable
-        press(Keybindings.INTERACT, 1, down_time=0.2, up_time=0.8)
+        press(Keybindings.INTERACT, 1, down_time=0.3, up_time=0.5)
         self.__class__.castedTime = time.time()
 
         print('\nSolving rune:')
@@ -911,21 +911,24 @@ class RopeLift(Skill):
         dy = abs(start_y - self.target_y)
         while not self.canUse:
             time.sleep(1)
-        if dy >= 40:
-            press(Keybindings.JUMP, up_time=0.3)
-        elif dy > 30:
-            press(Keybindings.JUMP, up_time=0.1)
+        print(f"target_y: {self.target_y} start_y: {start_y}")
+        if dy >= 50:
+            press_acc(Keybindings.JUMP, up_time=0.2)
 
-        press_acc(self.__class__.key)
-        duration = 0
-        while bot_status.player_pos[1] >= self.target_y - 2:
-            time.sleep(0.01)
-            duration += 0.01
-            if duration >= 5:
-                break
-            if bot_status.player_pos[1] == start_y:
-                break
-        press(self.__class__.key)
+        press(self.key)
+        # 50：0.97
+        # 42：
+        if dy >= 55:
+            pass  
+        elif dy >= 50:
+            time.sleep(0.97)
+            press(self.key)
+        elif dy >= 40:
+            time.sleep(0.2075)
+            press(self.key)
+        else:
+            time.sleep(0.2)
+            press(self.key)            
         sleep_in_the_air(n=30)
 
 ###################
