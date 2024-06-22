@@ -8,6 +8,8 @@ from src.command.commands import *
 from src.map.map_helper import *
 
 # List of key mappings
+
+
 class Keybindings(DefaultKeybindings):
     # Movement
     JUMP = 's'
@@ -59,6 +61,13 @@ def step(target, tolerance):
     Performs one movement step in the given DIRECTION towards TARGET.
     Should not press any arrow keys, as those are handled by Mars.
     """
+
+    d_x = target[0] - bot_status.player_pos[0]
+    d_y = target[1] - bot_status.player_pos[1]
+    if abs(d_x) >= 26 and d_y > 0:
+        DoubleJump(target=target, attack_if_needed=True).execute()
+        return
+
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
     print(f"next_p:{next_p}")
     if not next_p:
@@ -123,6 +132,14 @@ def find_next_point(start: Point, target: Point, tolerance: int):
                 return (platform_start.end_x - 2, platform_start.y)
             else:
                 return (platform_start.begin_x + 2, platform_start.y)
+        else:
+            next_platform = find_jumpable_platform(platform_start, platform_target)
+            if next_platform is not None:
+                print(f"next platform: {next_platform}")
+                if platform_start.end_x < next_platform.begin_x:
+                    return (platform_start.end_x - 2, platform_start.y)
+                else:
+                    return (platform_start.begin_x + 2, platform_start.y)
     else:
         tmp_x = (target[0], start[1])
         if shared_map.is_continuous(tmp_x, start):
@@ -136,6 +153,26 @@ def find_next_point(start: Point, target: Point, tolerance: int):
             else:
                 return (platform_start.begin_x + 2, platform_start.y)
     return shared_map.platform_point((target[0], target[1] - 1))
+
+
+def find_jumpable_platform(platform_start: Platform, platform_target: Platform):
+    gap_h = platform_gap(platform_start, platform_target)
+    d_y = platform_target.y - platform_start.y
+
+    if d_y >= 0:
+        return platform_target
+    else:
+        if gap_h <= 8 and abs(d_y) <= 8:
+            return platform_target
+        else:
+            for y in list(shared_map.current_map.platforms.keys()):
+                if int(y) < platform_target.y:
+                    continue
+                platforms = shared_map.current_map.platforms[y]
+                for platform in platforms:
+                    if platform_gap(platform, platform_start) < gap_h or abs(platform.y - platform_start.y) < abs(d_y):
+                        return find_jumpable_platform(platform_start, platform)
+    return None
 
 #########################
 #        Y轴移动         #
@@ -287,6 +324,7 @@ class Greater_Dark_Servant(Skill):
     precast = 0.3
     backswing = 0.8
     duration = 55
+    tolerance = 5
 
 
 class Replace_Dark_Servant(Skill):
@@ -332,6 +370,7 @@ class Dark_Omen(Skill):
     type = SkillType.Attack
     cooldown = 20
     backswing = 0.9
+    tolerance = 1
 
 
 class Shadow_Bite(Skill):
@@ -339,6 +378,7 @@ class Shadow_Bite(Skill):
     type = SkillType.Attack
     cooldown = 15
     backswing = 0.55
+    tolerance = 1
 
     @classmethod
     def check(cls):
@@ -358,7 +398,7 @@ class Dominion(Command):
             return False
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
-        press(self.__class__.key, down_time=0.01, up_time=0.01)
+        press(self.__class__.key, down_time=0.05, up_time=0.01)
         Shadow_Dodge().execute()
         return True
 
@@ -375,6 +415,7 @@ class Phalanx_Charge(Skill):
     cooldown = 30
     precast = 0.1
     backswing = 0.75
+    tolerance = 1
 
     @classmethod
     def check(cls):

@@ -129,10 +129,10 @@ class Command():
         if len(self.__class__.key) == 0:
             return False
 
-        time.sleep(self.__class__.precast)
-        self.__class__.castedTime = time.time()
         press_acc(self.__class__.key,
+                  down_time=self.__class__.precast,
                   up_time=self.__class__.backswing if wait else 0)
+        self.__class__.castedTime = time.time() - (self.__class__.backswing if wait else 0)
         return True
 
 
@@ -659,6 +659,8 @@ class Skill(Command):
     icon = None
     ready = True
     enabled = False
+    update_time = 0
+    tolerance = 0
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -679,7 +681,7 @@ class Skill(Command):
     def canUse(cls, next_t: float = 0) -> bool:
         if cls.icon is None:
             return super().canUse(next_t)
-        return cls.ready
+        return cls.ready and time.time() - cls.update_time > cls.tolerance
 
     @classmethod
     def check(cls):
@@ -687,6 +689,7 @@ class Skill(Command):
             return
         if capture.frame is None:
             return
+        last_state = cls.ready
         match cls.type:
             case SkillType.Switch:
                 matchs = utils.multi_match(
@@ -705,6 +708,8 @@ class Skill(Command):
                 matchs = utils.multi_match(
                     capture.skill_frame, cls.icon[10:-2, 4:-2], threshold=0.9)
                 cls.ready = len(matchs) > 0
+        if not cls.ready or cls.ready != last_state:
+            cls.update_time = time.time()
 
     @classmethod
     def check_buff_enabled(cls):
