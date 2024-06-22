@@ -906,23 +906,25 @@ class RopeLift(Skill):
 
     def main(self):
         time.sleep(0.2)
+        start_y = bot_status.player_pos[1]
         while not self.canUse:
             time.sleep(1)
         if self.dy >= 40:
-            press(Keybindings.JUMP, up_time=0.5)
-            press(self.__class__.key)
-            time.sleep(2)
-            sleep_in_the_air(n=30)
+            press(Keybindings.JUMP, up_time=0.3)
         elif self.dy > 30:
-            press(Keybindings.JUMP, up_time=0.3)
-            press(self.__class__.key)
-            sleep_in_the_air(n=50)
-        else:
-            press(Keybindings.JUMP, up_time=0.3)
-            press_acc(self.__class__.key)
-            time.sleep(0.7)
-            press(self.__class__.key)
-            sleep_in_the_air(n=30)
+            press(Keybindings.JUMP, up_time=0.1)
+
+        press_acc(self.__class__.key)
+        duration = 0
+        while bot_status.player_pos[1] - start_y + self.dy:
+            time.sleep(0.01)
+            duration += 0.01
+            if duration >= 3:
+                break
+            if bot_status.player_pos[1] == start_y:
+                break
+        press(self.__class__.key)
+        sleep_in_the_air(n=30)
 
 ###################
 #      Potion     #
