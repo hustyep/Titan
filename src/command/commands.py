@@ -24,12 +24,12 @@ class DefaultKeybindings:
 
     # Potion
     EXP_POTION = '0'
-    WEALTH_POTION = "-"
+    WEALTH_POTION = ""
     GOLD_POTION = ''
-    GUILD_POTION = "9"
+    GUILD_POTION = "="
     CANDIED_APPLE = '8'
     LEGION_WEALTHY = '7'
-    EXP_COUPON = '6'
+    EXP_COUPON = '-'
 
     # Common Skill
     FOR_THE_GUILD = '4'
@@ -52,7 +52,7 @@ class Command():
     key: str = None
     cooldown: int = 0
     castedTime: float = 0
-    precast: float = 0
+    precast: float = 0.05
     backswing: float = 0.5
     complete_callback = None
 
@@ -480,7 +480,7 @@ class Fall(Command):
         self.buff = bot_settings.validate_boolean(buff)
 
     def main(self):
-        evade_rope()
+        # evade_rope()
         key_down('down')
         time.sleep(0.03)
         press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.05)
@@ -899,27 +899,29 @@ class RopeLift(Skill):
     key = Keybindings.ROPE_LIFT
     type = SkillType.Move
     cooldown = 3
+    tolerance = 1
 
-    def __init__(self, dy: int = 20):
+    def __init__(self, target_y: int):
         super().__init__(locals())
-        self.dy = abs(int(dy))
+        self.target_y = abs(int(target_y))
 
     def main(self):
         time.sleep(0.2)
         start_y = bot_status.player_pos[1]
+        dy = abs(start_y - self.target_y)
         while not self.canUse:
             time.sleep(1)
-        if self.dy >= 40:
+        if dy >= 40:
             press(Keybindings.JUMP, up_time=0.3)
-        elif self.dy > 30:
+        elif dy > 30:
             press(Keybindings.JUMP, up_time=0.1)
 
         press_acc(self.__class__.key)
         duration = 0
-        while bot_status.player_pos[1] - start_y + self.dy:
+        while bot_status.player_pos[1] >= self.target_y - 2:
             time.sleep(0.01)
             duration += 0.01
-            if duration >= 3:
+            if duration >= 5:
                 break
             if bot_status.player_pos[1] == start_y:
                 break

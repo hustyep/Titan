@@ -72,11 +72,12 @@ class MapModel:
                         value = MapPointType(self.minimap_data[y][x])
                         if value != MapPointType.Floor and value != MapPointType.FloorRope:
                             continue
-                        platform_list: List[Platform] = self.platforms[str(x)]
+                        platform_list: List[Platform] = self.platforms.get(str(y))
                         if platform_list is None:
-                            self.platforms[str(x)] = [Platform(x, x, y)]
+                            platform_list = [Platform(x, x, y)]
+                            self.platforms[str(y)] = platform_list
                         else:
-                            last_platform: Platform = platform_list[len(platform_list) - 1]
+                            last_platform: Platform = platform_list[-1]
                             if last_platform.end_x == x - 1:
                                 last_platform.end_x = x
                             else:

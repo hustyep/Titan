@@ -14,7 +14,7 @@ from src.routine.components import Point
 from src.routine.routine import routine
 from src.common import bot_status, bot_settings
 from src.common.image_template import *
-from src.common.constants import *
+from src.common.constants import BotInfo, BotWarnning, BotFatal, BotError, window_cap_horiz, window_cap_botton, window_cap_top
 from src.common.hid import hid
 from src.modules.capture import capture
 from src.map.map import shared_map as game_map
@@ -424,7 +424,7 @@ class Detector(Subject):
             frame[:150, :], RUNE_BUFF_TEMPLATE[1:11, -15:-1], threshold=0.9)
         if len(rune_buff) == 0:
             rune_buff = utils.multi_match(
-                frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
+                frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.8)
         if rune_buff:
             bot_status.rune_pos = None
             bot_status.rune_closest_pos = None

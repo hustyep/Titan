@@ -193,8 +193,9 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': 'Void Current 1',
+        'default': 'End of the World 1-6',
         'quest': [
+            'Void Current 1'
         ]
     }
 }

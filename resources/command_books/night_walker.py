@@ -198,7 +198,7 @@ def move_up(target: Point):
     elif dy <= 23:
         Jump_Up(target).execute()
     else:
-        RopeLift(dy).execute()
+        RopeLift(target[1]).execute()
 
 
 @bot_status.run_if_enabled
@@ -321,10 +321,15 @@ class Greater_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Summon
     cooldown = 60
-    precast = 0.3
+    precast = 0.5
     backswing = 0.8
     duration = 55
     tolerance = 5
+    
+    def main(self):
+        while not self.canUse():
+            time.sleep(0.1)
+        return super().main()
 
 
 class Replace_Dark_Servant(Skill):
@@ -382,10 +387,12 @@ class Shadow_Bite(Skill):
 
     @classmethod
     def check(cls):
+        last_state = cls.ready
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
-
+        if not cls.ready or cls.ready != last_state:
+            cls.update_time = time.time()
 
 class Dominion(Command):
     key = Keybindings.Dominion
@@ -415,7 +422,6 @@ class Phalanx_Charge(Skill):
     cooldown = 30
     precast = 0.1
     backswing = 0.75
-    tolerance = 1
 
     @classmethod
     def check(cls):
@@ -445,10 +451,14 @@ class Shadow_Attack(Command):
             Arachnid().execute()
             Dark_Omen().execute()
         elif Shadow_Bite.canUse():
+            press(Keybindings.JUMP)
             Shadow_Bite().execute()
-            Quintuple_Star().execute()
         elif Dark_Omen.canUse():
+            # Jump_Up((68, 69)).execute()
             Dark_Omen().execute()
+            # sleep_in_the_air()
+            # Fall()
+            # Quintuple_Star().execute()
         Quintuple_Star().execute()
         return True
 
@@ -533,11 +543,11 @@ class Buff(Command):
         self.buffs = [
             Dark_Elemental,
             Shadow_Bat,
-            # Transcendent_Cygnus_Blessing,
+            Transcendent_Cygnus_Blessing,
             LastResort,
             Glory_of_the_Guardians,
             Shadow_Spear,
-            # Shadow_Illusion,
+            Shadow_Illusion,
             ForTheGuild,
             HardHitter,
         ]
@@ -568,6 +578,13 @@ class Transcendent_Cygnus_Blessing(Skill):
     backswing = 0.85
 
     @classmethod
+    def load(cls):
+        module_name = cls.__module__.split('.')[-1]
+        path1 = f'assets/skills/{module_name}/{cls.__name__}.png'
+        cls.icon = cv2.imread(path1, 0)
+        cls.id = cls.__name__
+
+    @classmethod
     def check(cls):
         if capture.frame is None:
             return
@@ -576,16 +593,16 @@ class Transcendent_Cygnus_Blessing(Skill):
             cls.ready = False
         else:
             matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[2:-2, 13:-13], threshold=0.9, debug=False)
+                capture.skill_frame, cls.icon[2:-2, 8:-2], threshold=0.9, debug=False)
             cls.ready = len(matchs) > 0
 
     @classmethod
     def check_buff_enabled(cls):
         matchs = utils.multi_match(
-            capture.buff_frame, cls.icon[:14, 14:], threshold=0.9)
+            capture.buff_frame, cls.icon[:14, 8:-8], threshold=0.9)
         if not matchs:
             matchs = utils.multi_match(
-                capture.buff_frame, cls.icon[14:, 14:], threshold=0.9)
+                capture.buff_frame, cls.icon[-14:, 8:-8], threshold=0.9)
         cls.enabled = len(matchs) > 0
 
 
