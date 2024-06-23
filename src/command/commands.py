@@ -796,7 +796,7 @@ class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
     cooldown = 58
-    backswing = 0.6
+    backswing = 1
     duration = 60
 
     def __init__(self, direction=None):

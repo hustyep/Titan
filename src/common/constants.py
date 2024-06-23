@@ -193,9 +193,10 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': 'End of the World 1-6',
+        'default': 'Royal Library Section 4',
         'quest': [
-            'Void Current 1'
+            'Void Current 1',
+            'End of the World 1-6'
         ]
     }
 }

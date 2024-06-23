@@ -45,7 +45,7 @@ class Keybindings(DefaultKeybindings):
     Greater_Dark_Servant = 'd'
     Shadow_Bite = 'e'
     Rapid_Throw = 'x'
-    Silence = ''
+    Silence = 'j'
 
     FOR_THE_GUILD = '8'
     HARD_HITTER = '7'
@@ -67,7 +67,9 @@ def step(target, tolerance):
     if abs(d_x) >= 26 and d_y > 0:
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
-
+    # if abs(d_x) >= 40 and d_y == 0:
+    #     DoubleJump(target=target, attack_if_needed=True).execute()
+    #     return
     if not shared_map.is_floor_point(bot_status.player_pos):
         sleep_in_the_air(n = 10)
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
@@ -90,7 +92,7 @@ def step(target, tolerance):
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 25 or not shared_map.is_continuous(bot_status.player_pos, next_p):
+    elif abs(d_x) >= 26 or not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= 11:
         Shadow_Dodge(direction).execute()
@@ -120,11 +122,18 @@ def find_next_point(start: Point, target: Point, tolerance: int):
         if shared_map.is_continuous(start, target):
             return target
         else:
+            # print(f"gap: {gap_h}")
+            # print(f"platform_start: {platform_start}")
+            # print(f"platform_target: {platform_target}")
             if gap_h <= 20:
                 if platform_start.end_x < platform_target.begin_x:
-                    return (platform_start.end_x - 2, platform_start.y)
+                    if start[0] in range(platform_start.end_x - 4 - tolerance, platform_start.end_x - 4 + tolerance):
+                        return target
+                    return (platform_start.end_x - 4, platform_start.y)
                 else:
-                    return (platform_start.begin_x + 2, platform_start.y)
+                    if start[0] in range(platform_start.begin_x + 4 - tolerance, platform_start.begin_x + 4 + tolerance):
+                        return target
+                    return (platform_start.begin_x + 4, platform_start.y)
     elif d_y < 0:
         tmp_y = (start[0], target[1])
         if shared_map.is_continuous(tmp_y, target):
@@ -388,7 +397,7 @@ class Shadow_Bite(Skill):
     type = SkillType.Attack
     cooldown = 15
     backswing = 0.55
-    tolerance = 1
+    tolerance = 0.6
 
     @classmethod
     def check(cls):
@@ -434,7 +443,13 @@ class Phalanx_Charge(Skill):
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
 
-
+class Silence(Command):
+    key = Keybindings.Silence
+    type = SkillType.Attack
+    cooldown = 360
+    precast = 0.5
+    backswing = 3
+    
 class Attack(Command):
     key = Quintuple_Star.key
     type = SkillType.Attack
@@ -450,13 +465,15 @@ class Shadow_Attack(Command):
         return True
 
     def main(self):
+        if Silence.canUse():
+            Silence().execute()
         if Dominion.canUse():
             Dominion().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
             Dark_Omen().execute()
         elif Shadow_Bite.canUse():
-            press(Keybindings.JUMP)
+            # press(Keybindings.JUMP)
             Shadow_Bite().execute()
         elif Dark_Omen.canUse():
             # Jump_Up((68, 69)).execute()
@@ -464,6 +481,7 @@ class Shadow_Attack(Command):
             # sleep_in_the_air()
             # Fall()
             # Quintuple_Star().execute()
+        Phalanx_Charge().execute()
         Quintuple_Star().execute()
         return True
 
@@ -478,28 +496,28 @@ class Detect_Attack(Command):
         width = 300
         height = 100
 
-        if len(detect_mobs(
-                capture.frame[self.y - height:self.y + height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
-            print("attack left")
-            Direction('left').execute()
-            Quintuple_Star().execute()
-        elif len(detect_mobs(
-                capture.frame[self.y - height:self.y + height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
-            print("attack right")
-            Direction('right').execute()
-            Quintuple_Star().execute()
-        elif len(detect_mobs(
-                capture.frame[self.y - height * 2:self.y - height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
-            print("attack up left")
-            Jump(0.05, direction="left", attack=True)
-        elif len(detect_mobs(
-                capture.frame[self.y - height * 2:self.y - height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
-            print("attack up right")
-            Jump(0.05, direction="right", attack=True)
-        else:
-            print("attack random direction")
-            Direction('left' if random() <= 0.5 else 'right').execute()
-            Quintuple_Star().execute()
+        # if len(detect_mobs(
+        #         capture.frame[self.y - height:self.y + height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
+        #     # print("attack left")
+        #     Direction('left').execute()
+        #     Quintuple_Star().execute()
+        # elif len(detect_mobs(
+        #         capture.frame[self.y - height:self.y + height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
+        #     # print("attack right")
+        #     Direction('right').execute()
+        #     Quintuple_Star().execute()
+        # elif len(detect_mobs(
+        #         capture.frame[self.y - height * 2:self.y - height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
+        #     # print("attack up left")
+        #     Jump(0.05, direction="left", attack=True)
+        # elif len(detect_mobs(
+        #         capture.frame[self.y - height * 2:self.y - height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
+        #     # print("attack up right")
+        #     Jump(0.05, direction="right", attack=True)
+        # else:
+            # print("attack random direction")
+        Direction('left' if random() <= 0.5 else 'right').execute()
+        Quintuple_Star().execute()
         return True
 
 

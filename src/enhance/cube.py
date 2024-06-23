@@ -24,8 +24,8 @@ class Cube:
         self.running = False
         self.role = None
 
-        self.type = PotentialType.STAT
-        self.target = 30
+        self.type = PotentialType.MOB
+        self.target = 2
 
     def start(self, role: RoleModel):
         if role is None:
