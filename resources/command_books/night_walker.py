@@ -125,7 +125,7 @@ def find_next_point(start: Point, target: Point, tolerance: int):
             # print(f"gap: {gap_h}")
             # print(f"platform_start: {platform_start}")
             # print(f"platform_target: {platform_target}")
-            if gap_h <= 20:
+            if gap_h <= 20 and gap_h >= 0:
                 if platform_start.end_x < platform_target.begin_x:
                     if start[0] in range(platform_start.end_x - 4 - tolerance, platform_start.end_x - 4 + tolerance):
                         return target

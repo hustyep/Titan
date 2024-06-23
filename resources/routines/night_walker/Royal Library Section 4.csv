@@ -1,5 +1,4 @@
 $, target=move_tolerance, value=10
-
 *, x=77, y=43, interval=3000, tolerance=10, detect=False, skip=True
     Rest, wait=5
 
@@ -20,8 +19,8 @@ $, target=move_tolerance, value=10
 *, x=124, y=43, interval=0, tolerance=3, detect=False, skip=False
     Wait, duration=0.15
     ErdaShower, direction=left
-*, x=124, y=59, interval=0, tolerance=5, detect=False, skip=False
-*, x=26, y=59, interval=0, tolerance=3, detect=False, skip=False
+*, x=122, y=59, interval=0, tolerance=8, detect=False, skip=False
+*, x=24, y=59, interval=0, tolerance=3, detect=False, skip=False
 *, x=38, y=26, interval=0, tolerance=3, detect=False, skip=False
     Dark_Omen
     Replace_Dark_Servant
