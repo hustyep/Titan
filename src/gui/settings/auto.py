@@ -266,7 +266,7 @@ class Auto(LabelFrame):
                 total = len(matchs1) * 12 + len(matchs2) * 9 + len(matchs3) * 9 + len(matchs4) * 6
                 print(f"cube_result:\nLUK12*{len(matchs1)}\nLUK9*{len(matchs2)}\nALL9*{len(matchs3)}\nALL6*{len(matchs4)}")
                 print(f"total={total}")
-                if total >= 30:
+                if total >= 33:
                     return True
                 else:
                     return False      
