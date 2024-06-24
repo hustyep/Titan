@@ -64,14 +64,11 @@ def step(target, tolerance):
 
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) >= 26 and d_y > 0:
+    if abs(d_x) >= DoubleJump.move_range.start and d_y > 0:
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
-    # if abs(d_x) >= 40 and d_y == 0:
-    #     DoubleJump(target=target, attack_if_needed=True).execute()
-    #     return
     if not shared_map.is_floor_point(bot_status.player_pos):
-        sleep_in_the_air(n = 10)
+        sleep_in_the_air(n=10)
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
     print(f"next_p:{next_p}")
     if not next_p:
@@ -92,9 +89,18 @@ def step(target, tolerance):
         move_up(next_p)
     elif direction == "down":
         move_down(next_p)
-    elif abs(d_x) >= 26 or not shared_map.is_continuous(bot_status.player_pos, next_p):
+    elif not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
-    elif abs(d_x) >= 11:
+    elif abs(d_x) >= DoubleJump.move_range.start:
+        # 落点范围
+        tmp_pos_l = bot_status.player_pos[0] + DoubleJump.move_range.stop - 3
+        tmp_pos_r = bot_status.player_pos[0] + DoubleJump.move_range.stop + 3
+        for i in range(tmp_pos_l, tmp_pos_r):
+            if not shared_map.on_the_platform((i, target[1]), strict=True):
+                Shadow_Dodge(direction).execute()
+                return
+        DoubleJump(target=next_p, attack_if_needed=True).execute()
+    elif abs(d_x) >= Shadow_Dodge.move_range.start:
         Shadow_Dodge(direction).execute()
     else:
         Walk(target_x=next_p[0], tolerance=tolerance).execute()
@@ -110,10 +116,10 @@ def find_next_point(start: Point, target: Point, tolerance: int):
 
     d_x = target[0] - start[0]
     d_y = target[1] - start[1]
-    
+
     if abs(d_x) <= tolerance:
         return target
-    
+
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
     gap_h = platform_gap(platform_start, platform_target)
@@ -122,19 +128,19 @@ def find_next_point(start: Point, target: Point, tolerance: int):
         if shared_map.is_continuous(start, target):
             return target
         else:
-            # print(f"gap: {gap_h}")
-            # print(f"platform_start: {platform_start}")
-            # print(f"platform_target: {platform_target}")
-            if gap_h <= 20 and gap_h >= 0:
+            margin = 5
+            max_distance = DoubleJump.move_range.stop - margin * 2
+            if gap_h in range(0, max_distance):
                 if platform_start.end_x < platform_target.begin_x:
-                    if start[0] in range(platform_start.end_x - 5 - tolerance, platform_start.end_x - 5 + tolerance):
+                    if start[0] >= platform_start.end_x - (max_distance - gap_h):
                         return target
-                    return (platform_start.end_x - 5, platform_start.y)
+                    return (platform_start.end_x - margin, platform_start.y)
                 else:
-                    if start[0] in range(platform_start.begin_x + 5 - tolerance, platform_start.begin_x + 5 + tolerance):
+                    if start[0] <= platform_start.begin_x + (max_distance - gap_h):
                         return target
-                    return (platform_start.begin_x + 5, platform_start.y)
+                    return (platform_start.begin_x + margin, platform_start.y)
     elif d_y < 0:
+        # 目标在上面， 优先向上移动
         tmp_y = (start[0], target[1])
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
@@ -147,7 +153,8 @@ def find_next_point(start: Point, target: Point, tolerance: int):
             else:
                 return (platform_start.begin_x + 2, platform_start.y)
         elif gap_h > 0:
-            next_platform = find_jumpable_platform(platform_start, platform_target)
+            next_platform = find_jumpable_platform(
+                platform_start, platform_target)
             if next_platform is not None:
                 print(f"next platform: {next_platform}")
                 if platform_start.end_x < next_platform.begin_x:
@@ -155,12 +162,13 @@ def find_next_point(start: Point, target: Point, tolerance: int):
                 else:
                     return (platform_start.begin_x + 2, platform_start.y)
     else:
-        tmp_x = (target[0], start[1])
-        if shared_map.is_continuous(tmp_x, start):
-            return tmp_x
+        # 目标在下面，优先向下移动
         tmp_y = (start[0], target[1])
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
+        tmp_x = (target[0], start[1])
+        if shared_map.is_continuous(tmp_x, start):
+            return tmp_x
         if gap_h > 0 and gap_h <= 12:
             if platform_start.end_x < platform_target.begin_x:
                 return (platform_start.end_x - 2, platform_start.y)
@@ -228,6 +236,7 @@ class DoubleJump(Skill):
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
     backswing = 0.1
+    move_range = range(26, 35)
 
     def __init__(self, target: tuple[int, int], attack_if_needed=False):
         super().__init__(locals())
@@ -309,6 +318,7 @@ class Shadow_Dodge(Skill):
     cooldown = 0
     precast = 0
     backswing = 0.5
+    move_range = range(11, DoubleJump.move_range.start)
 
     def __init__(self, direction='right'):
         super().__init__(locals())
@@ -339,7 +349,7 @@ class Greater_Dark_Servant(Skill):
     backswing = 0.8
     duration = 55
     tolerance = 5.5
-    
+
     def main(self):
         while not self.canUse():
             Detect_Attack().execute()
@@ -408,6 +418,7 @@ class Shadow_Bite(Skill):
         if not cls.ready or cls.ready != last_state:
             cls.update_time = time.time()
 
+
 class Dominion(Command):
     key = Keybindings.Dominion
     type = SkillType.Attack
@@ -443,13 +454,15 @@ class Phalanx_Charge(Skill):
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
 
+
 class Silence(Command):
     key = Keybindings.Silence
     type = SkillType.Attack
     cooldown = 360
     precast = 0.5
     backswing = 3
-    
+
+
 class Attack(Command):
     key = Quintuple_Star.key
     type = SkillType.Attack
@@ -515,7 +528,7 @@ class Detect_Attack(Command):
         #     # print("attack up right")
         #     Jump(0.05, direction="right", attack=True)
         # else:
-            # print("attack random direction")
+        # print("attack random direction")
         Direction('left' if random() <= 0.5 else 'right').execute()
         Quintuple_Star().execute()
         return True
