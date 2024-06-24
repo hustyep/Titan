@@ -96,6 +96,8 @@ TELEPORT_STONE_LIST_ICON_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}teleport/teleport_stone_list_icon.png', 0)
 INVENTORY_MESO_TEMPLATE = cv2.imread(
     f'{ASSETS_PATH}exceptions/meso_icon_template.png', 0)
+TELEPORT_CURRENT_MAP_ERROR_TEMPLATE = cv2.imread(
+    f'{ASSETS_PATH}teleport/teleport_current_map_error.png', 0)
 
 ########################
 #      exceptions      #

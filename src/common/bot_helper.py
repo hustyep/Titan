@@ -153,15 +153,16 @@ def wait_until_map_changed(timeout=7):
         print("not lost_minimap")
 
         if time.time() - start > timeout:
-            return
+            return False
     while (bot_status.lost_minimap):
         print("lost_minimap")
         time.sleep(0.5)
         if time.time() - start > timeout:
             print("change map timeout")
-            return
+            return False
     print("map loaded")
     time.sleep(0.5)
+    return True
 
 
 def chenck_map_available(instance=True):
@@ -190,15 +191,20 @@ def get_available_routines(command_name) -> list:
     return routines
 
 
-
-def identify_map_name():
-    frame = utils.filter_color(capture.map_name_frame, TEXT_WHITE_RANGES)
-    # utils.show_image(frame)
-    
+def identify_map_name(try_count=1):
     available_map_names = []
     for map in shared_map.available_maps:
         available_map_names.append(map.name)
-    return utils.image_match_text(frame, available_map_names, 0.8, filter=[])
+
+    frame = utils.filter_color(capture.map_name_frame)
+    # utils.show_image(frame)
+    for _ in range(0, try_count):
+        result = utils.image_match_text(
+            frame, available_map_names, 0.8, filter=[])
+        if result is not None:
+            return result
+        else:
+            time.sleep(0.3)
 
 
 def get_full_pos(pos):

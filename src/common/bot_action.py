@@ -141,7 +141,7 @@ def climb_rope(isUP=True):
 
 
 @bot_status.run_if_enabled
-def open_teleport_stone() -> bool:
+def open_teleport_stone(retry_count=0) -> bool:        
     def is_opend():
         match = utils.multi_match(
             capture.frame, TELEPORT_STONE_LIST_ICON_TEMPLATE)
@@ -150,27 +150,30 @@ def open_teleport_stone() -> bool:
     if is_opend():
         return True
 
+    if retry_count >= 5:
+        return False
+
     if not mouse_move(TELEPORT_STONE_TEMPLATE):
         if mouse_move(ITEM_CASH_TAB_TEMPLATE):
             mouse_left_click(delay=0.5)
             stone_match = utils.multi_match(
                 capture.frame, TELEPORT_STONE_TEMPLATE)
             if len(stone_match) > 0:
-                return open_teleport_stone()
+                return open_teleport_stone(retry_count+1)
             else:
                 print("[error]cant find teleport stone")
                 return False
         else:
             click_key(bot_settings.SystemKeybindings.ITEM, 0.5)
             mouse_move_relative(0, 20)
-            return open_teleport_stone()
+            return open_teleport_stone(retry_count+1)
 
     else:
         mouse_double_click(delay=0.1)
         if not is_opend():
             click_key('i', delay=0.1)
             mouse_move_relative(0, 20)
-            open_teleport_stone()
+            open_teleport_stone(retry_count+1)
         return True
 
 
@@ -182,7 +185,11 @@ def close_teleport_stone():
 
 
 @bot_status.run_if_enabled
-def teleport_to_map(map_name: str):
+def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
+    if retried_count >= max_retry_count:
+        bot_status.acting = False
+        return False
+    
     bot_status.acting = True
     bot_status.prepared = False
     if open_teleport_stone():
@@ -207,16 +214,19 @@ def teleport_to_map(map_name: str):
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
         frame = frame[y:y+100, x:x+260]
-        cancel_match = utils.multi_match(capture.frame, BUTTON_CANCEL_TEMPLATE)
-        if len(cancel_match) > 0:
+        if utils.match_count(capture.frame, BUTTON_CANCEL_TEMPLATE):
             click_key('enter', delay=0.1)
-            wait_until_map_changed()
+            result = wait_until_map_changed()
+            bot_status.acting = False
+            return result
+        elif utils.match_count(capture.frame, TELEPORT_CURRENT_MAP_ERROR_TEMPLATE):
+            click_key('esc', delay=0.1)
             bot_status.acting = False
             return True
         else:
             click_key('esc', delay=0.1)
             click_key('esc', delay=0.1)
-            return teleport_to_map(map_name)
+            return teleport_to_map(map_name, retried_count+1)
     else:
         print("[error]cant open teleport stone")
         bot_status.acting = False

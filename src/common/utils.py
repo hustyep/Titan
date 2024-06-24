@@ -76,6 +76,9 @@ def multi_match(frame, template, threshold=0.95, center=True, debug=False):
         cv2.waitKey()
     return results
 
+def match_count(frame, template, threshold=0.95, center=True, debug=False):
+    matchs = multi_match(frame, template, threshold, center, debug)
+    return len(matchs)
 
 def filter_color(img, ranges):
     """
@@ -335,17 +338,16 @@ def image_match_text(frame, list: list[str], threshold=0.7, filter=[' ']):
     for i in string.punctuation:
         if i not in ['-', "'"]:
             text = text.replace(i, '')
-    best = 0
+    best = threshold
     result: str = None
     for value in list:
         ratio = string_similar(text, value.lower())
         if ratio == 1:
             return value
-        elif ratio > best:
+        elif ratio >= best:
             best = ratio
             result = value
-    if best >= threshold:
-        return result
+    return result
 
 
 def show_image(image, title=''):

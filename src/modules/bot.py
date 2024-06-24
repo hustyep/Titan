@@ -101,6 +101,7 @@ class Bot(Subject):
             return
 
         if not self.check_map():
+            print("!!!check map error")
             return
 
         bot_status.prepared = True
@@ -131,7 +132,7 @@ class Bot(Subject):
         if bot_status.lost_minimap:
             time.sleep(0.1)
             return False
-        map_name = bot_helper.identify_map_name()
+        map_name = bot_helper.identify_map_name(try_count=5)
         print(f"identify map:{map_name}")
 
         target_map = None
@@ -150,7 +151,7 @@ class Bot(Subject):
         if target_map != map_name:
             if not bot_action.teleport_to_map(target_map):
                 chat_bot.voice_call()
-                chat_bot.send_message(f"teleport to {target_map}", capture.frame)
+                chat_bot.send_message(f"teleport to {target_map} failed", capture.frame)
                 return False
 
         if not bot_helper.chenck_map_available(instance=shared_map.current_map.instance):
@@ -243,9 +244,9 @@ class Bot(Subject):
                 case BotError.LOST_PLAYER:
                     pass
                 case (_):
-                    if not bot_status.enabled:
-                        self.toggle(False, event_type.value)
+                    if bot_status.enabled:
                         chat_bot.voice_call()
+                    self.toggle(False, event_type.value)
         elif isinstance(event_type, BotWarnning):
             match event_type:
                 # case BotWarnning.NO_MOVEMENT:
