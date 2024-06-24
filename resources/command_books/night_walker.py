@@ -127,13 +127,13 @@ def find_next_point(start: Point, target: Point, tolerance: int):
             # print(f"platform_target: {platform_target}")
             if gap_h <= 20 and gap_h >= 0:
                 if platform_start.end_x < platform_target.begin_x:
-                    if start[0] in range(platform_start.end_x - 4 - tolerance, platform_start.end_x - 4 + tolerance):
+                    if start[0] in range(platform_start.end_x - 5 - tolerance, platform_start.end_x - 5 + tolerance):
                         return target
-                    return (platform_start.end_x - 4, platform_start.y)
+                    return (platform_start.end_x - 5, platform_start.y)
                 else:
-                    if start[0] in range(platform_start.begin_x + 4 - tolerance, platform_start.begin_x + 4 + tolerance):
+                    if start[0] in range(platform_start.begin_x + 5 - tolerance, platform_start.begin_x + 5 + tolerance):
                         return target
-                    return (platform_start.begin_x + 4, platform_start.y)
+                    return (platform_start.begin_x + 5, platform_start.y)
     elif d_y < 0:
         tmp_y = (start[0], target[1])
         if shared_map.is_continuous(tmp_y, target):
@@ -338,11 +338,11 @@ class Greater_Dark_Servant(Skill):
     precast = 0.5
     backswing = 0.8
     duration = 55
-    tolerance = 5
+    tolerance = 5.5
     
     def main(self):
         while not self.canUse():
-            time.sleep(0.1)
+            Detect_Attack().execute()
         return super().main()
 
 

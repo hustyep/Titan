@@ -24,9 +24,9 @@ class DefaultKeybindings:
 
     # Potion
     EXP_POTION = '0'
-    WEALTH_POTION = ""
+    WEALTH_POTION = "="
     GOLD_POTION = ''
-    GUILD_POTION = "="
+    GUILD_POTION = "n"
     CANDIED_APPLE = '8'
     LEGION_WEALTHY = '7'
     EXP_COUPON = '-'
@@ -796,7 +796,7 @@ class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
     cooldown = 58
-    backswing = 1
+    backswing = 0.85
     duration = 60
 
     def __init__(self, direction=None):
