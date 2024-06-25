@@ -465,13 +465,13 @@ class Phalanx_Charge(Skill):
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
     
-    # def main(self):
-    #     if not self.canUse():
-    #         return False
-    #     if self.direction is not None:
-    #         Direction(self.direction)
-    #     super().main()
-    #     return True
+    def main(self):
+        if not self.canUse():
+            return False
+        if self.direction is not None:
+            Direction(self.direction).execute()
+        super().main()
+        return True
 
 
 class Silence(Command):
@@ -497,6 +497,11 @@ class Shadow_Attack(Command):
         return True
 
     def main(self):
+        if time.time() - self.castedTime <= 5:
+            Phalanx_Charge().execute()
+            Quintuple_Star().execute()
+            return True
+        self.castedTime = time.time()
         if Silence.canUse():
             Silence().execute()
         if Dominion.canUse():
@@ -505,14 +510,11 @@ class Shadow_Attack(Command):
             Arachnid().execute()
             Dark_Omen().execute()
         elif Shadow_Bite.canUse():
-            # press(Keybindings.JUMP)
             Shadow_Bite().execute()
         elif Dark_Omen.canUse():
-            # Jump_Up((68, 69)).execute()
             Dark_Omen().execute()
-            # sleep_in_the_air()
-            # Fall()
-            # Quintuple_Star().execute()
+        else:
+            self.castedTime = 0
         Phalanx_Charge().execute()
         Quintuple_Star().execute()
         return True
@@ -549,7 +551,7 @@ class Detect_Attack(Command):
         # else:
         # print("attack random direction")
         if shared_map.current_map.name == 'Royal Library Section 4':
-            press('right', down_time=0.02, up_time=0.02)
+            Direction('right').execute()
             print("attack right direction")
         else:
             print("attack random direction")
