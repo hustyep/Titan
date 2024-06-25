@@ -265,7 +265,14 @@ class DoubleJump(Skill):
         key_down(direction)
         time.sleep(0.1)
         press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-        press(self.key, 1, down_time=0.02, up_time=0.03)
+        if dx >=30 or dy < 0:
+            press(self.key, 2, down_time=0.03, up_time=0.03)
+        elif dx >= 26:
+            press(self.key, 1, down_time=0.02, up_time=0.03)
+        else:
+            time.sleep(0.1)
+            press(self.key, 1, down_time=0.02, up_time=0.03)
+            
         if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
