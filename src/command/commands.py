@@ -927,7 +927,7 @@ class RopeLift(Skill):
             time.sleep(0.2075)
             press(self.key)
         else:
-            time.sleep(0.205)
+            time.sleep(0.22)
             press_acc(self.key)            
         sleep_in_the_air(n=30)
 
