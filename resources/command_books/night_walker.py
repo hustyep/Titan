@@ -404,6 +404,11 @@ class Dark_Omen(Skill):
     cooldown = 20
     backswing = 0.9
     tolerance = 1
+    
+    def canUse(cls, next_t: float = 0) -> bool:
+        if time.time() - Shadow_Bite.castedTime <= 3:
+            return False
+        return super().canUse(next_t)
 
 
 class Shadow_Bite(Skill):
@@ -422,6 +427,10 @@ class Shadow_Bite(Skill):
         if not cls.ready or cls.ready != last_state:
             cls.update_time = time.time()
 
+    def canUse(cls, next_t: float = 0) -> bool:
+        if time.time() - Dark_Omen.castedTime <= 3:
+            return False
+        return super().canUse(next_t)
 
 class Dominion(Command):
     key = Keybindings.Dominion
@@ -497,11 +506,6 @@ class Shadow_Attack(Command):
         return True
 
     def main(self):
-        if time.time() - self.castedTime <= 5:
-            Phalanx_Charge().execute()
-            Quintuple_Star().execute()
-            return True
-        lastTime = self.castedTime
         self.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
@@ -514,7 +518,7 @@ class Shadow_Attack(Command):
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
         else:
-            self.castedTime = lastTime
+            pass
         Phalanx_Charge().execute()
         Quintuple_Star().execute()
         return True
