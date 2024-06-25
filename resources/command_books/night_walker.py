@@ -501,20 +501,20 @@ class Shadow_Attack(Command):
             Phalanx_Charge().execute()
             Quintuple_Star().execute()
             return True
+        lastTime = self.castedTime
         self.castedTime = time.time()
-        if Silence.canUse():
+        if Shadow_Bite.canUse():
+            Shadow_Bite().execute()
+        elif Silence.canUse():
             Silence().execute()
-        if Dominion.canUse():
+        elif Dominion.canUse():
             Dominion().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
-            Dark_Omen().execute()
-        elif Shadow_Bite.canUse():
-            Shadow_Bite().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
         else:
-            self.castedTime = 0
+            self.castedTime = lastTime
         Phalanx_Charge().execute()
         Quintuple_Star().execute()
         return True
