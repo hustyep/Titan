@@ -516,25 +516,23 @@ class SolveRune(Command):
         frame = capture.frame
         if frame is None:
             return False
-        rune_buff = utils.multi_match(
-            frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
-        if len(rune_buff) == 0:
-            rune_buff = utils.multi_match(
-                frame[:200, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
+        rune_buff = bot_helper.rune_buff_match(frame)
         if len(rune_buff) > 0:
             return False
         return super().canUse(next_t)
 
     def main(self):
-        if not self.canUse():
+        if not self.canUse() or self.attempts > self.max_attempts:
+            bot_status.rune_solving = False
+            bot_status.acting = False
             return -1, None
         bot_status.rune_solving = True
         Move(x=self.target[0], y=self.target[1], tolerance=1).execute()
-        sleep_in_the_air(n=50)
         time.sleep(0.5)
+        sleep_in_the_air(n=50)
         # Inherited from Configurable
+        bot_status.acting = True
         press(Keybindings.INTERACT, 1, down_time=0.3, up_time=0.5)
-        self.__class__.castedTime = time.time()
 
         print('\nSolving rune:')
         used_frame = None
@@ -551,12 +549,26 @@ class SolveRune(Command):
                 find_solution = True
                 for arrow in solution:
                     press(arrow, 1, down_time=0.1)
+                self.__class__.castedTime = time.time()
                 break
             time.sleep(0.1)
-        time.sleep(0.2)
+        
+        if find_solution:
+            # 成功激活，识别出结果，待进一步判断
+            time.sleep(0.3)
+            bot_status.rune_solving = False
+            bot_status.acting = False
+            return 1, used_frame
+        elif len(bot_helper.rune_buff_match(capture.frame)) > 0:
+            # 成功激活，识别失败
+            self.__class__.castedTime = time.time()
+            bot_status.rune_solving = False
+            bot_status.acting = False
+            return -1, used_frame
+        else:
+            # 未成功激活
+            return SolveRune(self.target, self.attempts + 1).execute()
 
-        bot_status.rune_solving = False
-        return 1 if find_solution else -1, used_frame
 
 
 class Mining(Command):

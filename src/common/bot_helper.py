@@ -274,3 +274,11 @@ def locate_player_fullscreen(accurate=False):
             player_pos = (matchs[0][0] - 150 + tl_x,
                           matchs[0][1] - 140 + tl_y)
     return player_pos
+
+def rune_buff_match(frame):
+    rune_buff = utils.multi_match(
+        frame[:150, :], RUNE_BUFF_TEMPLATE[1:11, -15:-1], threshold=0.9)
+    if len(rune_buff) == 0:
+        rune_buff = utils.multi_match(
+            frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.8)
+    return rune_buff
