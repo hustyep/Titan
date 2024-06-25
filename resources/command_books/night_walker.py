@@ -73,7 +73,7 @@ def step(target: MapPoint):
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
     if not shared_map.is_floor_point(bot_status.player_pos):
-        sleep_in_the_air(n=10)
+        sleep_in_the_air(n=1)
     next_p = find_next_point(bot_status.player_pos, target)
     print(f"next_p:{next_p}")
     if not next_p:
@@ -265,22 +265,23 @@ class DoubleJump(Skill):
         key_down(direction)
         time.sleep(0.1)
         press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-        if dx >=30 or dy < 0:
+        if dy < 0:
             press(self.key, 2, down_time=0.03, up_time=0.03)
         elif dx >= 26:
             press(self.key, 1, down_time=0.02, up_time=0.03)
         else:
             time.sleep(0.1)
             press(self.key, 1, down_time=0.02, up_time=0.03)
-            
+
         if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        if start_y == self.target.y:
-            sleep_in_the_air(n=1, tolerance=1)
-        else:
-            sleep_in_the_air(n=20)
+        # if start_y == self.target.y:
+        #     # sleep_in_the_air(n=1)
+        #     time.sleep(0.02)
+        # else:
+        sleep_in_the_air(n=1)
 
 
 # 上跳
@@ -411,7 +412,7 @@ class Darkness_Ascending(Skill):
 class Quintuple_Star(Skill):
     key = Keybindings.Quintuple_Star
     type = SkillType.Attack
-    backswing = 0.5
+    backswing = 0.55
 
 
 class Dark_Omen(Skill):
@@ -420,12 +421,6 @@ class Dark_Omen(Skill):
     cooldown = 20
     backswing = 0.9
     tolerance = 1
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        if time.time() - Shadow_Bite.castedTime <= 3:
-            return False
-        return super().canUse(next_t)
 
 
 class Shadow_Bite(Skill):
@@ -437,20 +432,12 @@ class Shadow_Bite(Skill):
 
     @classmethod
     def check(cls):
-        if not cls.icon:
-            return
         last_state = cls.ready
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
         if not cls.ready or cls.ready != last_state:
             cls.update_time = time.time()
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        if time.time() - Dark_Omen.castedTime <= 3:
-            return False
-        return super().canUse(next_t)
 
 
 class Dominion(Command):
@@ -491,8 +478,6 @@ class Phalanx_Charge(Skill):
 
     @classmethod
     def check(cls):
-        if not cls.icon:
-            return
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
@@ -529,7 +514,9 @@ class Shadow_Attack(Command):
         return True
 
     def main(self):
+        last_time = self.castedTime
         self.castedTime = time.time()
+        n=2
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
         elif Silence.canUse():
@@ -540,10 +527,14 @@ class Shadow_Attack(Command):
             Arachnid().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
+            n=3
         else:
-            pass
+            self.castedTime = last_time
         Phalanx_Charge().execute()
-        Quintuple_Star().execute()
+        Direction("right").execute()
+        for _ in range(0, n):
+            Quintuple_Star().execute()
+        
         return True
 
 
@@ -611,13 +602,13 @@ class Detect_Around_Anchor(Command):
                     top=self.top, bottom=self.bottom, left=self.left, right=self.right),
                 multy_match=self.count > 1,
                 debug=False)
+            print(f"mobs count = {len(mobs)}")
             if len(mobs) >= self.count:
-                print(f"mobs count = {len(mobs)}")
                 break
             if time.time() - start > 7:
                 break
-            if len(mobs) > 0:
-                Detect_Attack(self.x, self.y).execute()
+            # if len(mobs) > 0:
+            #     Detect_Attack(self.x, self.y).execute()
 
 ###################
 #      Buffs      #
@@ -758,7 +749,7 @@ class HardHitter(Skill):
         cls.check_buff_enabled()
         if cls.enabled:
             cls.ready = False
-        elif cls.icon:
+        elif cls.icon.any():
             matchs = utils.multi_match(
                 capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
             cls.ready = len(matchs) > 0

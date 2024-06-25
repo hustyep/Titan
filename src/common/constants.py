@@ -74,6 +74,10 @@ class MapPoint:
         self.y = y
         self.tolerance = tolerance
         self.tolerance_v = tolerance_v
+    
+    @property
+    def tuple(self) -> tuple[int, int]:
+        return (self.x, self.y)
 
 
 class MapPointType(Enum):

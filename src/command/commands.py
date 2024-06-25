@@ -50,7 +50,7 @@ class Command():
     castedTime: float = 0
     precast: float = 0.05
     backswing: float = 0.5
-    complete_callback: function | None = None
+    complete_callback = None
 
     def __init__(self, *args, **kwargs):
         if len(args) > 1:
@@ -500,7 +500,7 @@ class SolveRune(Command):
     cooldown = 8
     max_attempts = 3
 
-    def __init__(self, target, attempts=0):
+    def __init__(self, target: MapPoint, attempts=0):
         super().__init__(locals())
         self.target = target
         self.attempts = attempts
@@ -521,7 +521,7 @@ class SolveRune(Command):
             bot_status.acting = False
             return -1, None
         bot_status.rune_solving = True
-        Move(x=self.target[0], y=self.target[1], tolerance=1).execute()
+        Move(x=self.target.x, y=self.target.y, tolerance=1).execute()
         time.sleep(0.5)
         sleep_in_the_air(n=50)
         # Inherited from Configurable
@@ -549,7 +549,7 @@ class SolveRune(Command):
         
         if find_solution:
             # 成功激活，识别出结果，待进一步判断
-            time.sleep(0.3)
+            time.sleep(0.5)
             bot_status.rune_solving = False
             bot_status.acting = False
             return 1, used_frame
@@ -628,8 +628,8 @@ class Direction(Command):
     def main(self):
         if not self.direction:
             return
-        # if bot_status.player_direction != self.direction:
-        press(self.direction, n=1, down_time=0.01, up_time=0.01)
+        if bot_status.player_direction != self.direction:
+            press(self.direction, n=1, down_time=0.02, up_time=0.01)
 
 
 class Rest(Command):
@@ -719,7 +719,7 @@ class Skill(Command):
 
     @classmethod
     def check_buff_enabled(cls):
-        if not cls.icon:
+        if cls.icon.any():
             return
         matchs = utils.multi_match(
             capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
@@ -816,7 +816,7 @@ class ErdaShower(Skill):
 
     @classmethod
     def check(cls):
-        if not cls.icon:
+        if cls.icon.any():
             return
         if capture.frame is None:
             return

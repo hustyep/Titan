@@ -24,9 +24,11 @@ class Minimap(LabelFrame):
         """Updates the Main page with the current minimap."""
         minimap = capture.minimap_display
         if minimap is not None:
-            rune_pos = capture.convert_to_absolute_minimap_point(bot_status.rune_pos)
-            path = [capture.convert_to_absolute_minimap_point(p) for p in bot_status.path]
-            player_pos = capture.convert_to_absolute_minimap_point(bot_status.player_pos)
+            rune_pos = None
+            if bot_status.rune_pos is not None:
+                rune_pos = capture.convert_to_absolute_minimap_point(bot_status.rune_pos.tuple)
+            path = [capture.convert_to_absolute_minimap_point(p.tuple) for p in bot_status.path]
+            player_pos = capture.convert_to_absolute_minimap_point(bot_status.player_pos.tuple)
             minimap_img = minimap
             
             height, width, _ = minimap_img.shape

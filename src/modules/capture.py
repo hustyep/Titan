@@ -191,12 +191,10 @@ class Capture(Subject):
         self.minimap_display = minimap
         # self.on_next((BotVerbose.NEW_FRAME, self.frame))
 
-    def convert_to_relative_minimap_point(self, pos: tuple[int, int]):
-        return (pos[0] - self.minimap_margin, pos[1] + 7)
+    def convert_to_relative_minimap_point(self, pos):
+        return MapPoint(pos[0] - self.minimap_margin, pos[1] + 7)
 
     def convert_to_absolute_minimap_point(self, pos: tuple[int, int]):
-        if not pos:
-            return None
         return (pos[0] + self.minimap_margin, pos[1] - 7)
 
     @property

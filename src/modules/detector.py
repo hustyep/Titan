@@ -8,13 +8,13 @@ import win32gui
 import win32con
 import win32com.client as client
 import pythoncom
-from rx.subject import Subject
+from rx.subject.subject import Subject
 
 from src.routine.components import Point
 from src.routine.routine import routine
 from src.common import bot_status, bot_settings
 from src.common.image_template import *
-from src.common.constants import BotInfo, BotWarnning, BotFatal, BotError, window_cap_horiz, window_cap_botton, window_cap_top
+from src.common.constants import BotInfo, BotWarnning, BotFatal, BotError, MapPoint, window_cap_horiz, window_cap_botton, window_cap_top
 from src.common.hid import hid
 from src.modules.capture import capture
 from src.map.map import shared_map as game_map
@@ -275,25 +275,25 @@ class Detector(Subject):
             self.lost_minimap_time = 0
             bot_status.lost_minimap = False
 
-    def try_auto_login(self):
-        bot_status.enabled = False
+    # def try_auto_login(self):
+    #     bot_status.enabled = False
 
-        for _ in range(0, 10):
-            capture.find_window()
-            hwnd = capture.hwnd
-            if (hwnd == 0):
-                self.on_next((BotError.LOST_WINDOW, ))
-                return True
+    #     for _ in range(0, 10):
+    #         capture.find_window()
+    #         hwnd = capture.hwnd
+    #         if (hwnd == 0):
+    #             self.on_next((BotError.LOST_WINDOW, ))
+    #             return True
 
-            region_matchs = utils.multi_match(
-                capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
-            if region_matchs:
-                chat_bot.send_message('disconnected...')
-                bot_action.auto_login(gui_setting.auto.auto_login_channel)
-                return True
-            time.sleep(0.5)
-        else:
-            return False
+    #         region_matchs = utils.multi_match(
+    #             capture.frame, BUTTON_CHANGE_REGION_TEMPLATE, threshold=0.9)
+    #         if region_matchs:
+    #             chat_bot.send_message('disconnected...')
+    #             bot_action.auto_login(gui_setting.auto.auto_login_channel)
+    #             return True
+    #         time.sleep(0.5)
+    #     else:
+    #         return False
 
     def check_no_movement(self):
         if bot_status.enabled and operator.eq(bot_status.player_pos, self.player_pos):
@@ -438,7 +438,7 @@ class Detector(Subject):
         if routine.sequence:
             old_pos = bot_status.rune_pos
             abs_rune_pos = game_map.platform_point(
-                (matches[0][0], matches[0][1]))
+                MapPoint(matches[0][0], matches[0][1], 1))
             if old_pos != abs_rune_pos:
                 bot_status.rune_pos = abs_rune_pos
                 distances = list(
@@ -463,6 +463,6 @@ def distance_to_rune(point):
     :return:        The distance from POINT to the rune, infinity if it is not a Point object.
     """
 
-    if isinstance(point, Point) and point.interval == 0 and point.parent is None:
-        return utils.distance(bot_status.rune_pos, point.location)
+    if isinstance(point, Point) and point.interval == 0 and point.parent is None and bot_status.rune_pos is not None:
+        return utils.distance(bot_status.rune_pos.tuple, point.location)
     return float('inf')

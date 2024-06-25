@@ -10,7 +10,7 @@ from src.common.constants import *
 class Component:
     id = 'Routine Component'
     PRIMITIVES = {int, str, bool, float}
-    complete_callback: function | None = None
+    complete_callback = None
 
     def __init__(self, *args, **kwargs):
         if len(args) > 1:

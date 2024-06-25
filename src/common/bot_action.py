@@ -211,7 +211,7 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
             return False
         mouse_left_click(delay=0.3)
         frame = capture.frame
-        if not frame:
+        if frame is None:
             return False
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
@@ -315,11 +315,6 @@ def _change_channel(num: int = 0, instance=True) -> None:
     time.sleep(1)
 
     frame = capture.frame
-    while not frame:
-        if not bot_status.enabled:
-            return
-        time.sleep(0.1)
-        frame = capture.frame
     x = (frame.shape[1] - 260) // 2
     y = (frame.shape[0] - 220) // 2
     ok_btn = utils.multi_match(
