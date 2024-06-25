@@ -91,18 +91,18 @@ def step(target, tolerance):
         move_down(next_p)
     elif not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
-    elif abs(d_x) >= DoubleJump.move_range.stop:
-        # 落点范围
-        if target[0] > bot_status.player_pos[0]:
-            tmp_pos_l = bot_status.player_pos[0] + DoubleJump.move_range.stop - 3
-            tmp_pos_r = bot_status.player_pos[0] + DoubleJump.move_range.stop + 3
-        else:
-            tmp_pos_l = bot_status.player_pos[0] - DoubleJump.move_range.stop - 3
-            tmp_pos_r = bot_status.player_pos[0] - DoubleJump.move_range.stop + 3
-        for i in range(tmp_pos_l, tmp_pos_r):
-            if not shared_map.on_the_platform((i, target[1]), strict=True):
-                Shadow_Dodge(direction).execute()
-                return
+    elif abs(d_x) >= DoubleJump.move_range.start:
+        # # 落点范围
+        # if target[0] > bot_status.player_pos[0]:
+        #     tmp_pos_l = bot_status.player_pos[0] + DoubleJump.move_range.stop - 3
+        #     tmp_pos_r = bot_status.player_pos[0] + DoubleJump.move_range.stop + 3
+        # else:
+        #     tmp_pos_l = bot_status.player_pos[0] - DoubleJump.move_range.stop - 3
+        #     tmp_pos_r = bot_status.player_pos[0] - DoubleJump.move_range.stop + 3
+        # for i in range(tmp_pos_l, tmp_pos_r):
+        #     if not shared_map.on_the_platform((i, target[1]), strict=True):
+        #         Shadow_Dodge(direction).execute()
+        #         return
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= Shadow_Dodge.move_range.start:
         Shadow_Dodge(direction).execute()
@@ -321,7 +321,7 @@ class Shadow_Dodge(Skill):
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 0.5
+    backswing = 0.4
     move_range = range(11, DoubleJump.move_range.start)
 
     def __init__(self, direction='right'):
@@ -395,7 +395,7 @@ class Darkness_Ascending(Skill):
 class Quintuple_Star(Skill):
     key = Keybindings.Quintuple_Star
     type = SkillType.Attack
-    backswing = 0.4
+    backswing = 0.5
 
 
 class Dark_Omen(Skill):
@@ -465,13 +465,13 @@ class Phalanx_Charge(Skill):
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
     
-    def main(self):
-        if not self.canUse():
-            return False
-        if self.direction is not None:
-            Direction(self.direction)
-        super().main()
-        return True
+    # def main(self):
+    #     if not self.canUse():
+    #         return False
+    #     if self.direction is not None:
+    #         Direction(self.direction)
+    #     super().main()
+    #     return True
 
 
 class Silence(Command):
@@ -549,8 +549,10 @@ class Detect_Attack(Command):
         # else:
         # print("attack random direction")
         if shared_map.current_map.name == 'Royal Library Section 4':
-            Direction('right')
+            press('right', down_time=0.02, up_time=0.02)
+            print("attack right direction")
         else:
+            print("attack random direction")
             Direction('left' if random() <= 0.5 else 'right').execute()
         Quintuple_Star().execute()
         return True

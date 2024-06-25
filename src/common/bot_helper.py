@@ -196,7 +196,7 @@ def identify_map_name(try_count=1):
     for map in shared_map.available_maps:
         available_map_names.append(map.name)
 
-    frame = utils.filter_color(capture.map_name_frame)
+    frame = capture.map_name_frame
     # utils.show_image(frame)
     for _ in range(0, try_count):
         result = utils.image_match_text(
