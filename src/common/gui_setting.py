@@ -92,7 +92,7 @@ class NotificationSettings(Configurable):
 
     @property
     def notice_level(self):
-        return self.get('notice_level')
+        return int(self.get('notice_level'))
 
     @property
     def telegram(self):

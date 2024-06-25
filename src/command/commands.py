@@ -15,7 +15,7 @@ from src.common.constants import *
 
 class DefaultKeybindings:
     INTERACT = 'space'
-    FEED_PET = 'L'
+    FEED_PET = 'l'
     Change_Channel = 'o'
     Attack = 'insert'
     JUMP = 's'
@@ -41,20 +41,16 @@ class DefaultKeybindings:
     GODDESS_BLESSING = '1'
 
 
-class Keybindings(DefaultKeybindings):
-    """ 'Keybindings' must be implemented in command book."""
-
-
 class Command():
     id = 'Command Superclass'
     PRIMITIVES = {int, str, bool, float}
 
-    key: str = None
+    key: str | None = None
     cooldown: int = 0
     castedTime: float = 0
     precast: float = 0.05
     backswing: float = 0.5
-    complete_callback = None
+    complete_callback: function | None = None
 
     def __init__(self, *args, **kwargs):
         if len(args) > 1:
@@ -126,7 +122,7 @@ class Command():
         if not self.canUse():
             return False
 
-        if len(self.__class__.key) == 0:
+        if not self.__class__.key:
             return False
 
         press_acc(self.__class__.key,
@@ -140,8 +136,7 @@ class Move(Command):
 
     def __init__(self, x, y, tolerance, step=1, max_steps=15):
         super().__init__(locals())
-        self.target = shared_map.platform_point((int(x), int(y)))
-        self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
+        self.target = shared_map.platform_point(MapPoint(int(x), int(y), bot_settings.validate_nonnegative_int(tolerance)))
         self.step = bot_settings.validate_nonnegative_int(step)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
 
@@ -150,21 +145,22 @@ class Move(Command):
             return
 
         if shared_map.minimap_data is not None and len(shared_map.minimap_data) > 0:
-            if target_reached(bot_status.player_pos, self.target, self.tolerance):
+            if target_reached(bot_status.player_pos, self.target):
                 return
-        elif utils.distance(bot_status.player_pos, self.target) <= self.tolerance:
+        elif utils.distance(bot_status.player_pos, self.target) <= self.target.tolerance:
             return
 
         if shared_map.on_the_rope(bot_status.player_pos):
-            bot_action.climb_rope(self.target[1] < bot_status.player_pos[1])
+            bot_action.climb_rope(self.target.y < bot_status.player_pos.y)
 
         bot_status.path = [bot_status.player_pos, self.target]
-        step(self.target, self.tolerance)
+        step(self.target)
 
-        Command.complete_callback(self)
+        if Command.complete_callback:
+            Command.complete_callback(self)
 
-        Move(self.target[0], self.target[1],
-             self.tolerance, self.step+1, self.max_steps).execute()
+        Move(self.target.x, self.target.y,
+             self.target.tolerance, self.step+1, self.max_steps).execute()
 
 
 #############################
@@ -172,7 +168,7 @@ class Move(Command):
 #############################
 
 @abstractmethod
-def step(target, tolerance):
+def step(target: MapPoint):
     """
     The default 'step' function. If not overridden, immediately stops the bot.
     :param direction:   The direction in which to move.
@@ -185,37 +181,37 @@ def step(target, tolerance):
 
 
 @bot_status.run_if_enabled
-def find_next_point(start: tuple[int, int], target: tuple[int, int], tolerance: int):
+def find_next_point(start: MapPoint, target: MapPoint):
     # print(f"find_next_point:\n start:{start}, target:{target}, tolerance:{tolerance}")
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         return target
 
-    if target_reached(start, target, tolerance):
+    if target_reached(start, target):
         return
 
-    d_x = target[0] - start[0]
-    d_y = target[1] - start[1]
-    if abs(d_x) <= tolerance:
+    d_x = target.x - start.x
+    d_y = target.y - start.y
+    if abs(d_x) <= target.tolerance:
         return target
     elif d_y == 0:
         if shared_map.is_continuous(start, target):
             return target
     elif d_y < 0:
-        tmp_y = (start[0], target[1])
+        tmp_y = MapPoint(start.x, target.y, target.tolerance)
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
-        tmp_x = (target[0], start[1])
+        tmp_x = MapPoint(target.x, start.y, target.tolerance)
         if shared_map.on_the_platform(tmp_x):
             if shared_map.is_continuous(start, tmp_x) or abs(d_x) >= 26:
                 return tmp_x
     else:
-        tmp_x = (target[0], start[1])
+        tmp_x = MapPoint(target.x, start.y, target.tolerance)
         if shared_map.is_continuous(tmp_x, start):
             return tmp_x
-        tmp_y = (start[0], target[1])
+        tmp_y = MapPoint(start.x, target.y, target.tolerance)
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
-    return shared_map.platform_point((target[0], target[1] - 1))
+    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
 
 
 def find_first_gap(start: tuple[int, int], target: tuple[int, int]):
@@ -225,7 +221,7 @@ def find_first_gap(start: tuple[int, int], target: tuple[int, int]):
         return
     if start_x < end_x:
         while True:
-            if start_x < end_x and shared_map.point_type((start_x + 1, start[1])) != MapPointType.Air:
+            if start_x < end_x and shared_map.point_type(MapPoint(start_x + 1, start[1])) != MapPointType.Air:
                 start_x += 1
             else:
                 break
@@ -233,7 +229,7 @@ def find_first_gap(start: tuple[int, int], target: tuple[int, int]):
             return (start_x-2, start[1])
     else:
         while True:
-            if start_x > 0 and shared_map.point_type((start_x - 1, start[1])) != MapPointType.Air:
+            if start_x > 0 and shared_map.point_type(MapPoint(start_x - 1, start[1])) != MapPointType.Air:
                 start_x -= 1
             else:
                 break
@@ -245,12 +241,12 @@ def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return
     pos = bot_status.player_pos
-    target_l = (pos[0] - 3, pos[1])
-    target_r = (pos[0] + 3, pos[1])
+    target_l = MapPoint(pos.x - 3, pos.y, 1)
+    target_r = MapPoint(pos.x + 3, pos.y, 1)
     if shared_map.is_floor_point(target_l, count_none=False):
-        Walk(target_l[0], tolerance=1).execute()
+        Walk(target_l).execute()
     elif shared_map.is_floor_point(target_r, count_none=False):
-        Walk(target_r[0], tolerance=1).execute()
+        Walk(target_r).execute()
 
 
 def opposite_direction(direction):
@@ -268,25 +264,25 @@ def opposite_direction(direction):
 
 def direction_changed(direction) -> bool:
     if direction == 'left':
-        return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+        return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos.x) <= 1.3 * bot_settings.move_tolerance
     else:
-        return abs(bot_settings.boundary_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+        return abs(bot_settings.boundary_point_l[0] - bot_status.player_pos.x) <= 1.3 * bot_settings.move_tolerance
 
 
 def edge_reached() -> bool:
-    if abs(bot_settings.boundary_point_l[1] - bot_status.player_pos[1]) > 1:
-        return
+    if abs(bot_settings.boundary_point_l[1] - bot_status.player_pos.y) > 1:
+        return False
     if bot_status.player_direction == 'left':
-        return abs(bot_settings.boundary_point_l[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+        return abs(bot_settings.boundary_point_l[0] - bot_status.player_pos.x) <= 1.3 * bot_settings.move_tolerance
     else:
-        return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos[0]) <= 1.3 * bot_settings.move_tolerance
+        return abs(bot_settings.boundary_point_r[0] - bot_status.player_pos.x) <= 1.3 * bot_settings.move_tolerance
 
 
-def target_reached(start, target, tolerance=bot_settings.move_tolerance):
+def target_reached(start: MapPoint, target: MapPoint):
     # if tolerance > bot_settings.adjust_tolerance:
     #     return utils.distance(start, target) <= tolerance
     # else:
-    return start[1] == target[1] and abs(start[0] - target[0]) <= tolerance
+    return start.y == target.y and abs(start.x - target.x) <= target.tolerance
 
 
 #############################
@@ -322,26 +318,24 @@ class Buff(ABC):
 class Walk(Command):
     """Walks in the given direction for a set amount of time."""
 
-    def __init__(self, target_x, tolerance=5, interval=0.01, max_steps=500):
+    def __init__(self, target: MapPoint, interval=0.01, max_steps=500):
         super().__init__(locals())
-        self.target_x = bot_settings.validate_nonnegative_int(target_x)
+        self.target = target
         self.interval = bot_settings.validate_nonnegative_float(interval)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
-        self.tolerance = bot_settings.validate_nonnegative_int(tolerance)
         # print(str(self))
 
     def main(self):
-        d_x = self.target_x - bot_status.player_pos[0]
-        if abs(d_x) <= self.tolerance:
+        d_x = self.target.x - bot_status.player_pos.x
+        if abs(d_x) <= self.target.tolerance:
             return
 
         walk_counter = 0
         direction = 'left' if d_x < 0 else 'right'
         key_down(direction)
-        while bot_status.enabled and abs(d_x) > self.tolerance and walk_counter < self.max_steps:
-            # print(f"dx={d_x}")
+        while bot_status.enabled and abs(d_x) > self.target.tolerance and walk_counter < self.max_steps:
             new_direction = 'left' if d_x < 0 else 'right'
-            if self.tolerance > 0 or abs(d_x) > 1:
+            if self.target.tolerance > 0 or abs(d_x) > 1:
                 if new_direction != direction:
                     key_up(direction)
                     time.sleep(0.01)
@@ -355,7 +349,7 @@ class Walk(Command):
                 press_acc(new_direction, down_time=0.01, up_time=0.01)
 
             walk_counter += 1
-            d_x = self.target_x - bot_status.player_pos[0]
+            d_x = self.target.x - bot_status.player_pos.x
         if direction is not None:
             key_up(direction)
         print(f"end dx={d_x}")
@@ -431,7 +425,7 @@ class DetectInRect(Command):
 class FeedPet(Command):
     cooldown = 600
     backswing = 0.3
-    key = Keybindings.FEED_PET
+    key = DefaultKeybindings.FEED_PET
 
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
@@ -441,7 +435,7 @@ class FeedPet(Command):
         if not auto_feed:
             return False
 
-        num_pets = pet_settings.get('Num pets')
+        num_pets = int(pet_settings.get('Num pets'))
         cls.cooldown = 600 // num_pets
 
         return super().canUse(next_t)
@@ -459,11 +453,11 @@ class Jump(Command):
     def main(self):
         if self.direction:
             press(self.direction, down_time=0.01)
-        press_acc(Keybindings.JUMP, down_time=0.01, up_time=self.duration)
+        press_acc(DefaultKeybindings.JUMP, down_time=0.01, up_time=self.duration)
         if self.forward:
-            press(Keybindings.JUMP)
+            press(DefaultKeybindings.JUMP)
         if self.attack:
-            Attack().execute()
+            Attack().execute() # type: ignore
         sleep_in_the_air()
 
 
@@ -483,16 +477,16 @@ class Fall(Command):
         evade_rope()
         key_down('down')
         time.sleep(0.03)
-        press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.05)
+        press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
         key_up('down')
         if self.attack:
-            Attack().main()
+            Attack().main() # type: ignore
         elif self.forward:
             time.sleep(0.2)
-            press(Keybindings.JUMP, down_time=0.02, up_time=0.02)
-            press(Keybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
+            press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
+            press(DefaultKeybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
         if self.buff:
-            Buff().main(wait=False)
+            Buff().main(wait=False) # type: ignore
 
         sleep_in_the_air(n=1)
 
@@ -532,7 +526,7 @@ class SolveRune(Command):
         sleep_in_the_air(n=50)
         # Inherited from Configurable
         bot_status.acting = True
-        press(Keybindings.INTERACT, 1, down_time=0.3, up_time=0.5)
+        press(DefaultKeybindings.INTERACT, 1, down_time=0.3, up_time=0.5)
 
         print('\nSolving rune:')
         used_frame = None
@@ -583,7 +577,7 @@ class ChangeChannel(Command):
         self.instance = bot_settings.validate_boolean(instance)
 
     def main(self) -> None:
-        bot_action.change_channel(self.num, self.enable, self.instance)
+        bot_action.change_channel(self.num, self.instance)
 
 
 class AutoLogin(Command):
@@ -648,9 +642,9 @@ class Rest(Command):
         time.sleep(self.wait)
 
 
-class GoArdentmill(Command):
-    def main(self):
-        bot_action.go_ardentmill(Keybindings.Go_Ardentmill)
+# class GoArdentmill(Command):
+#     def main(self):
+#         bot_action.go_ardentmill(DefaultKeybindings.Go_Ardentmill)
 
 ###########################
 #      Abstract Skill     #
@@ -725,6 +719,8 @@ class Skill(Command):
 
     @classmethod
     def check_buff_enabled(cls):
+        if not cls.icon:
+            return
         matchs = utils.multi_match(
             capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
         if not matchs:
@@ -763,7 +759,7 @@ class Aoe(Skill):
 
 
 class MapleWorldGoddessBlessing(Skill):
-    key = Keybindings.GODDESS_BLESSING
+    key = DefaultKeybindings.GODDESS_BLESSING
     cooldown = 180
     precast = 0.3
     backswing = 0.85
@@ -805,7 +801,7 @@ class MapleWorldGoddessBlessing(Skill):
 
 
 class ErdaShower(Skill):
-    key = Keybindings.ERDA_SHOWER
+    key = DefaultKeybindings.ERDA_SHOWER
     type = SkillType.Summon
     cooldown = 58
     backswing = 0.85
@@ -820,6 +816,8 @@ class ErdaShower(Skill):
 
     @classmethod
     def check(cls):
+        if not cls.icon:
+            return
         if capture.frame is None:
             return
         matchs = utils.multi_match(
@@ -832,13 +830,13 @@ class ErdaShower(Skill):
         if self.direction:
             Direction(self.direction).execute()
         time.sleep(0.3)
-        press(Keybindings.ERDA_SHOWER, 1)
+        press(DefaultKeybindings.ERDA_SHOWER, 1)
         self.__class__.castedTime = time.time()
         time.sleep(self.__class__.backswing)
 
 
 class MapleWarrior(Skill):
-    key = Keybindings.MAPLE_WARRIOR
+    key = DefaultKeybindings.MAPLE_WARRIOR
     cooldown = 900
     precast = 0.3
     backswing = 0.8
@@ -846,7 +844,7 @@ class MapleWarrior(Skill):
 
 
 class Arachnid(Command):
-    key = Keybindings.ARACHNID
+    key = DefaultKeybindings.ARACHNID
     type = SkillType.Attack
     cooldown = 250
     backswing = 0.9
@@ -860,7 +858,7 @@ class Arachnid(Command):
 
 class ForTheGuild(Skill):
     '''工会技能'''
-    key = Keybindings.FOR_THE_GUILD
+    key = DefaultKeybindings.FOR_THE_GUILD
     cooldown = 3610
     backswing = 0.1
     type = SkillType.Buff
@@ -879,7 +877,7 @@ class ForTheGuild(Skill):
 
 class HardHitter(Skill):
     '''工会技能'''
-    key = Keybindings.HARD_HITTER
+    key = DefaultKeybindings.HARD_HITTER
     cooldown = 3610
     backswing = 0.1
     type = SkillType.Buff
@@ -900,7 +898,7 @@ class HardHitter(Skill):
         cls.check_buff_enabled()
         if cls.enabled:
             cls.ready = False
-        else:
+        elif cls.icon:
             matchs = utils.multi_match(
                 capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
             cls.ready = len(matchs) > 0
@@ -908,7 +906,7 @@ class HardHitter(Skill):
 
 class RopeLift(Skill):
     '''绳索'''
-    key = Keybindings.ROPE_LIFT
+    key = DefaultKeybindings.ROPE_LIFT
     type = SkillType.Move
     cooldown = 3
     tolerance = 1
@@ -919,13 +917,13 @@ class RopeLift(Skill):
 
     def main(self):
         time.sleep(0.2)
-        start_y = bot_status.player_pos[1]
+        start_y = bot_status.player_pos.y
         dy = abs(start_y - self.target_y)
         while not self.canUse:
             time.sleep(1)
         print(f"target_y: {self.target_y} start_y: {start_y}")
         if dy >= 50:
-            press_acc(Keybindings.JUMP, up_time=0.2)
+            press_acc(DefaultKeybindings.JUMP, up_time=0.2)
 
         press(self.key)
         # 50：0.97
@@ -974,7 +972,7 @@ class Potion(Command):
 
 
 class EXP_Potion(Command):
-    key = Keybindings.EXP_POTION
+    key = DefaultKeybindings.EXP_POTION
     cooldown = 1810
     backswing = 0.5
 
@@ -987,7 +985,7 @@ class EXP_Potion(Command):
 
 
 class Wealth_Potion(Command):
-    key = Keybindings.WEALTH_POTION
+    key = DefaultKeybindings.WEALTH_POTION
     cooldown = 1810
     backswing = 0.5
 
@@ -1000,7 +998,7 @@ class Wealth_Potion(Command):
 
 
 class GOLD_POTION(Command):
-    key = Keybindings.GOLD_POTION
+    key = DefaultKeybindings.GOLD_POTION
     cooldown = 1810
     backswing = 0.5
 
@@ -1013,7 +1011,7 @@ class GOLD_POTION(Command):
 
 
 class GUILD_POTION(Command):
-    key = Keybindings.GUILD_POTION
+    key = DefaultKeybindings.GUILD_POTION
     cooldown = 1810
     backswing = 0.5
 
@@ -1026,7 +1024,7 @@ class GUILD_POTION(Command):
 
 
 class CANDIED_APPLE(Command):
-    key = Keybindings.CANDIED_APPLE
+    key = DefaultKeybindings.CANDIED_APPLE
     cooldown = 1810
     backswing = 0.5
 
@@ -1039,7 +1037,7 @@ class CANDIED_APPLE(Command):
 
 
 class LEGION_WEALTHY(Command):
-    key = Keybindings.LEGION_WEALTHY
+    key = DefaultKeybindings.LEGION_WEALTHY
     cooldown = 610
     backswing = 0.5
 
@@ -1052,7 +1050,7 @@ class LEGION_WEALTHY(Command):
 
 
 class EXP_COUPON(Command):
-    key = Keybindings.EXP_COUPON
+    key = DefaultKeybindings.EXP_COUPON
     cooldown = 310
     backswing = 0.5
 

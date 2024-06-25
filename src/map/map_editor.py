@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.common.gui_setting import gui_setting
-from src.common.constants import BotRunMode, MapPointType
+from src.common.constants import BotRunMode, MapPointType, MapPoint
 from src.modules.capture import capture
 from src.common import bot_status
 from src.map.map_helper import *
@@ -32,13 +32,13 @@ def create_minimap_data(minimap_actual):
         print(' ! Create new minimap data failed \n')
 
 
-def add_start_point(point: tuple[int, int], minimap_data):
+def add_start_point(point: MapPoint, minimap_data):
     if gui_setting.mode.type != BotRunMode.Mapping:
         return
     print(f'\n[~] add start point {point}')
 
-    x = point[0]
-    y = point[1]
+    x = point.x
+    y = point.y
     line = minimap_data[y]
     line[x] = MapPointType.Floor.value
 
@@ -54,13 +54,13 @@ def add_start_point(point: tuple[int, int], minimap_data):
             break
 
 
-def add_end_point(point: tuple[int, int], minimap_data):
+def add_end_point(point: MapPoint, minimap_data):
     if gui_setting.mode.type != BotRunMode.Mapping:
         return
     print(f'\n[~] add end point {point}')
 
-    x = point[0]
-    y = point[1]
+    x = point.x
+    y = point.y
     line = minimap_data[y]
     line[x] = MapPointType.Floor.value
 
@@ -76,13 +76,13 @@ def add_end_point(point: tuple[int, int], minimap_data):
             break
 
 
-def add_rope_point(point: tuple[int, int], minimap_data):
+def add_rope_point(point: MapPoint, minimap_data):
     if gui_setting.mode.type != BotRunMode.Mapping:
         return
     print(f'\n[~] add rope point {point}')
     
-    x = point[0]
-    y = point[1]
+    x = point.x
+    y = point.y
     minimap_data[y][x] = MapPointType.Rope.value
     for i in range(y - 1, -1, -1):
         if minimap_data[i][x] == 0:

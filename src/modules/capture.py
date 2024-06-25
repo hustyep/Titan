@@ -6,7 +6,7 @@ import dxcam
 import win32gui
 
 from enum import Enum
-from rx.subject import Subject
+from rx.subject.subject import Subject
 
 from src.common.dll_helper import dll_helper
 from src.common.image_template import MM_TL_BMP, MM_BR_BMP, PLAYER_TEMPLATE, PLAYER_TEMPLATE_L, PLAYER_TEMPLATE_R
@@ -203,7 +203,7 @@ class Capture(Subject):
     def minimap_frame(self):
         if self.minimap_display is not None:
             minimap_margin = self.minimap_margin
-            return capture.minimap_display[:,
+            return self.minimap_display[:,
                                            minimap_margin:-minimap_margin]
 
     @property

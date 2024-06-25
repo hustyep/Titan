@@ -5,14 +5,12 @@ from src.command import commands
 from src.common import bot_settings, bot_status, bot_helper
 from src.common.vkeys import *
 from src.common.constants import *
-from src.modules.capture import capture
-from src.common.interfaces import AsyncTask
 
 
 class Component:
     id = 'Routine Component'
     PRIMITIVES = {int, str, bool, float}
-    complete_callback = None
+    complete_callback: function | None = None
 
     def __init__(self, *args, **kwargs):
         if len(args) > 1:
@@ -110,7 +108,7 @@ class Point(Component):
         self.detect = bot_settings.validate_boolean(detect)
         self.skip = bot_settings.validate_boolean(skip)
         self.last_execute_time = 0
-        self.parent: Component = None
+        self.parent: Component | None = None
         self.index = 0
         if not hasattr(self, 'commands'):       # Updating Point should not clear commands
             self.commands: list[commands.Command] = []
@@ -134,11 +132,12 @@ class Point(Component):
         for command in self.commands:
             command.execute()
         self.last_execute_time = time.time()
-        Component.complete_callback(self)
+        if Component.complete_callback:
+            Component.complete_callback(self)
 
     def pre_move(self):
-        d_x = self.x - bot_status.player_pos[0]
-        d_y = self.y - bot_status.player_pos[1]
+        d_x = self.x - bot_status.player_pos.x
+        d_y = self.y - bot_status.player_pos.y
         if d_x != 0:
             direction = 'right' if d_x > 0 else 'left'
             key_down(direction)
@@ -146,7 +145,7 @@ class Point(Component):
             key_up(direction)
         else:
             direction = bot_status.player_direction
-        if self.detect and bot_status.player_pos[1] == self.y:
+        if self.detect and bot_status.player_pos.y == self.y:
             self.detect_mob(direction)
 
     def detect_mob(self, direction):
@@ -231,7 +230,8 @@ class Sequence(Component):
         for point in self.path:
             point.execute()
         self.last_execute_time = time.time()
-        Component.complete_callback(self)
+        if Component.complete_callback:
+            Component.complete_callback(self)
 
     def add_component(self, component: Point):
         component.parent = self

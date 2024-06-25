@@ -5,7 +5,7 @@ import os
 import threading
 from os.path import splitext, basename
 from enum import Enum
-from rx.subject import Subject
+from rx.subject.subject import Subject
 
 from src.rune import rune
 from src.common.constants import *
@@ -13,6 +13,7 @@ from src.common import bot_settings, utils
 from src.routine.components import *
 from src.command import commands
 from src.command.command_book import CommandBook
+from src.modules.capture import capture
 
 
 class RoutineUpdateType(Enum):
@@ -223,7 +224,7 @@ class Routine(Subject):
 
         self.on_next((RoutineUpdateType.cleared, ))
 
-    def load(self, file: str, command_book: CommandBook = None):
+    def load(self, file: str, command_book: CommandBook | None = None):
         """
         Attempts to load FILE into a sequence of Components. If no file path is provided, attempts to
         load the previous routine file.
@@ -267,8 +268,8 @@ class Routine(Subject):
         self.labels = {}
         with open(file, newline='') as f:
             csv_reader = csv.reader(f, skipinitialspace=True)
-            curr_point: Point = None
-            curr_sequence: Sequence = None
+            curr_point: Point | None = None
+            curr_sequence: Sequence | None = None
             line = 1
             for row in csv_reader:
                 result = self._eval(row, line)
@@ -300,7 +301,7 @@ class Routine(Subject):
 
             if first in SYMBOLS:
                 c = SYMBOLS[first]
-            elif first in self.command_book:
+            elif self.command_book and first in self.command_book:
                 c = self.command_book[first]
             else:
                 print(line_error + f"Command '{first}' does not exist.")
@@ -335,8 +336,9 @@ class Routine(Subject):
 
     def get_all_components(self):
         """Returns a dictionary mapping all creatable Components to their names."""
-
-        options = self.command_book.dict.copy()
+        options = {}
+        if self.command_book:
+            options = self.command_book.dict.copy()
         for e in (Point, Label, Sequence, Setting, End):
             options[e.__name__] = e
         return options
@@ -354,7 +356,7 @@ class Routine(Subject):
 
         # Highlight the current Point
         self.on_next((RoutineUpdateType.selected, element))
-        
+
         if isinstance(element, Point):
             # new_direction = 'right' if element.location[0] > bot_status.player_pos[0] else 'left'
             # if new_direction == bot_status.player_direction:
@@ -363,11 +365,10 @@ class Routine(Subject):
         # Execute next Point in the routine
         element.execute()
 
-
     def _on_command_complete(self, c: commands.Command):
-        if isinstance(c, commands.Move) and not commands.target_reached(bot_status.player_pos, c.target, tolerance=c.tolerance):
+        if isinstance(c, commands.Move) and not commands.target_reached(bot_status.player_pos, c.target):
             self.check_point(bot_status.player_pos)
-            
+
     def _on_component_complete(self, c: Component):
         if isinstance(c, Point):
             self.check_point(c.location)
@@ -379,7 +380,7 @@ class Routine(Subject):
         bot_status.point_checking = True
         if bot_status.rune_pos is not None:
             result, frame = commands.SolveRune(
-                bot_status.rune_pos).execute()
+                bot_status.rune_pos).execute()  # type: ignore
             threading.Thread(target=self.solve_rune_callback,
                              args=(result, frame)).start()
         bot_status.point_checking = False

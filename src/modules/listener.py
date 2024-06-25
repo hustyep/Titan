@@ -13,7 +13,7 @@ from src.modules.bot import bot
 from src.routine.routine import routine
 from src.chat_bot.chat_bot_entity import ChatBotCommand
 from src.common import bot_action
-from rx.subject import Subject
+from rx.subject.subject import Subject
 from src.map.map import shared_map as game_map
 
 
@@ -113,7 +113,7 @@ class Listener(Configurable, Subject):
         # routine.load(routine.path)
 
         routine.clear()
-        capture.calibrate = False
+        capture.calibrated = False
         bot_status.prepared = False
         winsound.Beep(523, 200)     # C5
         winsound.Beep(659, 200)     # E5
@@ -123,7 +123,7 @@ class Listener(Configurable, Subject):
         pos = bot_status.player_pos
         now = datetime.now().strftime('%I:%M:%S %p')
         self.on_next(('record', pos, now))
-        print(f'\n[~] Recorded position ({pos[0]}, {pos[1]}) at {now}')
+        print(f'\n[~] Recorded position ({pos.x}, {pos.y}) at {now}')
         time.sleep(0.5)
 
     @bot_status.run_if_disabled('')

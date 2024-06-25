@@ -30,8 +30,8 @@ def detect_mobs_in_rect(
 
 
 def detect_mobs_around_anchor(
-        anchor: tuple[int, int] = None,
-        insets: AreaInsets = None,
+        anchor: tuple[int, int] | None = None,
+        insets: AreaInsets | None = None,
         type: MobType = MobType.NORMAL,
         multy_match=False,
         debug=False):
@@ -55,7 +55,7 @@ def detect_mobs(
         type: MobType = MobType.NORMAL,
         multy_match=False,
         debug=False):
-    if frame is None:
+    if frame is None or shared_map.current_map is None:
         return []
 
     match (type):
@@ -96,23 +96,23 @@ def pre_detect(direction):
                         right=1000 if direction == 'right' else -620)
     matchs = []
     if gui_setting.detection.detect_elite:
-        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.ELITE)
+        matchs = detect_mobs_around_anchor(insets=insets, anchor=anchor, type=MobType.ELITE)
     if not matchs and gui_setting.detection.detect_boss:
-        matchs = detect_mobs(insets=insets, anchor=anchor, type=MobType.BOSS)
+        matchs = detect_mobs_around_anchor(insets=insets, anchor=anchor, type=MobType.BOSS)
     return len(matchs) > 0
 
 
 @bot_status.run_if_enabled
 def sleep_while_move_y(interval=0.02, n=15):
-    player_y = bot_status.player_pos[1]
+    player_y = bot_status.player_pos.y
     count = 0
     while True:
         time.sleep(interval)
-        if player_y == bot_status.player_pos[1]:
+        if player_y == bot_status.player_pos.y:
             count += 1
         else:
             count = 0
-            player_y = bot_status.player_pos[1]
+            player_y = bot_status.player_pos.y
         if count == n:
             break
 
@@ -129,8 +129,8 @@ def sleep_in_the_air(interval=0.005, n=4, tolerance=0):
             if tolerance > 0:
                 p = bot_status.player_pos
                 flag = False
-                for y in range(p[1]-tolerance, p[1]+tolerance):
-                    if shared_map.is_floor_point((p[0], y), count_none=False):
+                for y in range(p.y-tolerance, p.y+tolerance):
+                    if shared_map.is_floor_point(MapPoint(p.x, y), count_none=False):
                         flag = True
                         break
                 if flag:
@@ -205,11 +205,10 @@ def identify_map_name(try_count=1):
     for _ in range(0, try_count):
         result = utils.image_match_text(
             frame, available_map_names, 0.8, filter=[])
-        if result is not None:
-            return result
-        else:
+        if not result:
             time.sleep(0.3)
-
+        else:
+            return result
 
 def get_full_pos(pos):
     return pos[0] + capture.window['left'], pos[1] + capture.window['top']
@@ -230,7 +229,7 @@ def get_channel_pos(channel):
     return x + channel_column * cell_width + cell_width // 2, y + channel_row * cell_height + cell_height // 2
 
 
-def convert_point_minimap_to_window(point: tuple[int, int]):
+def convert_point_minimap_to_window(point: MapPoint):
     '''convent the minimap point to the window point'''
     window_width = capture.window_rect.width
     window_height = capture.window_rect.height
@@ -240,8 +239,8 @@ def convert_point_minimap_to_window(point: tuple[int, int]):
     map_width = mini_width * MINIMAP_SCALE
     map_height = mini_height * MINIMAP_SCALE
 
-    map_x = point[0] * MINIMAP_SCALE
-    map_y = point[1] * MINIMAP_SCALE
+    map_x = point.x * MINIMAP_SCALE
+    map_y = point.y * MINIMAP_SCALE
 
     if map_x < window_width // 2:
         x = map_x
@@ -264,9 +263,9 @@ def locate_player_fullscreen(accurate=False):
     player_pos = convert_point_minimap_to_window(
         bot_status.player_pos)
 
-    if accurate:
-        frame = capture.frame
-        role_template = bot_settings.role.name_template
+    frame = capture.frame
+    if accurate and frame:
+        role_template = bot_settings.role.name_template # type: ignore
         tl_x = player_pos[0]-50
         tl_y = player_pos[1]
         player_crop = frame[tl_y:tl_y+250, tl_x-150:tl_x+150]

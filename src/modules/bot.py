@@ -4,7 +4,7 @@ import threading
 import time
 import random
 from enum import Enum
-from rx.subject import Subject
+from rx.subject.subject import Subject
 
 from src.common import utils, bot_status, bot_settings, bot_helper
 from src.common.gui_setting import gui_setting
@@ -33,7 +33,7 @@ class Bot(Subject):
         """Loads a user-defined routine on start up and initializes this Bot's main thread."""
 
         super().__init__()
-        self.role: RoleModel = None
+        self.role: RoleModel | None = None
 
         self.check_thread = threading.Thread(target=self._main_check)
         self.check_thread.daemon = True
@@ -206,6 +206,8 @@ class Bot(Subject):
 
     def __start(self):
         self.identify_role()
+        if not self.role:
+            return
         match gui_setting.mode.type:
             case BotRunMode.Cube:
                 CubeManage.start(self.role)

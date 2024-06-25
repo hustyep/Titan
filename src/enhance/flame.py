@@ -16,7 +16,7 @@ class Flame:
         self.role = None
         self.target = 120
     
-    def start(self, role: RoleModel):
+    def start(self, role: RoleModel | None):
         if role is None:
             return
         if gui_setting.mode.type != BotRunMode.Flame:
@@ -48,7 +48,7 @@ class Flame:
         rect = (x, y, width, height)
         while self.running:
             if self._flame_result(rect):
-                self._stop_flame()
+                self.stop()
                 chat_bot.voice_call()
                 break
             else:
@@ -58,7 +58,7 @@ class Flame:
     @bot_status.run_if_disabled('')
     def _flame_result(self, rect):
         x, y, width, height = rect
-        while len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
+        while not capture.frame or len(utils.multi_match(capture.frame[y+height:y+height+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) == 0:
             time.sleep(0.05)
         time.sleep(0.5)
         result_frame = capture.frame[y:y+height, x:x+width]
@@ -109,7 +109,7 @@ class Flame:
             
         x, y, width, height = rect
         start = time.time()
-        while len(utils.multi_match(capture.frame[y:y+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) > 0:
+        while not capture.frame or len(utils.multi_match(capture.frame[y:y+30, x:x+150], ATT_INCREASE_TEMPLATE, threshold=0.95, debug=False)) > 0:
             if not self.running:
                 break
             time.sleep(0.05)

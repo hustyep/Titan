@@ -18,6 +18,6 @@ class RoleModel:
                 name_template = cv2.imread(
                     f'assets/roles/name_template_{self.name}.png', 0)
             except:
-                print(f"role template '{name_template}' is not exists.")
+                print(f"role template '{self.name}' is not exists.")
             else:
                 return name_template

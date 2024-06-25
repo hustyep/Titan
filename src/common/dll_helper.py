@@ -1,6 +1,5 @@
 import ctypes
-from ctypes import *
-from ctypes import wintypes
+from ctypes import wintypes, cdll
 from src.common.hid import hid
 import threading
 

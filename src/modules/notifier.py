@@ -6,7 +6,7 @@ import threading
 import pygame
 import keyboard as kb
 from rx import operators as op
-from rx.subject import Subject
+from rx.subject.subject import Subject
 
 from src.common import bot_status
 from src.common.gui_setting import gui_setting
@@ -56,7 +56,7 @@ class Notifier(Subject):
                 text = f'‼️[{event.value}] {info}'
                 self.send_message(text=text, image=capture.frame)
             elif event_type == BotError:
-                if gui_setting.notification.get('notice_level') < 2:
+                if gui_setting.notification.notice_level < 2:
                     return
                 text = f'❗[{event.value}] {info}'
                 self.send_message(text=text, image=capture.frame)
@@ -64,12 +64,12 @@ class Notifier(Subject):
                 # if event == BotWarnning.RUNE_FAILED:
                 #     info = f'{detector.rune_active_time - time.time()}s'
                 
-                if gui_setting.notification.get('notice_level') < 3:
+                if gui_setting.notification.notice_level < 3:
                     return
                 text = f'⚠️[{event.value}] {info}'
                 self.send_message(text=text, image=capture.frame)
             elif event_type == BotInfo:                
-                if gui_setting.notification.get('notice_level') < 4:
+                if gui_setting.notification.notice_level < 4:
                     return
                 text = f'💡[{event.value}] {info}'
                 self.send_message(text=text)
@@ -78,7 +78,7 @@ class Notifier(Subject):
                 # if event == BotVerbose.BOSS_APPEAR:
                 #     threading.Timer(5, self.notify_boss_appear).start()
             elif event_type == BotDebug:
-                if gui_setting.notification.get('notice_level') < 5:
+                if gui_setting.notification.notice_level < 5:
                     return
                 text = f'🔎[{event.value}] {info}'
                 print(text)

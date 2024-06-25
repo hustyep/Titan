@@ -1,16 +1,21 @@
 """A collection of all commands that Night Walker can use to interact with the game. 	"""
 
-from src.common import bot_status, bot_settings, utils
 import time
-from src.routine.components import *
+import cv2
+
+from src.common import bot_status, bot_settings, utils
+from src.common.gui_setting import gui_setting
 from src.common.vkeys import press, key_down, key_up, releaseAll, press_acc
-from src.command.commands import *
+from src.routine.components import *
+from src.command.commands import Command, Skill, Walk, Fall, Direction, RopeLift, Arachnid, SkillType, sleep_in_the_air, target_reached, evade_rope, opposite_direction, detect_mobs_around_anchor
 from src.map.map_helper import *
+from src.map.map import shared_map
+from src.modules.capture import capture
 
 # List of key mappings
 
 
-class Keybindings(DefaultKeybindings):
+class Keybindings:
     # Movement
     JUMP = 's'
     Shadow_Jump = 'g'
@@ -56,31 +61,31 @@ class Keybindings(DefaultKeybindings):
 
 
 @bot_status.run_if_enabled
-def step(target, tolerance):
+def step(target: MapPoint):
     """
     Performs one movement step in the given DIRECTION towards TARGET.
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    d_x = target[0] - bot_status.player_pos[0]
-    d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) >= DoubleJump.move_range.start and d_y > 0:
+    d_x = target.x - bot_status.player_pos.x
+    d_y = target.y - bot_status.player_pos.y
+    if abs(d_x) >= DoubleJump.move_range.stop and d_y > 0:
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
     if not shared_map.is_floor_point(bot_status.player_pos):
         sleep_in_the_air(n=10)
-    next_p = find_next_point(bot_status.player_pos, target, tolerance)
+    next_p = find_next_point(bot_status.player_pos, target)
     print(f"next_p:{next_p}")
     if not next_p:
         return
 
     bot_status.path = [bot_status.player_pos, next_p, target]
 
-    d_x = next_p[0] - bot_status.player_pos[0]
-    d_y = next_p[1] - bot_status.player_pos[1]
+    d_x = next_p.x - bot_status.player_pos.x
+    d_y = next_p.y - bot_status.player_pos.y
 
     direction = None
-    if abs(d_x) > tolerance:
+    if abs(d_x) > target.tolerance:
         direction = 'right' if d_x > 0 else 'left'
     else:
         direction = 'down' if d_y > 0 else 'up'
@@ -92,36 +97,36 @@ def step(target, tolerance):
     elif not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= DoubleJump.move_range.start:
-        # # 落点范围
-        # if target[0] > bot_status.player_pos[0]:
-        #     tmp_pos_l = bot_status.player_pos[0] + DoubleJump.move_range.stop - 3
-        #     tmp_pos_r = bot_status.player_pos[0] + DoubleJump.move_range.stop + 3
-        # else:
-        #     tmp_pos_l = bot_status.player_pos[0] - DoubleJump.move_range.stop - 3
-        #     tmp_pos_r = bot_status.player_pos[0] - DoubleJump.move_range.stop + 3
-        # for i in range(tmp_pos_l, tmp_pos_r):
-        #     if not shared_map.on_the_platform((i, target[1]), strict=True):
-        #         Shadow_Dodge(direction).execute()
-        #         return
+        # 落点范围
+        if target.x > bot_status.player_pos.x:
+            tmp_pos_l = bot_status.player_pos.x + DoubleJump.move_range.stop - 3
+            tmp_pos_r = bot_status.player_pos.x + DoubleJump.move_range.stop + 3
+        else:
+            tmp_pos_l = bot_status.player_pos.x - DoubleJump.move_range.stop - 3
+            tmp_pos_r = bot_status.player_pos.x - DoubleJump.move_range.stop + 3
+        for i in range(tmp_pos_l, tmp_pos_r):
+            if not shared_map.is_floor_point(MapPoint(i, target.y), count_none=True):
+                Shadow_Dodge(direction).execute()
+                return
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= Shadow_Dodge.move_range.start:
         Shadow_Dodge(direction).execute()
     else:
-        Walk(target_x=next_p[0], tolerance=tolerance).execute()
+        Walk(next_p).execute()
 
 
 @bot_status.run_if_enabled
-def find_next_point(start: Point, target: Point, tolerance: int):
+def find_next_point(start: MapPoint, target: MapPoint):
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         return target
 
-    if target_reached(start, target, tolerance):
+    if target_reached(start, target):
         return
 
-    d_x = target[0] - start[0]
-    d_y = target[1] - start[1]
+    d_x = target.x - start.x
+    d_y = target.y - start.y
 
-    if abs(d_x) <= tolerance:
+    if abs(d_x) <= target.tolerance:
         return target
 
     platform_start = shared_map.platform_of_point(start)
@@ -131,54 +136,54 @@ def find_next_point(start: Point, target: Point, tolerance: int):
     if d_y == 0:
         if shared_map.is_continuous(start, target):
             return target
-        else:
+        elif platform_start and platform_target:
             margin = 5
             max_distance = DoubleJump.move_range.stop - margin * 2
             if gap_h in range(0, max_distance):
                 if platform_start.end_x < platform_target.begin_x:
-                    if start[0] >= platform_start.end_x - (max_distance - gap_h):
+                    if start.x >= platform_start.end_x - (max_distance - gap_h):
                         return target
-                    return (platform_start.end_x - margin, platform_start.y)
+                    return MapPoint(platform_start.end_x - margin, platform_start.y, 3)
                 else:
-                    if start[0] <= platform_start.begin_x + (max_distance - gap_h):
+                    if start.x <= platform_start.begin_x + (max_distance - gap_h):
                         return target
-                    return (platform_start.begin_x + margin, platform_start.y)
+                    return MapPoint(platform_start.begin_x + margin, platform_start.y, 3)
     elif d_y < 0:
         # 目标在上面， 优先向上移动
-        tmp_y = (start[0], target[1])
+        tmp_y = MapPoint(start.x, target.y)
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
-        tmp_x = (target[0], start[1])
+        tmp_x = MapPoint(target.x, start.y)
         if shared_map.is_continuous(start, tmp_x):
             return tmp_x
-        if gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8:
+        if gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8 and platform_start and platform_target:
             if platform_start.end_x < platform_target.begin_x:
-                return (platform_start.end_x - 2, platform_start.y)
+                return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
             else:
-                return (platform_start.begin_x + 2, platform_start.y)
-        elif gap_h > 0:
+                return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+        elif gap_h > 0 and platform_start and platform_target:
             next_platform = find_jumpable_platform(
                 platform_start, platform_target)
             if next_platform is not None:
                 print(f"next platform: {next_platform}")
                 if platform_start.end_x < next_platform.begin_x:
-                    return (platform_start.end_x - 2, platform_start.y)
+                    return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
                 else:
-                    return (platform_start.begin_x + 2, platform_start.y)
-    else:
+                    return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+    elif platform_start and platform_target:
         # 目标在下面，优先向下移动
-        tmp_y = (start[0], target[1])
+        tmp_y = MapPoint(start.x, target.y, 3)
         if shared_map.is_continuous(tmp_y, target):
             return tmp_y
-        tmp_x = (target[0], start[1])
+        tmp_x = MapPoint(target.x, start.y, 3)
         if shared_map.is_continuous(tmp_x, start):
             return tmp_x
-        if gap_h > 0 and gap_h <= 12:
+        if gap_h > 0 and gap_h <= DoubleJump.move_range.start:
             if platform_start.end_x < platform_target.begin_x:
-                return (platform_start.end_x - 2, platform_start.y)
+                return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
             else:
-                return (platform_start.begin_x + 2, platform_start.y)
-    return shared_map.platform_point((target[0], target[1] - 1))
+                return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
 
 
 def find_jumpable_platform(platform_start: Platform, platform_target: Platform):
@@ -190,7 +195,7 @@ def find_jumpable_platform(platform_start: Platform, platform_target: Platform):
     else:
         if gap_h <= 8 and abs(d_y) <= 8:
             return platform_target
-        else:
+        elif shared_map.current_map:
             for y in list(shared_map.current_map.platforms.keys()):
                 if int(y) < platform_target.y:
                     continue
@@ -206,32 +211,32 @@ def find_jumpable_platform(platform_start: Platform, platform_target: Platform):
 
 
 @bot_status.run_if_enabled
-def move_up(target: Point):
+def move_up(target: MapPoint):
     p = bot_status.player_pos
-    dy = abs(p[1] - target[1])
+    dy = abs(p.y - target.y)
 
-    if shared_map.on_the_platform((p[0], target[1]), strict=True):
+    if shared_map.on_the_platform(MapPoint(p.x, target.y), strict=True):
         pass
-    elif shared_map.on_the_platform(target, strict=True):
-        Walk(target_x=target[0], tolerance=1).execute()
-    elif target[0] >= p[0]:
-        Walk(target_x=target[0]+1, tolerance=0).execute()
+    elif shared_map.on_the_platform(MapPoint(target.x, p.y), strict=True):
+        Walk(MapPoint(target.x, p.y, 1)).execute()
+    elif target.x >= p.x:
+        Walk(MapPoint(target.x+1, p.y, 1)).execute()
     else:
-        Walk(target_x=target[0]-1, tolerance=0).execute()
+        Walk(MapPoint(target.x-1, p.y, 1)).execute()
 
     if dy < 5:
         press(Keybindings.JUMP)
     elif dy <= 28:
         Jump_Up(target).execute()
     else:
-        RopeLift(target[1]).execute()
+        RopeLift(target.y).execute()
 
 
 @bot_status.run_if_enabled
-def move_down(target):
+def move_down(target: MapPoint):
     sleep_in_the_air(n=1)
     evade_rope()
-    if target[1] > bot_status.player_pos[1]:
+    if target.y > bot_status.player_pos.y:
         Fall().execute()
 
 
@@ -242,7 +247,7 @@ class DoubleJump(Skill):
     backswing = 0.1
     move_range = range(26, 35)
 
-    def __init__(self, target: tuple[int, int], attack_if_needed=False):
+    def __init__(self, target: MapPoint, attack_if_needed=False):
         super().__init__(locals())
         self.target = target
         self.attack_if_needed = attack_if_needed
@@ -251,21 +256,21 @@ class DoubleJump(Skill):
         while not self.canUse():
             print("double jump waiting")
             time.sleep(0.01)
-        dx = self.target[0] - bot_status.player_pos[0]
-        dy = self.target[1] - bot_status.player_pos[1]
+        dx = self.target.x - bot_status.player_pos.x
+        dy = self.target.y - bot_status.player_pos.y
         direction = 'left' if dx < 0 else 'right'
-        start_y = bot_status.player_pos[1]
+        start_y = bot_status.player_pos.y
 
         self.__class__.castedTime = time.time()
         key_down(direction)
         time.sleep(0.1)
         press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
         press(self.key, 1, down_time=0.02, up_time=0.03)
-        if self.attack_if_needed and self.target[1] >= start_y:
+        if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        if start_y == self.target[1]:
+        if start_y == self.target.y:
             sleep_in_the_air(n=1, tolerance=1)
         else:
             sleep_in_the_air(n=20)
@@ -276,7 +281,7 @@ class Jump_Up(Command):
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
 
-    def __init__(self, target):
+    def __init__(self, target: MapPoint):
         super().__init__(locals())
         self.target = target
 
@@ -285,10 +290,11 @@ class Jump_Up(Command):
         press(opposite_direction(bot_status.player_direction))
         evade_rope(True)
 
-        up_point = (bot_status.player_pos[0], self.target[1])
+        up_point = MapPoint(bot_status.player_pos.x, self.target.y)
         if not shared_map.on_the_platform(up_point, True):
-            move_horizontal((self.target[0], bot_status.player_pos[1]), 0)
-        dy = bot_status.player_pos[1] - self.target[1]
+            move_horizontal(
+                MapPoint(self.target.x, bot_status.player_pos.y, 1))
+        dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
         time.sleep(0.06 if dy >= 20 else 0.3)
@@ -303,20 +309,20 @@ class Jump_Up(Command):
 
 
 @bot_status.run_if_enabled
-def move_horizontal(target, tolerance):
-    if bot_status.player_pos[1] != target[1]:
+def move_horizontal(target):
+    if bot_status.player_pos.y != target[1]:
         print("!!! move_horizontal error")
         return
-    dx = target[0] - bot_status.player_pos[0]
-    direction = 'left' if dx < 0 else 'right'
-    while abs(dx) > tolerance:
-        if abs(dx) >= 24:
+    dx = target[0] - bot_status.player_pos.x
+    while abs(dx) > target.tolerance:
+        if abs(dx) >= DoubleJump.move_range.start:
             DoubleJump(target=target, attack_if_needed=True).execute()
-        elif abs(dx) >= 10:
+        elif abs(dx) >= Shadow_Dodge.move_range.start:
+            direction = 'left' if dx < 0 else 'right'
             Shadow_Dodge(direction).execute()
         else:
-            Walk(target_x=target[0], tolerance=tolerance).execute()
-        dx = target[0] - bot_status.player_pos[0]
+            Walk(target).execute()
+        dx = target.x - bot_status.player_pos.x
 
 
 class Shadow_Dodge(Skill):
@@ -407,7 +413,7 @@ class Dark_Omen(Skill):
     cooldown = 20
     backswing = 0.9
     tolerance = 1
-    
+
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         if time.time() - Shadow_Bite.castedTime <= 3:
@@ -424,6 +430,8 @@ class Shadow_Bite(Skill):
 
     @classmethod
     def check(cls):
+        if not cls.icon:
+            return
         last_state = cls.ready
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
@@ -436,6 +444,7 @@ class Shadow_Bite(Skill):
         if time.time() - Dark_Omen.castedTime <= 3:
             return False
         return super().canUse(next_t)
+
 
 class Dominion(Command):
     key = Keybindings.Dominion
@@ -475,10 +484,12 @@ class Phalanx_Charge(Skill):
 
     @classmethod
     def check(cls):
+        if not cls.icon:
+            return
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
-    
+
     def main(self):
         if not self.canUse():
             return False
@@ -559,7 +570,7 @@ class Detect_Attack(Command):
         #     Jump(0.05, direction="right", attack=True)
         # else:
         # print("attack random direction")
-        if shared_map.current_map.name == 'Royal Library Section 4':
+        if shared_map.current_map is not None and shared_map.current_map.name == 'Royal Library Section 4':
             Direction('right').execute()
             print("attack right direction")
         else:
@@ -740,7 +751,7 @@ class HardHitter(Skill):
         cls.check_buff_enabled()
         if cls.enabled:
             cls.ready = False
-        else:
+        elif cls.icon:
             matchs = utils.multi_match(
                 capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
             cls.ready = len(matchs) > 0

@@ -339,7 +339,7 @@ def image_match_text(frame, list: list[str], threshold=0.7, filter=[' ']):
         if i not in ['-', "'"]:
             text = text.replace(i, '')
     best = threshold
-    result: str = None
+    result = ''
     for value in list:
         ratio = string_similar(text, value.lower())
         if ratio == 1:

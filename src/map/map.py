@@ -55,141 +55,142 @@ class Map:
                 capture.minimap_margin = map.minimap_margin
                 break
 
-    def point_type(self, point: Point):
+    def point_type(self, point: MapPoint):
         if self.data_available:
-            height, width = self.minimap_data.shape
-            if point[0] >= width or point[1] >= height:
+            height, width = self.minimap_data.shape # type: ignore
+            if point.x >= width or point.y >= height:
                 return MapPointType.Unknown
-            value = self.minimap_data[point[1]][point[0]]
+            value = self.minimap_data[point.y][point.x] # type: ignore
             return MapPointType(value)
         else:
             return MapPointType.Unknown
 
-    def near_rope(self, location: Point, up=False):
+    def near_rope(self, location: MapPoint, up=False):
         if self.data_available:
-            cur_x = location[0]
-            cur_y = location[1]
+            cur_x = location.x
+            cur_y = location.y
             if up:
                 for x in range(cur_x - 1, cur_x + 2):
                     for y in range(cur_y, cur_y - 7, -1):
-                        if self.point_type((x, y)) == MapPointType.Rope:
+                        if self.point_type(MapPoint(x, y)) == MapPointType.Rope:
                             return True
             else:
                 for x in range(cur_x - 1, cur_x + 2):
-                    if self.point_type((x, cur_y)) == MapPointType.FloorRope:
+                    if self.point_type(MapPoint(x, cur_y)) == MapPointType.FloorRope:
                         return True
         return False
 
-    def on_the_rope(self, location: Point):
+    def on_the_rope(self, location: MapPoint):
         if self.data_available:
             point_type = self.point_type(location)
             if point_type == MapPointType.Floor or point_type == MapPointType.FloorRope:
                 return False
             else:
                 for i in range(-2, 3):
-                    if self.point_type((location[0], location[1] + i)) == MapPointType.Rope:
+                    if self.point_type(MapPoint(location.x, location.y + i)) == MapPointType.Rope:
                         return True
         return False
 
-    def on_the_platform(self, location: Point, strict=False):
+    def on_the_platform(self, location: MapPoint, strict=False):
         if self.data_available:
-            x = location[0]
-            y = location[1]
+            x = location.x
+            y = location.y
             value = self.is_floor_point(location)
             if not strict:
                 return value
             else:
                 if value:
-                    value_l = self.is_floor_point((x - 1, y), count_none=True)
-                    value_r = self.is_floor_point((x + 1, y), count_none=True)
+                    value_l = self.is_floor_point(MapPoint(x - 1, y), count_none=True)
+                    value_r = self.is_floor_point(MapPoint(x + 1, y), count_none=True)
                     return value_l and value_r
                 return False
         else:
             return True
 
-    def platform_point(self, target: Point):
+    def platform_point(self, target: MapPoint):
         if self.data_available:
-            height, _ = self.minimap_data.shape
-            for y in range(target[1], height - 1):
-                p = (target[0], y)
+            height, _ = self.minimap_data.shape # type: ignore
+            for y in range(target.y, height - 1):
+                p = MapPoint(target.x, y, target.tolerance)
                 if shared_map.on_the_platform(p):
                     return p
 
         return target
 
-    def valid_point(self, p: Point):
+    def valid_point(self, p: MapPoint):
         if self.data_available:
-            height, width = self.minimap_data.shape
-            x = min(max(0, p[0]), width - 1)
-            y = min(max(0, p[1]), height - 1)
-            return (x, y)
+            height, width = self.minimap_data.shape # type: ignore
+            x = min(max(0, p.x), width - 1)
+            y = min(max(0, p.y), height - 1)
+            return MapPoint(x, y, p.tolerance)
         return p
 
-    def is_floor_point(self, point: Point, count_none=False):
+    def is_floor_point(self, point: MapPoint, count_none=False):
         value = self.point_type(point)
         if count_none:
             return value == MapPointType.Unknown or value == MapPointType.Floor or value == MapPointType.FloorRope
         else:
             return value == MapPointType.Floor or value == MapPointType.FloorRope
 
-    def is_continuous(self, p1: Point, p2: Point):
+    def is_continuous(self, p1: MapPoint, p2: MapPoint):
         if self.data_available:
-            if p1[1] != p2[1]:
+            if p1.y != p2.y:
                 return False
             if not self.on_the_platform(p1) or not self.on_the_platform(p2):
                 return False
-            y = p1[1]
-            for x in range(p1[0] + 1, p2[0], 1 if p2[0] > p1[0] else -1):
-                if not self.on_the_platform((x, y)):
+            y = p1.y
+            for x in range(p1.x + 1, p2.x, 1 if p2.x > p1.x else -1):
+                if not self.on_the_platform(MapPoint(x, y)):
                     return False
             return True
         else:
             return True
 
-    def platform_of_point(self, p: Point):
+    def platform_of_point(self, p: MapPoint):
         if not self.data_available:
             return
         if not self.is_floor_point(p):
             return
         else:
-            platform_list: List[Platform] = self.current_map.platforms[str(p[1])]
+            platform_list: List[Platform] = self.current_map.platforms[str(p.y)] # type: ignore
             for platform in platform_list:
-                if p[0] in range(platform.begin_x, platform.end_x+1):
+                if p.x in range(platform.begin_x, platform.end_x+1):
                     return platform
 
-    def horizontal_gap(self, p1: Point, p2: Point):
+    def horizontal_gap(self, p1: MapPoint, p2: MapPoint):
         if self.is_continuous(p1, p2):
             return 0
         platform1 = self.platform_of_point(p1)
         platform2 = self.platform_of_point(p2)
         return map_helper.platform_gap(platform1, platform2)
 
-    def add_start_point(self, point: Point):
+    def add_start_point(self, point: MapPoint):
         if gui_setting.mode.type != BotRunMode.Mapping:
             return
         if not self.data_available:
-            self.current_map.minimap_data = map_editor.create_minimap_data(
+            self.current_map.minimap_data = map_editor.create_minimap_data( # type: ignore
                 capture.minimap_frame)
         if not self.data_available:
             return
         map_editor.add_start_point(point, self.minimap_data)
-        map_editor.save_minimap_data(self.current_map.name, self.minimap_data)
+        if self.current_map is not None:
+            map_editor.save_minimap_data(self.current_map.name, self.minimap_data)
 
-    def add_end_point(self, point: Point):
+    def add_end_point(self, point: MapPoint):
         if gui_setting.mode.type != BotRunMode.Mapping:
             return
         if not self.data_available:
             return
         map_editor.add_end_point(point, self.minimap_data)
-        map_editor.save_minimap_data(self.current_map.name, self.minimap_data)
+        map_editor.save_minimap_data(self.current_map.name, self.minimap_data) # type: ignore
 
-    def add_rope_point(self, point: Point):
+    def add_rope_point(self, point: MapPoint):
         if gui_setting.mode.type != BotRunMode.Mapping:
             return
         if not self.data_available:
             return
         map_editor.add_rope_point(point, self.minimap_data)
-        map_editor.save_minimap_data(self.current_map.name, self.minimap_data)
+        map_editor.save_minimap_data(self.current_map.name, self.minimap_data) # type: ignore
 
 
 shared_map = Map()

@@ -37,7 +37,7 @@ def release_key(key, delay=0.05):
 
 
 @bot_status.run_if_enabled
-def mouse_move(template, rect: Rect = None, ranges=None, threshold=0.9, debug=False):
+def mouse_move(template, rect: Rect | None = None, ranges=None, threshold=0.9, debug=False):
     frame = capture.frame
     if frame is None:
         return False
@@ -141,7 +141,7 @@ def climb_rope(isUP=True):
 
 
 @bot_status.run_if_enabled
-def open_teleport_stone(retry_count=0) -> bool:        
+def open_teleport_stone(retry_count=0) -> bool:
     def is_opend():
         match = utils.multi_match(
             capture.frame, TELEPORT_STONE_LIST_ICON_TEMPLATE)
@@ -189,7 +189,7 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
     if retried_count >= max_retry_count:
         bot_status.acting = False
         return False
-    
+
     bot_status.acting = True
     bot_status.prepared = False
     if open_teleport_stone():
@@ -211,6 +211,8 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
             return False
         mouse_left_click(delay=0.3)
         frame = capture.frame
+        if not frame:
+            return False
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
         frame = frame[y:y+100, x:x+260]
@@ -258,6 +260,8 @@ def teleport_random_town():
             return
         mouse_left_click(delay=0.3)
         frame = capture.frame
+        if not frame:
+            return
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
         frame = frame[y:y+100, x:x+260]
@@ -273,83 +277,6 @@ def teleport_random_town():
         print("[error]cant open teleport stone")
         go_home()
     bot_status.acting = False
-
-
-@bot_status.run_if_enabled
-def go_home():
-    bot_status.enabled = False
-    for i in range(0, 6):
-        bot_status.enabled = False
-        click_key('H', 0.5)
-        click_key('H', 5)
-
-
-@bot_status.run_if_enabled
-def cancel_rune_buff():
-    for _ in range(5):
-        rune_buff = utils.multi_match(
-            capture.frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
-        if len(rune_buff) <= 2:
-            break
-
-        rune_buff_pos = min(rune_buff, key=lambda p: p[0])
-        x = round(rune_buff_pos[0] + capture.window['left']) + 10
-        y = round(rune_buff_pos[1] + capture.window['top']) + 10
-        hid.mouse_abs_move(x, y)
-        time.sleep(0.06)
-        hid.mouse_right_down()
-        time.sleep(0.2)
-        hid.mouse_right_up()
-        time.sleep(0.5)
-
-
-def open_boss_box():
-    pass
-
-
-@bot_status.run_if_enabled
-def go_ardentmill(key):
-    click_key(key)
-    time.sleep(5)
-
-    if not mouse_move(Go_Ardentmill_TEMPLATE):
-        click_key(bot_settings.SystemKeybindings.Go_Ardentmill, delay=0.5)
-    if not mouse_move(Go_Ardentmill_TEMPLATE):
-        print("cool down")
-        hid.key_press('esc')
-        time.sleep(1)
-        bot_status.enabled = True
-        return
-    mouse_left_click()
-
-    frame = capture.frame
-    x = (frame.shape[1] - 260) // 2
-    y = (frame.shape[0] - 220) // 2
-    ok_btn = utils.multi_match(
-        frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
-    cancel_btn = utils.multi_match(
-        frame, BUTTON_CANCEL_TEMPLATE, threshold=0.9, debug=False)
-    if cancel_btn:
-        print("ok")
-        hid.key_press("enter")
-        time.sleep(1)
-    else:
-        print("not ok")
-        hid.key_press('esc')
-        time.sleep(0.2)
-        return
-
-    wait_until_map_changed()
-    time.sleep(2)
-    hid.key_press('up')
-    time.sleep(0.5)
-    while (not bot_status.lost_minimap):
-        hid.key_press('up')
-        time.sleep(0.3)
-    while (bot_status.lost_minimap):
-        time.sleep(0.1)
-    time.sleep(2)
-    hid.key_press('esc')
 
 
 @bot_status.run_if_enabled
@@ -388,6 +315,11 @@ def _change_channel(num: int = 0, instance=True) -> None:
     time.sleep(1)
 
     frame = capture.frame
+    while not frame:
+        if not bot_status.enabled:
+            return
+        time.sleep(0.1)
+        frame = capture.frame
     x = (frame.shape[1] - 260) // 2
     y = (frame.shape[0] - 220) // 2
     ok_btn = utils.multi_match(
@@ -500,72 +432,72 @@ def go_home():
     click_key('H', 5)
 
 
-@bot_status.run_if_enabled
-def cancel_rune_buff():
-    for _ in range(5):
-        rune_buff = utils.multi_match(
-            capture.frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
-        if len(rune_buff) <= 2:
-            break
+# @bot_status.run_if_enabled
+# def cancel_rune_buff():
+#     for _ in range(5):
+#         rune_buff = utils.multi_match(
+#             capture.frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
+#         if len(rune_buff) <= 2:
+#             break
 
-        rune_buff_pos = min(rune_buff, key=lambda p: p[0])
-        x = round(rune_buff_pos[0] + capture.window['left']) + 10
-        y = round(rune_buff_pos[1] + capture.window['top']) + 10
-        hid.mouse_abs_move(x, y)
-        time.sleep(0.06)
-        hid.mouse_right_down()
-        time.sleep(0.2)
-        hid.mouse_right_up()
-        time.sleep(0.5)
-
-
-def open_boss_box():
-    pass
+#         rune_buff_pos = min(rune_buff, key=lambda p: p[0])
+#         x = round(rune_buff_pos[0] + capture.window['left']) + 10
+#         y = round(rune_buff_pos[1] + capture.window['top']) + 10
+#         hid.mouse_abs_move(x, y)
+#         time.sleep(0.06)
+#         hid.mouse_right_down()
+#         time.sleep(0.2)
+#         hid.mouse_right_up()
+#         time.sleep(0.5)
 
 
-@bot_status.run_if_enabled
-def go_ardentmill(key):
-    click_key(key)
-    time.sleep(5)
+# def open_boss_box():
+#     pass
 
-    if not mouse_move(Go_Ardentmill_TEMPLATE):
-        click_key(bot_settings.SystemKeybindings.Go_Ardentmill, delay=0.5)
-    if not mouse_move(Go_Ardentmill_TEMPLATE):
-        print("cool down")
-        hid.key_press('esc')
-        time.sleep(1)
-        bot_status.enabled = True
-        return
-    mouse_left_click()
 
-    frame = capture.frame
-    x = (frame.shape[1] - 260) // 2
-    y = (frame.shape[0] - 220) // 2
-    ok_btn = utils.multi_match(
-        frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
-    cancel_btn = utils.multi_match(
-        frame, BUTTON_CANCEL_TEMPLATE, threshold=0.9, debug=False)
-    if cancel_btn:
-        print("ok")
-        hid.key_press("enter")
-        time.sleep(1)
-    else:
-        print("not ok")
-        hid.key_press('esc')
-        time.sleep(0.2)
-        return
+# @bot_status.run_if_enabled
+# def go_ardentmill(key):
+#     click_key(key)
+#     time.sleep(5)
 
-    wait_until_map_changed()
-    time.sleep(2)
-    hid.key_press('up')
-    time.sleep(0.5)
-    while (not bot_status.lost_minimap):
-        hid.key_press('up')
-        time.sleep(0.3)
-    while (bot_status.lost_minimap):
-        time.sleep(0.1)
-    time.sleep(2)
-    hid.key_press('esc')
+#     if not mouse_move(Go_Ardentmill_TEMPLATE):
+#         click_key(bot_settings.SystemKeybindings.Go_Ardentmill, delay=0.5)
+#     if not mouse_move(Go_Ardentmill_TEMPLATE):
+#         print("cool down")
+#         hid.key_press('esc')
+#         time.sleep(1)
+#         bot_status.enabled = True
+#         return
+#     mouse_left_click()
+
+#     frame = capture.frame
+#     x = (frame.shape[1] - 260) // 2
+#     y = (frame.shape[0] - 220) // 2
+#     ok_btn = utils.multi_match(
+#         frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+#     cancel_btn = utils.multi_match(
+#         frame, BUTTON_CANCEL_TEMPLATE, threshold=0.9, debug=False)
+#     if cancel_btn:
+#         print("ok")
+#         hid.key_press("enter")
+#         time.sleep(1)
+#     else:
+#         print("not ok")
+#         hid.key_press('esc')
+#         time.sleep(0.2)
+#         return
+
+#     wait_until_map_changed()
+#     time.sleep(2)
+#     hid.key_press('up')
+#     time.sleep(0.5)
+#     while (not bot_status.lost_minimap):
+#         hid.key_press('up')
+#         time.sleep(0.3)
+#     while (bot_status.lost_minimap):
+#         time.sleep(0.1)
+#     time.sleep(2)
+#     hid.key_press('esc')
 
 
 def stop_game():

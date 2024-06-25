@@ -466,15 +466,3 @@ def distance_to_rune(point):
     if isinstance(point, Point) and point.interval == 0 and point.parent is None:
         return utils.distance(bot_status.rune_pos, point.location)
     return float('inf')
-
-
-def distance_to_minal(point):
-    """
-    Calculates the distance from POINT to the minal.
-    :param point:   The position to check.
-    :return:        The distance from POINT to the minal, infinity if it is not a Point object.
-    """
-
-    if isinstance(point, Point) and point.interval == 0:
-        return utils.distance(bot_status.minal_pos, point.location)
-    return float('inf')

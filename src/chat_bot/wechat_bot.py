@@ -183,7 +183,7 @@ class WechatBot:
 
         try:
             wc.OpenClipboard()
-            data = wc.GetClipboardData()
+            data = wc.GetClipboardData(win32con.CF_UNICODETEXT)
             wc.CloseClipboard()
         except Exception as e:
             data = None
@@ -271,15 +271,16 @@ class WechatBot:
 
     def shot_new_msg(self):
         frame = utils.window_capture(self.hwnd)
-        frame = frame[430:500, 0:70]
+        if frame:
+            frame = frame[430:500, 0:70]
         # cv2.imshow("", frame)
         # cv2.waitKey(0)
         return frame
 
 
-if __name__ == "__main__":
-    chat_bot = WechatBot("yep")
-    chat_bot.run()
+# if __name__ == "__main__":
+#     chat_bot = WechatBot("yep")
+#     chat_bot.run()
     # image = utily.window_capture(bot.hwnd)
     # image = bot.cvt2Plt(image)
     # image = Image.open('screenshot/Maple_230713_144732.png')

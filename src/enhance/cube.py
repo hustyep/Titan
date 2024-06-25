@@ -22,14 +22,12 @@ class PotentialType(Enum):
 class Cube:
     def __init__(self):
         self.running = False
-        self.role = None
+        self.role: RoleModel
 
         self.type = PotentialType.MOB
         self.target = 2
 
     def start(self, role: RoleModel):
-        if role is None:
-            return
         if gui_setting.mode.type != BotRunMode.Cube:
             return
         self.role = role
@@ -76,7 +74,7 @@ class Cube:
     def __cube_result(self, rect, type: PotentialType):
         x, y, width, height = rect
 
-        while not self._find_legendary(capture.frame[y-20:y+5, x:x+150]):
+        while not capture.frame or not self._find_legendary(capture.frame[y-20:y+5, x:x+150]):
             time.sleep(0.05)
         time.sleep(1)
         result_frame = capture.frame[y:y+height, x:x+width]
@@ -110,7 +108,7 @@ class Cube:
 
         x, y, width, height = rect
         start = time.time()
-        while len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) > 0:
+        while not capture.frame or len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) > 0:
             time.sleep(0.05)
             if time.time() - start > 5:
                 break

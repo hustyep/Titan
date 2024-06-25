@@ -8,7 +8,7 @@ def get_maps_dir(name):
     return os.path.join(RESOURCES_DIR, 'maps', name)
 
 
-def platform_gap(platform1: Platform, platform2: Platform):
+def platform_gap(platform1: Platform | None, platform2: Platform | None):
     if platform1 is None or platform2 is None:
         return -1
     if platform1.end_x < platform2.begin_x:

@@ -1,4 +1,5 @@
 from functools import wraps
+from src.common.constants import MapPoint
 
 #################################
 #       Global Variables        #
@@ -14,7 +15,7 @@ acting: bool = False
 started_time = None
 
 # The player's position relative to the minimap
-player_pos = (0, 0)
+player_pos = MapPoint(0, 0)
 player_direction = 'right'
 
 # Represents the current path that the bot is taking
@@ -37,7 +38,7 @@ rune_solving = False
 def reset():
     global white_room, player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, rune_solving
 
-    player_pos = (0, 0)
+    player_pos = MapPoint(0, 0)
     player_direction = 'right'
     path = []
     lost_minimap = False
