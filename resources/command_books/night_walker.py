@@ -405,6 +405,7 @@ class Dark_Omen(Skill):
     backswing = 0.9
     tolerance = 1
     
+    @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         if time.time() - Shadow_Bite.castedTime <= 3:
             return False
@@ -427,6 +428,7 @@ class Shadow_Bite(Skill):
         if not cls.ready or cls.ready != last_state:
             cls.update_time = time.time()
 
+    @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         if time.time() - Dark_Omen.castedTime <= 3:
             return False
