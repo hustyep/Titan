@@ -118,7 +118,7 @@ def sleep_while_move_y(interval=0.02, n=15):
 
 
 @bot_status.run_if_enabled
-def sleep_in_the_air(interval=0.005, n=4, start_y=0):
+def sleep_in_the_air(interval=0.005, n=4, tolerance=0):
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
         return
@@ -126,19 +126,23 @@ def sleep_in_the_air(interval=0.005, n=4, start_y=0):
     step = 0
     while True:
         if not shared_map.is_floor_point(bot_status.player_pos):
-            count = 0
+            if tolerance > 0:
+                p = bot_status.player_pos
+                flag = False
+                for y in range(p[1]-tolerance, p[1]+tolerance):
+                    if shared_map.is_floor_point((p[0], y), count_none=False):
+                        flag = True
+                        break
+                if flag:
+                    count += 1
+                else:
+                    count = 0
+            else:
+                count = 0
         else:
             count += 1
         if count >= n:
-            if start_y > 0:
-                if start_y == bot_status.player_pos[1]:
-                    break
-                elif n < 8:
-                    n = 8
-                else:
-                    break
-            else:
-                break
+            break
         step += 1
         if step >= 600:
             print("sleep_in_the_air timeout")
@@ -274,6 +278,7 @@ def locate_player_fullscreen(accurate=False):
             player_pos = (matchs[0][0] - 150 + tl_x,
                           matchs[0][1] - 140 + tl_y)
     return player_pos
+
 
 def rune_buff_match(frame):
     rune_buff = utils.multi_match(

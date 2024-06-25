@@ -265,7 +265,10 @@ class DoubleJump(Skill):
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        sleep_in_the_air(n=1 if start_y == self.target[1] else 15)
+        if start_y == self.target[1]:
+            sleep_in_the_air(n=1, tolerance=1)
+        else:
+            sleep_in_the_air(n=20)
 
 
 # 上跳
@@ -488,7 +491,7 @@ class Phalanx_Charge(Skill):
 class Silence(Command):
     key = Keybindings.Silence
     type = SkillType.Attack
-    cooldown = 360
+    cooldown = 340
     precast = 0.5
     backswing = 3
 

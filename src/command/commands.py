@@ -245,12 +245,12 @@ def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return
     pos = bot_status.player_pos
-    target_l = shared_map.valid_point((pos[0] - 2, pos[1]))
-    target_r = shared_map.valid_point((pos[0] + 2, pos[1]))
-    if shared_map.on_the_platform(target_l):
-        Walk(target_l[0], tolerance=0).execute()
-    elif shared_map.on_the_platform(target_r):
-        Walk(target_r[0], tolerance=0).execute()
+    target_l = (pos[0] - 3, pos[1])
+    target_r = (pos[0] + 3, pos[1])
+    if shared_map.is_floor_point(target_l, count_none=False):
+        Walk(target_l[0], tolerance=1).execute()
+    elif shared_map.is_floor_point(target_r, count_none=False):
+        Walk(target_r[0], tolerance=1).execute()
 
 
 def opposite_direction(direction):
@@ -480,7 +480,7 @@ class Fall(Command):
         self.buff = bot_settings.validate_boolean(buff)
 
     def main(self):
-        # evade_rope()
+        evade_rope()
         key_down('down')
         time.sleep(0.03)
         press(Keybindings.JUMP, 1, down_time=0.1, up_time=0.05)
