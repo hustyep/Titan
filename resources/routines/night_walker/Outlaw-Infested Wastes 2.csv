@@ -9,13 +9,13 @@ $, target=move_tolerance, value=10
     FeedPet
     Detect_Around_Anchor, count=4, x=710, y=560, top=550, bottom=100, left=650, right=650
     Shadow_Attack
-    Phalanx_Charge, direction=none
+    Phalanx_Charge, direction=left
 
 ~, label=Summon Loop, interval=41, skip=False
 *, x=56, y=52, interval=0, tolerance=3, detect=False, skip=False
     Shadow_Attack
     Greater_Dark_Servant
-    Phalanx_Charge, direction=none
+    Phalanx_Charge, direction=left
 *, x=123, y=53, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.15
     ErdaShower, direction=right

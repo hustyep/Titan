@@ -26,6 +26,8 @@ class Keybindings(DefaultKeybindings):
     Shadow_Bat = 'f1'
     Dark_Elemental = 'f3'
     Darkness_Ascending = '6'
+    FOR_THE_GUILD = '8'
+    HARD_HITTER = '7'
 
     # Potion
     EXP_POTION = '0'
@@ -46,9 +48,7 @@ class Keybindings(DefaultKeybindings):
     Shadow_Bite = 'e'
     Rapid_Throw = 'x'
     Silence = 'j'
-
-    FOR_THE_GUILD = '8'
-    HARD_HITTER = '7'
+    SolarCrest = '5'
 
 #########################
 #       Movement        #
@@ -461,6 +461,7 @@ class Phalanx_Charge(Skill):
     cooldown = 30
     precast = 0.1
     backswing = 0.75
+    tolerance = 0.3
 
     def __init__(self, direction='none'):
         super().__init__(locals())
@@ -474,22 +475,48 @@ class Phalanx_Charge(Skill):
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
-    
-    # def main(self):
-    #     if not self.canUse():
-    #         return False
-    #     if self.direction is not None:
-    #         Direction(self.direction)
-    #     super().main()
-    #     return True
+
+    def main(self):
+        if not self.canUse():
+            return False
+        if self.direction is not None:
+            Direction(self.direction)
+        super().main()
+        return True
 
 
 class Silence(Command):
     key = Keybindings.Silence
     type = SkillType.Attack
+    cooldown = 90
+    precast = 0.3
+    backswing = 2
+
+
+class Rapid_Throw(Command):
+    key = Keybindings.Rapid_Throw
+    type = SkillType.Attack
     cooldown = 360
     precast = 0.5
-    backswing = 3
+    backswing = 2
+
+    def main(self, wait=True):
+        time.sleep(self.precast)
+        self.castedTime = time.time()
+        for _ in range(0, 10):
+            press(self.key)
+            time.sleep(0.3)
+        time.sleep(self.backswing)
+        return True
+
+
+class SolarCrest(Skill):
+    key = Keybindings.Phalanx_Charge
+    type = SkillType.Attack
+    cooldown = 240
+    precast = 0.1
+    backswing = 0.75
+    tolerance = 5
 
 
 class Attack(Command):
@@ -503,15 +530,20 @@ class Attack(Command):
 
 class Shadow_Attack(Command):
     cooldown = 5
-    
+
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         return time.time() - cls.castedTime >= cls.cooldown
 
     def main(self):
+        if bot_status.elite_boss_detected:
+            Silence().execute()
+            Rapid_Throw().execute()
+        
         if not self.canUse():
+            time.sleep(0.2)
             return
-        n=4
+        n = 4
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
@@ -521,10 +553,12 @@ class Shadow_Attack(Command):
             Dominion().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
+        elif SolarCrest.canUse():
+            SolarCrest().execute()
         elif Dark_Omen.canUse():
             self.__class__.castedTime = time.time()
             Dark_Omen().execute()
-            n=6
+            n = 6
         else:
             pass
         Phalanx_Charge().execute()
