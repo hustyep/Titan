@@ -263,7 +263,7 @@ class DoubleJump(Skill):
         if dy < 0:
             press(self.key, 2, down_time=0.03, up_time=0.03)
         elif dx >= 26:
-            press(self.key, 1, down_time=0.02, up_time=0.03)
+            press(self.key, 1, down_time=0.02, up_time=0.02)
         else:
             time.sleep(0.1)
             press(self.key, 1, down_time=0.02, up_time=0.03)
@@ -271,7 +271,11 @@ class DoubleJump(Skill):
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        sleep_in_the_air(n=1)
+        if abs(start_y - self.target[0]) <= 5:
+            # sleep_in_the_air(n=1)
+            time.sleep(0.012)
+        else:
+            sleep_in_the_air(n=1)
 
 
 # 上跳
@@ -416,7 +420,7 @@ class Shadow_Bite(Skill):
     key = Keybindings.Shadow_Bite
     type = SkillType.Attack
     cooldown = 15
-    backswing = 0.55
+    backswing = 0.6
     tolerance = 0.6
 
     @classmethod
@@ -503,7 +507,7 @@ class Shadow_Attack(Command):
         return True
 
     def main(self):
-        n=2
+        n=3
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
         elif Silence.canUse():
@@ -512,10 +516,9 @@ class Shadow_Attack(Command):
             Dominion().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
-            Dark_Omen().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
-            n=3
+            n=4
         else:
             pass
         Phalanx_Charge().execute()
