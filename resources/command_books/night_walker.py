@@ -511,7 +511,7 @@ class Shadow_Attack(Command):
     def main(self):
         if not self.canUse():
             return
-        n=3
+        n=4
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
@@ -524,7 +524,7 @@ class Shadow_Attack(Command):
         elif Dark_Omen.canUse():
             self.__class__.castedTime = time.time()
             Dark_Omen().execute()
-            n=4
+            n=6
         else:
             pass
         Phalanx_Charge().execute()
@@ -603,6 +603,7 @@ class Detect_Around_Anchor(Command):
                 break
             if time.time() - start > 7:
                 break
+            time.sleep(0.2)
             # if len(mobs) > 0:
             #     Detect_Attack(self.x, self.y).execute()
 
