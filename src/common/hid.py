@@ -53,11 +53,11 @@ class HID:
     def unload(self):
         # USB版本硬件
         if (self.usbopen):
-            self.dll.close_hiddev()
+            self.dll.close_hiddev() # type: ignore
 
     def sendCMD(self, cmd):
         with self.lock:
-            self.dll.hid007_cmd(cmd)
+            self.dll.hid007_cmd(cmd) # type: ignore
 
     def buildCMD(self, action, value1 = None, value2 = None):
         str_cmd = action

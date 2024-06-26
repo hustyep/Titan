@@ -71,6 +71,8 @@ class Bot(Subject):
                     routine.step()
                     if self.is_run_daily:
                         current_quest = self.role.daily.current_quest
+                        if current_quest is None:
+                            return
                         if current_quest.isDone:
                             bot_status.prepared = False
                         elif not current_quest.is_running:
@@ -90,7 +92,7 @@ class Bot(Subject):
 
     @property
     def is_run_daily(self):
-        return gui_setting.mode.type == BotRunMode.Daily and self.role is not None and not self.role.daily.isDone
+        return gui_setting.mode.type == BotRunMode.Daily and self.role is not None and self.role.daily is not None and not self.role.daily.isDone
 
     def prepare(self):
         if bot_status.prepared:
@@ -175,12 +177,15 @@ class Bot(Subject):
             bot_status.reset()
 
     def check_daily(self):
+        if self.role is None:
+            return
         if self.role.daily.isDone:
             return
         if not self.role.daily.ready:
             bot_action.take_daily_quest()
             self.role.daily.ready = True
-        return self.role.daily.current_quest.map_name
+        if self.role.daily.current_quest is not None:
+            return self.role.daily.current_quest.map_name
 
     def toggle(self, enabled: bool, reason: str = ''):
         self.reset()

@@ -432,6 +432,8 @@ class Shadow_Bite(Skill):
 
     @classmethod
     def check(cls):
+        if cls.icon is None:
+            return
         last_state = cls.ready
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
@@ -478,6 +480,8 @@ class Phalanx_Charge(Skill):
 
     @classmethod
     def check(cls):
+        if cls.icon is None:
+            return
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
         cls.ready = len(matchs) > 0
@@ -749,7 +753,7 @@ class HardHitter(Skill):
         cls.check_buff_enabled()
         if cls.enabled:
             cls.ready = False
-        elif cls.icon.any():
+        elif cls.icon is not None:
             matchs = utils.multi_match(
                 capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
             cls.ready = len(matchs) > 0

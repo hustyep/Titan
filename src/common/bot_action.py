@@ -315,6 +315,8 @@ def _change_channel(num: int = 0, instance=True) -> None:
     time.sleep(1)
 
     frame = capture.frame
+    if frame is None:
+        return
     x = (frame.shape[1] - 260) // 2
     y = (frame.shape[0] - 220) // 2
     ok_btn = utils.multi_match(

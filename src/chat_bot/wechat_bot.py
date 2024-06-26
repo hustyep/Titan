@@ -271,7 +271,7 @@ class WechatBot:
 
     def shot_new_msg(self):
         frame = utils.window_capture(self.hwnd)
-        if frame.any():
+        if frame is not None:
             frame = frame[430:500, 0:70]
         # cv2.imshow("", frame)
         # cv2.waitKey(0)

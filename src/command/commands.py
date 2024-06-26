@@ -724,7 +724,7 @@ class Skill(Command):
 
     @classmethod
     def check_buff_enabled(cls):
-        if cls.icon.any():
+        if cls.icon is None:
             return
         matchs = utils.multi_match(
             capture.buff_frame, cls.icon[2:16, 16:-2], threshold=0.9)
@@ -821,7 +821,7 @@ class ErdaShower(Skill):
 
     @classmethod
     def check(cls):
-        if cls.icon.any():
+        if cls.icon is None:
             return
         if capture.frame is None:
             return
