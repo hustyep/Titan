@@ -273,7 +273,7 @@ class DoubleJump(Skill):
         # time.sleep(self.backswing)
         if abs(start_y - self.target[0]) <= 5:
             # sleep_in_the_air(n=1)
-            time.sleep(0.012)
+            time.sleep(0.01)
         else:
             sleep_in_the_air(n=1)
 
@@ -509,6 +509,8 @@ class Shadow_Attack(Command):
         return time.time() - cls.castedTime >= cls.cooldown
 
     def main(self):
+        if not self.canUse():
+            return
         n=3
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
