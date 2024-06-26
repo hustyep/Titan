@@ -502,13 +502,16 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
+    cooldown = 5
+    
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
-        return True
+        return time.time() - cls.castedTime >= cls.cooldown
 
     def main(self):
         n=3
         if Shadow_Bite.canUse():
+            self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
         elif Silence.canUse():
             Silence().execute()
@@ -517,6 +520,7 @@ class Shadow_Attack(Command):
         elif Arachnid.canUse():
             Arachnid().execute()
         elif Dark_Omen.canUse():
+            self.__class__.castedTime = time.time()
             Dark_Omen().execute()
             n=4
         else:
