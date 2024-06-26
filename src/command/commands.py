@@ -516,10 +516,15 @@ class SolveRune(Command):
         return super().canUse(next_t)
 
     def main(self):
-        if not self.canUse() or self.attempts > self.max_attempts:
+        if not self.canUse():
             bot_status.rune_solving = False
             bot_status.acting = False
             return -1, None
+        if self.attempts >= self.max_attempts:
+            bot_status.rune_solving = False
+            bot_status.acting = False
+            self.__class__.castedTime = time.time()
+            return -1, capture.frame
         bot_status.rune_solving = True
         Move(x=self.target.x, y=self.target.y, tolerance=1).execute()
         time.sleep(0.5)
@@ -549,7 +554,6 @@ class SolveRune(Command):
         
         if find_solution:
             # 成功激活，识别出结果，待进一步判断
-            time.sleep(0.5)
             bot_status.rune_solving = False
             bot_status.acting = False
             return 1, used_frame
@@ -561,6 +565,7 @@ class SolveRune(Command):
             return -1, used_frame
         else:
             # 未成功激活
+            time.sleep(0.5)
             return SolveRune(self.target, self.attempts + 1).execute()
 
 

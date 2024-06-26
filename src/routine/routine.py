@@ -379,10 +379,14 @@ class Routine(Subject):
             return
         bot_status.point_checking = True
         if bot_status.rune_pos is not None:
-            result, frame = commands.SolveRune(
-                bot_status.rune_pos).execute()  # type: ignore
-            threading.Thread(target=self.solve_rune_callback,
-                             args=(result, frame)).start()
+            tmp = commands.SolveRune(bot_status.rune_pos).execute()
+            if tmp is not None:
+                result, frame = tmp
+                threading.Thread(target=self.solve_rune_callback,
+                                args=(result, frame)).start()
+            else:
+                bot_status.rune_pos = None
+                bot_status.rune_closest_pos = None
         bot_status.point_checking = False
 
     def solve_rune_callback(self, result, frame):
@@ -394,6 +398,7 @@ class Routine(Subject):
             self.notify_rune_failed(frame)
 
     def check_rune_solve_result(self, used_frame):
+        time.sleep(0.5)
         for _ in range(4):
             rune_type = rune.rune_liberate_result(capture.frame)
             if rune_type is not None:
