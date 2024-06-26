@@ -623,7 +623,7 @@ class Direction(Command):
         if not self.direction:
             return
         # if bot_status.player_direction != self.direction:
-        press(self.direction, n=1, down_time=0.01, up_time=0.01)
+        press(self.direction, n=1, down_time=0.02, up_time=0.01)
 
 
 class Rest(Command):
@@ -927,7 +927,7 @@ class RopeLift(Skill):
             time.sleep(0.2075)
             press(self.key)
         else:
-            time.sleep(0.2)
+            time.sleep(0.24)
             press(self.key)            
         sleep_in_the_air(n=30)
 

@@ -67,8 +67,8 @@ def step(target, tolerance):
     if abs(d_x) >= DoubleJump.move_range.start and d_y > 0:
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
-    if not shared_map.is_floor_point(bot_status.player_pos):
-        sleep_in_the_air(n=10)
+    # if not shared_map.is_floor_point(bot_status.player_pos):
+    #     sleep_in_the_air(n=1)
     next_p = find_next_point(bot_status.player_pos, target, tolerance)
     print(f"next_p:{next_p}")
     if not next_p:
@@ -260,12 +260,18 @@ class DoubleJump(Skill):
         key_down(direction)
         time.sleep(0.1)
         press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-        press(self.key, 1, down_time=0.02, up_time=0.03)
+        if dy < 0:
+            press(self.key, 2, down_time=0.03, up_time=0.03)
+        elif dx >= 26:
+            press(self.key, 1, down_time=0.02, up_time=0.03)
+        else:
+            time.sleep(0.1)
+            press(self.key, 1, down_time=0.02, up_time=0.03)
         if self.attack_if_needed and self.target[1] >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        sleep_in_the_air(n=1 if start_y == self.target[1] else 15)
+        sleep_in_the_air(n=1)
 
 
 # 上跳
@@ -395,7 +401,7 @@ class Darkness_Ascending(Skill):
 class Quintuple_Star(Skill):
     key = Keybindings.Quintuple_Star
     type = SkillType.Attack
-    backswing = 0.5
+    backswing = 0.55
 
 
 class Dark_Omen(Skill):
@@ -497,24 +503,25 @@ class Shadow_Attack(Command):
         return True
 
     def main(self):
-        if Silence.canUse():
+        n=2
+        if Shadow_Bite.canUse():
+            Shadow_Bite().execute()
+        elif Silence.canUse():
             Silence().execute()
-        if Dominion.canUse():
+        elif Dominion.canUse():
             Dominion().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
             Dark_Omen().execute()
-        elif Shadow_Bite.canUse():
-            # press(Keybindings.JUMP)
-            Shadow_Bite().execute()
         elif Dark_Omen.canUse():
-            # Jump_Up((68, 69)).execute()
             Dark_Omen().execute()
-            # sleep_in_the_air()
-            # Fall()
-            # Quintuple_Star().execute()
+            n=3
+        else:
+            pass
         Phalanx_Charge().execute()
-        Quintuple_Star().execute()
+        Direction("right").execute()
+        for _ in range(0, n):
+            Quintuple_Star().execute()
         return True
 
 
@@ -587,8 +594,8 @@ class Detect_Around_Anchor(Command):
                 break
             if time.time() - start > 7:
                 break
-            if len(mobs) > 0:
-                Detect_Attack(self.x, self.y).execute()
+            # if len(mobs) > 0:
+            #     Detect_Attack(self.x, self.y).execute()
 
 ###################
 #      Buffs      #
