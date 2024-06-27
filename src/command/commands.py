@@ -248,9 +248,9 @@ def evade_rope(up=False):
     target_l = shared_map.valid_point((pos[0] - 2, pos[1]))
     target_r = shared_map.valid_point((pos[0] + 2, pos[1]))
     if shared_map.on_the_platform(target_l):
-        Walk(target_l[0], tolerance=0).execute()
+        Walk(target_l[0], tolerance=1).execute()
     elif shared_map.on_the_platform(target_r):
-        Walk(target_r[0], tolerance=0).execute()
+        Walk(target_r[0], tolerance=1).execute()
 
 
 def opposite_direction(direction):
