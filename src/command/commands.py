@@ -101,7 +101,7 @@ class Command():
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
         if self.__class__.canUse():
-            utils.log_event('[Command]' + str(self), bot_settings.debug)
+            utils.log_event(str(self), bot_settings.debug)
         result = self.main()
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)

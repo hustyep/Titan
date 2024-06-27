@@ -281,7 +281,7 @@ def __write_log(text: str):
     file_path = f'{path}/{name}.txt'
     # if not os.path.exists(file_path):
     file = open(file_path, 'a+')
-    file.write(text + '/n')
+    file.write(text + '\n')
     file.close()
         
 
