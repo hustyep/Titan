@@ -198,7 +198,12 @@ def find_jumpable_platform(platform_start: Platform, platform_target: Platform):
                     continue
                 platforms = shared_map.current_map.platforms[y]
                 for platform in platforms:
-                    if platform_gap(platform, platform_start) < gap_h or abs(platform.y - platform_start.y) < abs(d_y):
+                    gap_tmp = platform_gap(platform, platform_start)
+                    if gap_tmp == 0:
+                        continue
+                    elif gap_tmp == -1 and abs(platform.y - platform_start.y) < abs(d_y):
+                        return find_jumpable_platform(platform_start, platform)
+                    elif gap_tmp > 0 and gap_tmp < gap_h:
                         return find_jumpable_platform(platform_start, platform)
     return None
 
