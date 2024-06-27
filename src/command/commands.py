@@ -516,11 +516,7 @@ class SolveRune(Command):
         frame = capture.frame
         if frame is None:
             return False
-        rune_buff = utils.multi_match(
-            frame[:200, :], RUNE_BUFF_TEMPLATE, threshold=0.9)
-        if len(rune_buff) == 0:
-            rune_buff = utils.multi_match(
-                frame[:200, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.9)
+        rune_buff = bot_helper.rune_buff_match(frame)
         if len(rune_buff) > 0:
             return False
         return super().canUse(next_t)
