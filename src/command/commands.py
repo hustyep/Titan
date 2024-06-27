@@ -796,6 +796,7 @@ class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
     cooldown = 58
+    precast = 0.3
     backswing = 0.85
     duration = 60
 
@@ -819,10 +820,9 @@ class ErdaShower(Skill):
             return
         if self.direction:
             Direction(self.direction).execute()
-        time.sleep(0.3)
-        press(Keybindings.ERDA_SHOWER, 1)
         self.__class__.castedTime = time.time()
-        time.sleep(self.__class__.backswing)
+        press(Keybindings.ERDA_SHOWER, down_time=self.precast)
+        press(Keybindings.ERDA_SHOWER, up_time=self.backswing)
 
 
 class MapleWarrior(Skill):

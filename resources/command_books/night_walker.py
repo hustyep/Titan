@@ -482,7 +482,7 @@ class Phalanx_Charge(Skill):
         if not self.canUse():
             return False
         if self.direction is not None:
-            Direction(self.direction)
+            Direction(self.direction).execute()
         super().main()
         return True
 
@@ -539,9 +539,9 @@ class Shadow_Attack(Command):
 
     def main(self):
         if not self.canUse() and not bot_status.elite_boss_detected:
-            time.sleep(0.2)
+            time.sleep(0.3)
             return
-        n = 4
+        n = 3
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
@@ -556,17 +556,18 @@ class Shadow_Attack(Command):
         elif Dark_Omen.canUse():
             self.__class__.castedTime = time.time()
             Dark_Omen().execute()
-            n = 6
+            n = 4
         else:
             pass
         if bot_status.elite_boss_detected:
             Silence().execute()
             Rapid_Throw().execute()
             bot_status.elite_boss_detected = False
-        Phalanx_Charge().execute()
+        Phalanx_Charge('left').execute()
         Direction("right").execute()
-        for _ in range(0, n):
-            Quintuple_Star().execute()
+        key_down(Keybindings.Quintuple_Star)
+        time.sleep(n)
+        key_up(Keybindings.Quintuple_Star)
         return True
 
 
