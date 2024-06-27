@@ -511,7 +511,7 @@ class Rapid_Throw(Command):
 
 
 class SolarCrest(Skill):
-    key = Keybindings.Phalanx_Charge
+    key = Keybindings.SolarCrest
     type = SkillType.Attack
     cooldown = 240
     precast = 0.1
@@ -536,11 +536,7 @@ class Shadow_Attack(Command):
         return time.time() - cls.castedTime >= cls.cooldown
 
     def main(self):
-        if bot_status.elite_boss_detected:
-            Silence().execute()
-            Rapid_Throw().execute()
-        
-        if not self.canUse():
+        if not self.canUse() and not bot_status.elite_boss_detected:
             time.sleep(0.2)
             return
         n = 4
@@ -561,6 +557,10 @@ class Shadow_Attack(Command):
             n = 6
         else:
             pass
+        if bot_status.elite_boss_detected:
+            Silence().execute()
+            Rapid_Throw().execute()
+            bot_status.elite_boss_detected = False
         Phalanx_Charge().execute()
         Direction("right").execute()
         for _ in range(0, n):

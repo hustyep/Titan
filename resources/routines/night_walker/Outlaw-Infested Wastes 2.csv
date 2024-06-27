@@ -17,7 +17,7 @@ $, target=move_tolerance, value=10
     Greater_Dark_Servant
     Phalanx_Charge, direction=left
 *, x=123, y=53, interval=0, tolerance=2, detect=False, skip=False
-    Wait, duration=0.15
+    Wait, duration=0.3
     ErdaShower, direction=right
 *, x=80, y=27, interval=0, tolerance=3, detect=False, skip=False
     Replace_Dark_Servant
