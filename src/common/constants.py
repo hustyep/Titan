@@ -204,10 +204,12 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': 'Royal Library Section 4',
+        'default': 'Outlaw-Infested Wastes 2',
         'quest': [
             'Void Current 1',
-            'End of the World 1-6'
+            'End of the World 1-6',
+            'Royal Library Section 4',
+            'Outlaw-Infested Wastes 2',
         ]
     }
 }

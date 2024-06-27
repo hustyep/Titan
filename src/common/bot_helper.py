@@ -147,6 +147,10 @@ def sleep_in_the_air(interval=0.005, n=4, tolerance=0):
         if step >= 600:
             print("sleep_in_the_air timeout")
             break
+        elif step >= 200:
+            # 检测是否在绳子上
+            if shared_map.on_the_rope(bot_status.player_pos):
+                break
         time.sleep(interval)
 
 

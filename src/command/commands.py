@@ -241,8 +241,8 @@ def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return
     pos = bot_status.player_pos
-    target_l = MapPoint(pos.x - 3, pos.y, 1)
-    target_r = MapPoint(pos.x + 3, pos.y, 1)
+    target_l = MapPoint(pos.x - 2, pos.y, 1)
+    target_r = MapPoint(pos.x + 2, pos.y, 1)
     if shared_map.is_floor_point(target_l, count_none=False):
         Walk(target_l).execute()
     elif shared_map.is_floor_point(target_r, count_none=False):
@@ -942,7 +942,7 @@ class RopeLift(Skill):
             time.sleep(0.2075)
             press(self.key)
         else:
-            time.sleep(0.25)
+            time.sleep(0.24)
             press(self.key)            
         sleep_in_the_air(n=30)
 

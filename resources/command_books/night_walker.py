@@ -31,6 +31,8 @@ class Keybindings:
     Shadow_Bat = 'f1'
     Dark_Elemental = 'f3'
     Darkness_Ascending = '6'
+    FOR_THE_GUILD = '8'
+    HARD_HITTER = '7'
 
     # Potion
     EXP_POTION = '0'
@@ -51,9 +53,7 @@ class Keybindings:
     Shadow_Bite = 'e'
     Rapid_Throw = 'x'
     Silence = 'j'
-
-    FOR_THE_GUILD = '8'
-    HARD_HITTER = '7'
+    SolarCrest = '5'
 
 #########################
 #       Movement        #
@@ -72,8 +72,8 @@ def step(target: MapPoint):
     if abs(d_x) >= DoubleJump.move_range.stop and d_y > 0:
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
-    if not shared_map.is_floor_point(bot_status.player_pos):
-        sleep_in_the_air(n=1)
+    # if not shared_map.is_floor_point(bot_status.player_pos):
+    #     sleep_in_the_air(n=1)
     next_p = find_next_point(bot_status.player_pos, target)
     print(f"next_p:{next_p}")
     if not next_p:
@@ -161,16 +161,18 @@ def find_next_point(start: MapPoint, target: MapPoint):
                 return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
             else:
                 return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
-        elif gap_h > 0 and platform_start and platform_target:
-            next_platform = find_jumpable_platform(
-                platform_start, platform_target)
-            if next_platform is not None:
-                print(f"next platform: {next_platform}")
-                if platform_start.end_x < next_platform.begin_x:
-                    return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
-                else:
-                    return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
-    elif platform_start and platform_target:
+        elif gap_h > 0:
+            DoubleJump(target=target, attack_if_needed=True).execute()
+            return find_next_point(bot_status.player_pos, target)
+            # next_platform = find_jumpable_platform(
+            #     platform_start, platform_target)
+            # if next_platform is not None:
+            #     print(f"next platform: {next_platform}")
+            #     if platform_start.end_x < next_platform.begin_x:
+            #         return (platform_start.end_x - 2, platform_start.y)
+            #     else:
+            #         return (platform_start.begin_x + 2, platform_start.y)
+    else:
         # 目标在下面，优先向下移动
         tmp_y = MapPoint(start.x, target.y, 3)
         if shared_map.is_continuous(tmp_y, target):
@@ -178,7 +180,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
         tmp_x = MapPoint(target.x, start.y, 3)
         if shared_map.is_continuous(tmp_x, start):
             return tmp_x
-        if gap_h > 0 and gap_h <= DoubleJump.move_range.start:
+        if platform_start is not None and platform_target is not None and  gap_h > 0 and gap_h <= DoubleJump.move_range.start:
             if platform_start.end_x < platform_target.begin_x:
                 return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
             else:
@@ -201,7 +203,12 @@ def find_jumpable_platform(platform_start: Platform, platform_target: Platform):
                     continue
                 platforms = shared_map.current_map.platforms[y]
                 for platform in platforms:
-                    if platform_gap(platform, platform_start) < gap_h or abs(platform.y - platform_start.y) < abs(d_y):
+                    gap_tmp = platform_gap(platform, platform_start)
+                    if gap_tmp == 0:
+                        continue
+                    elif gap_tmp == -1 and abs(platform.y - platform_start.y) < abs(d_y):
+                        return find_jumpable_platform(platform_start, platform)
+                    elif gap_tmp > 0 and gap_tmp < gap_h:
                         return find_jumpable_platform(platform_start, platform)
     return None
 
@@ -268,20 +275,19 @@ class DoubleJump(Skill):
         if dy < 0:
             press(self.key, 2, down_time=0.03, up_time=0.03)
         elif dx >= 26:
-            press(self.key, 1, down_time=0.02, up_time=0.03)
+            press(self.key, 1, down_time=0.02, up_time=0.02)
         else:
             time.sleep(0.1)
             press(self.key, 1, down_time=0.02, up_time=0.03)
-
         if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        # if start_y == self.target.y:
-        #     # sleep_in_the_air(n=1)
-        #     time.sleep(0.02)
-        # else:
-        sleep_in_the_air(n=1)
+        if abs(start_y - self.target.y) <= 3:
+            # sleep_in_the_air(n=1)
+            time.sleep(0.01)
+        else:
+            sleep_in_the_air(n=1)
 
 
 # 上跳
@@ -427,7 +433,7 @@ class Shadow_Bite(Skill):
     key = Keybindings.Shadow_Bite
     type = SkillType.Attack
     cooldown = 15
-    backswing = 0.55
+    backswing = 0.6
     tolerance = 0.6
 
     @classmethod
@@ -470,6 +476,7 @@ class Phalanx_Charge(Skill):
     cooldown = 30
     precast = 0.1
     backswing = 0.75
+    tolerance = 0.3
 
     def __init__(self, direction='none'):
         super().__init__(locals())
@@ -490,7 +497,7 @@ class Phalanx_Charge(Skill):
         if not self.canUse():
             return False
         if self.direction is not None:
-            Direction(self.direction).execute()
+            Direction(self.direction)
         super().main()
         return True
 
@@ -498,9 +505,35 @@ class Phalanx_Charge(Skill):
 class Silence(Command):
     key = Keybindings.Silence
     type = SkillType.Attack
-    cooldown = 340
+    cooldown = 90
+    precast = 0.3
+    backswing = 2
+
+
+class Rapid_Throw(Command):
+    key = Keybindings.Rapid_Throw
+    type = SkillType.Attack
+    cooldown = 360
     precast = 0.5
-    backswing = 3
+    backswing = 2
+
+    def main(self, wait=True):
+        time.sleep(self.precast)
+        self.castedTime = time.time()
+        for _ in range(0, 10):
+            press(self.key)
+            time.sleep(0.3)
+        time.sleep(self.backswing)
+        return True
+
+
+class SolarCrest(Skill):
+    key = Keybindings.SolarCrest
+    type = SkillType.Attack
+    cooldown = 240
+    precast = 0.1
+    backswing = 0.75
+    tolerance = 5
 
 
 class Attack(Command):
@@ -513,15 +546,19 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
+    cooldown = 5
+
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
-        return True
+        return time.time() - cls.castedTime >= cls.cooldown
 
     def main(self):
-        last_time = self.castedTime
-        self.castedTime = time.time()
-        n=2
+        if not self.canUse() and not bot_status.elite_boss_detected:
+            time.sleep(0.2)
+            return
+        n = 4
         if Shadow_Bite.canUse():
+            self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
         elif Silence.canUse():
             Silence().execute()
@@ -529,16 +566,22 @@ class Shadow_Attack(Command):
             Dominion().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
+        elif SolarCrest.canUse():
+            SolarCrest().execute()
         elif Dark_Omen.canUse():
+            self.__class__.castedTime = time.time()
             Dark_Omen().execute()
-            n=3
+            n = 6
         else:
-            self.castedTime = last_time
+            pass
+        if bot_status.elite_boss_detected:
+            Silence().execute()
+            Rapid_Throw().execute()
+            bot_status.elite_boss_detected = False
         Phalanx_Charge().execute()
         Direction("right").execute()
         for _ in range(0, n):
             Quintuple_Star().execute()
-        
         return True
 
 
@@ -611,6 +654,7 @@ class Detect_Around_Anchor(Command):
                 break
             if time.time() - start > 7:
                 break
+            time.sleep(0.2)
             # if len(mobs) > 0:
             #     Detect_Attack(self.x, self.y).execute()
 

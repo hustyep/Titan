@@ -1,0 +1,26 @@
+$, target=move_tolerance, value=10
+*, x=56, y=52, interval=3000, tolerance=10, detect=False, skip=True
+    Rest, wait=5
+
+@, label=Bottom mobbing
+*, x=56, y=52, interval=0, tolerance=2, detect=False, skip=False
+    Buff
+    Potion
+    FeedPet
+    Detect_Around_Anchor, count=4, x=710, y=560, top=550, bottom=100, left=650, right=650
+    Shadow_Attack
+    Phalanx_Charge, direction=left
+
+~, label=Summon Loop, interval=41, skip=False
+*, x=56, y=52, interval=0, tolerance=3, detect=False, skip=False
+    Shadow_Attack
+    Greater_Dark_Servant
+    Phalanx_Charge, direction=left
+*, x=123, y=53, interval=0, tolerance=2, detect=False, skip=False
+    Wait, duration=0.3
+    ErdaShower, direction=right
+*, x=80, y=27, interval=0, tolerance=3, detect=False, skip=False
+    Replace_Dark_Servant
+    Wait, duration=0.5
+    Shadow_Bite
+#
