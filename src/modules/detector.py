@@ -242,7 +242,7 @@ class Detector(Subject):
             #     if win32gui.IsIconic(capture.hwnd):
             #         win32gui.SendMessage(
             #             capture.hwnd, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
-            #         time.sleep(0.1) 
+            #         time.sleep(0.1)
             #     win32gui.SetForegroundWindow(capture.hwnd)
             # except Exception as e:
             #     print(e)
@@ -314,6 +314,9 @@ class Detector(Subject):
         elite = utils.multi_match(elite_frame, ELITE_TEMPLATE, threshold=0.9)
         if len(elite) > 0:
             self.on_next((BotInfo.BOSS_APPEAR, ))
+            
+        bot_status.elite_boss_detected = utils.match_count(
+            frame[:20, 320:400], BOSS_TEMPLATE, threshold=0.9) > 0
 
     def check_binded(self):
         frame = capture.frame

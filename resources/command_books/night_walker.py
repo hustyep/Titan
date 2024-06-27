@@ -410,8 +410,8 @@ class Dark_Elemental(Skill):
 
 class Darkness_Ascending(Skill):
     key = Keybindings.Darkness_Ascending
-    type = SkillType.Switch
-    cooldown = 1
+    type = SkillType.Buff
+    cooldown = 1800
     ready = False
 
 
@@ -577,8 +577,8 @@ class Shadow_Attack(Command):
         if bot_status.elite_boss_detected:
             Silence().execute()
             Rapid_Throw().execute()
-            bot_status.elite_boss_detected = False
-        Phalanx_Charge().execute()
+            
+        Phalanx_Charge('left').execute()
         Direction("right").execute()
         for _ in range(0, n):
             Quintuple_Star().execute()
