@@ -27,7 +27,7 @@ class DefaultKeybindings:
     WEALTH_POTION = "="
     GOLD_POTION = ''
     GUILD_POTION = "n"
-    CANDIED_APPLE = '8'
+    CANDIED_APPLE = '9'
     LEGION_WEALTHY = '7'
     EXP_COUPON = '-'
 
