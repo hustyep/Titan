@@ -180,7 +180,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
         tmp_x = MapPoint(target.x, start.y, 3)
         if shared_map.is_continuous(tmp_x, start):
             return tmp_x
-        if platform_start is not None and platform_target is not None and  gap_h > 0 and gap_h <= DoubleJump.move_range.start:
+        if platform_start is not None and platform_target is not None and gap_h > 0 and gap_h <= DoubleJump.move_range.start:
             if platform_start.end_x < platform_target.begin_x:
                 return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
             else:
@@ -497,7 +497,7 @@ class Phalanx_Charge(Skill):
         if not self.canUse():
             return False
         if self.direction is not None:
-            Direction(self.direction)
+            Direction(self.direction).execute()
         super().main()
         return True
 
@@ -554,9 +554,9 @@ class Shadow_Attack(Command):
 
     def main(self):
         if not self.canUse() and not bot_status.elite_boss_detected:
-            time.sleep(0.2)
+            time.sleep(0.3)
             return
-        n = 4
+        n = 2
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
@@ -571,17 +571,19 @@ class Shadow_Attack(Command):
         elif Dark_Omen.canUse():
             self.__class__.castedTime = time.time()
             Dark_Omen().execute()
-            n = 6
+            n = 3
         else:
-            pass
+            n = 4
         if bot_status.elite_boss_detected:
             Silence().execute()
             Rapid_Throw().execute()
-            
+
         Phalanx_Charge('left').execute()
         Direction("right").execute()
-        for _ in range(0, n):
-            Quintuple_Star().execute()
+        key_down(Keybindings.Quintuple_Star)
+        time.sleep(n)
+        key_up(Keybindings.Quintuple_Star)
+        time.sleep(0.3)
         return True
 
 
