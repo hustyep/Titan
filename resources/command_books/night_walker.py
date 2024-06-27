@@ -492,18 +492,19 @@ class Phalanx_Charge(Skill):
         return True
 
 
-class Silence(Command):
+class Silence(Skill):
     key = Keybindings.Silence
     type = SkillType.Attack
-    cooldown = 90
+    cooldown = 360
     precast = 0.3
-    backswing = 2
+    backswing = 3
+    tolerance = 5
 
 
 class Rapid_Throw(Command):
     key = Keybindings.Rapid_Throw
     type = SkillType.Attack
-    cooldown = 360
+    cooldown = 90
     precast = 0.5
     backswing = 2
 

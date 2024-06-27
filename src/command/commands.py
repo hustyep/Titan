@@ -796,8 +796,8 @@ class ErdaShower(Skill):
     key = Keybindings.ERDA_SHOWER
     type = SkillType.Summon
     cooldown = 58
-    precast = 0.3
-    backswing = 0.85
+    precast = 0.4
+    backswing = 0.8
     duration = 60
 
     def __init__(self, direction=None):
@@ -821,8 +821,7 @@ class ErdaShower(Skill):
         if self.direction:
             Direction(self.direction).execute()
         self.__class__.castedTime = time.time()
-        press(Keybindings.ERDA_SHOWER, down_time=self.precast)
-        press(Keybindings.ERDA_SHOWER, up_time=self.backswing)
+        press(Keybindings.ERDA_SHOWER, down_time=self.precast, up_time=self.backswing)
 
 
 class MapleWarrior(Skill):
@@ -833,17 +832,18 @@ class MapleWarrior(Skill):
     type = SkillType.Buff
 
 
-class Arachnid(Command):
+class Arachnid(Skill):
     key = Keybindings.ARACHNID
     type = SkillType.Attack
     cooldown = 250
     backswing = 0.9
+    tolerance = 5
 
-    # @classmethod
-    # def check(cls):
-    #     matchs = utils.multi_match(
-    #         capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98, debug=False)
-    #     cls.ready = len(matchs) > 0
+    @classmethod
+    def check(cls):
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98, debug=False)
+        cls.ready = len(matchs) > 0
 
 
 class ForTheGuild(Skill):
