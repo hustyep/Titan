@@ -158,6 +158,8 @@ class Auto(LabelFrame):
             # if len(matchs1) + len(matchs2) + len(matchs3) + len(matchs4) + len(matchs5) > 2:
             if len(matchs1) + len(matchs2) > 2:
                 return True
+            elif len(matchs1) + len(matchs2) == 2 and len(matchs3) + len(matchs4) > 0:
+                return True
             else:
                 return False
         elif type == PotentialType.LUK:
