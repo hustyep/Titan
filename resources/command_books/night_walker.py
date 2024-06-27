@@ -64,7 +64,7 @@ def step(target, tolerance):
 
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) >= DoubleJump.move_range.start and d_y > 0:
+    if abs(d_x) >= DoubleJump.move_range.start:
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
     # if not shared_map.is_floor_point(bot_status.player_pos):
