@@ -124,6 +124,7 @@ TABBAR_NX_TEMPLATE = cv2.imread(
 
 # The Elite Boss's warning sign
 ELITE_TEMPLATE = cv2.imread(f'{ASSETS_PATH}exceptions/elite_template.jpg', 0)
+BOSS_TEMPLATE = cv2.imread(f'{ASSETS_PATH}exceptions/boss_template.png', 0)
 
 # White Room
 WHITE_ROOM_TEMPLATE = cv2.imread(

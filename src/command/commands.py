@@ -245,12 +245,12 @@ def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return
     pos = bot_status.player_pos
-    target_l = shared_map.valid_point((pos[0] - 2, pos[1]))
-    target_r = shared_map.valid_point((pos[0] + 2, pos[1]))
+    target_l = shared_map.valid_point((pos[0] - 3, pos[1]))
+    target_r = shared_map.valid_point((pos[0] + 3, pos[1]))
     if shared_map.on_the_platform(target_l):
-        Walk(target_l[0], tolerance=1).execute()
+        Walk(target_l[0], tolerance=2).execute()
     elif shared_map.on_the_platform(target_r):
-        Walk(target_r[0], tolerance=1).execute()
+        Walk(target_r[0], tolerance=2).execute()
 
 
 def opposite_direction(direction):
