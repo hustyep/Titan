@@ -64,7 +64,7 @@ def step(target, tolerance):
 
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) >= DoubleJump.move_range.start:
+    if abs(d_x) >= DoubleJump.move_range.start and d_y > 0:
         DoubleJump(target=target, attack_if_needed=True).execute()
         return
     # if not shared_map.is_floor_point(bot_status.player_pos):
@@ -157,14 +157,16 @@ def find_next_point(start: Point, target: Point, tolerance: int):
             else:
                 return (platform_start.begin_x + 2, platform_start.y)
         elif gap_h > 0:
-            next_platform = find_jumpable_platform(
-                platform_start, platform_target)
-            if next_platform is not None:
-                print(f"next platform: {next_platform}")
-                if platform_start.end_x < next_platform.begin_x:
-                    return (platform_start.end_x - 2, platform_start.y)
-                else:
-                    return (platform_start.begin_x + 2, platform_start.y)
+            DoubleJump(target=target, attack_if_needed=True).execute()
+            return find_next_point(bot_status.player_pos, target, tolerance)
+            # next_platform = find_jumpable_platform(
+            #     platform_start, platform_target)
+            # if next_platform is not None:
+            #     print(f"next platform: {next_platform}")
+            #     if platform_start.end_x < next_platform.begin_x:
+            #         return (platform_start.end_x - 2, platform_start.y)
+            #     else:
+            #         return (platform_start.begin_x + 2, platform_start.y)
     else:
         # 目标在下面，优先向下移动
         tmp_y = (start[0], target[1])
