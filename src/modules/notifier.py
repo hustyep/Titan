@@ -47,6 +47,7 @@ class Notifier(Subject):
         self.on_next((event, info))
         now = time.time()
         noticed_time = self.notice_time_record.get(event, 0)
+        utils.log_event(f'[{event.value}] {info}')
 
         if noticed_time == 0 or now - noticed_time >= 20:
             self.notice_time_record[event] = now

@@ -79,7 +79,7 @@ class Command():
 
     def __str__(self):
         variables = self.__dict__
-        result = '[Command]' + self.id
+        result = f'[Command]{self.id}: pos={bot_status.player_pos.tuple}'
         # if len(variables) - 1 > 0:
         #     result += ':'
         # for key, value in variables.items():
@@ -100,8 +100,8 @@ class Command():
     @bot_status.run_if_enabled
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
-        if self.canUse:
-            print(str(self))
+        if self.__class__.canUse():
+            utils.log_event('[Command]' + str(self), bot_settings.debug)
         result = self.main()
         # if self.__class__.complete_callback:
         #     self.__class__.complete_callback(self)
@@ -139,6 +139,11 @@ class Move(Command):
         self.target = shared_map.platform_point(MapPoint(int(x), int(y), bot_settings.validate_nonnegative_int(tolerance)))
         self.step = bot_settings.validate_nonnegative_int(step)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
+
+    def __str__(self):
+        result = super().__str__()
+        result += f' target={self.target.tuple} tolerance={self.target.tolerance} step={self.step}'
+        return result
 
     def main(self):
         if self.step > self.max_steps:
@@ -676,6 +681,10 @@ class Skill(Command):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__class__.load()
+
+    def __str__(self):
+        result = f'[Skill]{self.id}: pos={bot_status.player_pos.tuple}'
+        return result
 
     @classmethod
     def load(cls):

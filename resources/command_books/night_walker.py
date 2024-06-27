@@ -75,7 +75,7 @@ def step(target: MapPoint):
     # if not shared_map.is_floor_point(bot_status.player_pos):
     #     sleep_in_the_air(n=1)
     next_p = find_next_point(bot_status.player_pos, target)
-    print(f"next_p:{next_p}")
+    utils.log_event(f"next_p:{next_p}", bot_settings.debug)
     if not next_p:
         return
 
@@ -261,7 +261,7 @@ class DoubleJump(Skill):
 
     def main(self):
         while not self.canUse():
-            print("double jump waiting")
+            utils.log_event("double jump waiting", bot_settings.debug)
             time.sleep(0.01)
         dx = self.target.x - bot_status.player_pos.x
         dy = self.target.y - bot_status.player_pos.y
@@ -325,7 +325,7 @@ class Jump_Up(Command):
 @bot_status.run_if_enabled
 def move_horizontal(target):
     if bot_status.player_pos.y != target[1]:
-        print("!!! move_horizontal error")
+        utils.log_event("!!! move_horizontal error", bot_settings.debug)
         return
     dx = target[0] - bot_status.player_pos.x
     while abs(dx) > target.tolerance:
@@ -617,9 +617,9 @@ class Detect_Attack(Command):
         # print("attack random direction")
         if shared_map.current_map is not None and shared_map.current_map.name == 'Royal Library Section 4':
             Direction('right').execute()
-            print("attack right direction")
+            utils.log_event("attack right direction", bot_settings.debug)
         else:
-            print("attack random direction")
+            utils.log_event("attack random direction", bot_settings.debug)
             Direction('left' if random() <= 0.5 else 'right').execute()
         Quintuple_Star().execute()
         return True
@@ -649,7 +649,7 @@ class Detect_Around_Anchor(Command):
                     top=self.top, bottom=self.bottom, left=self.left, right=self.right),
                 multy_match=self.count > 1,
                 debug=False)
-            print(f"mobs count = {len(mobs)}")
+            utils.log_event(f"mobs count = {len(mobs)}", bot_settings.debug)
             if len(mobs) >= self.count:
                 break
             if time.time() - start > 7:
@@ -681,10 +681,9 @@ class Buff(Command):
         ]
 
     def main(self, wait=True):
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!use buff")
         for buff in self.buffs:
             if buff.canUse():
-                print(buff)
+                utils.log_event(str(buff), bot_settings.debug)
                 result = buff().main(wait)
                 if result:
                     break

@@ -18,6 +18,7 @@ from PIL import Image, ImageDraw
 import pytesseract as tess
 import difflib
 from python_calamine import CalamineWorkbook
+import asyncio
 
 def single_match(frame, template):
     """
@@ -262,6 +263,27 @@ def save_screenshot(frame, file_path=None, compress=True):
     else:
         cv2.imwrite(filename + ".png", frame)
         return filename + ".png"
+    
+def log_event(event: str, need_print = True):
+    text = f'[{time.time()}]' + event
+    if need_print:
+        print(text)
+        
+    threading.Thread(target=__write_log, args=(text, )).start()
+    
+    
+def __write_log(text: str):
+    path = 'tmp/log'
+    make_dir(path)
+    
+    now = datetime.utcnow() + timedelta(hours=8)
+    name = now.strftime('%y%m%d')
+    file_path = f'{path}/{name}.txt'
+    # if not os.path.exists(file_path):
+    file = open(file_path, 'a+')
+    file.write(text + '/n')
+    file.close()
+        
 
 #########################
 #        Capture        #

@@ -48,7 +48,7 @@ class Bot(Subject):
         :return:    None
         """
         notifier.subscribe(lambda e: self.on_event(e))
-        print('\n[~] Started main bot loop')
+        utils.log_event('\n[~] Started main bot loop')
         self.thread.start()
         self.check_thread.start()
 
@@ -60,7 +60,7 @@ class Bot(Subject):
         self.ready = True
         while True:
             if capture.minimap_display is None:
-                print("waiting capture...")
+                utils.log_event("waiting capture...", bot_settings.debug)
                 time.sleep(0.5)
             elif bot_status.enabled:
                 if gui_setting.mode.type != BotRunMode.Daily and gui_setting.mode.type != BotRunMode.Farm:
@@ -103,31 +103,31 @@ class Bot(Subject):
             return
 
         if not self.check_map():
-            print("!!!check map error")
+            utils.log_event("!!!check map error")
             return
 
         bot_status.prepared = True
-        print("prepared")
+        utils.log_event("prepared")
 
     def identify_role(self):
         role_name = bot_helper.identify_role_name()
         if not role_name:
             if self.role is None:
-                print("!!!role identify error")
+                utils.log_event("!!!role identify error")
             time.sleep(1)
             return False
 
         # update role
         if self.role == None or self.role.name != role_name:
             self.load_role(role_name)
-            print(f"~identify name:{role_name}, class:{Name_Class_Map[role_name]}")
+            utils.log_event(f"~identify name:{role_name}, class:{Name_Class_Map[role_name]}")
 
         return True
 
     def identify_map(self):
         map_name = bot_helper.identify_map_name()
         if map_name is not None and map_name != shared_map.current_map_name:
-            print(f"identify map:{map_name}")
+            utils.log_event(f"identify map:{map_name}")
             self.load_map(map_name)
 
     def check_map(self):
@@ -135,7 +135,7 @@ class Bot(Subject):
             time.sleep(0.1)
             return False
         map_name = bot_helper.identify_map_name(try_count=5)
-        print(f"identify map:{map_name}")
+        utils.log_event(f"identify map:{map_name}")
 
         target_map = None
         match gui_setting.mode.type:
@@ -197,7 +197,7 @@ class Bot(Subject):
 
         bot_status.enabled = enabled
         utils.print_state(enabled)
-        print(reason)
+        utils.log_event(reason)
 
     def reset(self):
         releaseAll()
