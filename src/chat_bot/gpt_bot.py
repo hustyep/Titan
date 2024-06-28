@@ -44,7 +44,7 @@ def answer_gm(question: str):
         },
         {
             'role': 'user',
-            'content': question + ' short in 5 words'
+            'content': question + ' please answer in 5 words, and do not repeat the question'
         },
     ]
     return gpt_35_api(messages)

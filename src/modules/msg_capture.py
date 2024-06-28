@@ -102,9 +102,8 @@ class MsgCapture:
     def __init__(self):
         super().__init__()
 
-        self.last_system_msg = None
+        self.msg_list = []
         self.last_nomarl_msg = None
-        self.last_mvp_msg = None
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -116,35 +115,28 @@ class MsgCapture:
         print('\n[~] Started chat capture')
         self.thread.start()
 
+    @property
+    def last_msg(self):
+        if not self.msg_list:
+            return
+        return self.msg_list[-1]
+
     def _main(self):
         self.ready = True
 
         while True:
             if gui_setting.notification.game_msg and capture.msg_frame is not None and len(capture.msg_frame) > 0:
-                new_normal_msg = self.get_new_msg(capture.msg_frame, GameMsgType.NORMAL)
-                if new_normal_msg and new_normal_msg != self.last_nomarl_msg:
-                    self.last_nomarl_msg = new_normal_msg
+                new_normal_msg = self.get_new_msg(
+                    capture.msg_frame, GameMsgType.NORMAL)
+                if new_normal_msg and new_normal_msg != self.last_msg:
+                    self.msg_list.append(new_normal_msg)
                     self.notify_new_msg(new_normal_msg)
-
-                # new_sys_msg = self.get_new_msg(capture.msg_frame, GameMsgType.SYSTEM)
-                # if new_sys_msg and new_sys_msg != self.last_system_msg:
-                #     self.last_system_msg = new_sys_msg
-                #     self.notify_new_msg(new_sys_msg)
-
-                # new_mvp_msg = self.get_new_msg(frame, GameMsgType.MVP)
-                # if new_mvp_msg and new_mvp_msg != self.last_mvp_msg:
-                #     self.last_mvp_msg = new_mvp_msg
-                #     self.notify_new_msg(new_mvp_msg)
             time.sleep(0.5)
 
     def get_new_msg(self, image, msg_type) -> GameMsg | None:
         match (msg_type):
             case GameMsgType.NORMAL:
                 return self.get_normal_msg(image)
-            case GameMsgType.SYSTEM:
-                return self.get_sys_msg(image)
-            case GameMsgType.MVP:
-                return self.get_mvp_msg(image)
 
     def get_normal_msg(self, frame):
         msg_list = self.image_to_str(frame, WHITE_RANGES)
@@ -153,79 +145,6 @@ class MsgCapture:
             return None
         new_msg = msg_list.pop()
         return GameMsg(new_msg, GameMsgType.NORMAL, image)
-
-    def get_sys_msg(self, frame):
-        msg_list = self.image_to_str(frame, SYSTEM_MSG_RANGES)
-
-        if msg_list:
-            new_msg = msg_list.pop()
-            return GameMsg(new_msg, GameMsgType.NORMAL, image)
-
-    def get_mvp_msg(self, frame) -> GameMsg | None:
-        image = frame[-540:-440, 2:400]
-        msg_list = self.image_to_str(image)
-
-        if len(msg_list) == 0:
-            return None
-        new_msg = msg_list.pop()
-        low_text = new_msg.lower()
-        if 'mvp' in low_text and 'x' in low_text:
-            mvp_msg = MvpMsg(new_msg, image)
-            list = low_text.split(" ")
-            min_str = ''
-            channel = 0
-            for words in list:
-                if not min_str:
-                    if words.startswith("xx:"):
-                        min_str = words[3:]
-                    elif words.startswith('xx') or words.startswith('x:'):
-                        min_str = words[2:]
-                    # elif words.startswith('x'):
-                    #     min_str = words[1:]
-
-                if channel == 0:
-                    tmp = 0
-                    if words.startswith('ch') or words.startswith('cc'):
-                        try:
-                            tmp = int(words[2:4])
-                        except Exception as e:
-                            try:
-                                tmp = int(words[2:3])
-                            except Exception as e:
-                                pass
-                    elif words.startswith('c'):
-                        try:
-                            tmp = int(words[1:3])
-                        except Exception as e:
-                            try:
-                                tmp = int(words[1:2])
-                            except Exception as e:
-                                pass
-                    if tmp and tmp <= 40:
-                        channel = tmp
-
-                if 'ms' in words or 'shrine' in words or 'mushroom' in words:
-                    mvp_msg.map = 'mushroom shrine'
-
-            mvp_msg.channel = channel
-
-            if min_str:
-                min = int(min_str)
-                hour = 0
-                if min >= 0 and min <= 59:
-                    cur_hour = int(low_text[1:3])
-                    cur_min = int(low_text[4:6])
-                    # cur_hour = datetime.datetime.now().hour
-                    # cur_min = datetime.datetime.now().minute
-                    if min >= cur_min:
-                        hour = cur_hour
-                    else:
-                        hour = (cur_hour + 1) % 24
-                    mvp_msg.time = f'{hour}:{min}'
-
-            return mvp_msg
-        else:
-            return None
 
     def notify_new_msg(self, msg: GameMsg):
         text = f'{"📢" if msg.type == GameMsgType.SYSTEM else "💬"}{msg.text}'
