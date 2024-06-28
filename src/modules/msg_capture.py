@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 import pytesseract as tess
 from src.common.gui_setting import gui_setting
+from src.common import bot_status
 
 if __name__ != "__main__":
     from src.modules.capture import capture
@@ -56,8 +57,7 @@ def filter_color(img, ranges):
 
 class GameMsgType(Enum):
     NORMAL = '[normal msg]'
-    SYSTEM = '[system msg]'
-    MVP = '[MVP msg]'
+    GM = '[GM msg]'
 
 
 class GameMsg:
@@ -85,16 +85,6 @@ class GameMsg:
             if key != 'image' and key != 'type':
                 result += f'\n  {key} = {value}'
         return result
-
-
-class MvpMsg(GameMsg):
-    '''MPV Msg'''
-
-    def __init__(self, text: str, image) -> None:
-        super().__init__(text, GameMsgType.MVP, image)
-        self.channel = 0
-        self.time = None
-        self.map = None
 
 
 class MsgCapture:
@@ -126,28 +116,25 @@ class MsgCapture:
 
         while True:
             if gui_setting.notification.game_msg and capture.msg_frame is not None and len(capture.msg_frame) > 0:
-                new_normal_msg = self.get_new_msg(
-                    capture.msg_frame, GameMsgType.NORMAL)
-                if new_normal_msg and new_normal_msg != self.last_msg:
-                    self.msg_list.append(new_normal_msg)
-                    self.notify_new_msg(new_normal_msg)
+                new_msg = self.get_new_msg(capture.msg_frame)
+                if new_msg and new_msg != self.last_msg:
+                    self.msg_list.append(new_msg)
+                    self.notify_new_msg(new_msg)
             time.sleep(0.5)
 
-    def get_new_msg(self, image, msg_type) -> GameMsg | None:
-        match (msg_type):
-            case GameMsgType.NORMAL:
-                return self.get_normal_msg(image)
-
-    def get_normal_msg(self, frame):
+    def get_new_msg(self, frame) -> GameMsg | None:
         msg_list = self.image_to_str(frame, WHITE_RANGES)
 
         if len(msg_list) == 0:
             return None
         new_msg = msg_list.pop()
-        return GameMsg(new_msg, GameMsgType.NORMAL, image)
+        if bot_status.white_room:
+            return GameMsg(new_msg, GameMsgType.GM, image)
+        else:
+            return GameMsg(new_msg, GameMsgType.NORMAL, image)
 
     def notify_new_msg(self, msg: GameMsg):
-        text = f'{"📢" if msg.type == GameMsgType.SYSTEM else "💬"}{msg.text}'
+        text = f'{"📢" if msg.type == GameMsgType.GM else "💬"}{msg.text}'
         print(text)
         # if (BotFatal.WHITE_ROOM in notifier.notice_time_record and notifier.notice_time_record[BotFatal.WHITE_ROOM] > 0) or gui_setting.notification.notice_level >= 4:
         path = 'screenshot/msgs'
