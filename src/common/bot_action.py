@@ -238,16 +238,17 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
 
 
 @bot_status.run_if_enabled
-def teleport_random_town():
+def teleport_random_town(retried_count=0, max_retry_count=3):
+    if retried_count >= max_retry_count:
+        bot_status.acting = False
+        return False
     bot_status.acting = True
     bot_status.prepared = False
     if open_teleport_stone():
         if not mouse_move(TELEPORT_STONE_SHOW_TOWNS_TEMPLATE):
             print("[error]cant fined TELEPORT_STONE_SHOW_TOWNS_TEMPLATE")
-            close_teleport_stone()
-            go_home()
-            bot_status.acting = False
-            return
+            mouse_move_relative(-20, 20)
+            return teleport_random_town(retried_count+1)
         mouse_left_click()
         press_key("down")
         time.sleep(0.3)
@@ -256,14 +257,13 @@ def teleport_random_town():
         click_key('enter', delay=0.5)
         if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
             print("[error]cant find move button")
-            close_teleport_stone()
-            go_home()
-            bot_status.acting = False
-            return
+            mouse_move_relative(-20, 20)
+            return teleport_random_town(retried_count+1)
         mouse_left_click(delay=0.3)
         frame = capture.frame
         if not frame:
-            return
+            time.sleep(0.3)
+            return teleport_random_town(retried_count+1)
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
         frame = frame[y:y+100, x:x+260]
@@ -271,14 +271,18 @@ def teleport_random_town():
         if len(cancel_match) > 0:
             click_key('enter')
             wait_until_map_changed()
+            bot_status.acting = False
+            return True
         else:
             click_key('esc', delay=0.1)
             click_key('esc')
-            teleport_random_town()
+            return teleport_random_town(retried_count+1)
     else:
         print("[error]cant open teleport stone")
-        go_home()
-    bot_status.acting = False
+        mouse_move_relative(-20, 20)
+        return teleport_random_town(retried_count+1)
+    
+    
 
 
 @bot_status.run_if_enabled

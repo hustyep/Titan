@@ -651,8 +651,8 @@ class Rest(Command):
         self.wait = int(wait)
 
     def main(self):
-        bot_action.teleport_random_town()
-        time.sleep(self.wait)
+        if bot_action.teleport_random_town():
+            time.sleep(self.wait)
 
 
 # class GoArdentmill(Command):
