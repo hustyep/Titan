@@ -96,9 +96,11 @@ def pre_detect(direction):
                         right=1000 if direction == 'right' else -620)
     matchs = []
     if gui_setting.detection.detect_elite:
-        matchs = detect_mobs_around_anchor(insets=insets, anchor=anchor, type=MobType.ELITE)
+        matchs = detect_mobs_around_anchor(
+            insets=insets, anchor=anchor, type=MobType.ELITE)
     if not matchs and gui_setting.detection.detect_boss:
-        matchs = detect_mobs_around_anchor(insets=insets, anchor=anchor, type=MobType.BOSS)
+        matchs = detect_mobs_around_anchor(
+            insets=insets, anchor=anchor, type=MobType.BOSS)
     return len(matchs) > 0
 
 
@@ -214,6 +216,7 @@ def identify_map_name(try_count=1):
         else:
             return result
 
+
 def get_full_pos(pos):
     return pos[0] + capture.window['left'], pos[1] + capture.window['top']
 
@@ -269,7 +272,7 @@ def locate_player_fullscreen(accurate=False):
 
     frame = capture.frame
     if accurate and frame:
-        role_template = bot_settings.role.name_template # type: ignore
+        role_template = bot_settings.role.name_template  # type: ignore
         tl_x = player_pos[0]-50
         tl_y = player_pos[1]
         player_crop = frame[tl_y:tl_y+250, tl_x-150:tl_x+150]

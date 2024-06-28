@@ -27,7 +27,7 @@ class DefaultKeybindings:
     WEALTH_POTION = "="
     GOLD_POTION = ''
     GUILD_POTION = "n"
-    CANDIED_APPLE = '8'
+    CANDIED_APPLE = '9'
     LEGION_WEALTHY = '7'
     EXP_COUPON = '-'
 
@@ -136,7 +136,8 @@ class Move(Command):
 
     def __init__(self, x, y, tolerance, step=1, max_steps=15):
         super().__init__(locals())
-        self.target = shared_map.platform_point(MapPoint(int(x), int(y), bot_settings.validate_nonnegative_int(tolerance)))
+        self.target = shared_map.platform_point(
+            MapPoint(int(x), int(y), bot_settings.validate_nonnegative_int(tolerance)))
         self.step = bot_settings.validate_nonnegative_int(step)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
 
@@ -246,8 +247,8 @@ def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return
     pos = bot_status.player_pos
-    target_l = MapPoint(pos.x - 2, pos.y, 1)
-    target_r = MapPoint(pos.x + 2, pos.y, 1)
+    target_l = MapPoint(pos.x - 3, pos.y, 2)
+    target_r = MapPoint(pos.x + 3, pos.y, 2)
     if shared_map.is_floor_point(target_l, count_none=False):
         Walk(target_l).execute()
     elif shared_map.is_floor_point(target_r, count_none=False):
@@ -458,11 +459,12 @@ class Jump(Command):
     def main(self):
         if self.direction:
             press(self.direction, down_time=0.01)
-        press_acc(DefaultKeybindings.JUMP, down_time=0.01, up_time=self.duration)
+        press_acc(DefaultKeybindings.JUMP,
+                  down_time=0.01, up_time=self.duration)
         if self.forward:
             press(DefaultKeybindings.JUMP)
         if self.attack:
-            Attack().execute() # type: ignore
+            Attack().execute()  # type: ignore
         sleep_in_the_air()
 
 
@@ -485,13 +487,13 @@ class Fall(Command):
         press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
         key_up('down')
         if self.attack:
-            Attack().main() # type: ignore
+            Attack().main()  # type: ignore
         elif self.forward:
             time.sleep(0.2)
             press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
             press(DefaultKeybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
         if self.buff:
-            Buff().main(wait=False) # type: ignore
+            Buff().main(wait=False)  # type: ignore
 
         sleep_in_the_air(n=1)
 
@@ -556,7 +558,7 @@ class SolveRune(Command):
                 self.__class__.castedTime = time.time()
                 break
             time.sleep(0.1)
-        
+
         if find_solution:
             # 成功激活，识别出结果，待进一步判断
             bot_status.rune_solving = False
@@ -572,7 +574,6 @@ class SolveRune(Command):
             # 未成功激活
             time.sleep(0.5)
             return SolveRune(self.target, self.attempts + 1).execute()
-
 
 
 class Mining(Command):
@@ -845,7 +846,8 @@ class ErdaShower(Skill):
         if self.direction:
             Direction(self.direction).execute()
         self.__class__.castedTime = time.time()
-        press(DefaultKeybindings.ERDA_SHOWER, down_time=self.precast, up_time=self.backswing)
+        press(DefaultKeybindings.ERDA_SHOWER,
+              down_time=self.precast, up_time=self.backswing)
 
 
 class MapleWarrior(Skill):
@@ -856,17 +858,20 @@ class MapleWarrior(Skill):
     type = SkillType.Buff
 
 
-class Arachnid(Command):
+class Arachnid(Skill):
     key = DefaultKeybindings.ARACHNID
     type = SkillType.Attack
     cooldown = 250
     backswing = 0.9
+    tolerance = 5
 
-    # @classmethod
-    # def check(cls):
-    #     matchs = utils.multi_match(
-    #         capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98, debug=False)
-    #     cls.ready = len(matchs) > 0
+    @classmethod
+    def check(cls):
+        if cls.icon is None:
+            return
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98, debug=False)
+        cls.ready = len(matchs) > 0
 
 
 class ForTheGuild(Skill):
@@ -942,7 +947,7 @@ class RopeLift(Skill):
         # 50：0.97
         # 42：
         if dy >= 55:
-            pass  
+            pass
         elif dy >= 50:
             time.sleep(0.97)
             press(self.key)
@@ -951,7 +956,7 @@ class RopeLift(Skill):
             press(self.key)
         else:
             time.sleep(0.24)
-            press(self.key)            
+            press(self.key)
         sleep_in_the_air(n=30)
 
 ###################
