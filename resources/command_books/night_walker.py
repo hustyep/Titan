@@ -268,7 +268,7 @@ class DoubleJump(Skill):
         time.sleep(0.1)
         press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
         if dy < 0:
-            press(self.key, 2, down_time=0.03, up_time=0.03)
+            press(self.key, 1, down_time=0.03, up_time=0.03)
         elif dx >= 26:
             press(self.key, 1, down_time=0.02, up_time=0.02)
         else:
@@ -278,11 +278,11 @@ class DoubleJump(Skill):
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         # time.sleep(self.backswing)
-        if abs(start_y - self.target[0]) <= 5:
-            # sleep_in_the_air(n=1)
-            time.sleep(0.01)
-        else:
-            sleep_in_the_air(n=1)
+        # if abs(start_y - self.target[1]) <= 5:
+        #     # sleep_in_the_air(n=1)
+        #     time.sleep(0.01)
+        # else:
+        sleep_in_the_air(n=1)
 
 
 # 上跳
@@ -492,23 +492,31 @@ class Phalanx_Charge(Skill):
         return True
 
 
-class Silence(Skill):
+class Silence(Command):
     key = Keybindings.Silence
     type = SkillType.Attack
-    cooldown = 360
+    cooldown = 350
     precast = 0.3
     backswing = 3
-    tolerance = 5
 
 
-class Rapid_Throw(Command):
+class Rapid_Throw(Skill):
     key = Keybindings.Rapid_Throw
     type = SkillType.Attack
     cooldown = 90
     precast = 0.5
     backswing = 2
+    tolerance = 5
 
-    def main(self, wait=True):
+    @classmethod
+    def check(cls):
+        matchs = utils.multi_match(
+            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99, debug=False)
+        cls.ready = len(matchs) > 0
+
+    def main(self):
+        if not self.canUse():
+            return False
         time.sleep(self.precast)
         self.castedTime = time.time()
         for _ in range(0, 10):
@@ -566,6 +574,8 @@ class Shadow_Attack(Command):
         else:
             pass
         if bot_status.elite_boss_detected:
+            Shadow_Illusion().execute()
+            Shadow_Bite().execute()
             Silence().execute()
             Rapid_Throw().execute()
             
@@ -574,6 +584,7 @@ class Shadow_Attack(Command):
         key_down(Keybindings.Quintuple_Star)
         time.sleep(n)
         key_up(Keybindings.Quintuple_Star)
+        time.sleep(0.4)
         return True
 
 
@@ -667,7 +678,7 @@ class Buff(Command):
             LastResort,
             Glory_of_the_Guardians,
             Shadow_Spear,
-            Shadow_Illusion,
+            # Shadow_Illusion,
             ForTheGuild,
             HardHitter,
             Darkness_Ascending

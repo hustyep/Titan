@@ -104,7 +104,7 @@ class Command():
     @bot_status.run_if_enabled
     def execute(self):
         # if gui_setting.notification.get('notice_level') >= 4:
-        if self.canUse:
+        if self.canUse():
             print(str(self))
         result = self.main()
         # if self.__class__.complete_callback:
@@ -532,7 +532,7 @@ class SolveRune(Command):
             self.__class__.castedTime = time.time()
             return -1, capture.frame
         bot_status.rune_solving = True
-        Move(x=self.target.x, y=self.target.y, tolerance=1).execute()
+        Move(x=self.target[0], y=self.target[1], tolerance=1).execute()
         time.sleep(0.5)
         sleep_in_the_air(n=50)
         # Inherited from Configurable
