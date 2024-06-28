@@ -494,7 +494,7 @@ class Shadow_Attack(Command):
         if not self.canUse() and not bot_status.elite_boss_detected:
             time.sleep(0.3)
             return False
-        n = 2
+        n = 3
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
@@ -509,7 +509,7 @@ class Shadow_Attack(Command):
         elif Dark_Omen.canUse():
             self.__class__.castedTime = time.time()
             Dark_Omen().execute()
-            n = 3
+            n = 4
         else:
             n = 0
         if bot_status.elite_boss_detected:
