@@ -88,6 +88,7 @@ class Map:
             else:
                 for i in range(-2, 3):
                     if self.point_type(MapPoint(location.x, location.y + i)) == MapPointType.Rope:
+                        utils.log_event("检测到在绳子上")
                         return True
         return False
 
