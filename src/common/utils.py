@@ -265,7 +265,8 @@ def save_screenshot(frame, file_path=None, compress=True):
         return filename + ".png"
     
 def log_event(event: str, need_print = True):
-    text = f'[{time.time()}]' + event
+    time_str = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
+    text = f'[{time_str}]' + event
     if need_print:
         print(text)
         
@@ -277,7 +278,7 @@ def __write_log(text: str):
     make_dir(path)
     
     now = datetime.utcnow() + timedelta(hours=8)
-    name = now.strftime('%y%m%d')
+    name = now.strftime('%Y_%m_%d')
     file_path = f'{path}/{name}.txt'
     # if not os.path.exists(file_path):
     file = open(file_path, 'a+')

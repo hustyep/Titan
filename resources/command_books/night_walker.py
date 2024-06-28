@@ -75,7 +75,7 @@ def step(target: MapPoint):
     # if not shared_map.is_floor_point(bot_status.player_pos):
     #     sleep_in_the_air(n=1)
     next_p = find_next_point(bot_status.player_pos, target)
-    utils.log_event(f"next_p:{next_p}", bot_settings.debug)
+    utils.log_event(f"[step]next_p:{next_p}", bot_settings.debug)
     if not next_p:
         return
 
@@ -98,16 +98,16 @@ def step(target: MapPoint):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= DoubleJump.move_range.start:
         # 落点范围
-        if target.x > bot_status.player_pos.x:
-            tmp_pos_l = bot_status.player_pos.x + DoubleJump.move_range.stop - 3
-            tmp_pos_r = bot_status.player_pos.x + DoubleJump.move_range.stop + 3
-        else:
-            tmp_pos_l = bot_status.player_pos.x - DoubleJump.move_range.stop - 3
-            tmp_pos_r = bot_status.player_pos.x - DoubleJump.move_range.stop + 3
-        for i in range(tmp_pos_l, tmp_pos_r):
-            if not shared_map.is_floor_point(MapPoint(i, target.y), count_none=True):
-                Shadow_Dodge(direction).execute()
-                return
+        # if target.x > bot_status.player_pos.x:
+        #     tmp_pos_l = bot_status.player_pos.x + DoubleJump.move_range.stop - 3
+        #     tmp_pos_r = bot_status.player_pos.x + DoubleJump.move_range.stop + 3
+        # else:
+        #     tmp_pos_l = bot_status.player_pos.x - DoubleJump.move_range.stop - 3
+        #     tmp_pos_r = bot_status.player_pos.x - DoubleJump.move_range.stop + 3
+        # for i in range(tmp_pos_l, tmp_pos_r):
+        #     if not shared_map.is_floor_point(MapPoint(i, target.y), count_none=True):
+        #         Shadow_Dodge(direction).execute()
+        #         return
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= Shadow_Dodge.move_range.start:
         Shadow_Dodge(direction).execute()
@@ -225,15 +225,15 @@ def move_up(target: MapPoint):
     if shared_map.on_the_platform(MapPoint(p.x, target.y), strict=True):
         pass
     elif shared_map.on_the_platform(MapPoint(target.x, p.y), strict=True):
-        Walk(MapPoint(target.x, p.y, 1)).execute()
+        move_horizontal(MapPoint(target.x, p.y, 1))
     elif target.x >= p.x:
-        Walk(MapPoint(target.x+1, p.y, 1)).execute()
+        move_horizontal(MapPoint(target.x+2, p.y, 1))
     else:
-        Walk(MapPoint(target.x-1, p.y, 1)).execute()
+        move_horizontal(MapPoint(target.x-2, p.y, 1))
 
     if dy < 5:
         press(Keybindings.JUMP)
-    elif dy <= 28:
+    elif dy < Jump_Up.move_range.stop:
         Jump_Up(target).execute()
     else:
         RopeLift(target.y).execute()
@@ -282,11 +282,6 @@ class DoubleJump(Skill):
         if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
-        # time.sleep(self.backswing)
-        # if abs(start_y - self.target[1]) <= 5:
-        #     # sleep_in_the_air(n=1)
-        #     time.sleep(0.01)
-        # else:
         sleep_in_the_air(n=1)
 
 
@@ -294,6 +289,7 @@ class DoubleJump(Skill):
 class Jump_Up(Command):
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
+    move_range = range(0, 29)
 
     def __init__(self, target: MapPoint):
         super().__init__(locals())
@@ -313,9 +309,9 @@ class Jump_Up(Command):
         key_down('up')
         time.sleep(0.06 if dy >= 20 else 0.3)
         press(Keybindings.JUMP, 1)
-        key_up('up')
         time.sleep(1)
         sleep_in_the_air(n=10)
+        key_up('up')
 
 #########################
 #        X轴移动         #
@@ -323,11 +319,11 @@ class Jump_Up(Command):
 
 
 @bot_status.run_if_enabled
-def move_horizontal(target):
-    if bot_status.player_pos.y != target[1]:
+def move_horizontal(target: MapPoint):
+    if bot_status.player_pos.y != target.y:
         utils.log_event("!!! move_horizontal error", bot_settings.debug)
         return
-    dx = target[0] - bot_status.player_pos.x
+    dx = target.x - bot_status.player_pos.x
     while abs(dx) > target.tolerance:
         if abs(dx) >= DoubleJump.move_range.start:
             DoubleJump(target=target, attack_if_needed=True).execute()
