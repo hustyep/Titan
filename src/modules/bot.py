@@ -242,6 +242,9 @@ class Bot(Subject):
                 bot_status.white_room = True
                 self.toggle(False, event_type.value)
                 chat_bot.voice_call()
+                
+                bot_action.handle_white_room()
+                
 
         elif isinstance(event_type, BotError):
             match (event_type):

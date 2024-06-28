@@ -12,11 +12,13 @@ from src.common.constants import *
 from src.common.image_template import *
 from src.modules.capture import capture
 from src.chat_bot.chat_bot import chat_bot
-
+from src.modules.msg_capture import msg_capture
+from src.chat_bot import gpt_bot
 
 ############################
 #      Common Actions      #
 ############################
+
 
 @bot_status.run_if_enabled
 def click_key(key, delay=0.05):
@@ -107,7 +109,7 @@ def __say(text: str):
 
 
 @bot_status.run_if_enabled
-def say_to_all(text):
+def say_to_all(text: str):
     bot_status.acting = True
     time.sleep(1)
     __say(text)
@@ -521,3 +523,29 @@ def take_daily_quest():
     click_key(
         bot_settings.SystemKeybindings.INTERACT, delay=0.3)
     bot_status.acting = False
+
+
+def handle_white_room():
+    start_time = time.time()
+    answered = False
+    asked_gpt = False
+    answer_text = None
+
+    while True:
+        if not bot_status.white_room:
+            return
+        msg = msg_capture.last_nomarl_msg
+        if not asked_gpt and msg is not None:
+            answer_text = gpt_bot.answer_gm(msg.text)
+        if time.time() - start_time >= 10 and answer_text is not None and not answered:
+            # 超过10s自动回复
+            say_to_all(answer_text)
+        if answered and msg_capture.last_nomarl_msg is not None:
+            do_gm_command(msg_capture.last_nomarl_msg.text)
+
+
+def do_gm_command(command: str):
+    if 'jump' in command:
+        pass
+    elif 'cast' in command or 'skill' in command:
+        pass
