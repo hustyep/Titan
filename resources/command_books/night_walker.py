@@ -7,7 +7,8 @@ from src.common import bot_status, bot_settings, utils
 from src.common.gui_setting import gui_setting
 from src.common.vkeys import press, key_down, key_up, releaseAll, press_acc
 from src.routine.components import *
-from src.command.commands import Command, Skill, Walk, Fall, Direction, RopeLift, Arachnid, SkillType, sleep_in_the_air, target_reached, evade_rope, opposite_direction, detect_mobs_around_anchor
+from src.command.commands import *
+# from src.command.commands import Command, Skill, Walk, Fall, Direction, RopeLift, Arachnid, LastResort, ForTheGuild, HardHitter, SkillType, sleep_in_the_air, target_reached, evade_rope, opposite_direction, detect_mobs_around_anchor
 from src.map.map_helper import *
 from src.map.map import shared_map
 from src.modules.capture import capture
@@ -53,6 +54,7 @@ class Keybindings:
     Shadow_Bite = 'e'
     Rapid_Throw = 'x'
     Silence = 'j'
+    ARACHNID = 'w'
     SolarCrest = '5'
 
 #########################
@@ -97,17 +99,6 @@ def step(target: MapPoint):
     elif not shared_map.is_continuous(bot_status.player_pos, next_p):
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= DoubleJump.move_range.start:
-        # 落点范围
-        # if target.x > bot_status.player_pos.x:
-        #     tmp_pos_l = bot_status.player_pos.x + DoubleJump.move_range.stop - 3
-        #     tmp_pos_r = bot_status.player_pos.x + DoubleJump.move_range.stop + 3
-        # else:
-        #     tmp_pos_l = bot_status.player_pos.x - DoubleJump.move_range.stop - 3
-        #     tmp_pos_r = bot_status.player_pos.x - DoubleJump.move_range.stop + 3
-        # for i in range(tmp_pos_l, tmp_pos_r):
-        #     if not shared_map.is_floor_point(MapPoint(i, target.y), count_none=True):
-        #         Shadow_Dodge(direction).execute()
-        #         return
         DoubleJump(target=next_p, attack_if_needed=True).execute()
     elif abs(d_x) >= Shadow_Dodge.move_range.start:
         Shadow_Dodge(direction).execute()
@@ -164,14 +155,6 @@ def find_next_point(start: MapPoint, target: MapPoint):
         elif gap_h > 0:
             DoubleJump(target=target, attack_if_needed=True).execute()
             return find_next_point(bot_status.player_pos, target)
-            # next_platform = find_jumpable_platform(
-            #     platform_start, platform_target)
-            # if next_platform is not None:
-            #     print(f"next platform: {next_platform}")
-            #     if platform_start.end_x < next_platform.begin_x:
-            #         return (platform_start.end_x - 2, platform_start.y)
-            #     else:
-            #         return (platform_start.begin_x + 2, platform_start.y)
     else:
         # 目标在下面，优先向下移动
         tmp_y = MapPoint(start.x, target.y, 3)
@@ -186,31 +169,6 @@ def find_next_point(start: MapPoint, target: MapPoint):
             else:
                 return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
     return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
-
-
-def find_jumpable_platform(platform_start: Platform, platform_target: Platform):
-    gap_h = platform_gap(platform_start, platform_target)
-    d_y = platform_target.y - platform_start.y
-
-    if d_y >= 0:
-        return platform_target
-    else:
-        if gap_h <= 8 and abs(d_y) <= 8:
-            return platform_target
-        elif shared_map.current_map:
-            for y in list(shared_map.current_map.platforms.keys()):
-                if int(y) < platform_target.y:
-                    continue
-                platforms = shared_map.current_map.platforms[y]
-                for platform in platforms:
-                    gap_tmp = platform_gap(platform, platform_start)
-                    if gap_tmp == 0:
-                        continue
-                    elif gap_tmp == -1 and abs(platform.y - platform_start.y) < abs(d_y):
-                        return find_jumpable_platform(platform_start, platform)
-                    elif gap_tmp > 0 and gap_tmp < gap_h:
-                        return find_jumpable_platform(platform_start, platform)
-    return None
 
 #########################
 #        Y轴移动         #
@@ -375,7 +333,7 @@ class Greater_Dark_Servant(Skill):
 
     def main(self):
         while not self.canUse():
-            Detect_Attack().execute()
+            Shadow_Attack().execute()
         return super().main()
 
 
@@ -444,18 +402,19 @@ class Shadow_Bite(Skill):
             cls.update_time = time.time()
 
 
-class Dominion(Command):
+class Dominion(Skill):
     key = Keybindings.Dominion
     type = SkillType.Attack
     cooldown = 175
-    ready = False
+    precast = 0.1
+    backswing = 0.1
+    tolerance = 5
 
     def main(self):
         if not self.canUse():
             return False
-        time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
-        press(self.__class__.key, down_time=0.05, up_time=0.01)
+        press(self.__class__.key, down_time=self.__class__.precast, up_time=self.__class__.backswing)
         Shadow_Dodge().execute()
         return True
 
@@ -472,22 +431,14 @@ class Phalanx_Charge(Skill):
     cooldown = 30
     precast = 0.1
     backswing = 0.75
-    tolerance = 0.3
+    tolerance = 0.5
 
     def __init__(self, direction='none'):
         super().__init__(locals())
-        if direction == 'none':
+        if direction == 'none' or direction == None:
             self.direction = None
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
-        cls.ready = len(matchs) > 0
 
     def main(self):
         if not self.canUse():
@@ -498,12 +449,13 @@ class Phalanx_Charge(Skill):
         return True
 
 
-class Silence(Command):
+class Silence(Skill):
     key = Keybindings.Silence
     type = SkillType.Attack
     cooldown = 350
     precast = 0.3
     backswing = 3
+    tolerance = 6
 
 
 class Rapid_Throw(Skill):
@@ -513,14 +465,6 @@ class Rapid_Throw(Skill):
     precast = 0.5
     backswing = 2
     tolerance = 5
-
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99, debug=False)
-        cls.ready = len(matchs) > 0
 
     def main(self):
         if not self.canUse():
@@ -534,15 +478,6 @@ class Rapid_Throw(Skill):
         return True
 
 
-class SolarCrest(Skill):
-    key = Keybindings.SolarCrest
-    type = SkillType.Attack
-    cooldown = 240
-    precast = 0.1
-    backswing = 0.75
-    tolerance = 5
-
-
 class Attack(Command):
     key = Quintuple_Star.key
     type = SkillType.Attack
@@ -553,16 +488,12 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
-    cooldown = 5
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        return time.time() - cls.castedTime >= cls.cooldown
+    cooldown = 4
 
     def main(self):
         if not self.canUse() and not bot_status.elite_boss_detected:
             time.sleep(0.3)
-            return
+            return False
         n = 2
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
@@ -580,58 +511,22 @@ class Shadow_Attack(Command):
             Dark_Omen().execute()
             n = 3
         else:
-            n = 4
+            n = 0
         if bot_status.elite_boss_detected:
             Shadow_Illusion().execute()
             Shadow_Bite().execute()
             Silence().execute()
             Rapid_Throw().execute()
-        Phalanx_Charge('left').execute()
-        Direction("right").execute()
-        key_down(Keybindings.Quintuple_Star)
-        time.sleep(n)
-        key_up(Keybindings.Quintuple_Star)
-        time.sleep(Quintuple_Star.backswing)
-        return True
-
-
-class Detect_Attack(Command):
-    def __init__(self, x=0, y=0):
-        super().__init__(locals())
-        self.x = int(x)
-        self.y = int(y)
-
-    def main(self):
-        width = 300
-        height = 100
-
-        # if len(detect_mobs(
-        #         capture.frame[self.y - height:self.y + height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
-        #     # print("attack left")
-        #     Direction('left').execute()
-        #     Quintuple_Star().execute()
-        # elif len(detect_mobs(
-        #         capture.frame[self.y - height:self.y + height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
-        #     # print("attack right")
-        #     Direction('right').execute()
-        #     Quintuple_Star().execute()
-        # elif len(detect_mobs(
-        #         capture.frame[self.y - height * 2:self.y - height, self.x-width:self.x], MobType.NORMAL, multy_match=False)) > 0:
-        #     # print("attack up left")
-        #     Jump(0.05, direction="left", attack=True)
-        # elif len(detect_mobs(
-        #         capture.frame[self.y - height * 2:self.y - height, self.x:self.x+width], MobType.NORMAL, multy_match=False)) > 0:
-        #     # print("attack up right")
-        #     Jump(0.05, direction="right", attack=True)
-        # else:
-        # print("attack random direction")
-        if shared_map.current_map is not None and shared_map.current_map.name == 'Royal Library Section 4':
-            Direction('right').execute()
-            utils.log_event("attack right direction", bot_settings.debug)
+            
+        if n > 0:
+            Phalanx_Charge('left').execute()
+            Direction("right").execute()
+            key_down(Keybindings.Quintuple_Star)
+            time.sleep(n)
+            key_up(Keybindings.Quintuple_Star)
+            time.sleep(Quintuple_Star.backswing)
         else:
-            utils.log_event("attack random direction", bot_settings.debug)
-            Direction('left' if random() <= 0.5 else 'right').execute()
-        Quintuple_Star().execute()
+            time.sleep(0.3)
         return True
 
 
@@ -663,10 +558,10 @@ class Detect_Around_Anchor(Command):
             if len(mobs) >= self.count:
                 break
             if time.time() - start > 7:
+                utils.log_event("Detect_Around_Anchor timeout",
+                                bot_settings.debug)
                 break
-            time.sleep(0.2)
-            # if len(mobs) > 0:
-            #     Detect_Attack(self.x, self.y).execute()
+            time.sleep(0.3)
 
 ###################
 #      Buffs      #
@@ -691,6 +586,13 @@ class Buff(Command):
             Darkness_Ascending
         ]
 
+        ForTheGuild.key = Keybindings.FOR_THE_GUILD
+        HardHitter.key = Keybindings.HARD_HITTER
+        LastResort.key = Keybindings.LAST_RESORT
+
+        Arachnid.key = Keybindings.ARACHNID
+        SolarCrest.key = Keybindings.SolarCrest
+
     def main(self, wait=True):
         for buff in self.buffs:
             if buff.canUse():
@@ -698,14 +600,6 @@ class Buff(Command):
                 result = buff().main(wait)
                 if result:
                     break
-
-
-class LastResort(Skill):
-    key = Keybindings.LAST_RESORT
-    cooldown = 75
-    precast = 0.3
-    backswing = 0.8
-    type = SkillType.Buff
 
 
 class Transcendent_Cygnus_Blessing(Skill):
@@ -765,49 +659,33 @@ class Shadow_Illusion(Skill):
     backswing = 0.75
 
 
-class ForTheGuild(Skill):
-    '''工会技能'''
-    key = Keybindings.FOR_THE_GUILD
-    cooldown = 3610
-    backswing = 0.1
-    type = SkillType.Buff
+class Potion(Command):
+    """Uses each of Shadowers's potion once."""
 
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        enabled = gui_setting.buff.get('Guild Buff')
-        if not enabled:
+    def __init__(self):
+        super().__init__(locals())
+        self.potions = [
+            GOLD_POTION,
+            CANDIED_APPLE,
+            GUILD_POTION,
+            LEGION_WEALTHY,
+            EXP_COUPON,
+            EXP_Potion,
+            Wealth_Potion,
+        ]
+
+        GOLD_POTION.key = Keybindings.GOLD_POTION
+        CANDIED_APPLE.key = Keybindings.CANDIED_APPLE
+        GUILD_POTION.key = Keybindings.GUILD_POTION
+        LEGION_WEALTHY.key = Keybindings.LEGION_WEALTHY
+        EXP_COUPON.key = Keybindings.EXP_COUPON
+        Wealth_Potion.key = Keybindings.WEALTH_POTION
+
+    def main(self):
+        if bot_status.invisible:
             return False
-
-        if HardHitter.enabled:
-            return False
-
-        return super().canUse(next_t)
-
-
-class HardHitter(Skill):
-    '''工会技能'''
-    key = Keybindings.HARD_HITTER
-    cooldown = 3610
-    backswing = 0.1
-    type = SkillType.Buff
-
-    @classmethod
-    def canUse(cls, next_t: float = 0) -> bool:
-        enabled = gui_setting.buff.get('Guild Buff')
-        if not enabled:
-            return False
-
-        if ForTheGuild.enabled:
-            return False
-
-        return super().canUse(next_t)
-
-    @classmethod
-    def check(cls):
-        cls.check_buff_enabled()
-        if cls.enabled:
-            cls.ready = False
-        elif cls.icon is not None:
-            matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
-            cls.ready = len(matchs) > 0
+        for potion in self.potions:
+            if potion.canUse():
+                potion().execute()
+                time.sleep(0.2)
+        return True

@@ -32,6 +32,7 @@ class DefaultKeybindings:
     EXP_COUPON = '-'
 
     # Common Skill
+    LAST_RESORT = '4'
     FOR_THE_GUILD = '4'
     HARD_HITTER = '5'
     ROPE_LIFT = 'b'
@@ -39,6 +40,7 @@ class DefaultKeybindings:
     MAPLE_WARRIOR = '3'
     ARACHNID = 'w'
     GODDESS_BLESSING = '1'
+    SolarCrest = '5'
 
 
 class Command():
@@ -723,11 +725,11 @@ class Skill(Command):
                     cls.ready = False
                 else:
                     matchs = utils.multi_match(
-                        capture.skill_frame, cls.icon[10:-2, 4:-2], threshold=0.99)
+                        capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99)
                     cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[10:-2, 4:-2], threshold=0.9)
+                    capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99)
                 cls.ready = len(matchs) > 0
         if not cls.ready or cls.ready != last_state:
             cls.update_time = time.time()
@@ -771,6 +773,13 @@ class Aoe(Skill):
 #########################
 #      Common Skill     #
 #########################
+
+class LastResort(Skill):
+    key = DefaultKeybindings.LAST_RESORT
+    cooldown = 75
+    precast = 0.3
+    backswing = 0.8
+    type = SkillType.Buff
 
 
 class MapleWorldGoddessBlessing(Skill):
@@ -874,6 +883,15 @@ class Arachnid(Skill):
         cls.ready = len(matchs) > 0
 
 
+class SolarCrest(Skill):
+    key = DefaultKeybindings.SolarCrest
+    type = SkillType.Attack
+    cooldown = 240
+    precast = 0.1
+    backswing = 0.75
+    tolerance = 5
+
+
 class ForTheGuild(Skill):
     '''工会技能'''
     key = DefaultKeybindings.FOR_THE_GUILD
@@ -962,31 +980,6 @@ class RopeLift(Skill):
 ###################
 #      Potion     #
 ###################
-
-
-class Potion(Command):
-    """Uses each of Shadowers's potion once."""
-
-    def __init__(self):
-        super().__init__(locals())
-        self.potions = [
-            GOLD_POTION,
-            CANDIED_APPLE,
-            GUILD_POTION,
-            LEGION_WEALTHY,
-            EXP_COUPON,
-            EXP_Potion,
-            Wealth_Potion,
-        ]
-
-    def main(self):
-        if bot_status.invisible:
-            return False
-        for potion in self.potions:
-            if potion.canUse():
-                potion().execute()
-                time.sleep(0.2)
-        return True
 
 
 class EXP_Potion(Command):
