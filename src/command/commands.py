@@ -487,17 +487,20 @@ class Fall(Command):
         key_down('down')
         time.sleep(0.03)
         press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
-        key_up('down')
         if self.attack:
+            key_up('down')
             Attack().main()  # type: ignore
         elif self.forward:
+            key_up('down')
             time.sleep(0.2)
             press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
             press(DefaultKeybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
         if self.buff:
+            key_up('down')
             Buff().main(wait=False)  # type: ignore
 
         sleep_in_the_air(n=1)
+        key_up('down')
 
 
 class SolveRune(Command):
@@ -729,7 +732,7 @@ class Skill(Command):
                     cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99)
+                    capture.skill_frame, cls.icon[2:-2, 12:-1], threshold=0.99)
                 cls.ready = len(matchs) > 0
         if not cls.ready or cls.ready != last_state:
             cls.update_time = time.time()
@@ -829,7 +832,7 @@ class ErdaShower(Skill):
     type = SkillType.Summon
     cooldown = 58
     precast = 0.4
-    backswing = 0.8
+    backswing = 0.6
     duration = 60
 
     def __init__(self, direction=None):
