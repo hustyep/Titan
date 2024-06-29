@@ -268,7 +268,7 @@ class Jump_Up(Command):
         time.sleep(0.06 if dy >= 20 else 0.3)
         press(Keybindings.JUMP, 1)
         time.sleep(1)
-        sleep_in_the_air(n=10)
+        sleep_in_the_air(n=10, detect_rope=True)
         key_up('up')
 
 #########################

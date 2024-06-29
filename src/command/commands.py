@@ -499,7 +499,7 @@ class Fall(Command):
             key_up('down')
             Buff().main(wait=False)  # type: ignore
 
-        sleep_in_the_air(n=1)
+        sleep_in_the_air(n=1, detect_rope=True)
         key_up('down')
 
 
@@ -641,6 +641,10 @@ class Direction(Command):
         super().__init__(locals())
         self.direction = bot_settings.validate_arrows(direction)
 
+    def __str__(self):
+        result = f'[Command]{self.id}: {self.direction} pos={bot_status.player_pos.tuple}'
+        return result
+    
     def main(self):
         if not self.direction:
             return
@@ -732,7 +736,7 @@ class Skill(Command):
                     cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[2:-2, 12:-1], threshold=0.99)
+                    capture.skill_frame, cls.icon[:, 12:-0], threshold=0.99)
                 cls.ready = len(matchs) > 0
         if not cls.ready or cls.ready != last_state:
             cls.update_time = time.time()
@@ -831,7 +835,7 @@ class ErdaShower(Skill):
     key = DefaultKeybindings.ERDA_SHOWER
     type = SkillType.Summon
     cooldown = 58
-    precast = 0.4
+    precast = 0.3
     backswing = 0.6
     duration = 60
 
