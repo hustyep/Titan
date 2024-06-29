@@ -929,15 +929,15 @@ class HardHitter(Skill):
 
         return super().canUse(next_t)
 
-    @classmethod
-    def check(cls):
-        cls.check_buff_enabled()
-        if cls.enabled:
-            cls.ready = False
-        elif cls.icon:
-            matchs = utils.multi_match(
-                capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
-            cls.ready = len(matchs) > 0
+    # @classmethod
+    # def check(cls):
+    #     cls.check_buff_enabled()
+    #     if cls.enabled:
+    #         cls.ready = False
+    #     elif cls.icon:
+    #         matchs = utils.multi_match(
+    #             capture.skill_frame, cls.icon[10:-2, 2:-2], threshold=0.98)
+    #         cls.ready = len(matchs) > 0
 
 
 class RopeLift(Skill):
