@@ -261,7 +261,7 @@ def teleport_random_town(retried_count=0, max_retry_count=3):
             return teleport_random_town(retried_count+1)
         mouse_left_click(delay=0.3)
         frame = capture.frame
-        if not frame:
+        if frame is None:
             time.sleep(0.3)
             return teleport_random_town(retried_count+1)
         x = (frame.shape[1] - 260) // 2

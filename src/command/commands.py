@@ -649,7 +649,7 @@ class Direction(Command):
         if not self.direction:
             return
         if bot_status.player_direction != self.direction:
-            press(self.direction, n=1, down_time=0.02, up_time=0.01)
+            press(self.direction, n=1, down_time=0.03, up_time=0.01)
 
 
 class Rest(Command):
@@ -736,7 +736,7 @@ class Skill(Command):
                     cls.ready = len(matchs) > 0
             case (_):
                 matchs = utils.multi_match(
-                    capture.skill_frame, cls.icon[:, 12:-0], threshold=0.99)
+                    capture.skill_frame, cls.icon[2:-2, 14:-1], threshold=0.99)
                 cls.ready = len(matchs) > 0
         if not cls.ready or cls.ready != last_state:
             cls.update_time = time.time()

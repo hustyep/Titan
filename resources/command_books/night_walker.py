@@ -37,12 +37,12 @@ class Keybindings:
 
     # Potion
     EXP_POTION = '0'
-    WEALTH_POTION = "-"
+    WEALTH_POTION = "="
     GOLD_POTION = ""
     GUILD_POTION = ""
-    CANDIED_APPLE = '6'
-    LEGION_WEALTHY = '='
-    EXP_COUPON = ''
+    CANDIED_APPLE = '9'
+    LEGION_WEALTHY = ''
+    EXP_COUPON = '-'
 
     # Skills
     Quintuple_Star = 'f'
