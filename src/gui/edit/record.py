@@ -38,7 +38,7 @@ class Record(LabelFrame):
         if len(self.entries) > Record.MAX_SIZE:
             self.entries.pop()
         self.entries.insert(0, (time, location))
-        self.display_var.set(tuple(f'{x[0]}  -  ({x[1][0]}, {x[1][1]})' for x in self.entries))
+        self.display_var.set(tuple(f'{x[0]}  -  ({x[1].x}, {x[1].y})' for x in self.entries))
         self.listbox.see(0)
 
     def on_select(self, e):
@@ -46,7 +46,7 @@ class Record(LabelFrame):
         if len(selects) > 0:
             index = int(selects[0])
             pos = self.entries[index][1]
-            point = Point(int(pos[0]), int(pos[1]))
+            point = Point(int(pos.x), int(pos.y))
             self.parent.minimap.draw_point(point)
             # self.parent.minimap.draw_point(tuple(int(x) for x in pos))
 
@@ -55,7 +55,7 @@ class Record(LabelFrame):
             routine.commands.clear_selection()
             routine.commands.clear_contents()
 
-            kwargs = {'x': pos[0], 'y': pos[1]}
+            kwargs = {'x': pos.x, 'y': pos.y}
             self.parent.editor.create_add_ui(Point, kwargs=kwargs)
 
     def clear_selection(self):
