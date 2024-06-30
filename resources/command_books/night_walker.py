@@ -39,7 +39,7 @@ class Keybindings:
     EXP_POTION = '0'
     WEALTH_POTION = "="
     GOLD_POTION = ""
-    GUILD_POTION = ""
+    GUILD_POTION = "n"
     CANDIED_APPLE = '9'
     LEGION_WEALTHY = ''
     EXP_COUPON = '-'
@@ -128,7 +128,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
         if shared_map.is_continuous(start, target):
             return target
         elif platform_start and platform_target:
-            margin = 5
+            margin = 4
             max_distance = DoubleJump.move_range.stop - margin * 2
             if gap_h in range(0, max_distance):
                 if platform_start.end_x < platform_target.begin_x:
@@ -199,8 +199,8 @@ def move_up(target: MapPoint):
 
 @bot_status.run_if_enabled
 def move_down(target: MapPoint):
-    sleep_in_the_air(n=1)
-    evade_rope()
+    sleep_in_the_air(n=4)
+    # evade_rope()
     if target.y > bot_status.player_pos.y:
         Fall().execute()
 
@@ -256,7 +256,7 @@ class Jump_Up(Command):
     def main(self):
         sleep_in_the_air(n=4)
         press(opposite_direction(bot_status.player_direction))
-        evade_rope(True)
+        # evade_rope(True)
 
         up_point = MapPoint(bot_status.player_pos.x, self.target.y)
         if not shared_map.on_the_platform(up_point, True):
@@ -519,8 +519,12 @@ class Shadow_Attack(Command):
             Rapid_Throw().execute()
             
         if n > 0:
-            Phalanx_Charge('left').execute()
-            Direction("right").execute()
+            if shared_map.current_map.name == 'Outlaw-Infested Wastes 2':
+                Phalanx_Charge('left').execute()
+                Direction("right").execute()
+            else:
+                Phalanx_Charge('right').execute()
+                Direction("left").execute()
             key_down(Keybindings.Quintuple_Star)
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)
@@ -680,6 +684,7 @@ class Potion(Command):
         LEGION_WEALTHY.key = Keybindings.LEGION_WEALTHY
         EXP_COUPON.key = Keybindings.EXP_COUPON
         Wealth_Potion.key = Keybindings.WEALTH_POTION
+        EXP_Potion.key = Keybindings.EXP_POTION
 
     def main(self):
         if bot_status.invisible:

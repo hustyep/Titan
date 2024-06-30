@@ -152,7 +152,7 @@ class Bot(Subject):
 
         if target_map != map_name:
             if not bot_action.teleport_to_map(target_map):
-                chat_bot.voice_call()
+                # chat_bot.voice_call()
                 chat_bot.send_message(f"teleport to {target_map} failed", capture.frame)
                 return False
 

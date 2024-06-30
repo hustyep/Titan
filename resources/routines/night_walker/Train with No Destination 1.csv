@@ -3,19 +3,19 @@ $, target=move_tolerance, value=10
     Rest, wait=5
 
 @, label=Bottom mobbing
-*, x=46, y=59, interval=0, tolerance=2, detect=False, skip=False
+*, x=48, y=59, interval=0, tolerance=3, detect=False, skip=False
     Buff
     Potion
     FeedPet
-    Detect_Around_Anchor, count=4, x=710, y=560, top=550, bottom=100, left=650, right=650
+    Detect_Around_Anchor, count=6, x=710, y=560, top=550, bottom=100, left=650, right=650
     Shadow_Attack
-    Phalanx_Charge, direction=right
+    Phalanx_Charge
 
 ~, label=Summon Loop, interval=41, skip=False
-*, x=46, y=59, interval=0, tolerance=3, detect=False, skip=False
+*, x=48, y=59, interval=0, tolerance=3, detect=False, skip=False
     Shadow_Attack
     Greater_Dark_Servant
-    Phalanx_Charge, direction=right
+    Phalanx_Charge
 *, x=111, y=56, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.3
     ErdaShower, direction=left

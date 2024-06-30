@@ -16,6 +16,7 @@ $, target=move_tolerance, value=10
     Shadow_Attack
     Greater_Dark_Servant
     Phalanx_Charge, direction=left
+    Shadow_Bite
 *, x=123, y=53, interval=0, tolerance=2, detect=False, skip=False
     Wait, duration=0.3
     ErdaShower, direction=right

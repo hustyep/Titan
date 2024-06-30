@@ -138,6 +138,7 @@ def climb_rope(isUP=True):
         step += 1
         if step > 50:
             break
+    time.sleep(0.1)
     release_key(key)
     bot_status.acting = False
 

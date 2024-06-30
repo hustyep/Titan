@@ -483,7 +483,7 @@ class Fall(Command):
         self.buff = bot_settings.validate_boolean(buff)
 
     def main(self):
-        evade_rope()
+        # evade_rope()
         key_down('down')
         time.sleep(0.03)
         press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
