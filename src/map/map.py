@@ -140,7 +140,7 @@ class Map:
             if not self.on_the_platform(p1) or not self.on_the_platform(p2):
                 return False
             y = p1.y
-            for x in range(p1.x + 1, p2.x, 1 if p2.x > p1.x else -1):
+            for x in range(p1.x, p2.x, 1 if p2.x > p1.x else -1):
                 if not self.on_the_platform(MapPoint(x, y)):
                     return False
             return True
