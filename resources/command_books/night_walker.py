@@ -341,7 +341,7 @@ class Replace_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Move
     cooldown = 3
-    backswing = 0.6
+    backswing = 1
 
 
 #######################
@@ -488,36 +488,50 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
-    cooldown = 4
+    cooldown = 3
 
     def main(self):
         if not self.canUse() and not bot_status.elite_boss_detected:
             time.sleep(0.3)
             return False
+        
+        boss_bust().execute()
+        
         n = 3
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
         elif Silence.canUse():
             Silence().execute()
+            n=0
         elif Dominion.canUse():
             Dominion().execute()
+            self.__class__.castedTime = time.time()
+            n=2
         elif Arachnid.canUse():
             Arachnid().execute()
+            self.__class__.castedTime = time.time()
+            n=2
         elif SolarCrest.canUse():
             SolarCrest().execute()
-        elif Dark_Omen.canUse():
             self.__class__.castedTime = time.time()
-            Dark_Omen().execute()
-            n = 4
+            n=2
         else:
-            n = 0
-        if bot_status.elite_boss_detected:
-            Shadow_Illusion().execute()
-            Shadow_Bite().execute()
-            Silence().execute()
-            Rapid_Throw().execute()
-            
+            start_time = time.time()
+            while not Shadow_Bite.canUse():
+                time.sleep(0.1)
+                if time.time() - start_time >= 2:
+                    break
+            if Shadow_Bite.canUse():
+                self.__class__.castedTime = time.time()
+                Shadow_Bite().execute()
+            elif Dark_Omen.canUse():
+                self.__class__.castedTime = time.time()
+                Dark_Omen().execute()
+                n = 4
+            else:
+                n = 0
+
         if n > 0:
             if shared_map.current_map.name == 'Outlaw-Infested Wastes 2':
                 Phalanx_Charge('left').execute()
@@ -532,6 +546,14 @@ class Shadow_Attack(Command):
         else:
             time.sleep(0.3)
         return True
+
+class boss_bust(Command):
+    def main(self):
+        if bot_status.elite_boss_detected:
+            Shadow_Illusion().execute()
+            Shadow_Bite().execute()
+            Silence().execute()
+            Rapid_Throw().execute()
 
 
 class Detect_Around_Anchor(Command):
