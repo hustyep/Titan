@@ -502,6 +502,9 @@ class Shadow_Attack(Command):
         if start_time - Shadow_Bite.castedTime >= 5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
+                mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
+                if len(mobs) <= 3:
+                    return False
                 if time.time() - start_time > 3:
                     break
                 
