@@ -94,6 +94,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if target_reached(start, target):
         return
 
+    start = shared_map.fixed_point(start)
     d_x = target.x - start.x
     d_y = target.y - start.y
 
@@ -108,17 +109,17 @@ def find_next_point(start: MapPoint, target: MapPoint):
         if shared_map.is_continuous(start, target):
             return target
         elif platform_start and platform_target:
-            margin = 4
-            max_distance = DoubleJump.move_range.stop - margin * 2
+            tolerance = 4
+            max_distance = DoubleJump.move_range.stop - tolerance * 2
             if gap_h in range(0, max_distance):
                 if platform_start.end_x < platform_target.begin_x:
-                    if start.x >= platform_start.end_x - (max_distance - gap_h):
+                    if platform_target.begin_x - start.x <= max_distance:
                         return target
-                    return MapPoint(platform_start.end_x - margin, platform_start.y, 3)
+                    return MapPoint(platform_start.end_x - int(tolerance / 2), platform_start.y, tolerance)
                 else:
-                    if start.x <= platform_start.begin_x + (max_distance - gap_h):
+                    if start.x - platform_target.end_x <= max_distance:
                         return target
-                    return MapPoint(platform_start.begin_x + margin, platform_start.y, 3)
+                    return MapPoint(platform_start.begin_x + int(tolerance / 2), platform_start.y, tolerance)
     elif d_y < 0:
         # 目标在上面， 优先向上移动
         tmp_y = MapPoint(start.x, target.y)
