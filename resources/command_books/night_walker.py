@@ -69,13 +69,7 @@ def step(target: MapPoint):
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    d_x = target.x - bot_status.player_pos.x
-    d_y = target.y - bot_status.player_pos.y
-    if abs(d_x) >= DoubleJump.move_range.stop and d_y > 0:
-        DoubleJump(target=target, attack_if_needed=True).execute()
-        return
-    # if not shared_map.is_floor_point(bot_status.player_pos):
-    #     sleep_in_the_air(n=1)
+    utils.log_event(f"[step]target:{target}", bot_settings.debug)
     next_p = find_next_point(bot_status.player_pos, target)
     utils.log_event(f"[step]next_p:{next_p}", bot_settings.debug)
     if not next_p:
@@ -83,28 +77,14 @@ def step(target: MapPoint):
 
     bot_status.path = [bot_status.player_pos, next_p, target]
 
-    d_x = next_p.x - bot_status.player_pos.x
     d_y = next_p.y - bot_status.player_pos.y
-
-    direction = None
-    if abs(d_x) > target.tolerance:
-        direction = 'right' if d_x > 0 else 'left'
+    if abs(d_y) > target.tolerance_v:
+        if d_y > 0:
+            move_down(next_p)
+        else:
+            move_up(next_p)
     else:
-        direction = 'down' if d_y > 0 else 'up'
-
-    if direction == "up":
-        move_up(next_p)
-    elif direction == "down":
-        move_down(next_p)
-    elif not shared_map.is_continuous(bot_status.player_pos, next_p):
-        DoubleJump(target=next_p, attack_if_needed=True).execute()
-    elif abs(d_x) >= DoubleJump.move_range.start:
-        DoubleJump(target=next_p, attack_if_needed=True).execute()
-    elif abs(d_x) >= Shadow_Dodge.move_range.start:
-        Shadow_Dodge(direction).execute()
-    else:
-        Walk(next_p).execute()
-
+        move_horizontal(next_p)
 
 @bot_status.run_if_enabled
 def find_next_point(start: MapPoint, target: MapPoint):
@@ -168,13 +148,28 @@ def find_next_point(start: MapPoint, target: MapPoint):
                 return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
             else:
                 return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+        elif gap_h > 0:
+            DoubleJump(target=target, attack_if_needed=True).execute()
+            return find_next_point(bot_status.player_pos, target)
+
     return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
 
-#########################
-#        Y轴移动         #
-#########################
 
+@bot_status.run_if_enabled
+def move_horizontal(target: MapPoint):
+    start_p = shared_map.fixed_point(bot_status.player_pos)
+    d_x = target.x - start_p.x
 
+    if not shared_map.is_continuous(start_p, target):
+        DoubleJump(target=target, attack_if_needed=True).execute()
+    elif abs(d_x) >= DoubleJump.move_range.start:
+        DoubleJump(target=target, attack_if_needed=True).execute()
+    elif abs(d_x) >= Shadow_Dodge.move_range.start:
+        Shadow_Dodge('left' if d_x < 0 else 'right').execute()
+    else:
+        Walk(target).execute()
+
+        
 @bot_status.run_if_enabled
 def move_up(target: MapPoint):
     p = bot_status.player_pos
@@ -183,12 +178,12 @@ def move_up(target: MapPoint):
     if shared_map.on_the_platform(MapPoint(p.x, target.y), strict=True):
         pass
     elif shared_map.on_the_platform(MapPoint(target.x, p.y), strict=True):
-        move_horizontal(MapPoint(target.x, p.y, 1))
+        Move(target.x, p.y, 2).execute()
     elif target.x >= p.x:
-        move_horizontal(MapPoint(target.x+2, p.y, 1))
+        Move(target.x+4, p.y, 2).execute()
     else:
-        move_horizontal(MapPoint(target.x-2, p.y, 1))
-
+        Move(target.x-4, p.y, 2).execute()
+        
     if dy < 5:
         press(Keybindings.JUMP)
     elif dy < Jump_Up.move_range.stop:
@@ -203,7 +198,11 @@ def move_down(target: MapPoint):
     # evade_rope()
     if target.y > bot_status.player_pos.y:
         Fall().execute()
-
+        
+        
+#########################
+#        Y轴移动         #
+#########################
 
 class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
@@ -275,23 +274,6 @@ class Jump_Up(Command):
 #########################
 #        X轴移动         #
 #########################
-
-
-@bot_status.run_if_enabled
-def move_horizontal(target: MapPoint):
-    if bot_status.player_pos.y != target.y:
-        utils.log_event("!!! move_horizontal error", bot_settings.debug)
-        return
-    dx = target.x - bot_status.player_pos.x
-    while abs(dx) > target.tolerance:
-        if abs(dx) >= DoubleJump.move_range.start:
-            DoubleJump(target=target, attack_if_needed=True).execute()
-        elif abs(dx) >= Shadow_Dodge.move_range.start:
-            direction = 'left' if dx < 0 else 'right'
-            Shadow_Dodge(direction).execute()
-        else:
-            Walk(target).execute()
-        dx = target.x - bot_status.player_pos.x
 
 
 class Shadow_Dodge(Skill):
