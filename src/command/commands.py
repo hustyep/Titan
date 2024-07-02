@@ -158,6 +158,9 @@ class Move(Command):
         elif utils.distance(bot_status.player_pos, self.target) <= self.target.tolerance:
             return
 
+        if shared_map.point_type(bot_status.player_pos) == MapPointType.FloorRope:
+            press("up", down_time=0.1)
+
         if shared_map.on_the_rope(bot_status.player_pos):
             bot_action.climb_rope(self.target.y < bot_status.player_pos.y)
 
