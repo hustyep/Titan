@@ -120,31 +120,24 @@ def sleep_while_move_y(interval=0.02, n=15):
 
 
 @bot_status.run_if_enabled
-def sleep_in_the_air(interval=0.005, n=4, tolerance=0, detect_rope=False):
+def sleep_in_the_air(interval=0.005, n=4, detect_rope=False):
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
         return
     count = 0
     step = 0
+    last_y = bot_status.player_pos.y
     while True:
-        if not shared_map.is_floor_point(bot_status.player_pos):
-            if tolerance > 0:
-                p = bot_status.player_pos
-                flag = False
-                for y in range(p.y-tolerance, p.y+tolerance):
-                    if shared_map.is_floor_point(MapPoint(p.x, y), count_none=False):
-                        flag = True
-                        break
-                if flag:
-                    count += 1
-                else:
-                    count = 0
-            else:
-                count = 0
+        pos = bot_status.player_pos
+        if not shared_map.is_floor_point(pos):
+            count = 0
         else:
+            if pos.y != last_y:
+                count = 0
             count += 1
         if count >= n:
             break
+        last_y = pos.y
         step += 1
         if step >= 600:
             utils.log_event("sleep_in_the_air timeout")

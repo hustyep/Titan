@@ -69,11 +69,14 @@ class BotDebug(Enum):
 
 
 class MapPoint:
-    def __init__(self, x: int, y: int, tolerance=0, tolerance_v=0):
+    def __init__(self, x: int, y: int, tolerance=0, tolerance_v=1):
         self.x = x
         self.y = y
         self.tolerance = tolerance
         self.tolerance_v = tolerance_v
+    
+    def __str__(self):
+        return f"MapPoint: ({self.x}, {self.y}, {self.tolerance}, {self.tolerance_v})"
     
     @property
     def tuple(self) -> tuple[int, int]:

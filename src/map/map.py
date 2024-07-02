@@ -118,6 +118,14 @@ class Map:
 
         return target
 
+    def fixed_point(self, p: MapPoint):
+        if self.data_available:
+            fixed_p = shared_map.platform_point(p)
+            # y值稍微偏离情况
+            if abs(fixed_p.y - p.y) <= p.tolerance_v:
+                return fixed_p
+        return p
+
     def valid_point(self, p: MapPoint):
         if self.data_available:
             height, width = self.minimap_data.shape # type: ignore
