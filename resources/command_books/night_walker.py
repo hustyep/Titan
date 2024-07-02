@@ -498,13 +498,20 @@ class Shadow_Attack(Command):
         
         boss_bust().execute()
         
+        start_time = time.time()
+        if start_time - Shadow_Bite.castedTime >= 5:
+            while not Shadow_Bite.canUse():
+                time.sleep(0.1)
+                if time.time() - start_time > 3:
+                    break
+                
         n = 3
         if Shadow_Bite.canUse():
             self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
         elif Silence.canUse():
             Silence().execute()
-            n=0
+            n=1
         elif Dominion.canUse():
             Dominion().execute()
             self.__class__.castedTime = time.time()
@@ -518,20 +525,7 @@ class Shadow_Attack(Command):
             self.__class__.castedTime = time.time()
             n=2
         else:
-            start_time = time.time()
-            while not Shadow_Bite.canUse():
-                time.sleep(0.1)
-                if time.time() - start_time > 3:
-                    break
-            if Shadow_Bite.canUse():
-                self.__class__.castedTime = time.time()
-                Shadow_Bite().execute()
-            elif Dark_Omen.canUse():
-                self.__class__.castedTime = time.time()
-                Dark_Omen().execute()
-                n = 4
-            else:
-                n = 0
+            n = 0
 
         if n > 0:
             if shared_map.current_map.name == 'Outlaw-Infested Wastes 2':
@@ -549,12 +543,18 @@ class Shadow_Attack(Command):
         return True
 
 class boss_bust(Command):
+    @classmethod
+    def canUse(cls, next_t: float = 0):
+        return bot_status.elite_boss_detected
+
+    
     def main(self):
-        if bot_status.elite_boss_detected:
-            Shadow_Illusion().execute()
-            Shadow_Bite().execute()
-            Silence().execute()
-            Rapid_Throw().execute()
+        if not self.canUse():
+            return
+        Shadow_Illusion().execute()
+        Shadow_Bite().execute()
+        Silence().execute()
+        Rapid_Throw().execute()
 
 
 class Detect_Around_Anchor(Command):
