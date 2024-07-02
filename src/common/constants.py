@@ -204,7 +204,7 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': 'Outlaw-Infested Wastes 2',
+        'default': "Road to the Castle's Gate 1",
         'quest': [
             'Void Current 1',
             'End of the World 1-6',

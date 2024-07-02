@@ -389,7 +389,7 @@ class Shadow_Bite(Skill):
     type = SkillType.Attack
     cooldown = 15
     backswing = 0.6
-    tolerance = 0.6
+    tolerance = 1
 
     @classmethod
     def check(cls):
@@ -521,7 +521,7 @@ class Shadow_Attack(Command):
             start_time = time.time()
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
-                if time.time() - start_time >= 2:
+                if time.time() - start_time > 3:
                     break
             if Shadow_Bite.canUse():
                 self.__class__.castedTime = time.time()
