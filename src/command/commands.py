@@ -657,6 +657,7 @@ class Direction(Command):
     
     def main(self):
         if not self.direction:
+            print(f'[Command]{self.id}: {self.direction} not executed')
             return
         if bot_status.player_direction != self.direction:
             press(self.direction, n=1, down_time=0.03, up_time=0.01)

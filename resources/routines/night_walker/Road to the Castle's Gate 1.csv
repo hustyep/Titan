@@ -10,7 +10,7 @@ $, target=move_tolerance, value=10
     Potion
     FeedPet
     Phalanx_Charge, direction=right
-*, x=26, y=54, interval=150, tolerance=3, detect=False, skip=False
+*, x=26, y=54, interval=120, tolerance=3, detect=False, skip=False
     Wait, duration=0.5
 
 ~, label=Summon Loop, interval=41, skip=False
