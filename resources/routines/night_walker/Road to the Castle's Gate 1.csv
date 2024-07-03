@@ -19,6 +19,6 @@ $, target=move_tolerance, value=10
 *, x=113, y=54, interval=0, tolerance=3, detect=False, skip=False
     Wait, duration=0.3
     ErdaShower, direction=left
-*, x=63, y=26, interval=0, tolerance=8, detect=False, skip=False
+*, x=63, y=26, interval=0, tolerance=6, detect=False, skip=False
     Replace_Dark_Servant
 #
