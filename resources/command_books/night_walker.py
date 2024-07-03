@@ -472,7 +472,7 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
-    cooldown = 4
+    cooldown = 5
 
     def main(self):
         if not self.canUse() and not bot_status.elite_boss_detected:

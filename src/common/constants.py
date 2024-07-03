@@ -186,7 +186,7 @@ Charactor_Daily_Map = {
             'Train with No Destination 5',
             'Laboratory Behind Locked Door 1',
             'Combat Zone Outskirts 1',
-            'Harsh Winter 4',
+            'Harsh Winter 4',  f
             'Calm Beach 3',
         ]
     },
@@ -209,10 +209,9 @@ Charactor_Daily_Map = {
     'heward': {
         'default': "Road to the Castle's Gate 1",
         'quest': [
-            'Void Current 1',
-            'End of the World 1-6',
-            'Royal Library Section 4',
+            'Western City Ramparts in Battle 1',
             'Outlaw-Infested Wastes 2',
+            "Road to the Castle's Gate 1"
         ]
     }
 }

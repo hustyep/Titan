@@ -16,7 +16,6 @@ $, target=move_tolerance, value=10
 ~, label=Summon Loop, interval=41, skip=False
 *, x=58, y=54, interval=0, tolerance=3, detect=False, skip=False
     Greater_Dark_Servant
-    Phalanx_Charge, direction=right
 *, x=113, y=54, interval=0, tolerance=3, detect=False, skip=False
     Wait, duration=0.3
     ErdaShower, direction=left
