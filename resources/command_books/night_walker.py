@@ -371,7 +371,7 @@ class Shadow_Bite(Skill):
     key = Keybindings.Shadow_Bite
     type = SkillType.Attack
     cooldown = 15
-    backswing = 0.6
+    backswing = 0.7
     tolerance = 0.9
 
     @classmethod
@@ -482,7 +482,7 @@ class Shadow_Attack(Command):
         boss_bust().execute()
         
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 5 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime >= 5.5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
