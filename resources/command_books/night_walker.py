@@ -372,7 +372,7 @@ class Shadow_Bite(Skill):
     type = SkillType.Attack
     cooldown = 15
     backswing = 0.6
-    tolerance = 1
+    tolerance = 0.9
 
     @classmethod
     def check(cls):
@@ -472,7 +472,7 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
-    cooldown = 3
+    cooldown = 4
 
     def main(self):
         if not self.canUse() and not bot_status.elite_boss_detected:
@@ -482,36 +482,37 @@ class Shadow_Attack(Command):
         boss_bust().execute()
         
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime >= 5 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime >= 6 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
                 if len(mobs) <= 3:
                     return False
-                if time.time() - start_time > 3:
+                if time.time() - start_time > 2:
                     break
                 
         n = 3
+        self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
-            self.__class__.castedTime = time.time()
             Shadow_Bite().execute()
         elif Silence.canUse():
             Silence().execute()
             n=1
         elif Dominion.canUse():
             Dominion().execute()
-            self.__class__.castedTime = time.time()
             n=2
         elif Arachnid.canUse():
             Arachnid().execute()
-            self.__class__.castedTime = time.time()
             n=2
         elif SolarCrest.canUse():
             SolarCrest().execute()
-            self.__class__.castedTime = time.time()
             n=2
+        elif Dark_Omen.canUse():
+            Dark_Omen().execute()
+            n=4
         else:
             n = 0
+            self.__class__.castedTime = time.time() - 4
 
         if n > 0:
             if shared_map.current_map.name == 'Outlaw-Infested Wastes 2':
