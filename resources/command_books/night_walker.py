@@ -115,11 +115,11 @@ def find_next_point(start: MapPoint, target: MapPoint):
                 if platform_start.end_x < platform_target.begin_x:
                     if platform_target.begin_x - start.x <= max_distance:
                         return target
-                    return MapPoint(platform_start.end_x - int(tolerance / 2), platform_start.y, tolerance)
+                    return MapPoint(platform_start.end_x - int(tolerance / 2), platform_start.y, 3)
                 else:
                     if start.x - platform_target.end_x <= max_distance:
                         return target
-                    return MapPoint(platform_start.begin_x + int(tolerance / 2), platform_start.y, tolerance)
+                    return MapPoint(platform_start.begin_x + int(tolerance / 2), platform_start.y, 3)
     elif d_y < 0:
         # 目标在上面， 优先向上移动
         tmp_y = MapPoint(start.x, target.y)
@@ -240,8 +240,8 @@ class DoubleJump(Skill):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.02)
         else:
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.6)
-            press(self.key, 1, down_time=0.02, up_time=0.03)
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.4)
+            press(self.key, 1, down_time=0.03, up_time=0.03)
         if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
