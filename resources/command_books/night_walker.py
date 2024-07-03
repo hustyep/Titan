@@ -210,7 +210,7 @@ class DoubleJump(Skill):
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
     backswing = 0.1
-    move_range = range(26, 35)
+    move_range = range(18, 40)
     # 18-40
 
     def __init__(self, target: MapPoint, attack_if_needed=False):
@@ -230,13 +230,14 @@ class DoubleJump(Skill):
         self.__class__.castedTime = time.time()
         key_down(direction)
         time.sleep(0.1)
-        press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-        if dy < 0:
+        if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             press(self.key, 1, down_time=0.03, up_time=0.03)
         elif dx >= 26:
+            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.02)
         else:
-            time.sleep(0.1)
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.6)
             press(self.key, 1, down_time=0.02, up_time=0.03)
         if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
@@ -284,7 +285,7 @@ class Shadow_Dodge(Skill):
     cooldown = 0
     precast = 0
     backswing = 0.4
-    move_range = range(11, DoubleJump.move_range.start)
+    move_range = range(10, DoubleJump.move_range.start)
     # 12-14
 
     def __init__(self, direction='right'):
