@@ -211,6 +211,7 @@ class DoubleJump(Skill):
     type = SkillType.Move
     backswing = 0.1
     move_range = range(26, 35)
+    # 18-40
 
     def __init__(self, target: MapPoint, attack_if_needed=False):
         super().__init__(locals())
@@ -284,6 +285,7 @@ class Shadow_Dodge(Skill):
     precast = 0
     backswing = 0.4
     move_range = range(11, DoubleJump.move_range.start)
+    # 12-14
 
     def __init__(self, direction='right'):
         super().__init__(locals())
