@@ -179,11 +179,11 @@ def move_up(target: MapPoint):
     if shared_map.on_the_platform(MapPoint(p.x, target.y), strict=True):
         pass
     elif shared_map.on_the_platform(MapPoint(target.x, p.y), strict=True):
-        Move(target.x, p.y, 2).execute()
+        Move(target.x, p.y, 3).execute()
     elif target.x >= p.x:
-        Move(target.x+4, p.y, 2).execute()
+        Move(target.x+4, p.y, 3).execute()
     else:
-        Move(target.x-4, p.y, 2).execute()
+        Move(target.x-4, p.y, 3).execute()
         
     if dy < 5:
         press(Keybindings.JUMP)
@@ -486,7 +486,7 @@ class Shadow_Attack(Command):
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
-                if len(mobs) <= 3:
+                if len(mobs) <= 2:
                     return False
                 if time.time() - start_time > 2:
                     break
@@ -511,16 +511,16 @@ class Shadow_Attack(Command):
             Dark_Omen().execute()
             n=4
         else:
-            n = 0
+            n = 3 if bot_status.elite_boss_detected else 0
             self.__class__.castedTime = time.time() - 4
 
         if n > 0:
             if shared_map.current_map.name == 'Outlaw-Infested Wastes 2':
                 Phalanx_Charge('left').execute()
-                Direction("right").execute()
+                Direction("left" if bot_status.elite_boss_detected else "right").execute()
             else:
                 Phalanx_Charge('right').execute()
-                Direction("left").execute()
+                Direction("right" if bot_status.elite_boss_detected else "left").execute()
             key_down(Keybindings.Quintuple_Star)
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)

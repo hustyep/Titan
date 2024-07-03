@@ -341,23 +341,30 @@ class Walk(Command):
         if abs(d_x) <= self.target.tolerance:
             return
 
+        moving = False
         walk_counter = 0
         direction = 'left' if d_x < 0 else 'right'
         key_down(direction)
         while bot_status.enabled and abs(d_x) > self.target.tolerance and walk_counter < self.max_steps:
             new_direction = 'left' if d_x < 0 else 'right'
-            if abs(d_x) > 1:
+            if self.target.tolerance <= 2 and abs(d_x) <= self.target.tolerance + 1:
+                if moving:
+                    moving = False
+                    time.sleep(0.02)
+                else:
+                    moving = True
+                    if direction is not None:
+                        key_up(direction)
+                        direction = None
+                    press_acc(new_direction, down_time=0.005, up_time=0.01)
+            else:
+                moving = True
                 if new_direction != direction:
                     key_up(direction)
                     time.sleep(0.01)
                 key_down(new_direction)
                 direction = new_direction
                 time.sleep(self.interval)
-            else:
-                if direction is not None:
-                    key_up(direction)
-                    direction = None
-                press_acc(new_direction, down_time=0.005, up_time=0.02)
 
             walk_counter += 1
             d_x = self.target.x - bot_status.player_pos.x
