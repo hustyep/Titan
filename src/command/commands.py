@@ -357,7 +357,7 @@ class Walk(Command):
                 if direction is not None:
                     key_up(direction)
                     direction = None
-                press_acc(new_direction, down_time=0.01, up_time=0.01)
+                press_acc(new_direction, down_time=0.01, up_time=0.02)
 
             walk_counter += 1
             d_x = self.target.x - bot_status.player_pos.x
