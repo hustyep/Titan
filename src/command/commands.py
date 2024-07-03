@@ -329,7 +329,7 @@ class Buff(ABC):
 class Walk(Command):
     """Walks in the given direction for a set amount of time."""
 
-    def __init__(self, target: MapPoint, interval=0.01, max_steps=500):
+    def __init__(self, target: MapPoint, interval=0.005, max_steps=1000):
         super().__init__(locals())
         self.target = target
         self.interval = bot_settings.validate_nonnegative_float(interval)
@@ -346,7 +346,7 @@ class Walk(Command):
         key_down(direction)
         while bot_status.enabled and abs(d_x) > self.target.tolerance and walk_counter < self.max_steps:
             new_direction = 'left' if d_x < 0 else 'right'
-            if self.target.tolerance > 0 or abs(d_x) > 1:
+            if abs(d_x) > 1:
                 if new_direction != direction:
                     key_up(direction)
                     time.sleep(0.01)
@@ -357,7 +357,7 @@ class Walk(Command):
                 if direction is not None:
                     key_up(direction)
                     direction = None
-                press_acc(new_direction, down_time=0.01, up_time=0.02)
+                press_acc(new_direction, down_time=0.005, up_time=0.02)
 
             walk_counter += 1
             d_x = self.target.x - bot_status.player_pos.x
