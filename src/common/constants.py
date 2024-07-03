@@ -186,7 +186,7 @@ Charactor_Daily_Map = {
             'Train with No Destination 5',
             'Laboratory Behind Locked Door 1',
             'Combat Zone Outskirts 1',
-            'Harsh Winter 4',  f
+            'Harsh Winter 4',
             'Calm Beach 3',
         ]
     },
