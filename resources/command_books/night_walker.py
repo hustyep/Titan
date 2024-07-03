@@ -318,6 +318,11 @@ class Greater_Dark_Servant(Skill):
     def main(self):
         while not self.canUse():
             Shadow_Attack().execute()
+        mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
+        if len(mobs) > 4:
+            Shadow_Bite().execute()
+        else:
+            Dark_Omen().execute()
         return super().main()
 
 
