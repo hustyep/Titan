@@ -69,9 +69,9 @@ def step(target: MapPoint):
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    utils.log_event(f"[step]target:{target}", bot_settings.debug)
+    utils.log_event(f"[step]target:{str(target)}", bot_settings.debug)
     next_p = find_next_point(bot_status.player_pos, target)
-    utils.log_event(f"[step]next_p:{next_p}", bot_settings.debug)
+    utils.log_event(f"[step]next_p:{str(next_p)}", bot_settings.debug)
     if not next_p:
         return
 
@@ -124,10 +124,32 @@ def find_next_point(start: MapPoint, target: MapPoint):
         # 目标在上面， 优先向上移动
         tmp_y = MapPoint(start.x, target.y)
         if shared_map.is_continuous(tmp_y, target):
-            return tmp_y
+            if bot_status.player_moving:
+                if bot_status.player_direction == 'left':
+                    tmp_y = MapPoint(start.x - 3, target.y)
+                else:
+                    tmp_y = MapPoint(start.x + 3, target.y)
+                if shared_map.is_continuous(tmp_y, target):
+                    return MapPoint(start.x, target.y, 3)  
+                else:
+                    time.sleep(0.5)
+                    return find_next_point(bot_status.player_pos, target)
+            else:
+                return tmp_y              
         tmp_x = MapPoint(target.x, start.y)
         if shared_map.is_continuous(start, tmp_x):
-            return tmp_x
+            if bot_status.player_moving:
+                if bot_status.player_direction == 'left':
+                    tmp = MapPoint(target.x - 3, target.y)
+                else:
+                    tmp = MapPoint(target.x + 3, target.y)
+                if shared_map.is_continuous(tmp, target):
+                    return MapPoint(target.x, start.y, 3)  
+                else:
+                    time.sleep(0.5)
+                    return find_next_point(bot_status.player_pos, target)
+            else:
+                return tmp_x
         if gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8 and platform_start and platform_target:
             if platform_start.end_x < platform_target.begin_x:
                 return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
@@ -176,14 +198,14 @@ def move_up(target: MapPoint):
     p = bot_status.player_pos
     dy = abs(p.y - target.y)
 
-    if shared_map.on_the_platform(MapPoint(p.x, target.y), strict=True):
-        pass
-    elif shared_map.on_the_platform(MapPoint(target.x, p.y), strict=True):
-        Move(target.x, p.y, 3).execute()
-    elif target.x >= p.x:
-        Move(target.x+4, p.y, 3).execute()
-    else:
-        Move(target.x-4, p.y, 3).execute()
+    # if shared_map.on_the_platform(MapPoint(p.x, target.y), strict=True):
+    #     pass
+    # elif shared_map.on_the_platform(MapPoint(target.x, p.y), strict=True):
+    #     Move(target.x, p.y, 3).execute()
+    # elif target.x >= p.x:
+    #     Move(target.x+4, p.y, 3).execute()
+    # else:
+    #     Move(target.x-4, p.y, 3).execute()
         
     if dy < 5:
         press(Keybindings.JUMP)
@@ -210,7 +232,7 @@ class DoubleJump(Skill):
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
     backswing = 0.1
-    move_range = range(19, 40)
+    move_range = range(24, 40)
     # 18-40
 
     def __init__(self, target: MapPoint, attack_if_needed=False):
@@ -231,9 +253,9 @@ class DoubleJump(Skill):
         key_down(direction)
         time.sleep(0.1)
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
-            press(Keybindings.JUMP, 1 if abs(dx) < 35 else 2, down_time=0.03, up_time=0.03)
+            press(Keybindings.JUMP, 1 if abs(dx) < 32 else 2, down_time=0.03, up_time=0.03)
             press(self.key, 1, down_time=0.03, up_time=0.03)
-        elif abs(dx) in range(38, 43):
+        elif abs(dx) in range(32, 44):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             press(self.key, 2, down_time=0.03, up_time=0.03)
         elif abs(dx) >= 26:

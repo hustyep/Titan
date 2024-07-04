@@ -81,7 +81,7 @@ class Command():
 
     def __str__(self):
         variables = self.__dict__
-        result = f'[Command]{self.id}: pos={bot_status.player_pos.tuple}'
+        result = f'[Command]{self.id}: pos={bot_status.player_pos.tuple}, dir={bot_status.player_direction}, moving={bot_status.player_moving}'
         # if len(variables) - 1 > 0:
         #     result += ':'
         # for key, value in variables.items():

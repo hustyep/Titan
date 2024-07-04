@@ -38,6 +38,7 @@ class Capture(Subject):
         self.mm_br = None
         self.minimap_margin = 0
 
+        self.pos_update_time = 0
         self.lost_player_time = 0
 
         self.lost_time_threshold = 1
@@ -174,8 +175,11 @@ class Capture(Subject):
         if player:
             # h, w, _ = minimap.shape
             # print(f"{player[0]} | {w}")
-            bot_status.player_pos = self.convert_to_relative_minimap_point(
-                player[0])
+            new_pos = self.convert_to_relative_minimap_point(player[0])
+            if new_pos.x != bot_status.player_pos:
+                self.pos_update_time = time.time()
+            bot_status.player_moving = time.time() - self.pos_update_time < 0.5
+            bot_status.player_pos = new_pos
             self.lost_player_time = 0
         else:
             self.calibrated = False

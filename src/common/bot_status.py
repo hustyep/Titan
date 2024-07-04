@@ -14,9 +14,10 @@ acting: bool = False
 
 started_time = None
 
-# The player's position relative to the minimap
+# The player's status relative to the minimap
 player_pos = MapPoint(0, 0)
 player_direction = 'right'
+player_moving = False
 
 # Represents the current path that the bot is taking
 path = []
@@ -36,10 +37,11 @@ rune_solving = False
 
 
 def reset():
-    global white_room, player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, rune_solving
+    global white_room, player_pos, player_direction, path, lost_minimap, point_checking, rune_pos, rune_closest_pos, rune_solving, player_moving
 
     player_pos = MapPoint(0, 0)
     player_direction = 'right'
+    player_moving = False
     path = []
     lost_minimap = False
     point_checking = False
