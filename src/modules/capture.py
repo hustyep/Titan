@@ -176,7 +176,7 @@ class Capture(Subject):
             # h, w, _ = minimap.shape
             # print(f"{player[0]} | {w}")
             new_pos = self.convert_to_relative_minimap_point(player[0])
-            if new_pos.x != bot_status.player_pos:
+            if new_pos.x != bot_status.player_pos.x:
                 self.pos_update_time = time.time()
             bot_status.player_moving = time.time() - self.pos_update_time < 0.5
             bot_status.player_pos = new_pos
