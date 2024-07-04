@@ -232,7 +232,7 @@ class DoubleJump(Skill):
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
     backswing = 0.1
-    move_range = range(25, 36)
+    move_range = range(26, 36)
     # 18-40
 
     def __init__(self, target: MapPoint, attack_if_needed=False):
@@ -255,7 +255,7 @@ class DoubleJump(Skill):
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
             press(Keybindings.JUMP, 1 if abs(dx) < 32 else 2, down_time=0.03, up_time=0.03)
             press(self.key, 1, down_time=0.03, up_time=0.03)
-        elif abs(dx) in range(30, 40):
+        elif abs(dx) in range(35, 40):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             press(self.key, 2, down_time=0.03, up_time=0.03)
         else:
