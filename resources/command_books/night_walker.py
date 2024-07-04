@@ -150,7 +150,13 @@ def find_next_point(start: MapPoint, target: MapPoint):
                     return find_next_point(bot_status.player_pos, target)
             else:
                 return tmp_x
-        if gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8 and platform_start and platform_target:
+        if gap_h == -1 and platform_start and platform_target:
+            x_start = list(range(platform_start.begin_x, platform_start.end_x))
+            x_target = list(range(platform_target.begin_x, platform_target.end_x))
+            x_intersection = list(set(x_start).union(set(x_target)))
+            x_intersection.sort()
+            
+        elif gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8 and platform_start and platform_target:
             if platform_start.end_x < platform_target.begin_x:
                 return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
             else:
