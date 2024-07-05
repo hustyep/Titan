@@ -134,10 +134,8 @@ class Bot(Subject):
         if bot_status.lost_minimap:
             time.sleep(0.1)
             return False
-        map_name = bot_helper.identify_map_name(try_count=5)
+        map_name = bot_helper.identify_map_name(try_count=3)
         utils.log_event(f"identify map:{map_name}")
-        if map_name is None:
-            map_name = 'Captured Alley 1'
 
         target_map = None
         match gui_setting.mode.type:
