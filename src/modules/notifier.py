@@ -70,8 +70,8 @@ class Notifier(Subject):
                 text = f'⚠️[{event.value}] {info}'
                 self.send_message(text=text, image=capture.frame)
             elif event_type == BotInfo:
-                if event == BotInfo.BOSS_APPEAR:
-                    threading.Timer(8, self.notify_boss_appear).start()                
+                # if event == BotInfo.BOSS_APPEAR:
+                #     threading.Timer(8, self.notify_boss_appear).start()                
                 if gui_setting.notification.notice_level < 4:
                     return
                 text = f'💡[{event.value}] {info}'

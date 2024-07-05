@@ -104,12 +104,12 @@ def move_horizontal(target: MapPoint):
     else:
         Walk(target).execute()
 
-        
+
 @bot_status.run_if_enabled
 def move_up(target: MapPoint):
     p = bot_status.player_pos
     dy = abs(p.y - target.y)
-        
+
     if dy < 5:
         press(Keybindings.JUMP)
     elif dy < Jump_Up.move_range.stop:
@@ -124,8 +124,8 @@ def move_down(target: MapPoint):
     # evade_rope()
     if target.y > bot_status.player_pos.y:
         Fall().execute()
-        
-        
+
+
 #########################
 #        Y轴移动         #
 #########################
@@ -153,8 +153,8 @@ class DoubleJump(Skill):
         start_y = bot_status.player_pos.y
         distance = abs(dx)
         if bot_status.player_moving:
-                distance -= 3
-                
+            distance -= 3
+
         self.__class__.castedTime = time.time()
         key_down(direction)
         time.sleep(0.1)
@@ -407,13 +407,14 @@ class Shadow_Attack(Command):
     cooldown = 4
 
     def main(self):
-        assert(shared_map.current_map)
+        assert (shared_map.current_map)
         if not self.canUse() and not bot_status.elite_boss_detected:
             time.sleep(0.3)
             return False
-        
-        boss_bust().execute()
-        
+
+        if bot_status.elite_boss_detected:
+            burst().execute()
+
         start_time = time.time()
         if start_time - Shadow_Bite.castedTime > 6 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
@@ -423,26 +424,26 @@ class Shadow_Attack(Command):
                     return False
                 if time.time() - start_time > 2:
                     break
-                
+
         n = 3
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
         elif Silence.canUse():
             Silence().execute()
-            n=1
+            n = 1
         elif Dominion.canUse():
             Dominion().execute()
-            n=2
+            n = 2
         elif Arachnid.canUse():
             Arachnid().execute()
-            n=2
+            n = 2
         elif SolarCrest.canUse():
             SolarCrest().execute()
-            n=2
+            n = 2
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
-            n=4
+            n = 4
         else:
             n = 3 if bot_status.elite_boss_detected else 0
             self.__class__.castedTime = time.time() - 4
@@ -462,15 +463,9 @@ class Shadow_Attack(Command):
             time.sleep(0.3)
         return True
 
-class boss_bust(Command):
-    @classmethod
-    def canUse(cls, next_t: float = 0):
-        return bot_status.elite_boss_detected
 
-    
+class burst(Command):
     def main(self):
-        if not self.canUse():
-            return
         Shadow_Illusion().execute()
         Shadow_Bite().execute()
         Silence().execute()
@@ -637,7 +632,8 @@ class Potion(Command):
                 potion().execute()
                 time.sleep(0.2)
         return True
-    
+
+
 class Test_Command(Command):
     def main(self, wait=True):
         for _ in range(0, 4):
@@ -652,7 +648,7 @@ class Test_Command(Command):
             # # 二段跳
             # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             # press(self.key, 1, down_time=0.02, up_time=0.02)
-            
+
             # # 急停
             # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.02)
             # press(self.key, 1, down_time=0.02, up_time=0.02)
@@ -662,9 +658,10 @@ class Test_Command(Command):
             # press(self.key, 1, down_time=0.02, up_time=0.02)
 
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
-            
+
             key_up(direction)
             sleep_in_the_air(n=1)
+
 
 @bot_status.run_if_enabled
 def find_next_point(start: MapPoint, target: MapPoint):
@@ -710,12 +707,12 @@ def find_next_point(start: MapPoint, target: MapPoint):
                 else:
                     tmp_y = MapPoint(start.x + 3, target.y)
                 if shared_map.is_continuous(tmp_y, target):
-                    return MapPoint(start.x, target.y, 3)  
+                    return MapPoint(start.x, target.y, 3)
                 else:
                     time.sleep(0.5)
                     return find_next_point(bot_status.player_pos, target)
             else:
-                return tmp_y              
+                return tmp_y
         tmp_x = MapPoint(target.x, start.y)
         if shared_map.is_continuous(start, tmp_x):
             if bot_status.player_moving:
@@ -724,7 +721,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
                 else:
                     tmp = MapPoint(target.x + 3, target.y)
                 if shared_map.is_continuous(tmp, target):
-                    return MapPoint(target.x, start.y, 3)  
+                    return MapPoint(target.x, start.y, 3)
                 else:
                     time.sleep(0.5)
                     return find_next_point(bot_status.player_pos, target)
@@ -763,4 +760,4 @@ def find_next_point(start: MapPoint, target: MapPoint):
             DoubleJump(target=target, attack_if_needed=True).execute()
             return find_next_point(bot_status.player_pos, target)
 
-    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))    
+    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
