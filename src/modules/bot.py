@@ -70,6 +70,7 @@ class Bot(Subject):
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
                     if self.is_run_daily:
+                        assert(self.role)
                         current_quest = self.role.daily.current_quest
                         if current_quest is None:
                             return
@@ -131,6 +132,8 @@ class Bot(Subject):
             self.load_map(map_name)
 
     def check_map(self):
+        assert(self.role)
+        
         if bot_status.lost_minimap:
             time.sleep(0.1)
             return False
@@ -156,6 +159,7 @@ class Bot(Subject):
                 chat_bot.send_message(f"teleport to {target_map} failed", capture.frame)
                 return False
 
+        assert(shared_map.current_map)
         if not bot_helper.chenck_map_available(instance=shared_map.current_map.instance):
             bot_action.change_channel(instance=shared_map.current_map.instance)
         return True
@@ -167,6 +171,8 @@ class Bot(Subject):
         bot_settings.role = self.role
 
     def load_map(self, map_name: str):
+        assert(self.role)
+
         if shared_map.current_map_name != map_name:
             shared_map.load_map(map_name)
             bot_status.reset()
@@ -227,6 +233,7 @@ class Bot(Subject):
                 FlameManager.stop()
             case BotRunMode.Daily:
                 if self.is_run_daily:
+                    assert(self.role)
                     self.role.daily.pause()
 
     def on_event(self, args):

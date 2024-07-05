@@ -205,15 +205,6 @@ def move_horizontal(target: MapPoint):
 def move_up(target: MapPoint):
     p = bot_status.player_pos
     dy = abs(p.y - target.y)
-
-    # if shared_map.on_the_platform(MapPoint(p.x, target.y), strict=True):
-    #     pass
-    # elif shared_map.on_the_platform(MapPoint(target.x, p.y), strict=True):
-    #     Move(target.x, p.y, 3).execute()
-    # elif target.x >= p.x:
-    #     Move(target.x+4, p.y, 3).execute()
-    # else:
-    #     Move(target.x-4, p.y, 3).execute()
         
     if dy < 5:
         press(Keybindings.JUMP)
@@ -438,12 +429,6 @@ class Dominion(Skill):
         Shadow_Dodge().execute()
         return True
 
-    # @classmethod
-    # def check(cls):
-    #     matchs = utils.multi_match(
-    #         capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.99, debug=False)
-    #     cls.ready = len(matchs) > 0
-
 
 class Phalanx_Charge(Skill):
     key = Keybindings.Phalanx_Charge
@@ -511,6 +496,7 @@ class Shadow_Attack(Command):
     cooldown = 4
 
     def main(self):
+        assert(shared_map.current_map)
         if not self.canUse() and not bot_status.elite_boss_detected:
             time.sleep(0.3)
             return False
