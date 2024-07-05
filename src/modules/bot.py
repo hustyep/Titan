@@ -288,7 +288,8 @@ class Bot(Subject):
             #     case BotVerbose.BOSS_APPEAR:
             #         threading.Timer(180, bot_action.open_boss_box).start()
         elif isinstance(event_type, BotDebug):
-            pass
+            assert(self.role)
+            self.role.character.command_book['Test_Command'].execute()
 
     def bot_status(self, ext='') -> str:
         message = (

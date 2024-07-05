@@ -62,6 +62,7 @@ class BotVerbose(Enum):
 class BotDebug(Enum):
     SCREENSHOT_FAILED = 'Screenshot Failed'
     PLAYER_LOCATION_UPDATE = auto()
+    MOVE = 'move'
 
 #############################
 #       Common Type        #

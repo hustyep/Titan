@@ -141,6 +141,9 @@ class Capture(Subject):
         return True
 
     def locatePlayer(self):
+        assert(self.mm_tl is not None)
+        assert(self.mm_br is not None)
+
         frame = self.camera.get_latest_frame()
         if frame is None:
             return
@@ -178,7 +181,7 @@ class Capture(Subject):
             new_pos = self.convert_to_relative_minimap_point(player[0])
             if new_pos.x != bot_status.player_pos.x:
                 self.pos_update_time = time.time()
-            bot_status.player_moving = time.time() - self.pos_update_time < 0.5
+            bot_status.player_moving = time.time() - self.pos_update_time < 0.3
             bot_status.player_pos = new_pos
             self.lost_player_time = 0
         else:
@@ -226,7 +229,7 @@ class Capture(Subject):
 
     @property
     def map_name_frame(self):
-        if self.frame is not None:
+        if self.frame is not None and self.mm_tl is not None and self.mm_br is not None:
             return self.frame[self.mm_tl[1] - 28:self.mm_tl[1] - 10,
                               self.mm_tl[0] + 36:self.mm_br[0]]
 

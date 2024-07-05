@@ -15,7 +15,7 @@ from src.chat_bot.chat_bot_entity import ChatBotCommand
 from src.common import bot_action
 from rx.subject.subject import Subject
 from src.map.map import shared_map as game_map
-from src.common.constants import BotFatal
+from src.common.constants import BotFatal, BotDebug
 
 class Listener(Configurable, Subject):
     DEFAULT_CONFIG = {
@@ -185,7 +185,9 @@ class Listener(Configurable, Subject):
                 match args[0]:
                     case 1:
                         bot.on_event((BotFatal.WHITE_ROOM, ))
-                filepath = utils.save_screenshot(capture.frame)
-                return "login", filepath
+                    case 2:
+                        bot.on_event((BotDebug.MOVE, ))
+                # filepath = utils.save_screenshot(capture.frame)
+                return "test done", None
 
 listener = Listener()

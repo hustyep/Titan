@@ -86,116 +86,20 @@ def step(target: MapPoint):
     else:
         move_horizontal(next_p)
 
-@bot_status.run_if_enabled
-def find_next_point(start: MapPoint, target: MapPoint):
-    if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
-        return target
-
-    if target_reached(start, target):
-        return
-
-    start = shared_map.fixed_point(start)
-    d_x = target.x - start.x
-    d_y = target.y - start.y
-
-    if abs(d_x) <= target.tolerance:
-        return target
-
-    platform_start = shared_map.platform_of_point(start)
-    platform_target = shared_map.platform_of_point(target)
-    gap_h = platform_gap(platform_start, platform_target)
-
-    if d_y == 0:
-        if shared_map.is_continuous(start, target):
-            return target
-        elif platform_start and platform_target:
-            tolerance = 4
-            max_distance = DoubleJump.move_range.stop - tolerance * 2
-            if gap_h in range(0, max_distance):
-                if platform_start.end_x < platform_target.begin_x:
-                    if platform_target.begin_x - start.x <= max_distance:
-                        return target
-                    return MapPoint(platform_start.end_x - int(tolerance / 2), platform_start.y, 3)
-                else:
-                    if start.x - platform_target.end_x <= max_distance:
-                        return target
-                    return MapPoint(platform_start.begin_x + int(tolerance / 2), platform_start.y, 3)
-    elif d_y < 0:
-        # 目标在上面， 优先向上移动
-        tmp_y = MapPoint(start.x, target.y)
-        if shared_map.is_continuous(tmp_y, target):
-            if bot_status.player_moving:
-                if bot_status.player_direction == 'left':
-                    tmp_y = MapPoint(start.x - 3, target.y)
-                else:
-                    tmp_y = MapPoint(start.x + 3, target.y)
-                if shared_map.is_continuous(tmp_y, target):
-                    return MapPoint(start.x, target.y, 3)  
-                else:
-                    time.sleep(0.5)
-                    return find_next_point(bot_status.player_pos, target)
-            else:
-                return tmp_y              
-        tmp_x = MapPoint(target.x, start.y)
-        if shared_map.is_continuous(start, tmp_x):
-            if bot_status.player_moving:
-                if bot_status.player_direction == 'left':
-                    tmp = MapPoint(target.x - 3, target.y)
-                else:
-                    tmp = MapPoint(target.x + 3, target.y)
-                if shared_map.is_continuous(tmp, target):
-                    return MapPoint(target.x, start.y, 3)  
-                else:
-                    time.sleep(0.5)
-                    return find_next_point(bot_status.player_pos, target)
-            else:
-                return tmp_x
-        if gap_h == -1 and platform_start and platform_target:
-            x_start = list(range(platform_start.begin_x, platform_start.end_x))
-            x_target = list(range(platform_target.begin_x, platform_target.end_x))
-            x_intersection = list(set(x_start).union(set(x_target)))
-            if len(x_intersection) > 0:
-                x_intersection.sort()
-                target_x = (x_intersection[0] + x_intersection[-1]) / 2
-                return MapPoint(int(target_x), target.y, 3)
-        elif gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8 and platform_start and platform_target:
-            if platform_start.end_x < platform_target.begin_x:
-                return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
-            else:
-                return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
-        elif gap_h > 0:
-            DoubleJump(target=target, attack_if_needed=True).execute()
-            return find_next_point(bot_status.player_pos, target)
-    else:
-        # 目标在下面，优先向下移动
-        tmp_y = MapPoint(start.x, target.y, 3)
-        if shared_map.is_continuous(tmp_y, target):
-            return tmp_y
-        tmp_x = MapPoint(target.x, start.y, 3)
-        if shared_map.is_continuous(tmp_x, start):
-            return tmp_x
-        if platform_start is not None and platform_target is not None and gap_h > 0 and gap_h <= DoubleJump.move_range.start:
-            if platform_start.end_x < platform_target.begin_x:
-                return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
-            else:
-                return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
-        elif gap_h > 0:
-            DoubleJump(target=target, attack_if_needed=True).execute()
-            return find_next_point(bot_status.player_pos, target)
-
-    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
-
 
 @bot_status.run_if_enabled
 def move_horizontal(target: MapPoint):
     start_p = shared_map.fixed_point(bot_status.player_pos)
     d_x = target.x - start_p.x
+    distance = abs(d_x)
+    if bot_status.player_moving:
+        distance -= 3
 
     if not shared_map.is_continuous(start_p, target):
         DoubleJump(target=target, attack_if_needed=True).execute()
-    elif abs(d_x) >= DoubleJump.move_range.start:
+    elif distance >= DoubleJump.move_range.start:
         DoubleJump(target=target, attack_if_needed=True).execute()
-    elif abs(d_x) >= Shadow_Dodge.move_range.start:
+    elif distance >= Shadow_Dodge.move_range.start:
         Shadow_Dodge('left' if d_x < 0 else 'right').execute()
     else:
         Walk(target).execute()
@@ -231,7 +135,7 @@ class DoubleJump(Skill):
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
     backswing = 0.1
-    move_range = range(26, 36)
+    move_range = range(24, 36)
     # 18-40
 
     def __init__(self, target: MapPoint, attack_if_needed=False):
@@ -247,18 +151,25 @@ class DoubleJump(Skill):
         dy = self.target.y - bot_status.player_pos.y
         direction = 'left' if dx < 0 else 'right'
         start_y = bot_status.player_pos.y
-
+        distance = abs(dx)
+        if bot_status.player_moving:
+                distance -= 3
+                
         self.__class__.castedTime = time.time()
         key_down(direction)
         time.sleep(0.1)
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
             press(Keybindings.JUMP, 1 if abs(dx) < 32 else 2, down_time=0.03, up_time=0.03)
             press(self.key, 1, down_time=0.03, up_time=0.03)
-        elif abs(dx) in range(35, 40):
+        elif distance in range(35, 40):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.04)
             press(self.key, 2, down_time=0.03, up_time=0.03)
-        elif abs(dx) <= 26:
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.3)
+        elif distance <= 27:
+            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.02)
+            press(self.key, 1, down_time=0.02, up_time=0.02)
+            key_up(direction)
+            time.sleep(0.01)
+            press(opposite_direction(direction), down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.02)
         else:
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
@@ -726,3 +637,130 @@ class Potion(Command):
                 potion().execute()
                 time.sleep(0.2)
         return True
+    
+class Test_Command(Command):
+    def main(self, wait=True):
+        for _ in range(0, 4):
+            direction = 'right'
+            key_down(direction)
+            time.sleep(0.1)
+
+            # 三段跳
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.04)
+            press(self.key, 2, down_time=0.03, up_time=0.03)
+
+            # # 二段跳
+            # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            # press(self.key, 1, down_time=0.02, up_time=0.02)
+            
+            # # 急停
+            # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.02)
+            # press(self.key, 1, down_time=0.02, up_time=0.02)
+            # key_up(direction)
+            # time.sleep(0.01)
+            # press(opposite_direction(direction), down_time=0.02, up_time=0.01)
+            # press(self.key, 1, down_time=0.02, up_time=0.02)
+
+            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
+            
+            key_up(direction)
+            sleep_in_the_air(n=1)
+
+@bot_status.run_if_enabled
+def find_next_point(start: MapPoint, target: MapPoint):
+    if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
+        return target
+
+    if target_reached(start, target):
+        return
+
+    start = shared_map.fixed_point(start)
+    d_x = target.x - start.x
+    d_y = target.y - start.y
+
+    if abs(d_x) <= target.tolerance:
+        return target
+
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+    gap_h = platform_gap(platform_start, platform_target)
+
+    if d_y == 0:
+        if shared_map.is_continuous(start, target):
+            return target
+        elif platform_start and platform_target:
+            tolerance = 4
+            max_distance = DoubleJump.move_range.stop - tolerance * 2
+            if gap_h in range(0, max_distance):
+                if platform_start.end_x < platform_target.begin_x:
+                    if platform_target.begin_x - start.x <= max_distance:
+                        return target
+                    return MapPoint(platform_start.end_x - int(tolerance / 2), platform_start.y, 3)
+                else:
+                    if start.x - platform_target.end_x <= max_distance:
+                        return target
+                    return MapPoint(platform_start.begin_x + int(tolerance / 2), platform_start.y, 3)
+    elif d_y < 0:
+        # 目标在上面， 优先向上移动
+        tmp_y = MapPoint(start.x, target.y)
+        if shared_map.is_continuous(tmp_y, target):
+            if bot_status.player_moving:
+                if bot_status.player_direction == 'left':
+                    tmp_y = MapPoint(start.x - 3, target.y)
+                else:
+                    tmp_y = MapPoint(start.x + 3, target.y)
+                if shared_map.is_continuous(tmp_y, target):
+                    return MapPoint(start.x, target.y, 3)  
+                else:
+                    time.sleep(0.5)
+                    return find_next_point(bot_status.player_pos, target)
+            else:
+                return tmp_y              
+        tmp_x = MapPoint(target.x, start.y)
+        if shared_map.is_continuous(start, tmp_x):
+            if bot_status.player_moving:
+                if bot_status.player_direction == 'left':
+                    tmp = MapPoint(target.x - 3, target.y)
+                else:
+                    tmp = MapPoint(target.x + 3, target.y)
+                if shared_map.is_continuous(tmp, target):
+                    return MapPoint(target.x, start.y, 3)  
+                else:
+                    time.sleep(0.5)
+                    return find_next_point(bot_status.player_pos, target)
+            else:
+                return tmp_x
+        if gap_h == -1 and platform_start and platform_target:
+            x_start = list(range(platform_start.begin_x, platform_start.end_x))
+            x_target = list(range(platform_target.begin_x, platform_target.end_x))
+            x_intersection = list(set(x_start).union(set(x_target)))
+            if len(x_intersection) > 0:
+                x_intersection.sort()
+                target_x = (x_intersection[0] + x_intersection[-1]) / 2
+                return MapPoint(int(target_x), target.y, 3)
+        elif gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8 and platform_start and platform_target:
+            if platform_start.end_x < platform_target.begin_x:
+                return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
+            else:
+                return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+        elif gap_h > 0:
+            DoubleJump(target=target, attack_if_needed=True).execute()
+            return find_next_point(bot_status.player_pos, target)
+    else:
+        # 目标在下面，优先向下移动
+        tmp_y = MapPoint(start.x, target.y, 3)
+        if shared_map.is_continuous(tmp_y, target):
+            return tmp_y
+        tmp_x = MapPoint(target.x, start.y, 3)
+        if shared_map.is_continuous(tmp_x, start):
+            return tmp_x
+        if platform_start is not None and platform_target is not None and gap_h > 0 and gap_h <= DoubleJump.move_range.start:
+            if platform_start.end_x < platform_target.begin_x:
+                return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
+            else:
+                return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+        elif gap_h > 0:
+            DoubleJump(target=target, attack_if_needed=True).execute()
+            return find_next_point(bot_status.player_pos, target)
+
+    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))    
