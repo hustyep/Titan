@@ -226,6 +226,7 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
             return result
         elif utils.match_count(capture.frame, TELEPORT_CURRENT_MAP_ERROR_TEMPLATE):
             click_key('esc', delay=0.1)
+            click_key('esc', delay=0.1)
             bot_status.acting = False
             return True
         else:

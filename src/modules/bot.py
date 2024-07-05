@@ -136,6 +136,8 @@ class Bot(Subject):
             return False
         map_name = bot_helper.identify_map_name(try_count=5)
         utils.log_event(f"identify map:{map_name}")
+        if map_name is None:
+            map_name = 'Captured Alley 1'
 
         target_map = None
         match gui_setting.mode.type:

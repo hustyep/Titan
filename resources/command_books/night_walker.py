@@ -264,8 +264,11 @@ class DoubleJump(Skill):
             press(Keybindings.JUMP, 1 if abs(dx) < 32 else 2, down_time=0.03, up_time=0.03)
             press(self.key, 1, down_time=0.03, up_time=0.03)
         elif abs(dx) in range(35, 40):
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.04)
             press(self.key, 2, down_time=0.03, up_time=0.03)
+        elif abs(dx) <= 26:
+            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.3)
+            press(self.key, 1, down_time=0.02, up_time=0.02)
         else:
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.02)
@@ -351,11 +354,6 @@ class Greater_Dark_Servant(Skill):
     def main(self):
         while not self.canUse():
             Shadow_Attack().execute()
-        mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
-        if len(mobs) > 4:
-            Shadow_Bite().execute()
-        else:
-            Dark_Omen().execute()
         return super().main()
 
 
@@ -510,7 +508,7 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
-    cooldown = 5
+    cooldown = 4
 
     def main(self):
         if not self.canUse() and not bot_status.elite_boss_detected:
@@ -520,7 +518,7 @@ class Shadow_Attack(Command):
         boss_bust().execute()
         
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime >= 5.5 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 6 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)

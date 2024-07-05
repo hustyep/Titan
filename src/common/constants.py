@@ -69,7 +69,7 @@ class BotDebug(Enum):
 
 
 class MapPoint:
-    def __init__(self, x: int, y: int, tolerance=0, tolerance_v=1):
+    def __init__(self, x: int, y: int, tolerance=3, tolerance_v=1):
         self.x = x
         self.y = y
         self.tolerance = tolerance
@@ -207,11 +207,12 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': "Road to the Castle's Gate 1",
+        'default': "Captured Alley 1",
         'quest': [
             'Western City Ramparts in Battle 1',
             'Outlaw-Infested Wastes 2',
             "Road to the Castle's Gate 1"
+            'Captured Alley 1'
         ]
     }
 }

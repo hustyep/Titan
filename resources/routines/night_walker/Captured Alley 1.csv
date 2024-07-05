@@ -1,25 +1,24 @@
 $, target=move_tolerance, value=10
-*, x=58, y=54, interval=3500, tolerance=10, detect=False, skip=True
+*, x=54, y=43, interval=3500, tolerance=10, detect=False, skip=True
     Rest, wait=5
 
 @, label=Bottom mobbing
-*, x=58, y=54, interval=0, tolerance=3, detect=False, skip=False
+*, x=54, y=43, interval=0, tolerance=3, detect=False, skip=False
     Detect_Around_Anchor, count=5, x=710, y=560, top=550, bottom=100, left=650, right=650
     Shadow_Attack
     Buff
     Potion
     FeedPet
     Phalanx_Charge, direction=right
-*, x=26, y=54, interval=120, tolerance=3, detect=False, skip=False
-    Wait, duration=0.5
+*, x=18, y=56, interval=150, tolerance=13, detect=False, skip=False
 
 ~, label=Summon Loop, interval=41, skip=False
-*, x=58, y=54, interval=0, tolerance=3, detect=False, skip=False
+*, x=54, y=43, interval=0, tolerance=3, detect=False, skip=False
     Dark_Omen
     Greater_Dark_Servant
-*, x=113, y=54, interval=0, tolerance=3, detect=False, skip=False
+*, x=138, y=43, interval=0, tolerance=3, detect=False, skip=False
     Wait, duration=0.3
     ErdaShower, direction=left
-*, x=58, y=26, interval=0, tolerance=3, detect=False, skip=False
+*, x=138, y=56, interval=0, tolerance=3, detect=False, skip=False
     Replace_Dark_Servant
 #
