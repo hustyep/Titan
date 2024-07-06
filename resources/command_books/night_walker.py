@@ -97,6 +97,8 @@ def move_horizontal(target: MapPoint):
         DoubleJump(target=target, attack_if_needed=True).execute()
     elif distance >= DoubleJump.move_range.start:
         DoubleJump(target=target, attack_if_needed=True).execute()
+    elif distance in range(18, 22) or distance in range(15, 18) or distance in range(8, 10):
+        DoubleJump(target=target, attack_if_needed=False).execute()
     elif distance >= Shadow_Dodge.move_range.start:
         Shadow_Dodge('left' if d_x < 0 else 'right').execute()
     else:
@@ -157,7 +159,7 @@ class DoubleJump(Skill):
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
             press(Keybindings.JUMP, 1 if abs(dx) < 32 else 2, down_time=0.03, up_time=0.03)
             press(self.key, 1, down_time=0.03, up_time=0.03)
-        elif distance in range(30, 35):
+        elif distance in range(32, 35):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             press(self.key, 2, down_time=0.03, up_time=0.04)
         elif distance <= 25:
@@ -256,7 +258,7 @@ class Greater_Dark_Servant(Skill):
     precast = 0.5
     backswing = 0.8
     duration = 55
-    tolerance = 4
+    tolerance = 1
 
     def main(self):
         while not self.canUse():
@@ -458,8 +460,8 @@ class Shadow_Attack(Command):
                 Phalanx_Charge('left').execute()
                 Direction("left" if bot_status.elite_boss_detected else "right").execute()
             else:
-                Phalanx_Charge('right').execute()
-                Direction("right" if bot_status.elite_boss_detected else "left").execute()
+                Phalanx_Charge('left').execute()
+                Direction("right" if bot_status.elite_boss_detected else "right").execute()
             key_down(Keybindings.Quintuple_Star)
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)

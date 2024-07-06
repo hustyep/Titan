@@ -208,7 +208,7 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': "Captured Alley 1",
+        'default': "Sunny Laboratory 1",
         'quest': [
             'Western City Ramparts in Battle 1',
             'Outlaw-Infested Wastes 2',
