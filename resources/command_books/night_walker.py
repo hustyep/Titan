@@ -251,7 +251,7 @@ class Greater_Dark_Servant(Skill):
     precast = 0.5
     backswing = 0.8
     duration = 55
-    tolerance = 5.5
+    tolerance = 4
 
     def main(self):
         while not self.canUse():

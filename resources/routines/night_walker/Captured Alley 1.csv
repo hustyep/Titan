@@ -12,7 +12,7 @@ $, target=move_tolerance, value=10
     Phalanx_Charge, direction=right
 *, x=18, y=56, interval=150, tolerance=13, detect=False, skip=False
 
-~, label=Summon Loop, interval=41, skip=False
+~, label=Summon Loop, interval=46, skip=False
 *, x=54, y=43, interval=0, tolerance=3, detect=False, skip=False
     Dark_Omen
     Greater_Dark_Servant
