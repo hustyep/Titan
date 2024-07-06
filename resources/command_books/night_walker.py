@@ -92,8 +92,6 @@ def move_horizontal(target: MapPoint):
     start_p = shared_map.fixed_point(bot_status.player_pos)
     d_x = target.x - start_p.x
     distance = abs(d_x)
-    if bot_status.player_moving:
-        distance -= 3
 
     if not shared_map.is_continuous(start_p, target):
         DoubleJump(target=target, attack_if_needed=True).execute()
@@ -135,7 +133,7 @@ class DoubleJump(Skill):
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
     backswing = 0.1
-    move_range = range(24, 36)
+    move_range = range(26, 33)
     # 18-40
 
     def __init__(self, target: MapPoint, attack_if_needed=False):
@@ -152,8 +150,6 @@ class DoubleJump(Skill):
         direction = 'left' if dx < 0 else 'right'
         start_y = bot_status.player_pos.y
         distance = abs(dx)
-        if bot_status.player_moving:
-            distance -= 3
 
         self.__class__.castedTime = time.time()
         key_down(direction)
@@ -161,14 +157,23 @@ class DoubleJump(Skill):
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
             press(Keybindings.JUMP, 1 if abs(dx) < 32 else 2, down_time=0.03, up_time=0.03)
             press(self.key, 1, down_time=0.03, up_time=0.03)
-        elif distance in range(35, 40):
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.04)
-            press(self.key, 2, down_time=0.03, up_time=0.03)
-        elif distance <= 27:
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.02)
+        elif distance in range(30, 35):
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+            press(self.key, 2, down_time=0.03, up_time=0.04)
+        elif distance <= 25:
+            if distance in range(22, 26):
+                press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.35)
+            elif distance in range(18, 22):
+                press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.3)
+            elif distance in range(15, 18):
+                press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
+            elif distance in range(8, 10):
+                press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.02)
+            self.attack_if_needed = False
+                                
             press(self.key, 1, down_time=0.02, up_time=0.02)
             key_up(direction)
-            time.sleep(0.01)
+            time.sleep(0.02)
             press(opposite_direction(direction), down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.02)
         else:
@@ -178,7 +183,7 @@ class DoubleJump(Skill):
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         sleep_in_the_air(n=1)
-
+        
 
 # 上跳
 class Jump_Up(Command):
@@ -220,7 +225,7 @@ class Shadow_Dodge(Skill):
     cooldown = 0
     precast = 0
     backswing = 0.4
-    move_range = range(10, DoubleJump.move_range.start)
+    move_range = range(10, 15)
     # 12-14
 
     def __init__(self, direction='right'):
@@ -635,32 +640,43 @@ class Potion(Command):
 
 
 class Test_Command(Command):
+    key = Keybindings.Shadow_Jump
+    type = SkillType.Move
+    backswing = 0.1
+    
     def main(self, wait=True):
         for _ in range(0, 4):
             direction = 'right'
             key_down(direction)
             time.sleep(0.1)
 
-            # 三段跳
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.04)
-            press(self.key, 2, down_time=0.03, up_time=0.03)
+            # 三段跳 29-33
+            print('start:' + str(bot_status.player_pos.tuple))
+            # press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+            # press(self.key, 2, down_time=0.03, up_time=0.03)
 
-            # # 二段跳
+            # # # 二段跳 26-29
             # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             # press(self.key, 1, down_time=0.02, up_time=0.02)
 
-            # # 急停
+            # # # 急停 8-9
             # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.02)
-            # press(self.key, 1, down_time=0.02, up_time=0.02)
+            # # 18-21
+            # press(self.key, 1, down_time=0.02, up_time=0.3)
+            # # 15-17
+            # # press(self.key, 1, down_time=0.02, up_time=0.2)
+            # # 8-9
+            # # press(self.key, 1, down_time=0.02, up_time=0.02)
             # key_up(direction)
-            # time.sleep(0.01)
+            # time.sleep(0.02)
             # press(opposite_direction(direction), down_time=0.02, up_time=0.01)
             # press(self.key, 1, down_time=0.02, up_time=0.02)
 
-            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
+            # press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
 
             key_up(direction)
             sleep_in_the_air(n=1)
+            print('end: ' + str(bot_status.player_pos.tuple))
 
 
 @bot_status.run_if_enabled
