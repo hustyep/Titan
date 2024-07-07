@@ -37,19 +37,22 @@ class Cube:
     def stop(self):
         print("Stop Cube <<<<<<<<<<<<<<<")
         self.running = False
+        bot_status.acting = False
+        bot_status.enabled = False
 
     def __start_cube(self):
         print("Start Cube >>>>>>>>>>>>>>")
         self.running = True
+        bot_status.acting = True
 
         width = 150
         height = 44
         frame = capture.frame
         matchs1 = utils.multi_match(
-            frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.8, debug=False)
+            frame, POTENTIAL_RESULT_TEMPLATE, threshold=0.8, debug=False)   
         matchs2 = utils.multi_match(
             frame, POTENTIAL_AFTER_TEMPLATE, threshold=0.95, debug=False)
-        if matchs1:
+        if matchs1: 
             pos = matchs1[0]
             x = pos[0] - 20
             y = pos[1] + 23
@@ -68,13 +71,14 @@ class Cube:
                 chat_bot.voice_call()
                 break
             else:
+                print(f"< target: {self.target}")
                 self._cube_onemore(rect)
 
     @bot_status.run_if_enabled
     def __cube_result(self, rect, type: PotentialType):
         x, y, width, height = rect
 
-        while not capture.frame or not self._find_legendary(capture.frame[y-20:y+5, x:x+150]):
+        while capture.frame is None or not self._find_legendary(capture.frame[y-20:y+5, x:x+150]):
             time.sleep(0.05)
         time.sleep(1)
         result_frame = capture.frame[y:y+height, x:x+width]
@@ -101,14 +105,14 @@ class Cube:
     @bot_status.run_if_enabled
     def _cube_onemore(self, rect):
         print("_cube_onemore")
-        mouse_click()
+        mouse_click()   
         time.sleep(0.5)
         for _ in range(0, 4):
             press_acc('enter', up_time=0.2)
 
         x, y, width, height = rect
         start = time.time()
-        while not capture.frame or len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) > 0:
+        while capture.frame is None or len(utils.multi_match(capture.frame[y-20:y+5, x:x+150], POTENTIAL_LEGENDARY_TEMPLATE, threshold=0.95, debug=False)) > 0:
             time.sleep(0.05)
             if time.time() - start > 5:
                 break
@@ -141,9 +145,10 @@ class Cube:
         return self.__calculate(result_frame, source)
 
     def _stat_result(self, result_frame, type: MainStatType):
+        result = 0
         match type:
             case MainStatType.LUK:
-                source = [
+                source = [  
                     ('LUK13', 13, POTENTIAL_LUK13_TEMPLATE),
                     ('LUK10', 10, POTENTIAL_LUK10_TEMPLATE),
                     ('ALL10', 10, POTENTIAL_ALL10_TEMPLATE),
@@ -151,9 +156,9 @@ class Cube:
                     ('LUK12', 12, POTENTIAL_LUK12_TEMPLATE),
                     ('LUK9', 9, POTENTIAL_LUK9_TEMPLATE),
                     ('ALL9', 9, POTENTIAL_ALL9_TEMPLATE),
-                    ('ALL6', 9, POTENTIAL_ALL6_TEMPLATE),
+                    ('ALL6', 6, POTENTIAL_ALL6_TEMPLATE),
                 ]
-                return self.__calculate(result_frame, source)
+                result = self.__calculate(result_frame, source)
             case MainStatType.STR:
                 source = [
                     ('STR13', 13, POTENTIAL_STR13_TEMPLATE),
@@ -163,11 +168,10 @@ class Cube:
                     ('STR12', 12, POTENTIAL_STR12_TEMPLATE),
                     ('STR9', 9, POTENTIAL_STR9_TEMPLATE),
                     ('ALL9', 9, POTENTIAL_ALL9_TEMPLATE),
-                    ('ALL6', 9, POTENTIAL_ALL6_TEMPLATE),
+                    ('ALL6', 6, POTENTIAL_ALL6_TEMPLATE),
                 ]
-                return self.__calculate(result_frame, source)
-
-        return 0
+                result = self.__calculate(result_frame, source)
+        return result
 
     def _cd_result(self, result_frame):
         source = [
@@ -185,14 +189,14 @@ class Cube:
 
     def __calculate(self, result_frame, source: list):
         result = 0
-        for item in source:
+        for item in source: 
             type, value, template = item
             matchs = len(utils.multi_match(
-                result_frame, template, threshold=0.95, debug=False))
+                result_frame, template, threshold=0.98, debug=True))
             if matchs > 0:
                 print(f"{type}: {matchs}")
-                result += int(value) * 13
-
+                result += int(value) * matchs
+        print(f"result: {result}")
         return result
 
 

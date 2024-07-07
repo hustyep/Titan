@@ -2,9 +2,19 @@ $, target=move_tolerance, value=10
 *, x=99, y=77, interval=3500, tolerance=10, detect=False, skip=True
     Rest, wait=5
 
+~, label=Summon Loop, interval=46, skip=False
+*, x=99, y=77, interval=0, tolerance=3, detect=False, skip=False
+    Dark_Omen
+    Greater_Dark_Servant
+*, x=25, y=77, interval=0, tolerance=3, detect=False, skip=False
+    Wait, duration=0.3
+    ErdaShower, direction=right
+    Replace_Dark_Servant
+#
+
 @, label=Bottom mobbing
 *, x=99, y=77, interval=0, tolerance=3, detect=False, skip=False
-    Detect_Around_Anchor, count=5, x=710, y=560, top=550, bottom=100, left=650, right=650
+    Detect_Around_Anchor, count=4, x=710, y=560, top=550, bottom=100, left=650, right=650
     Shadow_Attack
     Buff
     Potion
@@ -17,13 +27,3 @@ $, target=move_tolerance, value=10
     Dark_Omen
 *, x=11, y=91, interval=0, tolerance=4, detect=False, skip=False
 *, x=137, y=91, interval=0, tolerance=4, detect=False, skip=False
-
-~, label=Summon Loop, interval=46, skip=False
-*, x=99, y=77, interval=0, tolerance=3, detect=False, skip=False
-    Dark_Omen
-    Greater_Dark_Servant
-*, x=25, y=77, interval=0, tolerance=3, detect=False, skip=False
-    Wait, duration=0.3
-    ErdaShower, direction=right
-    Replace_Dark_Servant
-#
