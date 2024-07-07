@@ -225,7 +225,10 @@ class DoubleJump(Skill):
         if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
-        sleep_in_the_air(n=1)
+        if abs(shared_map.current_map.base_floor - start_y) <= 2:
+            time.sleep(0.3)
+        else:
+            sleep_in_the_air(n=1)
         
 
 # 上跳
@@ -240,13 +243,14 @@ class Jump_Up(Command):
 
     def main(self):
         sleep_in_the_air(n=4)
-        press(opposite_direction(bot_status.player_direction))
+        # if bot_status.player_moving:
+        #     press(opposite_direction(bot_status.player_direction))
         # evade_rope(True)
 
         up_point = MapPoint(bot_status.player_pos.x, self.target.y)
-        if not shared_map.on_the_platform(up_point, True):
+        if not shared_map.on_the_platform(up_point, True) and shared_map.on_the_platform(MapPoint(self.target.x, bot_status.player_pos.y)):
             move_horizontal(
-                MapPoint(self.target.x, bot_status.player_pos.y, 1))
+                MapPoint(self.target.x, bot_status.player_pos.y, 3))
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
@@ -267,7 +271,7 @@ class Shadow_Dodge(Skill):
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 0.4
+    backswing = 0.3
     move_range = range(10, 15)
     # 12-14
 
@@ -282,7 +286,7 @@ class Shadow_Dodge(Skill):
         sleep_in_the_air(n=1)
         self.__class__.castedTime = time.time()
         press(opposite_direction(self.direction))
-        press_acc(self.__class__.key, up_time=self.__class__.backswing)
+        press_acc(self.__class__.key, down_time=0.1, up_time=self.__class__.backswing)
         # press(self.direction)
         sleep_in_the_air()
         return True
@@ -473,7 +477,7 @@ class Shadow_Attack(Command):
                 if time.time() - start_time > 2:
                     break
 
-        n = 3
+        n = 2
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
@@ -482,13 +486,10 @@ class Shadow_Attack(Command):
             n = 1
         elif Dominion.canUse():
             Dominion().execute()
-            n = 2
         elif Arachnid.canUse():
             Arachnid().execute()
-            n = 2
         elif SolarCrest.canUse():
             SolarCrest().execute()
-            n = 2
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
             n = 4
