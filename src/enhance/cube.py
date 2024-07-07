@@ -45,7 +45,7 @@ class Cube:
         self.running = True
         bot_status.acting = True
 
-        width = 150
+        width = 90
         height = 44
         frame = capture.frame
         matchs1 = utils.multi_match(
@@ -192,9 +192,9 @@ class Cube:
         for item in source: 
             type, value, template = item
             matchs = len(utils.multi_match(
-                result_frame, template, threshold=0.98, debug=True))
+                result_frame, template, threshold=0.98, debug=False))
             if matchs > 0:
-                print(f"{type}: {matchs}")
+                print(f"{type}: {matchs}")  
                 result += int(value) * matchs
         print(f"result: {result}")
         return result
