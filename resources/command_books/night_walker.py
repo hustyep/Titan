@@ -200,7 +200,7 @@ class DoubleJump(Skill):
         #     print("bingo")
         #     time.sleep(0.01)
         # else:
-        sleep_in_the_air(n=1)
+        sleep_in_the_air(n=3)
         return True
 
 
@@ -441,7 +441,7 @@ class Shadow_Attack(Command):
             burst().execute()
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 5.7 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 5.5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
@@ -454,10 +454,8 @@ class Shadow_Attack(Command):
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
-            n = 2.5
         elif Silence.canUse():
             Silence().execute()
-            n = 1
         elif Dominion.canUse():
             Dominion().execute()
         elif Arachnid.canUse():
@@ -466,7 +464,7 @@ class Shadow_Attack(Command):
             SolarCrest().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
-            n = 4
+            n = 3
         else:
             n = 3 if bot_status.elite_boss_detected else 0
             self.__class__.castedTime = time.time() - 4
