@@ -258,10 +258,9 @@ class Shadow_Dodge(Skill):
         if not self.canUse():
             return False
 
-        sleep_in_the_air(n=1)
         self.__class__.castedTime = time.time()
-        press(opposite_direction(self.direction))
-        press_acc(self.__class__.key, down_time=0.1, up_time=self.__class__.backswing)
+        press(opposite_direction(self.direction), down_time=0.1)
+        press_acc(self.__class__.key, up_time=self.__class__.backswing)
         # press(self.direction)
         sleep_in_the_air()
         return True
