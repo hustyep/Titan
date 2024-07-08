@@ -431,6 +431,12 @@ class Attack(Command):
 class Shadow_Attack(Command):
     cooldown = 4
 
+    def __init__(self, direction=None):
+        super().__init__(locals())
+        self.direction = bot_settings.validate_horizontal_arrows(direction)
+        if self.direction is None:
+            self.direction = 'right' if random() <= 0.5 else 'left'
+
     def main(self, wait=True):
         assert (shared_map.current_map)
         if not self.canUse() and not bot_status.elite_boss_detected:
@@ -470,12 +476,12 @@ class Shadow_Attack(Command):
             self.__class__.castedTime = time.time() - 4
 
         if n > 0:
-            if shared_map.current_map.name == 'Outlaw-Infested Wastes 2':
+            if self.direction == 'right':
                 Phalanx_Charge('left').execute()
                 Direction("left" if bot_status.elite_boss_detected else "right").execute()
             else:
-                Phalanx_Charge('left').execute()
-                Direction("right" if bot_status.elite_boss_detected else "right").execute()
+                Phalanx_Charge('right').execute()
+                Direction("right" if bot_status.elite_boss_detected else "left").execute()
             key_down(Keybindings.Quintuple_Star)
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)

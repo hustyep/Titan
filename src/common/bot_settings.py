@@ -84,7 +84,8 @@ def validate_horizontal_arrows(key):
         key = key.lower()
         if key in ['left', 'right']:
             return key
-    raise ValueError(f"'{key}' is not a valid horizontal arrow key.")
+    return None
+    # raise ValueError(f"'{key}' is not a valid horizontal arrow key.")
 
 
 #########################
