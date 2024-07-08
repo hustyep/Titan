@@ -399,6 +399,7 @@ class Routine(Subject):
 
     def check_rune_solve_result(self, used_frame):
         time.sleep(0.5)
+        rune_type = None
         for _ in range(4):
             rune_type = rune.rune_liberate_result(capture.frame)
             if rune_type is not None:

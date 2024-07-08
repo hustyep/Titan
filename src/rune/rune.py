@@ -506,7 +506,7 @@ def rune_liberate_result(frame):
             print(c)
             print('\n')
             list = c.split(":")
-            return list[0]
+            return str(list[0])
 
     # image_failed = filter_color(image, RUNE_FAILED_TEXT_RANGES)
     # image_rgb = cv2.cvtColor(image_failed, cv2.COLOR_BGR2RGB)

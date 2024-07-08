@@ -10,7 +10,7 @@ from src.map.map import shared_map
 
 
 def identify_role_name():
-    name = utils.image_match_text(capture.name_frame, Name_Class_Map.keys())
+    name = utils.image_match_text(capture.name_frame, list(Name_Class_Map.keys()))
     return name
 
 
@@ -230,6 +230,7 @@ def get_channel_pos(channel):
 
 def convert_point_minimap_to_window(point: MapPoint):
     '''convent the minimap point to the window point'''
+    assert(capture.minimap_frame is not None)
     window_width = capture.window_rect.width
     window_height = capture.window_rect.height
 

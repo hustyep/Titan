@@ -320,7 +320,7 @@ class Detector(Subject):
 
     def check_binded(self):
         frame = capture.frame
-        if frame is None:
+        if frame is None or bot_settings.role is None:
             return
         player_template = bot_settings.role.name_template
         player = utils.multi_match(

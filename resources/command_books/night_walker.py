@@ -143,7 +143,7 @@ class DoubleJump(Skill):
         self.target = target
         self.attack_if_needed = attack_if_needed
 
-    def main(self):
+    def main(self, wait=True):
         while not self.canUse():
             utils.log_event("double jump waiting", bot_settings.debug)
             time.sleep(0.01)
@@ -230,7 +230,8 @@ class DoubleJump(Skill):
         #     time.sleep(0.01)
         # else:
         sleep_in_the_air(n=1)
-        
+        return True
+
 
 # 上跳
 class Jump_Up(Command):
@@ -242,7 +243,7 @@ class Jump_Up(Command):
         super().__init__(locals())
         self.target = target
 
-    def main(self):
+    def main(self, wait=True):
         sleep_in_the_air(n=4)
         time.sleep(0.2)
         # if bot_status.player_moving:
@@ -262,6 +263,7 @@ class Jump_Up(Command):
         sleep_in_the_air(n=10, detect_rope=True)
         time.sleep(0.1)
         key_up('up')
+        return True
 
 #########################
 #        X轴移动         #
@@ -281,7 +283,7 @@ class Shadow_Dodge(Skill):
         super().__init__(locals())
         self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
             return False
 
@@ -307,10 +309,10 @@ class Greater_Dark_Servant(Skill):
     duration = 55
     tolerance = 1
 
-    def main(self):
+    def main(self, wait=True):
         while not self.canUse():
             Shadow_Attack().execute()
-        return super().main()
+        return super().main(wait)
 
 
 class Replace_Dark_Servant(Skill):
@@ -386,14 +388,13 @@ class Dominion(Skill):
     backswing = 0.1
     tolerance = 5
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
             return False
         self.__class__.castedTime = time.time()
         press(self.__class__.key, down_time=self.__class__.precast, up_time=self.__class__.backswing)
         Shadow_Dodge().execute()
         return True
-
 
 class Phalanx_Charge(Skill):
     key = Keybindings.Phalanx_Charge
@@ -410,13 +411,12 @@ class Phalanx_Charge(Skill):
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
             return False
         if self.direction is not None:
             Direction(self.direction).execute()
-        super().main()
-        return True
+        return super().main(wait)
 
 
 class Silence(Skill):
@@ -436,7 +436,7 @@ class Rapid_Throw(Skill):
     backswing = 2
     tolerance = 5
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
             return False
         time.sleep(self.precast)
@@ -453,14 +453,14 @@ class Attack(Command):
     type = SkillType.Attack
     backswing = Quintuple_Star.backswing
 
-    def main(self):
-        Quintuple_Star().execute()
+    def main(self, wait=True):
+        return Quintuple_Star(wait).execute()
 
 
 class Shadow_Attack(Command):
     cooldown = 4
 
-    def main(self):
+    def main(self, wait=True):
         assert (shared_map.current_map)
         if not self.canUse() and not bot_status.elite_boss_detected:
             time.sleep(0.3)
@@ -517,11 +517,12 @@ class Shadow_Attack(Command):
 
 
 class burst(Command):
-    def main(self):
+    def main(self, wait=True):
         Shadow_Illusion().execute()
         Shadow_Bite().execute()
         Silence().execute()
         Rapid_Throw().execute()
+        return True
 
 
 class Detect_Around_Anchor(Command):
@@ -535,7 +536,7 @@ class Detect_Around_Anchor(Command):
         self.left = int(left)
         self.right = int(right)
 
-    def main(self):
+    def main(self, wait=True):
         if self.x == 0 and self.y == 0:
             anchor = bot_helper.locate_player_fullscreen(accurate=True)
         else:
@@ -552,10 +553,10 @@ class Detect_Around_Anchor(Command):
             if len(mobs) >= self.count:
                 break
             if time.time() - start > 7:
-                utils.log_event("Detect_Around_Anchor timeout",
-                                bot_settings.debug)
+                utils.log_event("Detect_Around_Anchor timeout", bot_settings.debug)
                 break
             time.sleep(0.3)
+        return True
 
 ###################
 #      Buffs      #
@@ -593,7 +594,8 @@ class Buff(Command):
                 utils.log_event(str(buff), bot_settings.debug)
                 result = buff().main(wait)
                 if result:
-                    break
+                    return True
+        return False
 
 
 class Transcendent_Cygnus_Blessing(Skill):
@@ -676,7 +678,7 @@ class Potion(Command):
         Wealth_Potion.key = Keybindings.WEALTH_POTION
         EXP_Potion.key = Keybindings.EXP_POTION
 
-    def main(self):
+    def main(self, wait=True):
         if bot_status.invisible:
             return False
         for potion in self.potions:
@@ -799,7 +801,7 @@ class Test_Command(Command):
             key_up(direction)
             sleep_in_the_air(n=2)
             print('end: ' + str(bot_status.player_pos.tuple))
-
+        return True
 
 @bot_status.run_if_enabled
 def find_next_point(start: MapPoint, target: MapPoint):
