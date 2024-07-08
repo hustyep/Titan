@@ -155,7 +155,7 @@ class DoubleJump(Skill):
 
         self.__class__.castedTime = time.time()
         key_down(direction)
-        time.sleep(0.1)
+        time.sleep(0.02)
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
             press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
@@ -163,60 +163,30 @@ class DoubleJump(Skill):
             press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             press_acc(self.key, 2, down_time=0.03, up_time=0.04)
         elif distance <= 25:
+            times = [0.02, 0.02, 0.02, 0.02]
             if distance in range(23, 26):
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
-                press_acc(self.key, 1, down_time=0.02, up_time=0.2)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.1, up_time=0.1)
+                times = [0.2, 0.2, 0.1, 0.1]
             elif distance in range(21, 23):
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.1)
-                press_acc(self.key, 1, down_time=0.02, up_time=0.25)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
+                times = [0.1, 0.25, 0.1, 0.02]
             elif distance in range(19, 21):
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.1)
-                press_acc(self.key, 1, down_time=0.02, up_time=0.2)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
+                times = [0.1, 0.2, 0.1, 0.02]
             elif distance == 18:
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.15)
-                press(self.key, 1, down_time=0.02, up_time=0.12)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
+                times = [0.15, 0.12, 0.1, 0.02]
             elif distance == 17:
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
-                press_acc(self.key, 1, down_time=0.02, up_time=0.1)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
+                times = [0.2, 0.1, 0.1, 0.02]
             elif distance == 16:
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.1)
-                press_acc(self.key, 1, down_time=0.02, up_time=0.1)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
+                times = [0.1, 0.1, 0.1, 0.02]
             elif distance == 15:
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
-                press_acc(self.key, 1, down_time=0.02, up_time=0.05)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
+                times = [0.2, 0.05, 0.1, 0.02]
             elif distance in range(8, 10):
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.03)
-                press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.02, up_time=0.02)
+                times = [0.03, 0.02, 0.02, 0.02]
             elif distance == 7:
-                press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-                press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-                key_up(direction)
-                time.sleep(0.02)
-                press_acc(opposite_direction(direction), down_time=0.02, up_time=0.01)
+                times = [0.01, 0.02, 0.02, 0.01]
+            press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=times[0])
+            press_acc(self.key, 1, down_time=0.02, up_time=times[1])
+            key_up(direction)
+            time.sleep(0.02)
+            press_acc(opposite_direction(direction), down_time=times[2], up_time=times[3])
             press(self.key, 1, down_time=0.02, up_time=0.02)
             self.attack_if_needed = False
         else:
