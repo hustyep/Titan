@@ -157,11 +157,11 @@ class DoubleJump(Skill):
         key_down(direction)
         time.sleep(0.1)
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
-            press(Keybindings.JUMP, 1 if abs(dx) < 32 else 2, down_time=0.03, up_time=0.03)
-            press(self.key, 1, down_time=0.03, up_time=0.03)
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+            press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
         elif distance in range(32, 35):
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-            press(self.key, 2, down_time=0.03, up_time=0.04)
+            press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+            press_acc(self.key, 2, down_time=0.03, up_time=0.04)
         elif distance <= 25:
             if distance in range(23, 26):
                 press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
@@ -225,10 +225,11 @@ class DoubleJump(Skill):
         if self.attack_if_needed and self.target.y >= start_y:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
-        if abs(shared_map.current_map.base_floor - start_y) <= 2:
-            time.sleep(0.3)
-        else:
-            sleep_in_the_air(n=1)
+        # if abs(shared_map.current_map.base_floor - start_y) <= 2:
+        #     print("bingo")
+        #     time.sleep(0.01)
+        # else:
+        sleep_in_the_air(n=1)
         
 
 # 上跳
@@ -243,6 +244,7 @@ class Jump_Up(Command):
 
     def main(self):
         sleep_in_the_air(n=4)
+        time.sleep(0.2)
         # if bot_status.player_moving:
         #     press(opposite_direction(bot_status.player_direction))
         # evade_rope(True)
@@ -468,7 +470,7 @@ class Shadow_Attack(Command):
             burst().execute()
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 6.3 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 5.7 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
@@ -481,6 +483,7 @@ class Shadow_Attack(Command):
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
+            n = 2.5
         elif Silence.canUse():
             Silence().execute()
             n = 1
@@ -694,12 +697,27 @@ class Test_Command(Command):
             key_down(direction)
             time.sleep(0.1)
 
-            # 三段跳 29-33
-            print('start:' + str(bot_status.player_pos.tuple))
-            # press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
-            # press(self.key, 2, down_time=0.03, up_time=0.03)
+            # 三段跳 40-41
+            # print('start:' + str(bot_status.player_pos.tuple))
+            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.15)
+            # press_acc(self.key, 2, down_time=0.1, up_time=0.03)
 
-            # # # 二段跳 26-29
+            # 三段跳 37-38
+            # print('start:' + str(bot_status.player_pos.tuple))
+            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.1)
+            # press_acc(self.key, 2, down_time=0.1, up_time=0.03)
+
+            # 三段跳 35-36
+            # print('start:' + str(bot_status.player_pos.tuple))
+            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.1)
+            # press_acc(self.key, 2, down_time=0.06, up_time=0.03)
+            
+            # 三段跳 30-33
+            # print('start:' + str(bot_status.player_pos.tuple))
+            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+            # press_acc(self.key, 2, down_time=0.03, up_time=0.03)
+
+            # 二段跳 26-29
             # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             # press(self.key, 1, down_time=0.02, up_time=0.02)
 
