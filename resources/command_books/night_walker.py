@@ -291,6 +291,15 @@ class Replace_Dark_Servant(Skill):
     type = SkillType.Move
     cooldown = 3
     backswing = 1
+    
+    def __init__(self, resummon='False'):
+        super().__init__(locals())
+        self.resummon = bot_settings.validate_boolean(resummon)
+        
+    def main(self, wait=True):
+        if self.resummon:
+            press('down')
+        return super().main(wait)
 
 
 #######################
