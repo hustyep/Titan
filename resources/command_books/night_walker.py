@@ -134,6 +134,7 @@ class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
+    cooldown = 0.4
     backswing = 0.1
     move_range = range(26, 33)
     # 18-40

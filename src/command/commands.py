@@ -48,7 +48,7 @@ class Command():
     PRIMITIVES = {int, str, bool, float}
 
     key: str | None = None
-    cooldown: int = 0
+    cooldown: float = 0
     castedTime: float = 0
     precast: float = 0.05
     backswing: float = 0.5
@@ -148,15 +148,12 @@ class Move(Command):
         result += f' target={self.target.tuple} tolerance={self.target.tolerance} step={self.step}'
         return result
 
-    def main(self):
+    def main(self, wait=True):
         if self.step > self.max_steps:
-            return
+            return False
 
-        if shared_map.minimap_data is not None and len(shared_map.minimap_data) > 0:
-            if target_reached(bot_status.player_pos, self.target):
-                return
-        elif utils.distance(bot_status.player_pos, self.target) <= self.target.tolerance:
-            return
+        if shared_map.data_available and target_reached(bot_status.player_pos, self.target):
+            return True
 
         if shared_map.point_type(bot_status.player_pos) == MapPointType.FloorRope:
             press("up", down_time=0.1)
@@ -170,8 +167,7 @@ class Move(Command):
         if Command.complete_callback:
             Command.complete_callback(self)
 
-        Move(self.target.x, self.target.y,
-             self.target.tolerance, self.step+1, self.max_steps).execute()
+        return Move(self.target.x, self.target.y, self.target.tolerance, self.step+1, self.max_steps).execute()
 
 
 #############################
@@ -336,10 +332,10 @@ class Walk(Command):
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
         # print(str(self))
 
-    def main(self):
+    def main(self, wait=True):
         d_x = self.target.x - bot_status.player_pos.x
         if abs(d_x) <= self.target.tolerance:
-            return
+            return True
 
         moving = False
         walk_counter = 0
@@ -371,6 +367,7 @@ class Walk(Command):
         if direction is not None:
             key_up(direction)
         print(f"end dx={d_x}")
+        return abs(d_x) <= self.target.tolerance
 
 
 class Wait(Command):
@@ -380,9 +377,10 @@ class Wait(Command):
         super().__init__(locals())
         self.duration = float(duration)
 
-    def main(self):
+    def main(self, wait=True):
         releaseAll()
         time.sleep(self.duration)
+        return True
 
 
 class DetectAroundAnchor(Command):
@@ -396,7 +394,7 @@ class DetectAroundAnchor(Command):
         self.left = int(left)
         self.right = int(right)
 
-    def main(self):
+    def main(self, wait=True):
         # (469, 490)
         if self.x == 0 and self.y == 0:
             anchor = bot_helper.locate_player_fullscreen(accurate=True)
@@ -415,6 +413,7 @@ class DetectAroundAnchor(Command):
             time.sleep(0.1)
             if time.time() - start > 6:
                 break
+        return True
 
 
 class DetectInRect(Command):
@@ -426,7 +425,7 @@ class DetectInRect(Command):
         self.width = int(width)
         self.height = int(height)
 
-    def main(self):
+    def main(self, wait=True):
         start = time.time()
         while True:
             mobs = detect_mobs_in_rect(
@@ -438,6 +437,7 @@ class DetectInRect(Command):
             time.sleep(0.1)
             if time.time() - start > 6:
                 break
+        return True
 
 
 class FeedPet(Command):
@@ -468,7 +468,7 @@ class Jump(Command):
         self.forward = bot_settings.validate_boolean(forward)
         self.attack = bot_settings.validate_boolean(attack)
 
-    def main(self):
+    def main(self, wait=True):
         if self.direction:
             press(self.direction, down_time=0.01)
         press_acc(DefaultKeybindings.JUMP,
@@ -478,6 +478,7 @@ class Jump(Command):
         if self.attack:
             Attack().execute()  # type: ignore
         sleep_in_the_air()
+        return True
 
 
 class Fall(Command):
@@ -492,7 +493,7 @@ class Fall(Command):
         self.forward = bot_settings.validate_boolean(forward)
         self.buff = bot_settings.validate_boolean(buff)
 
-    def main(self):
+    def main(self, wait=True):
         # evade_rope()
         key_down('down')
         time.sleep(0.03)
@@ -511,6 +512,7 @@ class Fall(Command):
 
         sleep_in_the_air(n=1, detect_rope=True)
         key_up('down')
+        return True
 
 
 class SolveRune(Command):
@@ -537,7 +539,7 @@ class SolveRune(Command):
             return False
         return super().canUse(next_t)
 
-    def main(self):
+    def main(self, wait=True): # type: ignore
         if not self.canUse():
             bot_status.rune_solving = False
             bot_status.acting = False
@@ -602,8 +604,9 @@ class ChangeChannel(Command):
         self.enable = bot_settings.validate_boolean(enable)
         self.instance = bot_settings.validate_boolean(instance)
 
-    def main(self) -> None:
+    def main(self, wait=True):
         bot_action.change_channel(self.num, self.instance)
+        return True
 
 
 class AutoLogin(Command):
@@ -612,8 +615,9 @@ class AutoLogin(Command):
         super().__init__(locals())
         self.channel = bot_settings.validate_nonnegative_int(channel)
 
-    def main(self):
+    def main(self, wait=True):
         bot_action.auto_login(self.channel)
+        return True
 
 
 class Relogin(Command):
@@ -622,12 +626,12 @@ class Relogin(Command):
         super().__init__(locals())
         self.channel = bot_settings.validate_nonnegative_int(channel)
 
-    def main(self):
+    def main(self, wait=True):
         bot_action.relogin(self.channel)
-
+        return True
 
 class MapTeleport(Command):
-    def main(self):
+    def main(self, wait=True):
         bot_status.enabled = False
         hid.key_press('up')
         time.sleep(2)
@@ -644,6 +648,7 @@ class MapTeleport(Command):
             time.sleep(0.1)
         time.sleep(2)
         bot_status.enabled = True
+        return True
 
 
 class Direction(Command):
@@ -654,23 +659,26 @@ class Direction(Command):
     def __str__(self):
         result = f'[Command]{self.id}: {self.direction} pos={bot_status.player_pos.tuple}'
         return result
-    
-    def main(self):
+
+    def main(self, wait=True):
         if not self.direction:
             print(f'[Command]{self.id}: {self.direction} not executed')
-            return
+            return False
         if bot_status.player_direction != self.direction:
             press(self.direction, n=1, down_time=0.03, up_time=0.01)
-
+            return True
+        return False
 
 class Rest(Command):
     def __init__(self, wait):
         super().__init__(locals())
         self.wait = int(wait)
 
-    def main(self):
+    def main(self, wait=True):
         if bot_action.teleport_random_town():
             time.sleep(self.wait)
+            return True
+        return False
 
 
 # class GoArdentmill(Command):
@@ -867,14 +875,15 @@ class ErdaShower(Skill):
             capture.skill_frame, cls.icon[8:, : -14], threshold=0.96)
         cls.ready = len(matchs) > 0
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
-            return
+            return False
         if self.direction:
             Direction(self.direction).execute()
         self.__class__.castedTime = time.time()
         press(DefaultKeybindings.ERDA_SHOWER,
               down_time=self.precast, up_time=self.backswing)
+        return True
 
 
 class MapleWarrior(Skill):
@@ -969,7 +978,7 @@ class RopeLift(Skill):
         super().__init__(locals())
         self.target_y = abs(int(target_y))
 
-    def main(self):
+    def main(self, wait=True):
         time.sleep(0.2)
         start_y = bot_status.player_pos.y
         dy = abs(start_y - self.target_y)
@@ -994,6 +1003,7 @@ class RopeLift(Skill):
             time.sleep(0.24)
             press(self.key)
         sleep_in_the_air(n=30)
+        return True
 
 ###################
 #      Potion     #
