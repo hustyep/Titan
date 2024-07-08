@@ -12,7 +12,7 @@ $, target=move_tolerance, value=10
 *, x=99, y=77, interval=0, tolerance=3, detect=False, skip=False
     Detect_Around_Anchor, count=3, x=710, y=560, top=550, bottom=100, left=650, right=650
     Shadow_Attack, direction=right
-*, x=97, y=64, interval=0, tolerance=3, detect=False, skip=False
+*, x=97, y=50, interval=0, tolerance=3, detect=False, skip=False
     Replace_Dark_Servant, resummon=True
 #
 
