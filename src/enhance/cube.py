@@ -24,7 +24,7 @@ class Cube:
         self.running = False
         self.role: RoleModel
 
-        self.type = PotentialType.MOB
+        self.type = PotentialType.ATT
         self.target = 2
 
     def start(self, role: RoleModel):
@@ -45,7 +45,7 @@ class Cube:
         self.running = True
         bot_status.acting = True
 
-        width = 90
+        width = 140
         height = 44
         frame = capture.frame
         matchs1 = utils.multi_match(
@@ -123,10 +123,10 @@ class Cube:
     def _att_result(self, result_frame, count_boss=False, count_def=False):
         if not count_boss and not count_def:
             source = [
-                ('Att13', 13, POTENTIAL_ATT13_TEMPLATE),
-                ('Att10', 10, POTENTIAL_ATT10_TEMPLATE),
-                ('Att12', 12, POTENTIAL_ATT12_TEMPLATE),
-                ('Att9', 9, POTENTIAL_ATT9_TEMPLATE),
+                ('Att13', 1, POTENTIAL_ATT13_TEMPLATE),
+                ('Att10', 1, POTENTIAL_ATT10_TEMPLATE),
+                ('Att12', 1, POTENTIAL_ATT12_TEMPLATE),
+                ('Att9', 1, POTENTIAL_ATT9_TEMPLATE),
             ]
         else:
             source = [
