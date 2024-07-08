@@ -134,8 +134,8 @@ class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
-    cooldown = 0.4
-    backswing = 0.1
+    cooldown = 0.6
+    backswing = 0
     move_range = range(26, 33)
     # 18-40
 
@@ -200,7 +200,7 @@ class DoubleJump(Skill):
         #     print("bingo")
         #     time.sleep(0.01)
         # else:
-        sleep_in_the_air(n=3)
+        sleep_in_the_air(n=2)
         return True
 
 
