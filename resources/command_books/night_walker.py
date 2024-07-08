@@ -200,7 +200,7 @@ class DoubleJump(Skill):
         #     print("bingo")
         #     time.sleep(0.01)
         # else:
-        sleep_in_the_air(n=2)
+        sleep_in_the_air(n=3)
         return True
 
 
@@ -229,7 +229,7 @@ class Jump_Up(Command):
         press(Keybindings.JUMP)
         key_down('up')
         time.sleep(0.06 if dy >= 20 else 0.3)
-        press(Keybindings.JUMP, 1)
+        press(Keybindings.JUMP)
         time.sleep(1)
         sleep_in_the_air(n=10, detect_rope=True)
         time.sleep(0.1)
@@ -297,6 +297,8 @@ class Replace_Dark_Servant(Skill):
         self.resummon = bot_settings.validate_boolean(resummon)
         
     def main(self, wait=True):
+        if not self.canUse():
+            return False
         if self.resummon:
             key_down('down')
             time.sleep(0.01)
@@ -510,11 +512,13 @@ class burst(Command):
     def main(self, wait=True):
         Shadow_Spear().execute()
         Shadow_Illusion().execute()
-        Replace_Dark_Servant(resummon='True').execute()
+        if time.time() - self.castedTime > 30:
+            Replace_Dark_Servant(resummon='True').execute()
         Shadow_Bite().execute()
         Silence().execute()
         Quintuple_Star().execute()
         Rapid_Throw().execute()
+        self.castedTime = time.time()
         return True
 
 

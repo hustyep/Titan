@@ -97,13 +97,16 @@ class MapModel:
             cv2.imwrite(minimap_sample_path, capture.minimap_display)
 
     def _load_mob_template(self):
+        mob_template = None
+        elite_template = None
+        boss_template = None
         try:
             mob_template = cv2.imread(
                 f'assets/mobs/{self.monster}@normal.png', 0)
             elite_template = cv2.imread(
                 f'assets/mobs/{self.monster}@elite.png', 0)
-            boss_template = cv2.imread(
-                f'assets/mobs/{self.monster}@boss.png', 0)
+            # boss_template = cv2.imread(
+            #     f'assets/mobs/{self.monster}@boss.png', 0)
         except:
             pass
         if mob_template is not None:
@@ -117,5 +120,5 @@ class MapModel:
             self.elite_templates = [
                 elite_template, cv2.flip(elite_template, 1)]
 
-        if boss_template is not None:
-            self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
+        # if boss_template is not None:
+        #     self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
