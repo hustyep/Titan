@@ -200,7 +200,7 @@ class DoubleJump(Skill):
         #     print("bingo")
         #     time.sleep(0.01)
         # else:
-        sleep_in_the_air(n=3)
+        sleep_in_the_air(n=4)
         return True
 
 
