@@ -298,8 +298,13 @@ class Replace_Dark_Servant(Skill):
         
     def main(self, wait=True):
         if self.resummon:
-            press('down')
-        return super().main(wait)
+            key_down('down')
+            time.sleep(0.01)
+        result = super().main(wait)
+        if self.resummon:
+            key_up('down')
+            time.sleep(0.01)
+        return result
 
 
 #######################
