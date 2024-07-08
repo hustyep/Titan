@@ -41,6 +41,7 @@ class DefaultKeybindings:
     ARACHNID = 'w'
     GODDESS_BLESSING = '1'
     SolarCrest = '5'
+    Will_of_Erda = 'home'
 
 
 class Command():
@@ -539,7 +540,7 @@ class SolveRune(Command):
             return False
         return super().canUse(next_t)
 
-    def main(self, wait=True): # type: ignore
+    def main(self, wait=True):  # type: ignore
         if not self.canUse():
             bot_status.rune_solving = False
             bot_status.acting = False
@@ -630,6 +631,7 @@ class Relogin(Command):
         bot_action.relogin(self.channel)
         return True
 
+
 class MapTeleport(Command):
     def main(self, wait=True):
         bot_status.enabled = False
@@ -668,6 +670,7 @@ class Direction(Command):
             press(self.direction, n=1, down_time=0.03, up_time=0.01)
             return True
         return False
+
 
 class Rest(Command):
     def __init__(self, wait):
@@ -884,6 +887,14 @@ class ErdaShower(Skill):
         press(DefaultKeybindings.ERDA_SHOWER,
               down_time=self.precast, up_time=self.backswing)
         return True
+
+
+class Will_of_Erda(Skill):
+    key = DefaultKeybindings.Will_of_Erda
+    cooldown = 330
+    precast = 0.3
+    backswing = 0.8
+    type = SkillType.Buff
 
 
 class MapleWarrior(Skill):

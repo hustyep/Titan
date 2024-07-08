@@ -34,7 +34,8 @@ class Keybindings:
     Darkness_Ascending = '6'
     FOR_THE_GUILD = '8'
     HARD_HITTER = '7'
-
+    Cygnus_Knights_Will = 'end'
+    
     # Potion
     EXP_POTION = '0'
     WEALTH_POTION = "="
@@ -56,6 +57,7 @@ class Keybindings:
     Silence = 'j'
     ARACHNID = 'w'
     SolarCrest = '5'
+    
 
 #########################
 #       Movement        #
@@ -435,6 +437,15 @@ class Rapid_Throw(Skill):
         return True
 
 
+class Cygnus_Knights_Will(Skill):
+    key = Keybindings.Cygnus_Knights_Will
+    type = SkillType.Buff
+    cooldown = 300
+    precast = 0.3
+    backswing = 0.6
+    tolerance = 5
+
+
 class Attack(Command):
     key = Quintuple_Star.key
     type = SkillType.Attack
@@ -538,6 +549,15 @@ class Detect_Around_Anchor(Command):
             anchor = bot_helper.locate_player_fullscreen(accurate=True)
         else:
             anchor = (self.x, self.y)
+        
+        if bot_helper.check_blind():
+            if Cygnus_Knights_Will.canUse():
+                Cygnus_Knights_Will().execute()
+            elif Will_of_Erda.canUse():
+                Will_of_Erda().execute()
+            else:
+                return True
+                
         start = time.time()
         while True:
             mobs = detect_mobs_around_anchor(

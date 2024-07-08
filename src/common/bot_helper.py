@@ -1,5 +1,6 @@
 import time
 import os
+import numpy as np
 
 from src.common import utils, bot_status, bot_settings
 from src.common.gui_setting import gui_setting
@@ -286,3 +287,12 @@ def rune_buff_match(frame):
         rune_buff = utils.multi_match(
             frame[:150, :], RUNE_BUFF_GRAY_TEMPLATE, threshold=0.8)
     return rune_buff
+
+
+def check_blind():
+    gray = cv2.cvtColor(capture.frame, cv2.COLOR_BGR2GRAY)
+    height, width, _ = gray.shape
+    if not bot_status.lost_minimap and np.count_nonzero(gray < 15) / height / width > 0.8:
+        return True
+    else:
+        return False

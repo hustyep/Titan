@@ -36,6 +36,7 @@ class BotError(Enum):
 class BotWarnning(Enum):
     RUNE_FAILED = 'Rune Failed'
     BINDED = 'Binded'
+    BLIND = 'Blind'
     NO_MOVEMENT = 'No Movement'
     BACKGROUND = 'background'
     # not used
@@ -56,7 +57,6 @@ class BotVerbose(Enum):
     MINE_ACTIVE = 'Mine Active'
     CALIBRATED = 'calibrated'
     NEW_FRAME = 'New Frame'
-    BLIND = 'Blind'
 
 
 class BotDebug(Enum):
