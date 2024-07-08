@@ -458,6 +458,7 @@ class Shadow_Attack(Command):
             return False
 
         if bot_status.elite_boss_detected:
+            Direction(opposite_direction(self.direction)).execute()
             burst().execute()
 
         start_time = time.time()
@@ -507,9 +508,12 @@ class Shadow_Attack(Command):
 
 class burst(Command):
     def main(self, wait=True):
+        Shadow_Spear().execute()
         Shadow_Illusion().execute()
+        Replace_Dark_Servant(resummon='True').execute()
         Shadow_Bite().execute()
         Silence().execute()
+        Quintuple_Star().execute()
         Rapid_Throw().execute()
         return True
 
@@ -539,7 +543,7 @@ class Detect_Around_Anchor(Command):
                 multy_match=self.count > 1,
                 debug=False)
             utils.log_event(f"mobs count = {len(mobs)}", bot_settings.debug)
-            if len(mobs) >= self.count:
+            if len(mobs) >= self.count or bot_status.elite_boss_detected:
                 break
             if time.time() - start > 7:
                 utils.log_event("Detect_Around_Anchor timeout", bot_settings.debug)
