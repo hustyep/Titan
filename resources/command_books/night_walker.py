@@ -283,6 +283,7 @@ class Greater_Dark_Servant(Skill):
     def main(self, wait=True):
         while not self.canUse():
             Shadow_Attack().execute()
+        Dark_Omen().execute()
         return super().main(wait)
 
 
