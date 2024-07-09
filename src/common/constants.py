@@ -208,12 +208,11 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': "Sunny Laboratory 1",
+        'default': "Laboratory Behind Locked Door 1",
         'quest': [
             'Western City Ramparts in Battle 1',
             'Outlaw-Infested Wastes 2',
-            "Road to the Castle's Gate 1"
-            'Captured Alley 1'
+            'Sunny Laboratory 1'
         ]
     }
 }

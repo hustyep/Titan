@@ -112,6 +112,14 @@ def move_up(target: MapPoint):
     p = bot_status.player_pos
     dy = abs(p.y - target.y)
 
+    up_point = MapPoint(bot_status.player_pos.x, target.y)
+    up_left = MapPoint(bot_status.player_pos.x - 2, target.y)
+    up_right = MapPoint(bot_status.player_pos.x + 2, target.y)
+    if not shared_map.is_continuous(up_point, up_left):
+        press('right')
+    elif not shared_map.is_continuous(up_point, up_right):
+        press('left')
+        
     if dy < 5:
         press(Keybindings.JUMP)
     elif dy < Jump_Up.move_range.stop:
@@ -181,8 +189,10 @@ class DoubleJump(Skill):
                 times = [0.1, 0.1, 0.1, 0.02]
             elif distance == 15:
                 times = [0.2, 0.05, 0.1, 0.02]
+            elif distance == 10:
+                times = [0.2, 0.02, 0.02, 0.02]
             elif distance in range(8, 10):
-                times = [0.03, 0.02, 0.02, 0.02]
+                times = [0.1, 0.02, 0.02, 0.02]
             elif distance == 7:
                 times = [0.01, 0.02, 0.02, 0.01]
             press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=times[0])
@@ -196,13 +206,13 @@ class DoubleJump(Skill):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.02)
         if self.attack_if_needed and self.target.y >= start_y:
-            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
+            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.1)
         key_up(direction)
         # if abs(shared_map.current_map.base_floor - start_y) <= 2:
         #     print("bingo")
         #     time.sleep(0.01)
         # else:
-        sleep_in_the_air(n=4)
+        sleep_in_the_air(n=2)
         return True
 
 
@@ -223,10 +233,6 @@ class Jump_Up(Command):
         #     press(opposite_direction(bot_status.player_direction))
         # evade_rope(True)
 
-        up_point = MapPoint(bot_status.player_pos.x, self.target.y)
-        if not shared_map.on_the_platform(up_point, True) and shared_map.on_the_platform(MapPoint(self.target.x, bot_status.player_pos.y)):
-            move_horizontal(
-                MapPoint(self.target.x, bot_status.player_pos.y, 3))
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
@@ -249,7 +255,7 @@ class Shadow_Dodge(Skill):
     cooldown = 0
     precast = 0
     backswing = 0.3
-    move_range = range(10, 15)
+    move_range = range(11, 15)
     # 12-14
 
     def __init__(self, direction='right'):
@@ -714,7 +720,7 @@ class Test_Command(Command):
         for _ in range(0, 4):
             direction = 'right'
             key_down(direction)
-            time.sleep(0.1)
+            time.sleep(0.02)
 
             # 三段跳 40-41
             # print('start:' + str(bot_status.player_pos.tuple))
@@ -798,12 +804,12 @@ class Test_Command(Command):
             # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
             
             # 8-9
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.03)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.02, up_time=0.02)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
+            press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.05)
+            press_acc(self.key, 1, down_time=0.02, up_time=0.02)
+            key_up(direction)
+            time.sleep(0.02)
+            press_acc(opposite_direction(direction), down_time=0.02, up_time=0.02)
+            press_acc(self.key, 1, down_time=0.02, up_time=0.02)
             
             # 7
             # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
@@ -816,7 +822,7 @@ class Test_Command(Command):
             # press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
 
             key_up(direction)
-            sleep_in_the_air(n=2)
+            sleep_in_the_air(n=3)
             print('end: ' + str(bot_status.player_pos.tuple))
         return True
 
@@ -832,7 +838,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
     d_x = target.x - start.x
     d_y = target.y - start.y
 
-    if abs(d_x) <= target.tolerance:
+    if abs(d_x) <= 1:
         return target
 
     platform_start = shared_map.platform_of_point(start)
@@ -884,6 +890,10 @@ def find_next_point(start: MapPoint, target: MapPoint):
                     return find_next_point(bot_status.player_pos, target)
             else:
                 return tmp_x
+        else:
+            tmp_platform = shared_map.platform_of_point(tmp_x)
+            if platform_gap(platform_start, tmp_platform) in range(0, 20):
+                return find_next_point(bot_status.player_pos, tmp_x)
         if gap_h == -1 and platform_start and platform_target:
             x_start = list(range(platform_start.begin_x, platform_start.end_x))
             x_target = list(range(platform_target.begin_x, platform_target.end_x))
@@ -908,11 +918,11 @@ def find_next_point(start: MapPoint, target: MapPoint):
         tmp_x = MapPoint(target.x, start.y, 3)
         if shared_map.is_continuous(tmp_x, start):
             return tmp_x
-        if platform_start is not None and platform_target is not None and gap_h > 0 and gap_h <= DoubleJump.move_range.start:
-            if platform_start.end_x < platform_target.begin_x:
-                return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
-            else:
-                return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+        # if platform_start is not None and platform_target is not None and gap_h > 0 and gap_h <= DoubleJump.move_range.start:
+        #     if platform_start.end_x < platform_target.begin_x:
+        #         return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
+        #     else:
+        #         return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
         elif gap_h > 0:
             DoubleJump(target=target, attack_if_needed=True).execute()
             return find_next_point(bot_status.player_pos, target)
