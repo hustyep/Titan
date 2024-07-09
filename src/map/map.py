@@ -252,44 +252,44 @@ class Map:
     def path_between(self, platform_start: Platform | None, platform_target: Platform | None) -> list[Platform] | None:
         if platform_start is None or platform_target is None:
             return None
-        dy = platform_start.y - platform_target.y
+        dy = platform_target.y - platform_start.y
 
+        if platform_start == platform_target:
+            return [platform_start]
         if self.platform_reachable(platform_start, platform_target):
             return [platform_start, platform_target]
+
         if dy == 0:
             next_platform = self.adjoin_platform(platform_start, platform_target.begin_x > platform_start.end_x)
             if self.platform_reachable(platform_start, next_platform):
                 paths = self.path_between(next_platform, platform_target)
                 if paths:
                     return [platform_start] + paths
-                else:
-                    return None
-            else:
-                return None
-        elif dy < 0:
-            adjoin_platform = self.adjoin_platform(platform_start, platform_target.begin_x > platform_start.end_x)
-            if self.platform_reachable(platform_start, adjoin_platform):
-                paths = self.path_between(adjoin_platform, platform_target)
-                if paths:
-                    return [platform_start] + paths
-
-            upper_platform = self.upper_platform(platform_start)
-            paths = self.path_between(upper_platform, platform_target)
-            if paths:
-                return [platform_start] + paths
-            return None
         else:
-            adjoin_platform = self.adjoin_platform(platform_start, platform_target.begin_x > platform_start.end_x)
-            if self.platform_reachable(platform_start, adjoin_platform):
-                paths = self.path_between(adjoin_platform, platform_target)
+            if platform_target.begin_x > platform_start.end_x:
+                adjoin_platform = self.adjoin_platform(platform_start, True)
+                if adjoin_platform and self.platform_reachable(platform_start, adjoin_platform) and adjoin_platform.begin_x < platform_target.end_x:
+                    paths = self.path_between(adjoin_platform, platform_target)
+                    if paths:
+                        return [platform_start] + paths
+            else:
+                adjoin_platform = self.adjoin_platform(platform_start, False)
+                if adjoin_platform and self.platform_reachable(platform_start, adjoin_platform) and adjoin_platform.end_x > platform_target.begin_x:
+                    paths = self.path_between(adjoin_platform, platform_target)
+                    if paths:
+                        return [platform_start] + paths
+                    
+            if dy < 0:
+                upper_platform = self.upper_platform(platform_start)
+                if upper_platform and upper_platform.y <= platform_target.y:
+                    paths = self.path_between(upper_platform, platform_target)
+                    if paths:
+                        return [platform_start] + paths
+            else:
+                under_platform = self.under_platform(platform_start)
+                paths = self.path_between(under_platform, platform_target)
                 if paths:
                     return [platform_start] + paths
-
-            under_platform = self.under_platform(platform_start)
-            paths = self.path_between(under_platform, platform_target)
-            if paths:
-                return [platform_start] + paths
-            return None
 
     def add_start_point(self, point: MapPoint):
         if gui_setting.mode.type != BotRunMode.Mapping:

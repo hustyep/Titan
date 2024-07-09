@@ -116,7 +116,7 @@ def move_up(target: MapPoint):
     if not shared_map.is_continuous(up_point, target):
         DoubleJump(target, False)
         return
-    
+
     up_left = MapPoint(bot_status.player_pos.x - 2, target.y)
     up_right = MapPoint(bot_status.player_pos.x + 2, target.y)
     if not shared_map.is_continuous(up_point, up_left):
@@ -730,100 +730,86 @@ def find_next_point(start: MapPoint, target: MapPoint):
 
     start = shared_map.fixed_point(start)
     d_x = target.x - start.x
-    d_y = target.y - start.y
-
-    if abs(d_x) <= 1:
-        return target
-
-    if d_y == 0:
-        next_p = find_next_horizontal_point(start, target)
-        if next_p:
-            return next_p
-    elif d_y < 0:
-        # 目标在上面， 优先向上移动
-        next_p = find_next_upper_point(start, target)
-        if next_p:
-            return next_p
-    else:
-        # 目标在下面，优先向下移动
-        next_p = find_next_under_point(start, target)
-        if next_p:
-            return next_p
-
-    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
-
-
-def find_next_horizontal_point(start: MapPoint, target: MapPoint):
-    start = shared_map.fixed_point(start)
-    if target_reached(start, target):
-        return
-    if start.y != target.y:
-        return
-
-    if shared_map.is_continuous(start, target):
-        return target
-
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
-    gap_h = platform_gap(platform_start, platform_target)
-    if platform_start is None or platform_target is None:
-        return
-
-    tolerance = 4
-    max_distance = DoubleJump.move_range.stop - tolerance * 2
-    if gap_h in range(0, max_distance):
-        next_p = None
-        if platform_start.end_x < platform_target.begin_x:
-            next_p = MapPoint(platform_start.end_x - 3, platform_start.y, 2)
-        else:
-            next_p = MapPoint(platform_start.begin_x + 3, platform_start.y, 2)
-        if target_reached(start, next_p):
-            return target
-        else:
-            return next_p
-    else:
-        next_platform = shared_map.adjoin_platform(platform_start, platform_start.end_x < platform_target.begin_x)
-        if next_platform and next_platform != platform_target and platform_gap(platform_start, next_platform) in range(0, max_distance):
-            if platform_start.end_x < next_platform.begin_x:
-                return MapPoint(next_platform.begin_x + 3, next_platform.y, 2)
-            else:
-                return MapPoint(next_platform.end_x - 3, next_platform.y, 2)
-
-
-def find_next_upper_point(start: MapPoint, target: MapPoint):
-    start = shared_map.fixed_point(start)
-    assert (start.y > target.y)
-
-    # 向上移动
-    next_p = MapPoint(start.x, target.y, 3)
-    if shared_map.is_continuous(next_p, target):
-        if shared_map.is_continuous(MapPoint(start.x - 3, target.y), MapPoint(start.x + 3, target.y)):
-            return next_p
-        elif target.x < start.x:
-            next_p = MapPoint(start.x - 3, start.y, 1)
-        else:
-            next_p = MapPoint(start.x + 3, start.y, 1)
-        if target_reached(start, next_p):
-            return target
-        else:
-            return next_p
-
-    # 水平移动
-    next_p = MapPoint(target.x, start.y)
-    if shared_map.is_continuous(start, next_p):
-        return next_p
-
-    platform_start = shared_map.platform_of_point(start)
-    platform_target = shared_map.platform_of_point(target)
-    gap_h = platform_gap(platform_start, platform_target)
 
     if not platform_start or not platform_target:
         return
 
-    if gap_h == -1:
-        # 有交集，返回交集中点
+    if abs(d_x) <= 1:
+        return target
+    if platform_start == platform_target:
+        return target
+
+    paths = shared_map.path_between(platform_start, platform_target)
+    if paths:
+        next_platform = paths[1]
+        d_y = next_platform.y - platform_start.y
+
+        tmp_p = next_platform.center
+        if len(paths) == 2:
+            tmp_p = target
+        if d_y == 0:
+            next_p = find_next_horizontal_point(start, tmp_p)
+            if next_p:
+                return next_p
+        elif d_y < 0:
+            next_p = find_next_upper_point(start, tmp_p)
+            if next_p:
+                return next_p
+        else:
+            next_p = find_next_under_point(start, tmp_p)
+            if next_p:
+                return next_p
+    return shared_map.platform_point(MapPoint(target.x, target.y - 1, 3))
+
+
+def find_next_horizontal_point(start: MapPoint, target: MapPoint):
+    if start.y != target.y:
+        return
+
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    if not platform_start or not platform_target:
+        return
+    if platform_start == platform_target:
+        return target
+
+    next_p = None
+    if platform_start.end_x < platform_target.begin_x:
+        next_p = MapPoint(platform_start.end_x - 3, platform_start.y, 2)
+    else:
+        next_p = MapPoint(platform_start.begin_x + 3, platform_start.y, 2)
+    if target_reached(start, next_p):
+        return target
+    else:
+        return next_p
+
+
+def find_next_upper_point(start: MapPoint, target: MapPoint):
+    if start.y <= target.y:
+        return
+
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    if not platform_start or not platform_target:
+        return
+
+    gap = platform_gap(platform_start, platform_target)
+    if gap == -1:
+        # 有交集
+        next_p = MapPoint(start.x, platform_target.y, 3)
+        if shared_map.on_the_platform(next_p):
+            if shared_map.is_continuous(MapPoint(start.x - 3, platform_target.y), MapPoint(start.x + 3, platform_target.y)):
+                return next_p
+            if shared_map.on_the_platform(MapPoint(start.x - 3, platform_target.y), True):
+                return MapPoint(start.x - 3, start.y, 1)
+            elif shared_map.on_the_platform(MapPoint(start.x + 3, platform_target.y), True):
+                return MapPoint(start.x + 3, start.y, 1)
         return shared_map.point_of_intersection(platform_start, platform_target)
-    elif gap_h <= 8 and abs(start.y - target.y) <= 8:
+    else:
         # 二段跳范围内
         if platform_start.end_x < platform_target.begin_x:
             next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)
@@ -833,62 +819,38 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
             return target
         else:
             return next_p
-    else:
-        # 尝试水平方向靠近
-        next_platform = shared_map.adjoin_platform(platform_start, platform_start.end_x < platform_target.begin_x)
-        if next_platform and next_platform.begin_x < platform_target.end_x and platform_gap(platform_start, next_platform) <= 26:
-            return next_platform.center
-        
-        # 尝试向上移动
-        upper_platforms = shared_map.platforms_of_y(platform_target.y)
-        if upper_platforms:
-            for next_platform in upper_platforms:
-                if next_platform != platform_target and platform_gap(next_platform, platform_target) <= 26 and platform_gap(next_platform, platform_start) == -1:
-                    return next_platform.center
 
 
 def find_next_under_point(start: MapPoint, target: MapPoint):
-    start = shared_map.fixed_point(start)
-    assert (start.y < target.y)
-
-    tmp_y = MapPoint(start.x, target.y, 3)
-    if shared_map.is_continuous(tmp_y, target):
-        return tmp_y
-    tmp_x = MapPoint(target.x, start.y, 3)
-    if shared_map.is_continuous(tmp_x, start):
-        return tmp_x
+    if start.y >= target.y:
+        return
 
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
-    gap_h = platform_gap(platform_start, platform_target)
 
     if not platform_start or not platform_target:
         return
 
-    if gap_h == -1:
-        next_p = shared_map.point_of_intersection(platform_start, platform_target)
-        if next_p:
+    gap = platform_gap(platform_start, platform_target)
+
+    if not platform_start or not platform_target:
+        return
+
+    if gap == -1:
+        next_p = MapPoint(start.x, platform_target.y, 3)
+        if shared_map.on_the_platform(next_p):
             return next_p
-    elif gap_h <= 26:
+        else:
+            return shared_map.point_of_intersection(platform_start, platform_target)
+    else:
         if platform_start.end_x < platform_target.begin_x:
             next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)
-            if target_reached(start, next_p):
-                return target
-            else:
-                return next_p
         else:
             next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 2)
-            if target_reached(start, next_p):
-                return target
-            else:
-                return next_p
-    else:
-        next_platform = shared_map.adjoin_platform(platform_start, platform_start.end_x < platform_target.begin_x)
-        if next_platform:
-            return next_platform.center
-        next_platform = shared_map.under_platform(platform_start)
-        if next_platform:
-            return next_platform.center
+        if target_reached(start, next_p):
+            return target
+        else:
+            return next_p
 
 
 class Test_Command(Command):
