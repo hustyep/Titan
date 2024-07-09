@@ -290,7 +290,7 @@ def target_reached(start: MapPoint, target: MapPoint):
     # if tolerance > bot_settings.adjust_tolerance:
     #     return utils.distance(start, target) <= tolerance
     # else:
-    return start.y == target.y and abs(start.x - target.x) <= target.tolerance
+    return abs(start.y - target.y) <= target.tolerance_v and abs(start.x - target.x) <= target.tolerance
 
 
 #############################

@@ -35,7 +35,7 @@ class Keybindings:
     FOR_THE_GUILD = '8'
     HARD_HITTER = '7'
     Cygnus_Knights_Will = 'end'
-    
+
     # Potion
     EXP_POTION = '0'
     WEALTH_POTION = "="
@@ -57,7 +57,7 @@ class Keybindings:
     Silence = 'j'
     ARACHNID = 'w'
     SolarCrest = '5'
-    
+
 
 #########################
 #       Movement        #
@@ -99,7 +99,7 @@ def move_horizontal(target: MapPoint):
         DoubleJump(target=target, attack_if_needed=True).execute()
     elif distance >= DoubleJump.move_range.start:
         DoubleJump(target=target, attack_if_needed=True).execute()
-    elif distance >=15 or distance in range(7, 10):
+    elif distance >= 15 or distance in range(7, 10):
         DoubleJump(target=target, attack_if_needed=False).execute()
     elif distance >= Shadow_Dodge.move_range.start:
         Shadow_Dodge('left' if d_x < 0 else 'right').execute()
@@ -113,13 +113,17 @@ def move_up(target: MapPoint):
     dy = abs(p.y - target.y)
 
     up_point = MapPoint(bot_status.player_pos.x, target.y)
+    if not shared_map.is_continuous(up_point, target):
+        DoubleJump(target, False)
+        return
+    
     up_left = MapPoint(bot_status.player_pos.x - 2, target.y)
     up_right = MapPoint(bot_status.player_pos.x + 2, target.y)
     if not shared_map.is_continuous(up_point, up_left):
-        press('right')
+        press('right', down_time=0.2)
     elif not shared_map.is_continuous(up_point, up_right):
-        press('left')
-        
+        press('left', down_time=0.2)
+
     if dy < 5:
         press(Keybindings.JUMP)
     elif dy < Jump_Up.move_range.stop:
@@ -131,9 +135,13 @@ def move_up(target: MapPoint):
 @bot_status.run_if_enabled
 def move_down(target: MapPoint):
     sleep_in_the_air(n=4)
-    # evade_rope()
-    if target.y > bot_status.player_pos.y:
+    if target.y <= bot_status.player_pos.y:
+        return
+    next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
+    if shared_map.on_the_platform(next_p):
         Fall().execute()
+    else:
+        DoubleJump(target, False)
 
 
 #########################
@@ -299,11 +307,11 @@ class Replace_Dark_Servant(Skill):
     type = SkillType.Move
     cooldown = 3
     backswing = 1
-    
+
     def __init__(self, resummon='False'):
         super().__init__(locals())
         self.resummon = bot_settings.validate_boolean(resummon)
-        
+
     def main(self, wait=True):
         if not self.canUse():
             return False
@@ -390,6 +398,7 @@ class Dominion(Skill):
         press(self.__class__.key, down_time=self.__class__.precast, up_time=self.__class__.backswing)
         Shadow_Dodge().execute()
         return True
+
 
 class Phalanx_Charge(Skill):
     key = Keybindings.Phalanx_Charge
@@ -555,7 +564,7 @@ class Detect_Around_Anchor(Command):
             anchor = bot_helper.locate_player_fullscreen(accurate=True)
         else:
             anchor = (self.x, self.y)
-        
+
         if bot_helper.check_blind():
             if Cygnus_Knights_Will.canUse():
                 Cygnus_Knights_Will().execute()
@@ -563,7 +572,7 @@ class Detect_Around_Anchor(Command):
                 Will_of_Erda().execute()
             else:
                 return True
-                
+
         start = time.time()
         while True:
             mobs = detect_mobs_around_anchor(
@@ -711,121 +720,6 @@ class Potion(Command):
         return True
 
 
-class Test_Command(Command):
-    key = Keybindings.Shadow_Jump
-    type = SkillType.Move
-    backswing = 0.1
-    
-    def main(self, wait=True):
-        for _ in range(0, 4):
-            direction = 'right'
-            key_down(direction)
-            time.sleep(0.02)
-
-            # 三段跳 40-41
-            # print('start:' + str(bot_status.player_pos.tuple))
-            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.15)
-            # press_acc(self.key, 2, down_time=0.1, up_time=0.03)
-
-            # 三段跳 37-38
-            # print('start:' + str(bot_status.player_pos.tuple))
-            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.1)
-            # press_acc(self.key, 2, down_time=0.1, up_time=0.03)
-
-            # 三段跳 35-36
-            # print('start:' + str(bot_status.player_pos.tuple))
-            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.1)
-            # press_acc(self.key, 2, down_time=0.06, up_time=0.03)
-            
-            # 三段跳 30-33
-            # print('start:' + str(bot_status.player_pos.tuple))
-            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
-            # press_acc(self.key, 2, down_time=0.03, up_time=0.03)
-
-            # 二段跳 26-29
-            # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            # press(self.key, 1, down_time=0.02, up_time=0.02)
-
-            # 急停
-            # 23-25
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.2)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.1)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            
-            # 21-22
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.1)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.25)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            
-            # 19-20
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.1)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.2)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            
-            # 18
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.15)
-            # press(self.key, 1, down_time=0.02, up_time=0.12)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            
-            # 17
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.1)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            
-            # 16
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.1)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.1)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            
-            # 15
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.05)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.02)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            
-            # 8-9
-            press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.05)
-            press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            key_up(direction)
-            time.sleep(0.02)
-            press_acc(opposite_direction(direction), down_time=0.02, up_time=0.02)
-            press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            
-            # 7
-            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            # key_up(direction)
-            # time.sleep(0.02)
-            # press_acc(opposite_direction(direction), down_time=0.02, up_time=0.01)
-            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-
-            # press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
-
-            key_up(direction)
-            sleep_in_the_air(n=3)
-            print('end: ' + str(bot_status.player_pos.tuple))
-        return True
-
 @bot_status.run_if_enabled
 def find_next_point(start: MapPoint, target: MapPoint):
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
@@ -841,90 +735,194 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if abs(d_x) <= 1:
         return target
 
+    if d_y == 0:
+        next_p = find_next_horizontal_point(start, target)
+        if next_p:
+            return next_p
+    elif d_y < 0:
+        # 目标在上面， 优先向上移动
+        next_p = find_next_upper_point(start, target)
+        if next_p:
+            return next_p
+    else:
+        # 目标在下面，优先向下移动
+        next_p = find_next_under_point(start, target)
+        if next_p:
+            return next_p
+
+    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
+
+
+def find_next_horizontal_point(start: MapPoint, target: MapPoint):
+    start = shared_map.fixed_point(start)
+    if target_reached(start, target):
+        return
+    if start.y != target.y:
+        return
+
+    if shared_map.is_continuous(start, target):
+        return target
+
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+    gap_h = platform_gap(platform_start, platform_target)
+    if platform_start is None or platform_target is None:
+        return
+
+    tolerance = 4
+    max_distance = DoubleJump.move_range.stop - tolerance * 2
+    if gap_h in range(0, max_distance):
+        next_p = None
+        if platform_start.end_x < platform_target.begin_x:
+            next_p = MapPoint(platform_start.end_x - 3, platform_start.y, 2)
+        else:
+            next_p = MapPoint(platform_start.begin_x + 3, platform_start.y, 2)
+        if target_reached(start, next_p):
+            return target
+        else:
+            return next_p
+    else:
+        next_platform = shared_map.adjoin_platform(platform_start, platform_start.end_x < platform_target.begin_x)
+        if next_platform and next_platform != platform_target and platform_gap(platform_start, next_platform) in range(0, max_distance):
+            if platform_start.end_x < next_platform.begin_x:
+                return MapPoint(next_platform.begin_x + 3, next_platform.y, 2)
+            else:
+                return MapPoint(next_platform.end_x - 3, next_platform.y, 2)
+
+
+def find_next_upper_point(start: MapPoint, target: MapPoint):
+    start = shared_map.fixed_point(start)
+    assert (start.y > target.y)
+
+    # 向上移动
+    next_p = MapPoint(start.x, target.y, 3)
+    if shared_map.is_continuous(next_p, target):
+        if shared_map.is_continuous(MapPoint(start.x - 3, target.y), MapPoint(start.x + 3, target.y)):
+            return next_p
+        elif target.x < start.x:
+            next_p = MapPoint(start.x - 3, start.y, 1)
+        else:
+            next_p = MapPoint(start.x + 3, start.y, 1)
+        if target_reached(start, next_p):
+            return target
+        else:
+            return next_p
+
+    # 水平移动
+    next_p = MapPoint(target.x, start.y)
+    if shared_map.is_continuous(start, next_p):
+        return next_p
+
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
     gap_h = platform_gap(platform_start, platform_target)
 
-    if d_y == 0:
-        if shared_map.is_continuous(start, target):
-            return target
-        elif platform_start and platform_target:
-            tolerance = 4
-            max_distance = DoubleJump.move_range.stop - tolerance * 2
-            if gap_h in range(0, max_distance):
-                if platform_start.end_x < platform_target.begin_x:
-                    if platform_target.begin_x - start.x <= max_distance:
-                        return target
-                    return MapPoint(platform_start.end_x - int(tolerance / 2), platform_start.y, 3)
-                else:
-                    if start.x - platform_target.end_x <= max_distance:
-                        return target
-                    return MapPoint(platform_start.begin_x + int(tolerance / 2), platform_start.y, 3)
-    elif d_y < 0:
-        # 目标在上面， 优先向上移动
-        tmp_y = MapPoint(start.x, target.y)
-        if shared_map.is_continuous(tmp_y, target):
-            if bot_status.player_moving:
-                if bot_status.player_direction == 'left':
-                    tmp_y = MapPoint(start.x - 3, target.y)
-                else:
-                    tmp_y = MapPoint(start.x + 3, target.y)
-                if shared_map.is_continuous(tmp_y, target):
-                    return MapPoint(start.x, target.y, 3)
-                else:
-                    time.sleep(0.5)
-                    return find_next_point(bot_status.player_pos, target)
-            else:
-                return tmp_y
-        tmp_x = MapPoint(target.x, start.y)
-        if shared_map.is_continuous(start, tmp_x):
-            if bot_status.player_moving:
-                if bot_status.player_direction == 'left':
-                    tmp = MapPoint(target.x - 3, target.y)
-                else:
-                    tmp = MapPoint(target.x + 3, target.y)
-                if shared_map.is_continuous(tmp, target):
-                    return MapPoint(target.x, start.y, 3)
-                else:
-                    time.sleep(0.5)
-                    return find_next_point(bot_status.player_pos, target)
-            else:
-                return tmp_x
-        else:
-            tmp_platform = shared_map.platform_of_point(tmp_x)
-            if platform_gap(platform_start, tmp_platform) in range(0, 20):
-                return find_next_point(bot_status.player_pos, tmp_x)
-        if gap_h == -1 and platform_start and platform_target:
-            x_start = list(range(platform_start.begin_x, platform_start.end_x))
-            x_target = list(range(platform_target.begin_x, platform_target.end_x))
-            x_intersection = list(set(x_start).union(set(x_target)))
-            if len(x_intersection) > 0:
-                x_intersection.sort()
-                target_x = (x_intersection[0] + x_intersection[-1]) / 2
-                return MapPoint(int(target_x), target.y, 3)
-        elif gap_h > 0 and gap_h <= 8 and abs(d_y) <= 8 and platform_start and platform_target:
-            if platform_start.end_x < platform_target.begin_x:
-                return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
-            else:
-                return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
-        elif gap_h > 0:
-            DoubleJump(target=target, attack_if_needed=True).execute()
-            return find_next_point(bot_status.player_pos, target)
-    else:
-        # 目标在下面，优先向下移动
-        tmp_y = MapPoint(start.x, target.y, 3)
-        if shared_map.is_continuous(tmp_y, target):
-            return tmp_y
-        tmp_x = MapPoint(target.x, start.y, 3)
-        if shared_map.is_continuous(tmp_x, start):
-            return tmp_x
-        # if platform_start is not None and platform_target is not None and gap_h > 0 and gap_h <= DoubleJump.move_range.start:
-        #     if platform_start.end_x < platform_target.begin_x:
-        #         return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
-        #     else:
-        #         return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
-        elif gap_h > 0:
-            DoubleJump(target=target, attack_if_needed=True).execute()
-            return find_next_point(bot_status.player_pos, target)
+    if not platform_start or not platform_target:
+        return
 
-    return shared_map.platform_point(MapPoint(target.x, target.y - 1, target.tolerance))
+    if gap_h == -1:
+        # 有交集，返回交集中点
+        return shared_map.point_of_intersection(platform_start, platform_target)
+    elif gap_h <= 8 and abs(start.y - target.y) <= 8:
+        # 二段跳范围内
+        if platform_start.end_x < platform_target.begin_x:
+            next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)
+        else:
+            next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 2)
+        if target_reached(start, next_p):
+            return target
+        else:
+            return next_p
+    else:
+        # 尝试水平方向靠近
+        next_platform = shared_map.adjoin_platform(platform_start, platform_start.end_x < platform_target.begin_x)
+        if next_platform and next_platform.begin_x < platform_target.end_x and platform_gap(platform_start, next_platform) <= 26:
+            return next_platform.center
+        
+        # 尝试向上移动
+        upper_platforms = shared_map.platforms_of_y(platform_target.y)
+        if upper_platforms:
+            for next_platform in upper_platforms:
+                if next_platform != platform_target and platform_gap(next_platform, platform_target) <= 26 and platform_gap(next_platform, platform_start) == -1:
+                    return next_platform.center
+
+
+def find_next_under_point(start: MapPoint, target: MapPoint):
+    start = shared_map.fixed_point(start)
+    assert (start.y < target.y)
+
+    tmp_y = MapPoint(start.x, target.y, 3)
+    if shared_map.is_continuous(tmp_y, target):
+        return tmp_y
+    tmp_x = MapPoint(target.x, start.y, 3)
+    if shared_map.is_continuous(tmp_x, start):
+        return tmp_x
+
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+    gap_h = platform_gap(platform_start, platform_target)
+
+    if not platform_start or not platform_target:
+        return
+
+    if gap_h == -1:
+        next_p = shared_map.point_of_intersection(platform_start, platform_target)
+        if next_p:
+            return next_p
+    elif gap_h <= 26:
+        if platform_start.end_x < platform_target.begin_x:
+            next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)
+            if target_reached(start, next_p):
+                return target
+            else:
+                return next_p
+        else:
+            next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 2)
+            if target_reached(start, next_p):
+                return target
+            else:
+                return next_p
+    else:
+        next_platform = shared_map.adjoin_platform(platform_start, platform_start.end_x < platform_target.begin_x)
+        if next_platform:
+            return next_platform.center
+        next_platform = shared_map.under_platform(platform_start)
+        if next_platform:
+            return next_platform.center
+
+
+class Test_Command(Command):
+    key = Keybindings.Shadow_Jump
+    type = SkillType.Move
+    backswing = 0.1
+
+    def main(self, wait=True):
+        for _ in range(0, 4):
+            print('start:' + str(bot_status.player_pos.tuple))
+            direction = 'right'
+            key_down(direction)
+            time.sleep(0.02)
+
+            # 三段跳 40-41
+            # press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.15)
+            # press_acc(self.key, 2, down_time=0.1, up_time=0.03)
+
+            # 二段跳 26-29
+            # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            # press(self.key, 1, down_time=0.02, up_time=0.02)
+
+            # 急停
+            # 23-25
+            # press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.2)
+            # press_acc(self.key, 1, down_time=0.02, up_time=0.2)
+            # key_up(direction)
+            # time.sleep(0.02)
+            # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.1)
+            # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
+
+            # press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.02)
+
+            key_up(direction)
+            sleep_in_the_air(n=3)
+            print('end: ' + str(bot_status.player_pos.tuple))
+        return True

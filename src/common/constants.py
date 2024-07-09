@@ -75,10 +75,10 @@ class MapPoint:
         self.y = y
         self.tolerance = tolerance
         self.tolerance_v = tolerance_v
-    
+
     def __str__(self):
         return f"MapPoint: ({self.x}, {self.y}, {self.tolerance}, {self.tolerance_v})"
-    
+
     @property
     def tuple(self) -> tuple[int, int]:
         return (self.x, self.y)
@@ -113,6 +113,10 @@ class Platform:
         self.begin_x = begin_x
         self.end_x = end_x
         self.y = y
+
+    @property
+    def center(self):
+        return MapPoint(int((self.begin_x+self.end_x) / 2), self.y, 3)
 
 
 class MobType(Enum):
