@@ -786,7 +786,7 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
         if start.x in range(platform_target.begin_x + 3 - max_distance, platform_start.end_x + 1):
             return target
         else:
-            return MapPoint(platform_start.end_x -2, platform_start.y, 3)
+            return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
     else:
         if start.x in range(platform_start.begin_x, platform_target.end_x - 3 + max_distance + 1):
             return target
@@ -807,14 +807,39 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
     gap = platform_gap(platform_start, platform_target)
     if gap == -1:
         # 有交集
-        next_p = MapPoint(start.x, platform_target.y, 3)
-        if shared_map.on_the_platform(next_p) and shared_map.is_continuous(next_p, target):
-            if shared_map.is_continuous(MapPoint(start.x - 3, platform_target.y), MapPoint(start.x + 3, platform_target.y)):
+        # 优先水平方向接近
+        next_p = MapPoint(target.x, start.y, 2)
+        if shared_map.is_continuous(start, next_p):
+            if shared_map.on_the_platform(next_p, 3):
+                pass
+            if shared_map.on_the_platform(MapPoint(target.x - 3, target.y), True):
+                next_p = MapPoint(target.x - 3, start.y, 2)
+            elif shared_map.on_the_platform(MapPoint(target.x + 3, target.y), True):
+                next_p = MapPoint(target.x + 3, start.y, 2)
+            else:
+                next_p = None
+        if next_p:
+            if target_reached(start, next_p):
+                return target
+            else:
                 return next_p
-            if shared_map.on_the_platform(MapPoint(start.x - 3, platform_target.y), True):
-                return MapPoint(start.x - 5, start.y, 2)
-            elif shared_map.on_the_platform(MapPoint(start.x + 3, platform_target.y), True):
-                return MapPoint(start.x + 5, start.y, 2)
+
+        # 尝试垂直方向接近
+        next_p = MapPoint(start.x, platform_target.y, 2)
+        if shared_map.is_continuous(next_p, target):
+            if shared_map.on_the_platform(next_p, 3):
+                pass
+            if shared_map.on_the_platform(MapPoint(start.x - 3, target.y), True):
+                next_p = MapPoint(start.x - 3, start.y, 2)
+            elif shared_map.on_the_platform(MapPoint(start.x + 3, target.y), True):
+                next_p = MapPoint(start.x + 3, start.y, 2)
+            else:
+                next_p = None
+            if next_p:
+                if target_reached(start, next_p):
+                    return target
+                else:
+                    return next_p
         return shared_map.point_of_intersection(platform_start, platform_target)
     else:
         # 二段跳范围内

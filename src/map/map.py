@@ -92,18 +92,18 @@ class Map:
                         return True
         return False
 
-    def on_the_platform(self, location: MapPoint, strict=False):
+    def on_the_platform(self, location: MapPoint, range=0):
         if self.data_available:
             x = location.x
             y = location.y
             value = self.is_floor_point(location)
-            if not strict:
+            if range == 0:
                 return value
             else:
                 if value:
-                    value_l = self.is_floor_point(MapPoint(x - 1, y), count_none=True)
-                    value_r = self.is_floor_point(MapPoint(x + 1, y), count_none=True)
-                    return value_l and value_r
+                    p_l = MapPoint(x - range, y)
+                    p_r = MapPoint(x + range, y)
+                    return self.is_continuous(p_l, p_r)
                 return False
         else:
             return True
@@ -167,9 +167,9 @@ class Map:
                     return platform
 
     def point_of_intersection(self, platform_start: Platform, platform_target: Platform):
-        x_start = list(range(platform_start.begin_x, platform_start.end_x))
-        x_target = list(range(platform_target.begin_x, platform_target.end_x))
-        x_intersection = list(set(x_start).union(set(x_target)))
+        x_start = list(range(platform_start.begin_x, platform_start.end_x + 1))
+        x_target = list(range(platform_target.begin_x, platform_target.end_x + 1))
+        x_intersection = list(set(x_start).intersection(set(x_target)))
         if len(x_intersection) > 0:
             x_intersection.sort()
             target_x = (x_intersection[0] + x_intersection[-1]) / 2
@@ -279,7 +279,7 @@ class Map:
                     paths = self.path_between(adjoin_platform, platform_target)
                     if paths:
                         return [platform_start] + paths
-                    
+
             if dy < 0:
                 upper_platform = self.upper_platform(platform_start)
                 if upper_platform and upper_platform.y <= platform_target.y:
