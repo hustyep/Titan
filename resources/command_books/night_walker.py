@@ -810,9 +810,9 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
             if shared_map.is_continuous(MapPoint(start.x - 3, platform_target.y), MapPoint(start.x + 3, platform_target.y)):
                 return next_p
             if shared_map.on_the_platform(MapPoint(start.x - 3, platform_target.y), True):
-                return MapPoint(start.x - 6, start.y, 3)
+                return MapPoint(start.x - 5, start.y, 2)
             elif shared_map.on_the_platform(MapPoint(start.x + 3, platform_target.y), True):
-                return MapPoint(start.x + 6, start.y, 3)
+                return MapPoint(start.x + 5, start.y, 2)
         return shared_map.point_of_intersection(platform_start, platform_target)
     else:
         # 二段跳范围内
