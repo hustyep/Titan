@@ -122,9 +122,11 @@ def move_up(target: MapPoint):
     assert (next_platform)
     if up_point.x - next_platform.begin_x <= 5 and bot_status.player_moving and bot_status.player_direction == 'left':
         move_horizontal(MapPoint(up_point.x+3, p.y, 2))
+        time.sleep(0.2)
     elif next_platform.end_x - up_point.x <= 5 and bot_status.player_moving and bot_status.player_direction == 'right':
         move_horizontal(MapPoint(up_point.x-3, p.y, 2))
-
+        time.sleep(0.2)
+        
     if dy < 5:
         press(Keybindings.JUMP)
     elif dy < Jump_Up.move_range.stop:
