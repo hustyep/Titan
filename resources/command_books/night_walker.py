@@ -722,6 +722,8 @@ class Potion(Command):
 
 @bot_status.run_if_enabled
 def find_next_point(start: MapPoint, target: MapPoint):
+    utils.log_event(f"[find_next_point] start:{start.tuple} target:{str(target)}", bot_settings.debug)
+
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         return target
 
@@ -742,7 +744,10 @@ def find_next_point(start: MapPoint, target: MapPoint):
         return target
 
     paths = shared_map.path_between(platform_start, platform_target)
+    utils.log_event(f"[find_next_point] paths:", bot_settings.debug)
     if paths:
+        for plat in paths:
+            utils.log_event(str(plat), bot_settings.debug)
         next_platform = paths[1]
         d_y = next_platform.y - platform_start.y
 

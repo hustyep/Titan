@@ -114,6 +114,9 @@ class Platform:
         self.end_x = end_x
         self.y = y
 
+    def __str__(self) -> str:
+        return f"({self.begin_x},{self.end_x}), {self.y}"
+
     @property
     def center(self):
         return MapPoint(int((self.begin_x+self.end_x) / 2), self.y, 3)
