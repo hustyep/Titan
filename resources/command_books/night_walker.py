@@ -12,6 +12,7 @@ from src.command.commands import *
 from src.map.map_helper import *
 from src.map.map import shared_map
 from src.modules.capture import capture
+from src.chat_bot.chat_bot import chat_bot
 
 # List of key mappings
 
@@ -569,6 +570,7 @@ class Detect_Around_Anchor(Command):
             anchor = (self.x, self.y)
 
         if bot_helper.check_blind():
+            chat_bot.send_message("blind", capture.frame)
             if Cygnus_Knights_Will.canUse():
                 Cygnus_Knights_Will().execute()
             elif Will_of_Erda.canUse():

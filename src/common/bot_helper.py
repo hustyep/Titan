@@ -292,7 +292,7 @@ def rune_buff_match(frame):
 def check_blind():
     gray = cv2.cvtColor(capture.frame, cv2.COLOR_BGR2GRAY)
     height, width = gray.shape
-    if not bot_status.lost_minimap and np.count_nonzero(gray < 15) / height / width > 0.8:
+    if not bot_status.lost_minimap and np.count_nonzero(gray < 15) / height / width > 0.7:
         return True
     else:
         return False
