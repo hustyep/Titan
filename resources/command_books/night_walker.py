@@ -291,7 +291,7 @@ class Greater_Dark_Servant(Skill):
     type = SkillType.Summon
     cooldown = 60
     precast = 0.5
-    backswing = 0.8
+    backswing = 0.5
     duration = 55
     tolerance = 1
 
