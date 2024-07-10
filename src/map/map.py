@@ -155,11 +155,16 @@ class Map:
         else:
             return True
 
-    def on_the_edge(self, p: MapPoint, tolerance = 5):
+    def on_the_edge(self, p: MapPoint, tolerance=5):
         platform = self.platform_of_point(p)
         if not platform:
             return False
         return abs(p.x - platform.begin_x) <= tolerance or abs(p.x - platform.end_x) <= tolerance
+
+    def point_direction_on_platform(self, p: MapPoint):
+        platform = self.platform_of_point(p)
+        assert (platform)
+        return 'left' if abs(p.x - platform.begin_x) <= abs(p.x - platform.end_x) else 'right'
 
     def platform_of_point(self, p: MapPoint) -> Platform | None:
         if not self.data_available:

@@ -71,7 +71,7 @@ def step(target: MapPoint):
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    utils.log_event(f"[step]target:{str(target)}", bot_settings.debug)
+    # utils.log_event(f"[step]target:{str(target)}", bot_settings.debug)s
     next_p = find_next_point(bot_status.player_pos, target)
     utils.log_event(f"[step]next_p:{str(next_p)}", bot_settings.debug)
     if not next_p:
@@ -112,17 +112,18 @@ def move_up(target: MapPoint):
     p = bot_status.player_pos
     dy = abs(p.y - target.y)
 
-    up_point = MapPoint(bot_status.player_pos.x, target.y)
+    up_point = MapPoint(p.x, target.y)
     if not shared_map.is_continuous(up_point, target):
+        # 跨平台
         DoubleJump(target, False)
         return
 
-    up_left = MapPoint(bot_status.player_pos.x - 2, target.y)
-    up_right = MapPoint(bot_status.player_pos.x + 2, target.y)
-    if not shared_map.is_continuous(up_point, up_left):
-        press('right', down_time=0.2)
-    elif not shared_map.is_continuous(up_point, up_right):
-        press('left', down_time=0.2)
+    next_platform = shared_map.platform_of_point(target)
+    assert (next_platform)
+    if up_point.x - next_platform.begin_x <= 5 and bot_status.player_moving and bot_status.player_direction == 'left':
+        move_horizontal(MapPoint(up_point.x+3, p.y, 2))
+    elif next_platform.end_x - up_point.x <= 5 and bot_status.player_moving and bot_status.player_direction == 'right':
+        move_horizontal(MapPoint(up_point.x-3, p.y, 2))
 
     if dy < 5:
         press(Keybindings.JUMP)
@@ -792,7 +793,7 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
             return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
 
 
-def find_next_upper_point(start: MapPoint, target: MapPoint) :    
+def find_next_upper_point(start: MapPoint, target: MapPoint):
     if start.y <= target.y:
         return
 
@@ -805,51 +806,28 @@ def find_next_upper_point(start: MapPoint, target: MapPoint) :
     gap = platform_gap(platform_start, platform_target)
     if gap == -1:
         # 有交集
-        intersection_point = shared_map.point_of_intersection(platform_start, platform_target)
-        assert(intersection_point)
-        # target在平台边缘
-        if shared_map.on_the_edge(target) and bot_status.player_moving:
-            good_direction = 'right' if abs(target.x - platform_target.begin_x) <= 5 else 'left'
-            if good_direction != bot_status.player_direction:
-                if target_reached(start, intersection_point):
-                    return target
-                else:
-                    return intersection_point
-        
-        # 优先水平方向接近
-        next_p = MapPoint(target.x, start.y, 2)
-        if shared_map.is_continuous(start, next_p):
-            if shared_map.on_the_platform(next_p, 3):
-                pass
-            if shared_map.on_the_platform(MapPoint(target.x - 3, target.y), True):
-                next_p = MapPoint(target.x - 5, start.y, 2)
-            elif shared_map.on_the_platform(MapPoint(target.x + 3, target.y), True):
-                next_p = MapPoint(target.x + 5, start.y, 2)
-            else:
-                next_p = None
+        # 优先垂直方向接近
+        next_p = MapPoint(start.x, platform_target.y, 2)
+        if not shared_map.is_continuous(next_p, target):
+            next_p = None
         if next_p:
             if target_reached(start, next_p):
                 return target
             else:
                 return next_p
 
-        # 尝试垂直方向接近
-        next_p = MapPoint(start.x, platform_target.y, 2)
-        if shared_map.is_continuous(next_p, target):
-            if shared_map.on_the_platform(next_p, 3):
-                pass
-            if shared_map.on_the_platform(MapPoint(start.x - 3, target.y), True):
-                next_p = MapPoint(start.x - 3, start.y, 2)
-            elif shared_map.on_the_platform(MapPoint(start.x + 3, target.y), True):
-                next_p = MapPoint(start.x + 3, start.y, 2)
+        # 尝试水平方向接近
+        next_p = MapPoint(target.x, start.y, 2)
+        if not shared_map.is_continuous(start, next_p):
+            next_p = None
+        if next_p:
+            if target_reached(start, next_p):
+                return target
             else:
-                next_p = None
-            if next_p:
-                if target_reached(start, next_p):
-                    return target
-                else:
-                    return next_p
-                
+                return next_p
+
+        intersection_point = shared_map.point_of_intersection(platform_start, platform_target)
+        assert (intersection_point)
         if target_reached(start, intersection_point):
             return target
         else:
