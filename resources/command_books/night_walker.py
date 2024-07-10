@@ -738,8 +738,6 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if not platform_start or not platform_target:
         return
 
-    if abs(d_x) <= 1:
-        return target
     if platform_start == platform_target:
         return target
 
@@ -759,11 +757,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
             if next_p:
                 return next_p
         elif d_y < 0:
-            if bot_status.player_moving:
-                time.sleep(0.3)
-                next_p = find_next_upper_point(bot_status.player_pos, tmp_p)
-            else:
-                next_p = find_next_upper_point(start, tmp_p)
+            next_p = find_next_upper_point(start, tmp_p)
             if next_p:
                 return next_p
         else:
@@ -798,7 +792,7 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
             return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
 
 
-def find_next_upper_point(start: MapPoint, target: MapPoint):
+def find_next_upper_point(start: MapPoint, target: MapPoint) :    
     if start.y <= target.y:
         return
 
@@ -814,11 +808,13 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
         intersection_point = shared_map.point_of_intersection(platform_start, platform_target)
         assert(intersection_point)
         # target在平台边缘
-        if shared_map.on_the_edge(target):
-            if target_reached(start, intersection_point):
-                return target
-            else:
-                return intersection_point
+        if shared_map.on_the_edge(target) and bot_status.player_moving:
+            good_direction = 'right' if abs(target.x - platform_target.begin_x) <= 5 else 'left'
+            if good_direction != bot_status.player_direction:
+                if target_reached(start, intersection_point):
+                    return target
+                else:
+                    return intersection_point
         
         # 优先水平方向接近
         next_p = MapPoint(target.x, start.y, 2)
