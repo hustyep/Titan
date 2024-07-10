@@ -783,9 +783,9 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
 
     next_p = None
     if platform_start.end_x < platform_target.begin_x:
-        next_p = MapPoint(platform_start.end_x - 3, platform_start.y, 2)
+        next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 3)
     else:
-        next_p = MapPoint(platform_start.begin_x + 3, platform_start.y, 2)
+        next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
     if target_reached(start, next_p):
         return target
     else:
@@ -806,20 +806,20 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
     if gap == -1:
         # 有交集
         next_p = MapPoint(start.x, platform_target.y, 3)
-        if shared_map.on_the_platform(next_p):
+        if shared_map.on_the_platform(next_p) and shared_map.is_continuous(next_p, target):
             if shared_map.is_continuous(MapPoint(start.x - 3, platform_target.y), MapPoint(start.x + 3, platform_target.y)):
                 return next_p
             if shared_map.on_the_platform(MapPoint(start.x - 3, platform_target.y), True):
-                return MapPoint(start.x - 3, start.y, 1)
+                return MapPoint(start.x - 6, start.y, 3)
             elif shared_map.on_the_platform(MapPoint(start.x + 3, platform_target.y), True):
-                return MapPoint(start.x + 3, start.y, 1)
+                return MapPoint(start.x + 6, start.y, 3)
         return shared_map.point_of_intersection(platform_start, platform_target)
     else:
         # 二段跳范围内
         if platform_start.end_x < platform_target.begin_x:
-            next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)
+            next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 3)
         else:
-            next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 2)
+            next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
         if target_reached(start, next_p):
             return target
         else:
