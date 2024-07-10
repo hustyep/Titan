@@ -184,13 +184,13 @@ class Map:
         assert (platform)
         platforms = self.platforms_of_y(platform.y)
         assert (platforms)
-        for plat in platforms:
-            if right:
-                if plat.begin_x > platform.end_x:
-                    return plat
-            else:
-                if plat.end_x < platform.begin_x:
-                    return plat
+        index = platforms.index(platform)
+        if right:
+            if index + 1 < len(platforms):
+                return platforms[index + 1]
+        else:
+            if index - 1 >= 0:
+                return platforms[index - 1]
 
     def upper_platform(self, platform: Platform):
         assert (platform)
