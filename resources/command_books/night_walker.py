@@ -747,7 +747,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
     utils.log_event(f"[find_next_point] paths:", bot_settings.debug)
     if paths:
         for plat in paths:
-            utils.log_event(str(plat), bot_settings.debug)
+            utils.log_event(f"  {str(plat)}", bot_settings.debug)
         next_platform = paths[1]
         d_y = next_platform.y - platform_start.y
 

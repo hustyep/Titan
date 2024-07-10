@@ -235,7 +235,7 @@ class Map:
     def platform_reachable(self, platform_start: Platform | None, platform_target: Platform | None):
         if platform_start is None or platform_target is None:
             return False
-        dy = platform_start.y - platform_target.y
+        dy = platform_target.y - platform_start.y
         gap = map_helper.platform_gap(platform_start, platform_target)
 
         if dy == 0:
