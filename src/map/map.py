@@ -177,7 +177,8 @@ class Map:
 
     def platforms_of_y(self, y: int) -> List[Platform] | None:
         assert (self.current_map)
-        return self.current_map.platforms[str(y)]
+        if str(y) in self.current_map.platforms.keys():
+            return self.current_map.platforms[str(y)]
 
     def adjoin_platform(self, platform: Platform, right=True):
         assert (platform)
