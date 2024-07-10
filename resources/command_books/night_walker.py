@@ -236,7 +236,7 @@ class Jump_Up(Command):
 
     def main(self, wait=True):
         sleep_in_the_air(n=4)
-        time.sleep(0.2)
+        # time.sleep(0.2)
         # if bot_status.player_moving:
         #     press(opposite_direction(bot_status.player_direction))
         # evade_rope(True)
@@ -759,7 +759,11 @@ def find_next_point(start: MapPoint, target: MapPoint):
             if next_p:
                 return next_p
         elif d_y < 0:
-            next_p = find_next_upper_point(start, tmp_p)
+            if bot_status.player_moving:
+                time.sleep(0.3)
+                next_p = find_next_upper_point(bot_status.player_pos, tmp_p)
+            else:
+                next_p = find_next_upper_point(start, tmp_p)
             if next_p:
                 return next_p
         else:
@@ -807,15 +811,24 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
     gap = platform_gap(platform_start, platform_target)
     if gap == -1:
         # 有交集
+        intersection_point = shared_map.point_of_intersection(platform_start, platform_target)
+        assert(intersection_point)
+        # target在平台边缘
+        if shared_map.on_the_edge(target):
+            if target_reached(start, intersection_point):
+                return target
+            else:
+                return intersection_point
+        
         # 优先水平方向接近
         next_p = MapPoint(target.x, start.y, 2)
         if shared_map.is_continuous(start, next_p):
             if shared_map.on_the_platform(next_p, 3):
                 pass
             if shared_map.on_the_platform(MapPoint(target.x - 3, target.y), True):
-                next_p = MapPoint(target.x - 3, start.y, 2)
+                next_p = MapPoint(target.x - 5, start.y, 2)
             elif shared_map.on_the_platform(MapPoint(target.x + 3, target.y), True):
-                next_p = MapPoint(target.x + 3, start.y, 2)
+                next_p = MapPoint(target.x + 5, start.y, 2)
             else:
                 next_p = None
         if next_p:
@@ -840,7 +853,11 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
                     return target
                 else:
                     return next_p
-        return shared_map.point_of_intersection(platform_start, platform_target)
+                
+        if target_reached(start, intersection_point):
+            return target
+        else:
+            return intersection_point
     else:
         # 二段跳范围内
         if platform_start.end_x < platform_target.begin_x:
