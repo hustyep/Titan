@@ -119,7 +119,8 @@ class Platform:
 
     @property
     def center(self):
-        return MapPoint(int((self.begin_x+self.end_x) / 2), self.y, 3)
+        len = self.end_x - self.begin_x + 1
+        return MapPoint(int((self.begin_x+self.end_x) / 2), self.y, int(len/2))
 
 
 class MobType(Enum):
