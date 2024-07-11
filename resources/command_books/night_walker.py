@@ -787,12 +787,12 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
         if start.x in range(platform_target.begin_x + 3 - max_distance, platform_start.end_x + 1):
             return target
         else:
-            return MapPoint(platform_start.end_x - 2, platform_start.y, 3)
+            return MapPoint(platform_start.end_x - 5, platform_start.y, 3)
     else:
         if start.x in range(platform_start.begin_x, platform_target.end_x - 3 + max_distance + 1):
             return target
         else:
-            return MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+            return MapPoint(platform_start.begin_x + 5, platform_start.y, 3)
 
 
 def find_next_upper_point(start: MapPoint, target: MapPoint):
