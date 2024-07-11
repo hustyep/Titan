@@ -20,6 +20,7 @@ import difflib
 from python_calamine import CalamineWorkbook
 import asyncio
 
+
 def single_match(frame, template):
     """
     Finds the best match within FRAME.
@@ -77,9 +78,11 @@ def multi_match(frame, template, threshold=0.95, center=True, debug=False):
         cv2.waitKey()
     return results
 
+
 def match_count(frame, template, threshold=0.95, center=True, debug=False):
     matchs = multi_match(frame, template, threshold, center, debug)
     return len(matchs)
+
 
 def filter_color(img, ranges):
     """
@@ -263,28 +266,35 @@ def save_screenshot(frame, file_path=None, compress=True):
     else:
         cv2.imwrite(filename + ".png", frame)
         return filename + ".png"
-    
-def log_event(event: str, need_print = True):
+
+
+threadLock = threading.Lock()
+
+
+def log_event(event: str, need_print=True):
     time_str = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
     text = f'[{time_str}]' + event
+
     if need_print:
         print(text)
-        
     threading.Thread(target=__write_log, args=(text, )).start()
-    
-    
+
+
 def __write_log(text: str):
     path = 'tmp/log'
     make_dir(path)
-    
+
     now = datetime.utcnow() + timedelta(hours=8)
     name = now.strftime('%Y_%m_%d')
     file_path = f'{path}/{name}.txt'
     # if not os.path.exists(file_path):
+    
+    threadLock.acquire()
     file = open(file_path, 'a+')
     file.write(text + '\n')
     file.close()
-        
+    threadLock.release()
+
 
 #########################
 #        Capture        #
@@ -388,6 +398,7 @@ def cvt2Plt(cv_image):
     rgb_img = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(rgb_img)
     return image
+
 
 def load_excel(file: str):
     workbook = CalamineWorkbook.from_path(file)

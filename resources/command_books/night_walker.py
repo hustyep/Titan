@@ -232,7 +232,7 @@ class DoubleJump(Skill):
         # else:
         sleep_in_the_air(n=2)
         if not target_reached(bot_status.player_pos, self.target):
-            print(f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}")
+            utils.log_event(f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
         return True
 
 
@@ -592,7 +592,7 @@ class Detect_Around_Anchor(Command):
                     top=self.top, bottom=self.bottom, left=self.left, right=self.right),
                 multy_match=self.count > 1,
                 debug=False)
-            utils.log_event(f"mobs count = {len(mobs)}", bot_settings.debug)
+            # utils.log_event(f"mobs count = {len(mobs)}", bot_settings.debug)
             if len(mobs) >= self.count or bot_status.elite_boss_detected:
                 break
             if time.time() - start > 7:
@@ -634,7 +634,7 @@ class Buff(Command):
     def main(self, wait=True):
         for buff in self.buffs:
             if buff.canUse():
-                utils.log_event(str(buff), bot_settings.debug)
+                # utils.log_event(str(buff), bot_settings.debug)
                 result = buff().main(wait)
                 if result:
                     return True
