@@ -185,6 +185,7 @@ class DoubleJump(Skill):
         self.__class__.castedTime = time.time()
         key_down(direction)
         time.sleep(0.02)
+        need_check = True
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
             press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
@@ -221,6 +222,7 @@ class DoubleJump(Skill):
             press(self.key, 1, down_time=0.02, up_time=0.02)
             self.attack_if_needed = False
         else:
+            need_check = False
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.02)
         if self.attack_if_needed and self.target.y >= start_y:
@@ -231,7 +233,7 @@ class DoubleJump(Skill):
         #     time.sleep(0.01)
         # else:
         sleep_in_the_air(n=2)
-        if not target_reached(bot_status.player_pos, self.target):
+        if need_check and not target_reached(bot_status.player_pos, self.target):
             utils.log_event(f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
         return True
 
@@ -302,7 +304,7 @@ class Greater_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Summon
     cooldown = 60
-    precast = 0.5
+    precast = 0.4
     backswing = 0.5
     duration = 55
     tolerance = 1
