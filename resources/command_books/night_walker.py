@@ -100,7 +100,7 @@ def move_horizontal(target: MapPoint):
         DoubleJump(target=target, attack_if_needed=True).execute()
     elif distance >= DoubleJump.move_range.start:
         DoubleJump(target=target, attack_if_needed=True).execute()
-    elif distance >= 15 or distance in range(7, 10):
+    elif distance >= 15 or distance in range(7, 11):
         DoubleJump(target=target, attack_if_needed=False).execute()
     elif distance >= Shadow_Dodge.move_range.start:
         Shadow_Dodge('left' if d_x < 0 else 'right').execute()
@@ -178,6 +178,7 @@ class DoubleJump(Skill):
         dx = self.target.x - bot_status.player_pos.x
         dy = self.target.y - bot_status.player_pos.y
         direction = 'left' if dx < 0 else 'right'
+        start_p = bot_status.player_pos
         start_y = bot_status.player_pos.y
         distance = abs(dx)
 
@@ -230,6 +231,8 @@ class DoubleJump(Skill):
         #     time.sleep(0.01)
         # else:
         sleep_in_the_air(n=2)
+        if not target_reached(bot_status.player_pos, self.target):
+            print(f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}")
         return True
 
 
