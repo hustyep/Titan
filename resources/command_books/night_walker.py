@@ -122,14 +122,16 @@ def move_up(target: MapPoint):
     
     next_platform = shared_map.platform_of_point(target)
     assert (next_platform)
-    if up_point.x - next_platform.begin_x <= 10 and bot_status.player_moving and bot_status.player_direction == 'left':
-        time.sleep(0.1)
-        move_horizontal(MapPoint(up_point.x+3, p.y, 2))
-        time.sleep(0.2)
-    elif next_platform.end_x - up_point.x <= 10 and bot_status.player_moving and bot_status.player_direction == 'right':
-        time.sleep(0.1)
-        move_horizontal(MapPoint(up_point.x-3, p.y, 2))
-        time.sleep(0.2)
+    if bot_status.player_moving and bot_status.player_direction == 'left':
+        if up_point.x - next_platform.begin_x <= 8:
+            move_horizontal(MapPoint(up_point.x+3, p.y, 2))
+        else:
+            time.sleep(0.2)
+    elif bot_status.player_moving and bot_status.player_direction == 'right':
+        if next_platform.end_x - up_point.x <= 10:
+            move_horizontal(MapPoint(up_point.x-3, p.y, 2))
+        else:
+            time.sleep(0.2)
         
     if dy < 5:
         press(Keybindings.JUMP)
