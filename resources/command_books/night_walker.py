@@ -456,7 +456,7 @@ class Rapid_Throw(Skill):
         return True
 
 
-class Cygnus_Knights_Will(Skill):
+class Cygnus_Knights_Will(Command):
     key = Keybindings.Cygnus_Knights_Will
     type = SkillType.Buff
     cooldown = 300
@@ -570,13 +570,11 @@ class Detect_Around_Anchor(Command):
             anchor = (self.x, self.y)
 
         if bot_helper.check_blind():
-            chat_bot.send_message("blind", capture.frame)
+            # chat_bot.send_message("blind", capture.frame)
             if Cygnus_Knights_Will.canUse():
                 Cygnus_Knights_Will().execute()
             elif Will_of_Erda.canUse():
                 Will_of_Erda().execute()
-            else:
-                return True
 
         start = time.time()
         while True:

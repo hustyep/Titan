@@ -889,7 +889,7 @@ class ErdaShower(Skill):
         return True
 
 
-class Will_of_Erda(Skill):
+class Will_of_Erda(Command):
     key = DefaultKeybindings.Will_of_Erda
     cooldown = 330
     precast = 0.3
