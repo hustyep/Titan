@@ -259,7 +259,7 @@ class Map:
         else:
             if gap == -1:
                 return True
-            return gap <= 26
+            # return gap <= 26
 
     def path_between(self, platform_start: Platform | None, platform_target: Platform | None) -> list[Platform] | None:
         if platform_start is None or platform_target is None:
