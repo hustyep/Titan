@@ -319,7 +319,7 @@ class Greater_Dark_Servant(Skill):
 class Replace_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Move
-    cooldown = 3
+    cooldown = 1
     backswing = 1
 
     def __init__(self, resummon='False'):
@@ -327,7 +327,7 @@ class Replace_Dark_Servant(Skill):
         self.resummon = bot_settings.validate_boolean(resummon)
 
     def main(self, wait=True):
-        if not self.canUse():
+        if self.resummon and not self.canUse():
             return False
         if self.resummon:
             key_down('down')
@@ -513,7 +513,7 @@ class Shadow_Attack(Command):
                 if time.time() - start_time > 2:
                     break
 
-        n = 2
+        n = 2.5 if shared_map.current_map_name == 'Blooming Spring 2' else 2
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
@@ -594,7 +594,7 @@ class Detect_Around_Anchor(Command):
                     top=self.top, bottom=self.bottom, left=self.left, right=self.right),
                 multy_match=self.count > 1,
                 debug=False)
-            # utils.log_event(f"mobs count = {len(mobs)}", bot_settings.debug)
+            utils.log_event(f"mobs count = {len(mobs)}", bot_settings.debug)
             if len(mobs) >= self.count or bot_status.elite_boss_detected:
                 break
             if time.time() - start > 7:

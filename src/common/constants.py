@@ -216,11 +216,11 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': "Laboratory Behind Locked Door 1",
+        'default': "Blooming Spring 2",
         'quest': [
             'Western City Ramparts in Battle 1',
             'Outlaw-Infested Wastes 2',
-            'Sunny Laboratory 1'
+            'Laboratory Behind Locked Door 1'
         ]
     }
 }
