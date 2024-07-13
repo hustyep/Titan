@@ -21,7 +21,7 @@ class MapModel:
         self.name = str(dict["MapName"])
         self.type = MapType(value=dict["Type"])
         self.zone = str(dict["Zone"])
-        self.monster = str(dict["Monster"])
+        self.monsters = str(dict["Monster"]).split(',')
         self.mobs_count = int(dict["MobsCount"])
         self.minimap_margin = int(dict["MinimapMargin"])
 
@@ -98,27 +98,12 @@ class MapModel:
 
     def _load_mob_template(self):
         mob_template = None
-        elite_template = None
-        boss_template = None
-        try:
-            mob_template = cv2.imread(
-                f'assets/mobs/{self.monster}@normal.png', 0)
-            elite_template = cv2.imread(
-                f'assets/mobs/{self.monster}@elite.png', 0)
-            # boss_template = cv2.imread(
-            #     f'assets/mobs/{self.monster}@boss.png', 0)
-        except:
-            pass
-        if mob_template is not None:
-            self.mob_templates = [mob_template, cv2.flip(mob_template, 1)]
-
-        if elite_template is not None:
-            self.elite_templates = [
-                elite_template, cv2.flip(elite_template, 1)]
-        elif mob_template is not None:
-            elite_template = cv2.resize(mob_template, None, fx=2, fy=2)
-            self.elite_templates = [
-                elite_template, cv2.flip(elite_template, 1)]
-
-        # if boss_template is not None:
-        #     self.boss_templates = [boss_template, cv2.flip(boss_template, 1)]
+        for monster in self.monsters:
+            try:
+                mob_template = cv2.imread(
+                    f'assets/mobs/{monster}@normal.png', 0)
+            except:
+                pass
+            if mob_template is not None:
+                self.mob_templates.append(mob_template)
+                self.mob_templates.append(cv2.flip(mob_template, 1))
