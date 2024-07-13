@@ -259,7 +259,14 @@ class Map:
         else:
             if gap == -1:
                 return True
-            # return gap <= 26
+            if gap <= 26:
+                for y in range(platform_start.y, platform_target.y):
+                    plats = self.platforms_of_y(y)
+                    if plats:
+                        for plat in plats:
+                            if map_helper.platform_gap(plat, platform_target) == -1:
+                                return False
+                return True
 
     def path_between(self, platform_start: Platform | None, platform_target: Platform | None) -> list[Platform] | None:
         if platform_start is None or platform_target is None:

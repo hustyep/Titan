@@ -146,6 +146,9 @@ def move_down(target: MapPoint):
     sleep_in_the_air(n=4)
     if target.y <= bot_status.player_pos.y:
         return
+    if abs(bot_status.player_pos.y - target.y) <= 4:
+        sleep_in_the_air()
+        return
     next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
     if shared_map.on_the_platform(next_p):
         Fall().execute()
@@ -250,11 +253,6 @@ class Jump_Up(Command):
 
     def main(self, wait=True):
         sleep_in_the_air(n=4)
-        # time.sleep(0.2)
-        # if bot_status.player_moving:
-        #     press(opposite_direction(bot_status.player_direction))
-        # evade_rope(True)
-
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
@@ -262,7 +260,7 @@ class Jump_Up(Command):
         press(Keybindings.JUMP)
         time.sleep(1)
         sleep_in_the_air(n=10, detect_rope=True)
-        time.sleep(0.1)
+        time.sleep(0.05)
         key_up('up')
         return True
 
