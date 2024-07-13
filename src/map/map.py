@@ -247,17 +247,19 @@ class Map:
     def platform_reachable(self, platform_start: Platform | None, platform_target: Platform | None):
         if platform_start is None or platform_target is None:
             return False
+        if platform_start == platform_target:
+            return True
         dy = platform_target.y - platform_start.y
         gap = map_helper.platform_gap(platform_start, platform_target)
 
         if dy == 0:
             return gap <= 26
         elif dy < 0:
-            if gap == -1:
+            if gap <= - 3:
                 return True
             return gap <= 8 and abs(dy) <= 8
         else:
-            if gap == -1:
+            if gap <= -3:
                 return True
             if gap <= 26:
                 for y in range(platform_start.y, platform_target.y):

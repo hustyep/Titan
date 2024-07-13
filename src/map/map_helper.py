@@ -18,7 +18,10 @@ def platform_gap(platform1: Platform | None, platform2: Platform | None):
     elif platform1.y == platform2.y:
         return 0
     else:
-        return -1
+        x_start = list(range(platform1.begin_x, platform1.end_x + 1))
+        x_target = list(range(platform2.begin_x, platform2.end_x + 1))
+        x_intersection = list(set(x_start).intersection(set(x_target)))
+        return -len(x_intersection)
 
 
 def jumpable_platforms(platform1: Platform, platform2: Platform, max_gap_h=8, max_gap_v=8) -> bool:
