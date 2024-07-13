@@ -11,7 +11,7 @@ $, target=move_tolerance, value=10
     Detect_Around_Anchor, count=1, x=710, y=520, top=500, bottom=180, left=650, right=650
     Shadow_Attack, direction=right
     Replace_Dark_Servant, resummon=True
-*, x=118, y=23, interval=0, tolerance=8, detect=False, skip=False
+*, x=118, y=23, interval=0, tolerance=12, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
 #
 
@@ -25,7 +25,7 @@ $, target=move_tolerance, value=10
     Phalanx_Charge, direction=left
 
 ~, label=pickup, interval=90, skip=False
-*, x=152, y=48, interval=0, tolerance=8, detect=False, skip=False
-*, x=152, y=36, interval=0, tolerance=8, detect=False, skip=False
+*, x=160, y=48, interval=0, tolerance=8, detect=False, skip=False
+*, x=160, y=36, interval=0, tolerance=8, detect=False, skip=False
 *, x=113, y=36, interval=0, tolerance=8, detect=False, skip=False
 #

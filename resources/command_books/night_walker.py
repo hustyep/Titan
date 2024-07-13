@@ -192,6 +192,24 @@ class DoubleJump(Skill):
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
             press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
+        elif distance in range(26,28):
+            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            press(self.key, 1, down_time=0.02, up_time=0.1)
+            Shadow_Dodge(direction).execute()
+        elif distance in range(32,34):
+            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            press(self.key, 2, down_time=0.02, up_time=0.1)
+            Shadow_Dodge(direction).execute()
+        elif distance in range(40,44):
+            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            press(self.key, 1, down_time=0.1, up_time=0.1)
+            press(self.key, 1, down_time=0.02, up_time=0.2) 
+            Shadow_Dodge(direction).execute()
+        elif distance in range(44,47):
+            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            press(self.key, 1, down_time=0.1, up_time=0.2)
+            press(self.key, 1, down_time=0.02, up_time=0.2) 
+            Shadow_Dodge(direction).execute()
         elif distance in range(32, 35):
             press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             press_acc(self.key, 2, down_time=0.03, up_time=0.04)
@@ -235,7 +253,7 @@ class DoubleJump(Skill):
         #     print("bingo")
         #     time.sleep(0.01)
         # else:
-        sleep_in_the_air(n=2)
+        sleep_in_the_air(n=1)
         if need_check and not target_reached(bot_status.player_pos, self.target):
             utils.log_event(f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
         return True
@@ -259,8 +277,8 @@ class Jump_Up(Command):
         time.sleep(0.06 if dy >= 20 else 0.3)
         press(Keybindings.JUMP)
         time.sleep(1)
-        sleep_in_the_air(n=10, detect_rope=True)
-        time.sleep(0.05)
+        sleep_in_the_air(n=4, detect_rope=True)
+        time.sleep(0.02)
         key_up('up')
         return True
 
@@ -286,6 +304,7 @@ class Shadow_Dodge(Skill):
         if not self.canUse():
             return False
 
+        releaseAll()
         self.__class__.castedTime = time.time()
         press(opposite_direction(self.direction), down_time=0.1)
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
@@ -318,7 +337,7 @@ class Replace_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Move
     cooldown = 1
-    backswing = 1
+    backswing = 0.8
 
     def __init__(self, resummon='False'):
         super().__init__(locals())
@@ -893,7 +912,7 @@ class Test_Command(Command):
     backswing = 0.1
 
     def main(self, wait=True):
-        for _ in range(0, 4):
+        for _ in range(0, 3):
             print('start:' + str(bot_status.player_pos.tuple))
             direction = 'right'
             key_down(direction)
@@ -916,9 +935,30 @@ class Test_Command(Command):
             # press_acc(opposite_direction(direction), down_time=0.1, up_time=0.1)
             # press_acc(self.key, 1, down_time=0.02, up_time=0.02)
 
-            # press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.02)
-
+            # press(Keybindings.Quintu
+            # ple_Star, down_time=0.01, up_time=0.02)
+            
+            # 26-27
+            # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            # press(self.key, 1, down_time=0.02, up_time=0.1)
+            
+            # 32-33
+            # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            # press(self.key, 2, down_time=0.02, up_time=0.1)
+            
+            # 40-42
+            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            press(self.key, 1, down_time=0.1, up_time=0.1)
+            press(self.key, 1, down_time=0.02, up_time=0.2) 
+            
+            # 44-46
+            # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
+            # press(self.key, 1, down_time=0.1, up_time=0.2)
+            # press(self.key, 1, down_time=0.02, up_time=0.2) 
+               
+            Shadow_Dodge('right').execute()
+            
             key_up(direction)
-            sleep_in_the_air(n=3)
+            sleep_in_the_air(n=1)
             print('end: ' + str(bot_status.player_pos.tuple))
         return True
