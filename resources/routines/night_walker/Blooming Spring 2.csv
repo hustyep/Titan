@@ -1,8 +1,6 @@
 $, target=move_tolerance, value=10
-*, x=113, y=48, interval=3500, tolerance=3, detect=False, skip=True
-    Rest, wait=5
 
-~, label=Summon Loop, interval=46, skip=False
+~, label=Summon Loop, interval=40, skip=False
 *, x=113, y=48, interval=0, tolerance=3, detect=False, skip=False
     Greater_Dark_Servant
 *, x=25, y=48, interval=0, tolerance=3, detect=False, skip=False
