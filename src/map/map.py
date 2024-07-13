@@ -266,7 +266,7 @@ class Map:
                     plats = self.platforms_of_y(y)
                     if plats:
                         for plat in plats:
-                            if map_helper.platform_gap(plat, platform_target) == -1:
+                            if map_helper.platform_gap(plat, platform_target) < 0:
                                 return False
                 return True
 
