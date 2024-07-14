@@ -209,7 +209,7 @@ class Map:
             platforms = self.platforms_of_y(y)
             if platforms is not None:
                 for tmp in platforms:
-                    if map_helper.platform_gap(platform, tmp) == -1:
+                    if map_helper.platform_gap(platform, tmp) <= -3:
                         return tmp
 
     def under_platform(self, platform: Platform):
@@ -219,7 +219,7 @@ class Map:
             platforms = self.platforms_of_y(y)
             if platforms is not None:
                 for tmp in platforms:
-                    if map_helper.platform_gap(platform, tmp) == -1:
+                    if map_helper.platform_gap(platform, tmp) <= -3:
                         return tmp
 
     def gap_of_points_platform(self, p1: MapPoint, p2: MapPoint):

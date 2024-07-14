@@ -20,7 +20,7 @@ def platform_gap(platform1: Platform | None, platform2: Platform | None):
     else:
         x_start = list(range(platform1.begin_x, platform1.end_x + 1))
         x_target = list(range(platform2.begin_x, platform2.end_x + 1))
-        x_intersection = list(set(x_start).intersection(set(x_target)))
+        x_intersection = set(x_start).intersection(set(x_target))
         return -len(x_intersection)
 
 
