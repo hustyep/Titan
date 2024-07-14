@@ -78,7 +78,7 @@ def detect_mobs(
         mobs_tmp = utils.multi_match(
             frame,
             mob_template,
-            threshold=0.92 if type == MobType.NORMAL else 0.9,
+            threshold=0.95 if type == MobType.NORMAL else 0.9,
             debug=debug)
         if len(mobs_tmp) > 0:
             for mob in mobs_tmp:
