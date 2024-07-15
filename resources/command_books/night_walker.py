@@ -80,6 +80,11 @@ def step(target: MapPoint):
 
     bot_status.path = [bot_status.player_pos, next_p, target]
 
+    portal = shared_map.point_portable(bot_status.player_pos, next_p)
+    if portal:
+        Use_Portal(portal).execute()
+        return
+
     d_y = next_p.y - bot_status.player_pos.y
     if abs(d_y) > target.tolerance_v:
         if d_y > 0:
@@ -756,6 +761,9 @@ def find_next_point(start: MapPoint, target: MapPoint):
 
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         return target
+    
+    if shared_map.current_map is None:
+        return target
 
     if target_reached(start, target):
         return
@@ -771,7 +779,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if platform_start == platform_target:
         return target
 
-    paths = shared_map.path_between(platform_start, platform_target)
+    paths = shared_map.path_between(platform_start, platform_target, bot_status.stage_fright)
     utils.log_event(f"[find_next_point] paths:", bot_settings.debug)
     if paths:
         for plat in paths:
@@ -781,6 +789,12 @@ def find_next_point(start: MapPoint, target: MapPoint):
 
         tmp_p = next_platform.center
         if len(paths) == 2:
+            portal = shared_map.current_map.platform_portable(platform_start, platform_target)
+            if portal:
+                if target_reached(start, portal.entrance):
+                    return portal.export
+                else:
+                    return portal.entrance
             tmp_p = target
         if d_y == 0:
             next_p = find_next_horizontal_point(start, tmp_p)

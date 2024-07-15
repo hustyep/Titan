@@ -495,7 +495,23 @@ class Fall(Command):
         key_up('down')
         return True
 
+class Use_Portal(Command):
+    
+    def __init__(self, portal: Portal, count=0):
+        self.portal = portal
+        self.count = count
 
+    def main(self, wait=True):
+        if target_reached(bot_status.player_pos, self.portal.entrance):
+            press('up', down_time=0.3)
+            return True
+        else:
+            if self.count >= 5:
+                return False
+            Move(self.portal.entrance.x, self.portal.entrance.y, self.portal.entrance.tolerance).execute()
+            return Use_Portal(self.portal, self.count+1).execute()
+        
+        
 class SolveRune(Command):
     """
     Moves to the position of the rune and solves the arrow-key puzzle.

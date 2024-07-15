@@ -43,7 +43,6 @@ class Map:
 
     def clear(self):
         if self.current_map is not None:
-            self.current_map.clear()
             self.current_map = None
             capture.minimap_margin = 0
 
@@ -168,15 +167,14 @@ class Map:
         return 'left' if abs(p.x - platform.begin_x) <= abs(p.x - platform.end_x) else 'right'
 
     def platform_of_point(self, p: MapPoint) -> Platform | None:
-        if not self.data_available:
+        if not self.current_map:
             return
-        if not self.is_floor_point(p):
+        return self.current_map.platform_of_point(p)
+
+    def point_portable(self, start: MapPoint, target: MapPoint):
+        if not self.current_map:
             return
-        else:
-            platform_list: List[Platform] = self.current_map.platforms[str(p.y)]  # type: ignore
-            for platform in platform_list:
-                if p.x in range(platform.begin_x, platform.end_x+1):
-                    return platform
+        return self.current_map.point_portable(start, target)
 
     def path_between(self, platform_start: Platform, platform_target: Platform, random_path=False) -> list[Platform]:
         if not self.current_map:

@@ -131,6 +131,14 @@ class Platform:
         len = self.end_x - self.begin_x + 1
         return MapPoint(int((self.begin_x+self.end_x) / 2), self.y, int(len/2))
 
+    @property
+    def x_range(self):
+        return range(self.begin_x, self.end_x + 1)
+
+    def own_point(self, p: MapPoint):
+        return p.y == self.y and p.x in self.x_range
+
+
 class Path:
     def __init__(self, routes: List[Platform]):
         self.routes = routes
@@ -169,6 +177,7 @@ class Path:
                 else:
                     result += abs(plat.center.x - last.center.x)
         return result
+
 
 class MobType(Enum):
     NORMAL = 'normal mob'

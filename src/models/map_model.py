@@ -59,13 +59,13 @@ class MapModel:
 
         self.init_path()
 
-    def clear(self):
-        self.minimap_data = None
-        self.minimap_sample = None
-        self.mob_templates = []
-        self.elite_templates = []
-        self.boss_templates = []
-        self.platforms.clear()
+    # def clear(self):
+    #     self.minimap_data = None
+    #     self.minimap_sample = None
+    #     self.mob_templates = []
+    #     self.elite_templates = []
+    #     self.boss_templates = []
+    #     self.platforms.clear()
 
     def load_minimap_data(self):
         map_dir = map_helper.get_maps_dir(self.name)
@@ -115,7 +115,6 @@ class MapModel:
                 export = MapPoint(int(export_str[0]), int(export_str[1], 1))
                 result.append(Portal(entrance, export))
             return result
-                
 
     def _load_minimap_sample(self):
         minimap_sample_path = os.path.join(
@@ -143,6 +142,10 @@ class MapModel:
             self.platforms |= set(platforms)
 
         for plat1 in self.platforms:
+            for portal in self.portals:
+                if portal.entrance.y == plat1.y and portal.entrance.x in plat1.x_range:
+                    plat1.portals.append(portal)
+
             self.single_path[plat1] = set()
             for plat2 in self.platforms:
                 if plat1 == plat2:
@@ -182,9 +185,32 @@ class MapModel:
             if index - 1 >= 0:
                 return platforms[index - 1]
 
+    def platform_of_point(self, p: MapPoint) -> Platform | None:
+        platform_list = self.platform_map[p.y]
+        for platform in platform_list:
+            if p.x in platform.x_range:
+                return platform
+
+    def platform_portable(self, platform_start: Platform, platform_target: Platform):
+        for portal in platform_start.portals:
+            if platform_target.own_point(portal.export):
+                return portal
+
+    def point_portable(self, start: MapPoint, target: MapPoint):
+        platform_start = self.platform_of_point(start)
+        platform_target = self.platform_of_point(target)
+        if not platform_start or not platform_target:
+            return None
+        return self.platform_portable(platform_start, platform_target)
+
     def platform_reachable(self, platform_start: Platform | None, platform_target: Platform | None):
         if platform_start is None or platform_target is None:
             return False
+
+        # portal
+        if self.platform_portable(platform_start, platform_target) is not None:
+            return True
+
         dy = platform_target.y - platform_start.y
         gap = map_helper.platform_gap(platform_start, platform_target)
 
@@ -257,13 +283,13 @@ class MapModel:
         return result
 
     def upper_platform(self, platform: Platform):
-            assert (platform)
-            for y in range(platform.y - 1, 0, -1):
-                platforms = self.platforms_of_y(y)
-                if platforms is not None:
-                    for tmp in platforms:
-                        if map_helper.platform_gap(platform, tmp) <= -3:
-                            return tmp
+        assert (platform)
+        for y in range(platform.y - 1, 0, -1):
+            platforms = self.platforms_of_y(y)
+            if platforms is not None:
+                for tmp in platforms:
+                    if map_helper.platform_gap(platform, tmp) <= -3:
+                        return tmp
 
     def under_platform(self, platform: Platform):
         assert (platform)
