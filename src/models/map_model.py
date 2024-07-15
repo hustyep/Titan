@@ -3,6 +3,7 @@ import os
 import cv2
 import numpy as np
 from typing import List, Dict
+import sys
 
 from src.map import map_helper
 from src.common.constants import RESOURCES_DIR, Platform, MapPointType, MapPoint, Portal, Path
@@ -155,9 +156,6 @@ class MapModel:
                     self.single_path[plat1].add(plat2)
                     self.path_map[(plat1, plat2)].append(Path([plat1, plat2]))
 
-        def weight_of_path(path: Path):
-            return path.weight
-
         for plat1 in self.platforms:
             for plat2 in self.platforms:
                 if plat1 == plat2:
@@ -165,7 +163,7 @@ class MapModel:
                 if self.path_map[(plat1, plat2)]:
                     continue
                 paths = self.path_between(plat1, plat2, Path([]))
-                paths.sort(key=weight_of_path)
+                paths.sort(key=self.weight_of_path)
                 self.path_map[(plat1, plat2)] = paths
 
     def platforms_of_y(self, y: int) -> List[Platform] | None:
@@ -280,6 +278,24 @@ class MapModel:
                         next_path = [platform_start] + sub_path.routes
                         result.append(Path(next_path))
 
+        return result
+
+    def weight_of_path(self, path: Path):
+        if path.steps <= 1:
+            return sys.maxsize
+        result = path.steps * 3
+        last = None
+        for plat in path.routes:
+            if last == None:
+                last = plat
+            else:
+                if self.platform_portable(last, plat):
+                    result += 50
+                else:
+                    if plat.y - last.y != 0:
+                        result += abs(plat.y - last.y) * 10
+                    else:
+                        result += abs(plat.center.x - last.center.x)
         return result
 
     def upper_platform(self, platform: Platform):
