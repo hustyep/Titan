@@ -187,9 +187,6 @@ class Bot(Subject):
             return
         if self.role.daily.isDone:
             return
-        if not self.role.daily.ready:
-            bot_action.take_daily_quest()
-            self.role.daily.ready = True
         if self.role.daily.current_quest is not None:
             return self.role.daily.current_quest.map_name
 
