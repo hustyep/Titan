@@ -100,7 +100,7 @@ def move_horizontal(target: MapPoint):
         DoubleJump(target=target, attack_if_needed=True).execute()
     elif distance >= DoubleJump.move_range.start:
         DoubleJump(target=target, attack_if_needed=True).execute()
-    elif distance >= 15 or distance in range(7, 11):
+    elif distance >= 15 or distance in range(7, 10):
         DoubleJump(target=target, attack_if_needed=False).execute()
     elif distance >= Shadow_Dodge.move_range.start:
         Shadow_Dodge('left' if d_x < 0 else 'right').execute()
@@ -196,20 +196,24 @@ class DoubleJump(Skill):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.1)
             Shadow_Dodge(direction).execute()
+            self.attack_if_needed = False
         elif distance in range(32,34):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 2, down_time=0.02, up_time=0.1)
             Shadow_Dodge(direction).execute()
+            self.attack_if_needed = False
         elif distance in range(40,44):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.1, up_time=0.1)
             press(self.key, 1, down_time=0.02, up_time=0.2) 
             Shadow_Dodge(direction).execute()
+            self.attack_if_needed = False
         elif distance in range(44,47):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.1, up_time=0.2)
             press(self.key, 1, down_time=0.02, up_time=0.2) 
             Shadow_Dodge(direction).execute()
+            self.attack_if_needed = False
         elif distance in range(32, 35):
             press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
             press_acc(self.key, 2, down_time=0.03, up_time=0.04)
@@ -229,8 +233,8 @@ class DoubleJump(Skill):
                 times = [0.1, 0.1, 0.1, 0.02]
             elif distance == 15:
                 times = [0.2, 0.05, 0.1, 0.02]
-            elif distance == 10:
-                times = [0.2, 0.02, 0.02, 0.02]
+            # elif distance == 10:
+            #     times = [0.2, 0.02, 0.02, 0.02]
             elif distance in range(8, 10):
                 times = [0.1, 0.02, 0.02, 0.02]
             elif distance == 7:
@@ -293,7 +297,7 @@ class Shadow_Dodge(Skill):
     cooldown = 0
     precast = 0
     backswing = 0.3
-    move_range = range(11, 15)
+    move_range = range(10, 15)
     # 12-14
 
     def __init__(self, direction='right'):
