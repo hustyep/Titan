@@ -42,6 +42,7 @@ class DefaultKeybindings:
     GODDESS_BLESSING = '1'
     SolarCrest = '5'
     Will_of_Erda = 'home'
+    Sol_Janus = ''
 
 
 class Command():
@@ -866,6 +867,15 @@ class ErdaShower(Skill):
         press(DefaultKeybindings.ERDA_SHOWER,
               down_time=self.precast, up_time=self.backswing)
         return True
+
+
+class Sol_Janus(Skill):
+    key = DefaultKeybindings.Sol_Janus
+    type = SkillType.Summon
+    cooldown = 60
+    precast = 0.3
+    backswing = 0.6
+    duration = 120
 
 
 class Will_of_Erda(Command):

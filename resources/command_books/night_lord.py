@@ -4,7 +4,7 @@ from src.common import bot_status, bot_settings, utils
 import time
 from src.routine.components import *
 from src.common.vkeys import press, key_down, key_up, releaseAll, press_acc
-from src.command.commands import * # type: ignore
+from src.command.commands import *  # type: ignore
 
 
 # List of key mappings
@@ -44,6 +44,7 @@ class Keybindings(DefaultKeybindings):
     SHURIKEN = 'c'
     DARK_FLARE = 'w'
     ERDA_SHOWER = '`'
+    LifeAndDeath = '6'
 
 
 #########################
@@ -285,6 +286,7 @@ class ShowDown(Command):
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
         return True
 
+
 class Attack(Command):
     key = ShowDown.key
     type = SkillType.Attack
@@ -364,9 +366,17 @@ class Shurrikane(Command):
             time.sleep(self.__class__.backswing)
         return True
 
+
+class LifeAndDeath(Skill):
+    key = Keybindings.LifeAndDeath
+    type = SkillType.Attack
+    cooldown = 360
+    backswing = 3
+
 ###################
 #      Buffs      #
 ###################
+
 
 class Buff(Command):
     """Uses each of Shadowers's buffs once."""
@@ -383,7 +393,7 @@ class Buff(Command):
             ShadowWalker,
             ThrowBlasting,
         ]
-        
+
         ForTheGuild.key = Keybindings.FOR_THE_GUILD
         HardHitter.key = Keybindings.HARD_HITTER
         LastResort.key = Keybindings.LAST_RESORT
@@ -440,6 +450,7 @@ class ThrowBlasting(Skill):
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[8:, ], threshold=0.95)
         cls.ready = len(matchs) > 0
+
 
 class Potion(Command):
     """Uses each of Shadowers's potion once."""
