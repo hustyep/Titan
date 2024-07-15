@@ -7,7 +7,7 @@ from src.common import bot_status, bot_settings, utils
 from src.common.gui_setting import gui_setting
 from src.common.vkeys import press, key_down, key_up, releaseAll, press_acc
 from src.routine.components import *
-from src.command.commands import *
+from src.command.commands import * # type: ignore
 # from src.command.commands import Command, Skill, Walk, Fall, Direction, RopeLift, Arachnid, LastResort, ForTheGuild, HardHitter, SkillType, sleep_in_the_air, target_reached, evade_rope, opposite_direction, detect_mobs_around_anchor
 from src.map.map_helper import *
 from src.map.map import shared_map
@@ -856,7 +856,7 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
             else:
                 return next_p
 
-        intersection_point = shared_map.point_of_intersection(platform_start, platform_target)
+        intersection_point = point_of_intersection(platform_start, platform_target)
         assert (intersection_point)
         if target_reached(start, intersection_point):
             return target
@@ -894,7 +894,7 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
         if shared_map.on_the_platform(next_p):
             return next_p
         else:
-            return shared_map.point_of_intersection(platform_start, platform_target)
+            return point_of_intersection(platform_start, platform_target)
     else:
         if platform_start.end_x < platform_target.begin_x:
             next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)

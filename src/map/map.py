@@ -1,6 +1,7 @@
 """A module for saving map layouts and determining shortest paths."""
 
 from typing import List
+import random
 
 from src.common.constants import *
 from src.common import utils
@@ -177,140 +178,18 @@ class Map:
                 if p.x in range(platform.begin_x, platform.end_x+1):
                     return platform
 
-    def point_of_intersection(self, platform_start: Platform, platform_target: Platform):
-        x_start = list(range(platform_start.begin_x, platform_start.end_x + 1))
-        x_target = list(range(platform_target.begin_x, platform_target.end_x + 1))
-        x_intersection = list(set(x_start).intersection(set(x_target)))
-        if len(x_intersection) > 0:
-            x_intersection.sort()
-            target_x = (x_intersection[0] + x_intersection[-1]) / 2
-            return MapPoint(int(target_x), platform_start.y, 2)
-
-    def platforms_of_y(self, y: int) -> List[Platform] | None:
-        assert (self.current_map)
-        if str(y) in self.current_map.platforms.keys():
-            return self.current_map.platforms[str(y)]
-
-    def adjoin_platform(self, platform: Platform, right=True):
-        assert (platform)
-        platforms = self.platforms_of_y(platform.y)
-        assert (platforms)
-        index = platforms.index(platform)
-        if right:
-            if index + 1 < len(platforms):
-                return platforms[index + 1]
-        else:
-            if index - 1 >= 0:
-                return platforms[index - 1]
-
-    def upper_platform(self, platform: Platform):
-        assert (platform)
-        for y in range(platform.y - 1, 0, -1):
-            platforms = self.platforms_of_y(y)
-            if platforms is not None:
-                for tmp in platforms:
-                    if map_helper.platform_gap(platform, tmp) <= -3:
-                        return tmp
-
-    def under_platform(self, platform: Platform):
-        assert (platform)
-        assert (self.current_map)
-        for y in range(platform.y + 1, self.current_map.base_floor + 1):
-            platforms = self.platforms_of_y(y)
-            if platforms is not None:
-                for tmp in platforms:
-                    if map_helper.platform_gap(platform, tmp) <= -3:
-                        return tmp
-
-    def gap_of_points_platform(self, p1: MapPoint, p2: MapPoint):
-        if self.is_continuous(p1, p2):
-            return 0
-        platform1 = self.platform_of_point(p1)
-        platform2 = self.platform_of_point(p2)
-        return map_helper.platform_gap(platform1, platform2)
-
-    def point_reachable(self, start: MapPoint, target: MapPoint):
-        assert (self.on_the_platform(target))
-        dx = target.x - start.x
-        dy = target.y - start.y
-        platform_start = self.platform_of_point(start)
-        platform_target = self.platform_of_point(target)
-
-        if abs(dx) <= target.tolerance and abs(dy) <= target.tolerance_v:
-            return True
-        if abs(dx) <= 1:
-            return True
-        if platform_start is None or platform_target is None:
-            return False
-        return self.platform_reachable(platform_start, platform_target)
-
-    def platform_reachable(self, platform_start: Platform | None, platform_target: Platform | None):
-        if platform_start is None or platform_target is None:
-            return False
-        if platform_start == platform_target:
-            return True
-        dy = platform_target.y - platform_start.y
-        gap = map_helper.platform_gap(platform_start, platform_target)
-
-        if dy == 0:
-            return gap <= 26
-        elif dy < 0:
-            if gap <= - 3:
-                return True
-            return gap <= 8 and abs(dy) <= 8
-        else:
-            if gap <= -3:
-                return True
-            if gap <= 26:
-                for y in range(platform_start.y, platform_target.y):
-                    plats = self.platforms_of_y(y)
-                    if plats:
-                        for plat in plats:
-                            if map_helper.platform_gap(plat, platform_target) < 0:
-                                return False
-                return True
-
-    def path_between(self, platform_start: Platform | None, platform_target: Platform | None) -> list[Platform] | None:
-        if platform_start is None or platform_target is None:
-            return None
-        dy = platform_target.y - platform_start.y
-
-        if platform_start == platform_target:
-            return [platform_start]
-        if self.platform_reachable(platform_start, platform_target):
-            return [platform_start, platform_target]
-
-        if dy == 0:
-            next_platform = self.adjoin_platform(platform_start, platform_target.begin_x > platform_start.end_x)
-            if self.platform_reachable(platform_start, next_platform):
-                paths = self.path_between(next_platform, platform_target)
-                if paths:
-                    return [platform_start] + paths
-        else:
-            if platform_target.begin_x > platform_start.end_x:
-                adjoin_platform = self.adjoin_platform(platform_start, True)
-                if adjoin_platform and self.platform_reachable(platform_start, adjoin_platform) and adjoin_platform.begin_x < platform_target.end_x:
-                    paths = self.path_between(adjoin_platform, platform_target)
-                    if paths:
-                        return [platform_start] + paths
+    def path_between(self, platform_start: Platform, platform_target: Platform, random_path=False) -> list[Platform]:
+        if not self.current_map:
+            return []
+        paths = self.current_map.path_between(platform_start, platform_target)
+        if paths:
+            if random_path:
+                paths = paths[:3]
+                index = random.randrange(0, len(paths))
+                return paths[index].routes
             else:
-                adjoin_platform = self.adjoin_platform(platform_start, False)
-                if adjoin_platform and self.platform_reachable(platform_start, adjoin_platform) and adjoin_platform.end_x > platform_target.begin_x:
-                    paths = self.path_between(adjoin_platform, platform_target)
-                    if paths:
-                        return [platform_start] + paths
-
-            if dy < 0:
-                upper_platform = self.upper_platform(platform_start)
-                if upper_platform and upper_platform.y <= platform_target.y:
-                    paths = self.path_between(upper_platform, platform_target)
-                    if paths:
-                        return [platform_start] + paths
-            else:
-                under_platform = self.under_platform(platform_start)
-                paths = self.path_between(under_platform, platform_target)
-                if paths:
-                    return [platform_start] + paths
+                return paths[0].routes
+        return []
 
     def add_start_point(self, point: MapPoint):
         if gui_setting.mode.type != BotRunMode.Mapping:

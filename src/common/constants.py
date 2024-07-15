@@ -1,4 +1,6 @@
 from enum import Enum, auto
+import sys
+from typing import List
 
 #########################
 #       Constants       #
@@ -122,6 +124,44 @@ class Platform:
         len = self.end_x - self.begin_x + 1
         return MapPoint(int((self.begin_x+self.end_x) / 2), self.y, int(len/2))
 
+class Path:
+    def __init__(self, routes: List[Platform]):
+        self.routes = routes
+
+    def __str__(self) -> str:
+        result = ''
+        for index, plat in enumerate(self.routes):
+            result += f'{str(plat)} {" -> " if index < len(self.routes) - 1 else ""}'
+        result += f'weight={self.weight}'
+        return result
+
+    @property
+    def start(self):
+        return self.routes[0] if self.steps > 0 else None
+
+    @property
+    def end(self):
+        return self.routes[-1] if self.steps > 0 else None
+
+    @property
+    def steps(self):
+        return len(self.routes)
+
+    @property
+    def weight(self):
+        if self.steps <= 1:
+            return sys.maxsize
+        result = self.steps * 3
+        last = None
+        for plat in self.routes:
+            if last == None:
+                last = plat
+            else:
+                if plat.y - last.y != 0:
+                    result += abs(plat.y - last.y) * 10
+                else:
+                    result += abs(plat.center.x - last.center.x)
+        return result
 
 class MobType(Enum):
     NORMAL = 'normal mob'

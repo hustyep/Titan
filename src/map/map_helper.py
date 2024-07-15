@@ -1,7 +1,8 @@
 
 import os
+import sys
 
-from src.common.constants import RESOURCES_DIR, Platform
+from src.common.constants import RESOURCES_DIR, Platform, MapPoint
 
 
 def get_maps_dir(name):
@@ -10,7 +11,7 @@ def get_maps_dir(name):
 
 def platform_gap(platform1: Platform | None, platform2: Platform | None):
     if platform1 is None or platform2 is None:
-        return -1
+        return sys.maxsize
     if platform1.end_x < platform2.begin_x:
         return platform2.begin_x - platform1.end_x
     elif platform2.end_x < platform1.begin_x:
@@ -21,7 +22,19 @@ def platform_gap(platform1: Platform | None, platform2: Platform | None):
         x_start = list(range(platform1.begin_x, platform1.end_x + 1))
         x_target = list(range(platform2.begin_x, platform2.end_x + 1))
         x_intersection = set(x_start).intersection(set(x_target))
+        if not x_intersection:
+            return sys.maxsize
         return -len(x_intersection)
+
+
+def point_of_intersection(platform_start: Platform, platform_target: Platform):
+    x_start = list(range(platform_start.begin_x, platform_start.end_x + 1))
+    x_target = list(range(platform_target.begin_x, platform_target.end_x + 1))
+    x_intersection = list(set(x_start).intersection(set(x_target)))
+    if len(x_intersection) > 0:
+        x_intersection.sort()
+        target_x = (x_intersection[0] + x_intersection[-1]) / 2
+        return MapPoint(int(target_x), platform_start.y, 2)
 
 
 def jumpable_platforms(platform1: Platform, platform2: Platform, max_gap_h=8, max_gap_v=8) -> bool:
