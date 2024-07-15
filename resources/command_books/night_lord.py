@@ -4,7 +4,7 @@ from src.common import bot_status, bot_settings, utils
 import time
 from src.routine.components import *
 from src.common.vkeys import press, key_down, key_up, releaseAll, press_acc
-from src.command.commands import *
+from src.command.commands import * # type: ignore
 
 
 # List of key mappings
@@ -201,12 +201,13 @@ class ShadowLeap(Command):
         super().__init__(locals())
         self.jump = jump
 
-    def main(self):
+    def main(self, wait=True):
         time.sleep(self.__class__.precast)
         if self.jump:
             press_acc(Keybindings.JUMP, down_time=0.05, up_time=0.06)
 
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
+        return True
 
 
 # 水平位移
@@ -222,7 +223,7 @@ class ShadowSurge(Skill):
         super().__init__(locals())
         self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
             return False
 
@@ -256,10 +257,10 @@ class DarkFlare(Skill):
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    def main(self):
+    def main(self, wait=True):
         if self.direction is not None:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
-        super().main()
+        return super().main()
 
 
 #######################
@@ -278,11 +279,11 @@ class ShowDown(Command):
     type = SkillType.Attack
     backswing = 0.5
 
-    def main(self):
+    def main(self, wait=True):
         time.sleep(self.__class__.precast)
         self.__class__.castedTime = time.time()
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
-
+        return True
 
 class Attack(Command):
     key = ShowDown.key
@@ -293,7 +294,7 @@ class Attack(Command):
         super().__init__(locals())
         self.detect = bot_settings.validate_boolean(detect)
 
-    def main(self):
+    def main(self, wait=True):
         if self.detect:
             pos = (800, 560)
             if bot_status.player_direction == 'left':
@@ -306,6 +307,7 @@ class Attack(Command):
                 ShowDown().execute()
         else:
             ShowDown().execute()
+        return True
 
 
 class SuddenRaid(Skill):
@@ -349,9 +351,9 @@ class Shurrikane(Command):
         super().__init__(locals())
         self.stop = stop
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
-            return
+            return False
         self.__class__.castedTime = time.time()
         press(self.__class__.key, up_time=0)
         if self.stop > 0:
@@ -360,7 +362,7 @@ class Shurrikane(Command):
             time.sleep(max(self.__class__.backswing - self.stop, 0))
         else:
             time.sleep(self.__class__.backswing)
-
+        return True
 
 ###################
 #      Buffs      #
@@ -396,7 +398,8 @@ class Buff(Command):
                 print(buff)
                 result = buff().main(wait)
                 if result:
-                    break
+                    return True
+        return False
 
 
 class Memories(Skill):
