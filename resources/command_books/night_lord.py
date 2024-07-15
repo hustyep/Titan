@@ -36,13 +36,6 @@ class Keybindings(DefaultKeybindings):
     LEGION_WEALTHY = '='
     EXP_COUPON = ''
 
-    # SHADOW_PARTNER = '3'
-    # SPEED_INFUSION = '8'
-    # HOLY_SYMBOL = '4'
-    # SHARP_EYE = '5'
-    # COMBAT_ORDERS = '6'
-    # ADVANCED_BLESSING = '7'
-
     # Skills
     SHOW_DOWN = 'd'
     SUDDEN_RAID = 'r'
@@ -58,61 +51,45 @@ class Keybindings(DefaultKeybindings):
 #########################
 
 @bot_status.run_if_enabled
-def step(target, tolerance):
+def step(target: MapPoint):
     """
     Performs one movement step in the given DIRECTION towards TARGET.
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    d_x = target[0] - bot_status.player_pos[0]
-    d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) >= 26:
-        hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
-        return
-
-    next_p = find_next_point(bot_status.player_pos, target, tolerance)
-    print(f"next_p:{next_p}")
+    # utils.log_event(f"[step]target:{str(target)}", bot_settings.debug)s
+    next_p = find_next_point(bot_status.player_pos, target)
+    utils.log_event(f"[step]next_p:{str(next_p)}", bot_settings.debug)
     if not next_p:
         return
 
     bot_status.path = [bot_status.player_pos, next_p, target]
 
-    d_x = next_p[0] - bot_status.player_pos[0]
-    d_y = next_p[1] - bot_status.player_pos[1]
-
-    direction = None
-    if abs(d_x) > tolerance:
-        direction = 'right' if d_x > 0 else 'left'
+    d_y = next_p.y - bot_status.player_pos.y
+    if abs(d_y) > target.tolerance_v:
+        if d_y > 0:
+            move_down(next_p)
+        else:
+            move_up(next_p)
     else:
-        direction = 'down' if d_y > 0 else 'up'
-
-    if direction == "up":
-        move_up(next_p)
-    elif direction == "down":
-        move_down(next_p)
-    elif abs(d_x) >= 24:
-        hit_and_run(direction, next_p, tolerance)
-    elif abs(d_x) >= 10 and ShadowSurge.ready:
-        ShadowSurge(direction).execute()
-        # Attack().execute()
-    else:
-        Walk(target_x=next_p[0], tolerance=tolerance).execute()
+        move_horizontal(next_p)
 
 
 @bot_status.run_if_enabled
-def hit_and_run(direction, target, tolerance):
-    if gui_setting.detection.detect_mob:
-        if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
-            t = AsyncTask(target=pre_detect, args=(direction,))
-            t.start()
-            elite_detected = t.join()
-            DoubleJump(target=target, attack_if_needed=True).execute()
-            if elite_detected:
-                pass
-        else:
-            DoubleJump(target=target, attack_if_needed=True).execute()
-    else:
+def move_horizontal(target: MapPoint):
+    start_p = shared_map.fixed_point(bot_status.player_pos)
+    d_x = target.x - start_p.x
+    distance = abs(d_x)
+
+    if not shared_map.is_continuous(start_p, target):
         DoubleJump(target=target, attack_if_needed=True).execute()
+    elif distance >= DoubleJump.move_range.start:
+        DoubleJump(target=target, attack_if_needed=True).execute()
+    elif distance >= ShadowSurge.move_range.start and ShadowSurge.ready:
+        ShadowSurge('left' if d_x < 0 else 'right').execute()
+    else:
+        Walk(target).execute()
+
 
 #########################
 #        Y轴移动         #
@@ -122,9 +99,28 @@ def hit_and_run(direction, target, tolerance):
 @bot_status.run_if_enabled
 def move_up(target):
     p = bot_status.player_pos
-    dy = abs(p[1] - target[1])
+    dy = abs(p.y - target.y)
 
-    if dy <= 6:
+    up_point = MapPoint(p.x, target.y)
+    if not shared_map.is_continuous(up_point, target):
+        # 跨平台
+        DoubleJump(target, False)
+        return
+
+    next_platform = shared_map.platform_of_point(target)
+    assert (next_platform)
+    if bot_status.player_moving and bot_status.player_direction == 'left':
+        if up_point.x - next_platform.begin_x <= 8:
+            move_horizontal(MapPoint(up_point.x+3, p.y, 2))
+        else:
+            time.sleep(0.2)
+    elif bot_status.player_moving and bot_status.player_direction == 'right':
+        if next_platform.end_x - up_point.x <= 10:
+            move_horizontal(MapPoint(up_point.x-3, p.y, 2))
+        else:
+            time.sleep(0.2)
+
+    if dy < 5:
         press(Keybindings.JUMP)
     elif dy <= 18:
         ShadowLeap(True if dy > 15 else False).execute()
@@ -134,69 +130,64 @@ def move_up(target):
 
 @bot_status.run_if_enabled
 def move_down(target):
-    sleep_in_the_air(n=1)
-    if target[1] > bot_status.player_pos[1]:
+    sleep_in_the_air(n=4)
+    if target.y <= bot_status.player_pos.y:
+        return
+    if abs(bot_status.player_pos.y - target.y) <= 4:
+        sleep_in_the_air()
+        return
+    next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
+    if shared_map.on_the_platform(next_p):
         Fall().execute()
+    else:
+        DoubleJump(target, False)
 
 
 class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.FLASH_JUMP
     type = SkillType.Move
-    # cooldown = 0.1
+    cooldown = 0.6
+    backswing = 0
+    move_range = range(26, 33)
 
-    def __init__(self, target: tuple[int, int], attack_if_needed=False):
+    def __init__(self, target: MapPoint, attack_if_needed=False):
         super().__init__(locals())
-
         self.target = target
         self.attack_if_needed = attack_if_needed
 
-    def detect_mob(self, direction):
-        insets = AreaInsets(top=220,
-                            bottom=100,
-                            left=650 if direction == 'left' else 10,
-                            right=10 if direction == 'left' else 600)
-        anchor = bot_helper.locate_player_fullscreen(accurate=True)
-        mobs = detect_mobs(insets=insets, anchor=anchor)
-        return mobs
-
-    def main(self):
+    def main(self, wait=True):
         while not self.canUse():
+            utils.log_event("double jump waiting", bot_settings.debug)
             time.sleep(0.01)
-        dx = self.target[0] - bot_status.player_pos[0]
-        dy = self.target[1] - bot_status.player_pos[1]
+        dx = self.target.x - bot_status.player_pos.x
+        dy = self.target.y - bot_status.player_pos.y
         direction = 'left' if dx < 0 else 'right'
-        start_y = bot_status.player_pos[1]
+        start_p = bot_status.player_pos
+        start_y = bot_status.player_pos.y
 
         self.__class__.castedTime = time.time()
         key_down(direction)
-        if self.attack_if_needed:
-            # detect = AsyncTask(
-            #     target=self.detect_mob, args=(direction, ))
-            # detect.start()
+        time.sleep(0.02)
+        need_check = True
+        if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+            press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
+            self.attack_if_needed = False
+        else:
+            need_check = False
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.02)
-            # mobs_detected = detect.join()
-            mobs_detected = True
-            times = 2 if mobs_detected else 1
             press(self.key, 1, down_time=0.02, up_time=0.03)
-            if mobs_detected:
-                Attack().execute()
-        else:
-            times = 2 if abs(dx) >= 32 else 1
-            if dy == 0:
-                if abs(dx) in range(20, 26):
-                    press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.5)
-                else:
-                    press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-            else:
-                press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
-            press(self.key, times, down_time=0.03, up_time=0.03)
-
+        if self.attack_if_needed:
+            Attack().execute()
+            time.sleep(0.1)
         key_up(direction)
-        if start_y == 68:
-            time.sleep(0.02)
-        else:
-            sleep_in_the_air(n=1, start_y=start_y)
+        sleep_in_the_air(n=1)
+
+        if need_check and not target_reached(bot_status.player_pos, self.target):
+            utils.log_event(
+                f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
+        return True
 
 
 # 上跳
@@ -225,6 +216,7 @@ class ShadowSurge(Skill):
     cooldown = 5
     precast = 0
     backswing = 0.18
+    move_range = range(10, 15)
 
     def __init__(self, direction):
         super().__init__(locals())
@@ -280,6 +272,7 @@ class Mark(Skill):
     cooldown = 1
     ready = False
 
+
 class ShowDown(Command):
     key = Keybindings.SHOW_DOWN
     type = SkillType.Attack
@@ -295,11 +288,11 @@ class Attack(Command):
     key = ShowDown.key
     type = SkillType.Attack
     backswing = ShowDown.backswing
-    
-    def __init__(self, detect = False):
+
+    def __init__(self, detect=False):
         super().__init__(locals())
         self.detect = bot_settings.validate_boolean(detect)
-        
+
     def main(self):
         if self.detect:
             pos = (800, 560)
@@ -352,7 +345,7 @@ class Shurrikane(Command):
     cooldown = 23
     backswing = 0.35
 
-    def __init__(self, stop: float = None):
+    def __init__(self, stop: float = 0):
         super().__init__(locals())
         self.stop = stop
 
@@ -361,7 +354,7 @@ class Shurrikane(Command):
             return
         self.__class__.castedTime = time.time()
         press(self.__class__.key, up_time=0)
-        if self.stop is not None and self.stop != 'None':
+        if self.stop > 0:
             time.sleep(self.stop)
             press(self.__class__.key, up_time=0)
             time.sleep(max(self.__class__.backswing - self.stop, 0))
@@ -388,6 +381,13 @@ class Buff(Command):
             ShadowWalker,
             ThrowBlasting,
         ]
+        
+        ForTheGuild.key = Keybindings.FOR_THE_GUILD
+        HardHitter.key = Keybindings.HARD_HITTER
+        LastResort.key = Keybindings.LAST_RESORT
+
+        Arachnid.key = Keybindings.ARACHNID
+        SolarCrest.key = Keybindings.SolarCrest
 
     def main(self, wait=True):
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!use buff")
@@ -397,13 +397,15 @@ class Buff(Command):
                 result = buff().main(wait)
                 if result:
                     break
-    
+
+
 class Memories(Skill):
     key = Keybindings.MEMORIES
     cooldown = 180
     precast = 0.3
     backswing = 0.8
     type = SkillType.Buff
+
 
 class EPIC_ADVENTURE(Skill):
     key = Keybindings.EPIC_ADVENTURE
@@ -435,3 +437,35 @@ class ThrowBlasting(Skill):
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[8:, ], threshold=0.95)
         cls.ready = len(matchs) > 0
+
+class Potion(Command):
+    """Uses each of Shadowers's potion once."""
+
+    def __init__(self):
+        super().__init__(locals())
+        self.potions = [
+            GOLD_POTION,
+            CANDIED_APPLE,
+            GUILD_POTION,
+            LEGION_WEALTHY,
+            EXP_COUPON,
+            EXP_Potion,
+            Wealth_Potion,
+        ]
+
+        GOLD_POTION.key = Keybindings.GOLD_POTION
+        CANDIED_APPLE.key = Keybindings.CANDIED_APPLE
+        GUILD_POTION.key = Keybindings.GUILD_POTION
+        LEGION_WEALTHY.key = Keybindings.LEGION_WEALTHY
+        EXP_COUPON.key = Keybindings.EXP_COUPON
+        Wealth_Potion.key = Keybindings.WEALTH_POTION
+        EXP_Potion.key = Keybindings.EXP_POTION
+
+    def main(self, wait=True):
+        if bot_status.invisible:
+            return False
+        for potion in self.potions:
+            if potion.canUse():
+                potion().execute()
+                time.sleep(0.2)
+        return True
