@@ -62,6 +62,10 @@ def step(target, tolerance):
     Should not press any arrow keys, as those are handled by Mars.
     """
 
+    if bot_status.elite_boss_detected:
+        press('6', down_time=0.8, up_time=2)
+        bot_status.elite_boss_detected = False
+
     d_x = target[0] - bot_status.player_pos[0]
     d_y = target[1] - bot_status.player_pos[1]
     if abs(d_x) >= 26:

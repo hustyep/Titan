@@ -74,10 +74,10 @@ class Notifier(Subject):
                     return
                 text = f'💡[{event.value}] {info}'
                 self.send_message(text=text)
+                if event == BotInfo.BOSS_APPEAR:
+                    threading.Timer(5, self.notify_boss_appear).start()
             elif event_type == BotVerbose:
                 pass
-                # if event == BotVerbose.BOSS_APPEAR:
-                #     threading.Timer(5, self.notify_boss_appear).start()
             elif event_type == BotDebug:
                 if gui_setting.notification.get('notice_level') < 5:
                     return
