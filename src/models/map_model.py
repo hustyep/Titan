@@ -5,7 +5,7 @@ import numpy as np
 from typing import List, Dict
 
 from src.map import map_helper
-from src.common.constants import RESOURCES_DIR, Platform, MapPointType, Path
+from src.common.constants import RESOURCES_DIR, Platform, MapPointType, MapPoint, Portal, Path
 from src.modules.capture import capture
 
 Min_Jumpable_Gap = 5
@@ -27,6 +27,7 @@ class MapModel:
         self.monsters = str(dict["Monster"]).split(',')
         self.mobs_count = int(dict["MobsCount"])
         self.minimap_margin = int(dict["MinimapMargin"])
+        self.portals = self.__load_portals(str(dict['Portals']))
 
         self.minimap_data = None
         self.minimap_sample = None
@@ -99,6 +100,22 @@ class MapModel:
                             platform_list.append(Platform(x, x, y))
 
             print(f" ~ Finished loading map '{self.name}'")
+
+    def __load_portals(self, config: str) -> list[Portal]:
+        if not config:
+            return []
+        else:
+            result = []
+            portals_str_list = config.split(';')
+            for portals_str in portals_str_list:
+                points_str = portals_str.split(':')
+                entrance_str = points_str[0].split(',')
+                export_str = points_str[1].split(',')
+                entrance = MapPoint(int(entrance_str[0]), int(entrance_str[1], 1))
+                export = MapPoint(int(export_str[0]), int(export_str[1], 1))
+                result.append(Portal(entrance, export))
+            return result
+                
 
     def _load_minimap_sample(self):
         minimap_sample_path = os.path.join(

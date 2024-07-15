@@ -10,7 +10,6 @@ class Daily:
 
         self.quest_list: list[Quest] = []
         self.cur_quest_index = 0
-        self.ready = False
         self.__load_quest()
 
     @property
@@ -32,8 +31,6 @@ class Daily:
         return current_quest.isDone
 
     def start(self):
-        if not self.ready:
-            return
         if self.isDone:
             return
         current_quest = self.current_quest
@@ -41,8 +38,6 @@ class Daily:
             current_quest.start()
 
     def pause(self):
-        if not self.ready:
-            return
         if self.isDone:
             return
         current_quest = self.current_quest

@@ -71,6 +71,22 @@ class BotDebug(Enum):
 #############################
 
 
+class AreaInsets:
+    def __init__(self, top=0, bottom=0, left=0, right=0) -> None:
+        self.top = top
+        self.bottom = bottom
+        self.left = left
+        self.right = right
+
+
+class Rect:
+    def __init__(self, x=0, y=0, width=0, height=0) -> None:
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+
 class MapPoint:
     def __init__(self, x: int, y: int, tolerance=3, tolerance_v=1):
         self.x = x
@@ -94,20 +110,10 @@ class MapPointType(Enum):
     FloorRope = 3
 
 
-class AreaInsets:
-    def __init__(self, top=0, bottom=0, left=0, right=0) -> None:
-        self.top = top
-        self.bottom = bottom
-        self.left = left
-        self.right = right
-
-
-class Rect:
-    def __init__(self, x=0, y=0, width=0, height=0) -> None:
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+class Portal:
+    def __init__(self, entrance: MapPoint, export: MapPoint):
+        self.entrance = entrance
+        self.export = export
 
 
 class Platform:
@@ -115,6 +121,7 @@ class Platform:
         self.begin_x = begin_x
         self.end_x = end_x
         self.y = y
+        self.portals: list[Portal] = []
 
     def __str__(self) -> str:
         return f"({self.begin_x},{self.end_x}), {self.y}"

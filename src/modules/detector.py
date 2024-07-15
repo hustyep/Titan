@@ -369,7 +369,7 @@ class Detector(Subject):
             self.on_next((BotError.DEAD, ))
 
     def check_others(self):
-        if game_map.current_map is None or game_map.current_map.instance:
+        if game_map.current_map is None:
             return
         minimap = capture.minimap_display
         filtered = utils.filter_color(minimap, OTHER_RANGES)

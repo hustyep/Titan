@@ -171,14 +171,18 @@ def wait_until_map_changed(timeout=7):
 def chenck_map_available(instance=True):
     if instance:
         start_time = time.time()
-        while time.time() - start_time <= 3:
+        while time.time() - start_time <= 4:
+            others = check_others()
+            if others >= 2:
+                return False
             if detect_mobs(capture.frame):
                 return True
             time.sleep(0.1)
         return False
     else:
         for i in range(4):
-            if bot_status.stage_fright:
+            others = check_others()
+            if others > 0:
                 return False
             time.sleep(0.5)
         return True
@@ -296,3 +300,16 @@ def check_blind():
         return True
     else:
         return False
+    
+def check_others():
+    minimap = capture.minimap_display
+    filtered = utils.filter_color(minimap, OTHER_RANGES)
+    others = len(utils.multi_match(
+        filtered, OTHER_TEMPLATE, threshold=0.7))
+
+    guild_filtered = utils.filter_color(minimap, GUILDMATE_RANGES)
+    guildmates = len(utils.multi_match(
+        guild_filtered, GUILDMATE_TEMPLATE, threshold=0.7))
+
+    others += guildmates
+    return others
