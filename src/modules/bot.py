@@ -253,8 +253,8 @@ class Bot(Subject):
         elif isinstance(event_type, BotError):
             match (event_type):
                 case BotError.OTHERS_STAY_OVER_120S:
-                    bot_action.change_channel(instance=False)
-                    pass
+                    if shared_map.current_map and not shared_map.current_map.instance:
+                        bot_action.change_channel(instance=False)
                 case BotError.LOST_PLAYER:
                     pass
                 case (_):
@@ -266,13 +266,15 @@ class Bot(Subject):
                 # case BotWarnning.NO_MOVEMENT:
                 #     bot_action.jump_down()
                 case BotWarnning.OTHERS_STAY_OVER_30S:
-                    words = ['cc pls', 'cc pls ', ' cc pls']
-                    random_word = random.choice(words)
-                    bot_action.say_to_all(random_word)
+                    if shared_map.current_map and not shared_map.current_map.instance:
+                        words = ['cc pls', 'cc pls ', ' cc pls']
+                        random_word = random.choice(words)
+                        bot_action.say_to_all(random_word)
                 case BotWarnning.OTHERS_STAY_OVER_60S:
-                    words = ['?', 'hello?', ' cc pls', 'bro?']
-                    random_word = random.choice(words)
-                    bot_action.say_to_all(random_word)
+                    if shared_map.current_map and not shared_map.current_map.instance:
+                        words = ['?', 'hello?', ' cc pls', 'bro?']
+                        random_word = random.choice(words)
+                        bot_action.say_to_all(random_word)
                 case BotWarnning.OTHERS_COMMING:
                     pass
         elif isinstance(event_type, BotInfo):
