@@ -189,7 +189,7 @@ class DoubleJump(Skill):
         key_down(direction)
         time.sleep(0.02)
         need_check = True
-        if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
+        if dy < 0:
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
             press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
         elif distance in range(26,28):
