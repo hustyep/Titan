@@ -140,43 +140,33 @@ class Platform:
 
 
 class Path:
-    def __init__(self, routes: List[Platform]):
+    def __init__(self, routes: List[Platform], start: MapPoint | None = None, target: MapPoint | None = None):
+        assert(len(routes) > 0)
         self.routes = routes
+        self.start = start if start else routes[0].center
+        self.target = target if target else routes[-1].center
 
     def __str__(self) -> str:
         result = ''
         for index, plat in enumerate(self.routes):
             result += f'{str(plat)} {" -> " if index < len(self.routes) - 1 else ""}'
-        result += f'weight={self.weight}'
         return result
 
     @property
-    def start(self):
+    def start_plat(self):
         return self.routes[0] if self.steps > 0 else None
 
     @property
-    def end(self):
+    def end_plat(self):
         return self.routes[-1] if self.steps > 0 else None
 
     @property
     def steps(self):
         return len(self.routes)
-
+    
     @property
-    def weight(self):
-        if self.steps <= 1:
-            return sys.maxsize
-        result = self.steps * 3
-        last = None
-        for plat in self.routes:
-            if last == None:
-                last = plat
-            else:
-                if plat.y - last.y != 0:
-                    result += abs(plat.y - last.y) * 10
-                else:
-                    result += abs(plat.center.x - last.center.x)
-        return result
+    def direction(self):
+        return 'right' if self.target.x > self.start.x else 'left'
 
 
 class MobType(Enum):

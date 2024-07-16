@@ -162,7 +162,7 @@ class MapModel:
                     continue
                 if self.path_map[(plat1, plat2)]:
                     continue
-                paths = self.path_between(plat1, plat2, Path([]))
+                paths = self.path_between(plat1, plat2)
                 paths.sort(key=self.weight_of_path)
                 self.path_map[(plat1, plat2)] = paths
 
@@ -235,27 +235,27 @@ class MapModel:
                 return True
             return False
 
-    def path_between(self, platform_start: Platform, platform_target: Platform, path: Path = Path([])) -> list[Path]:
-        if path.steps >= Max_Path_Step:
+    def path_between(self, platform_start: Platform, platform_target: Platform, path: Path | None = None) -> list[Path]:
+        if path and path.steps >= Max_Path_Step:
             return []
 
-        if platform_start in path.routes or platform_target in path.routes:
+        if path and (platform_start in path.routes or platform_target in path.routes):
             return []
 
         paths = self.path_map[(platform_start, platform_target)]
         if paths:
             result = []
             for tmp in paths:
-                if path.steps + tmp.steps <= Max_Path_Step:
+                if path and path.steps + tmp.steps <= Max_Path_Step:
                     result.append(tmp)
             return result
 
-        new_path = Path(path.routes + [platform_start])
+        new_path = Path(path.routes + [platform_start] if path else [platform_start])
         dy = platform_target.y - platform_start.y
         reachable_plats = self.single_path[platform_start]
         result: List[Path] = []
         for plat in reachable_plats:
-            if plat in path.routes:
+            if path and plat in path.routes:
                 continue
             if dy == 0:
                 if plat.y != platform_start.y:
@@ -283,19 +283,17 @@ class MapModel:
     def weight_of_path(self, path: Path):
         if path.steps <= 1:
             return sys.maxsize
-        result = path.steps * 3
+        result = 0
         last = None
         for plat in path.routes:
-            if last == None:
-                last = plat
-            else:
+            if last:
                 if self.platform_portable(last, plat):
                     result += 50
                 else:
-                    if plat.y - last.y != 0:
-                        result += abs(plat.y - last.y) * 10
-                    else:
-                        result += abs(plat.center.x - last.center.x)
+                    if plat.y != last.y:
+                        result += 150
+                    result += abs(plat.center.x - last.center.x)
+            last = plat
         return result
 
     def upper_platform(self, platform: Platform):
