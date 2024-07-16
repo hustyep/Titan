@@ -327,9 +327,10 @@ class Buff(ABC):
 class Walk(Command):
     """Walks in the given direction for a set amount of time."""
 
-    def __init__(self, target: MapPoint, max_steps=15):
+    def __init__(self, target: MapPoint, use_portal=False, max_steps=15):
         super().__init__(locals())
         self.target = target
+        self.use_portal = bot_settings.validate_boolean(use_portal)
         self.max_steps = bot_settings.validate_nonnegative_int(max_steps)
 
     def main(self, wait=True):
@@ -338,7 +339,11 @@ class Walk(Command):
             return True
 
         walk_counter = 0
+        if self.use_portal:
+            key_down('up')
         while bot_status.enabled and abs(d_x) > self.target.tolerance and walk_counter < self.max_steps:
+            if abs(bot_status.player_pos.y - self.target.y) > self.target.tolerance_v:
+                break
             d_x = self.target.x - bot_status.player_pos.x
             direction = 'left' if d_x < 0 else 'right'
             sleep_time = 0
@@ -357,6 +362,8 @@ class Walk(Command):
             d_x = self.target.x - bot_status.player_pos.x
             print(f"[walk] step={walk_counter} pos={bot_status.player_pos.tuple}")
         print(f"end dx={d_x}")
+        if self.use_portal:
+            key_up('up')
         return abs(d_x) <= self.target.tolerance
 
 
@@ -515,10 +522,9 @@ class Use_Portal(Command):
             press('up', down_time=0.3)
             return True
         else:
-            if self.count >= 5:
-                return False
-            Move(self.portal.entrance.x, self.portal.entrance.y, self.portal.entrance.tolerance).execute()
-            return Use_Portal(self.portal, self.count+1).execute()
+            Move(self.portal.entrance.x, self.portal.entrance.y, 5).execute()
+            Walk(self.portal.entrance, use_portal=True).execute()
+            return True
         
         
 class SolveRune(Command):
