@@ -1,13 +1,14 @@
 """A collection of all commands that Night Walker can use to interact with the game. 	"""
 
 import time
+from random import randrange
 import cv2
 
 from src.common import bot_status, bot_settings, utils
 from src.common.gui_setting import gui_setting
 from src.common.vkeys import press, key_down, key_up, releaseAll, press_acc
 from src.routine.components import *
-from src.command.commands import * # type: ignore
+from src.command.commands import *  # type: ignore
 # from src.command.commands import Command, Skill, Walk, Fall, Direction, RopeLift, Arachnid, LastResort, ForTheGuild, HardHitter, SkillType, sleep_in_the_air, target_reached, evade_rope, opposite_direction, detect_mobs_around_anchor
 from src.map.map_helper import *
 from src.map.map import shared_map
@@ -128,15 +129,17 @@ def move_up(target: MapPoint):
     assert (next_platform)
     if bot_status.player_moving and bot_status.player_direction == 'left':
         if up_point.x - next_platform.begin_x <= 8:
-            move_horizontal(MapPoint(up_point.x+3, p.y, 2))
+            # move_horizontal(MapPoint(up_point.x+3, p.y, 2))
+            press('right', down_time=0.1)
         else:
             time.sleep(0.2)
     elif bot_status.player_moving and bot_status.player_direction == 'right':
         if next_platform.end_x - up_point.x <= 10:
-            move_horizontal(MapPoint(up_point.x-3, p.y, 2))
+            # move_horizontal(MapPoint(up_point.x-3, p.y, 2))
+            press('left', down_time=0.1)
         else:
             time.sleep(0.2)
-        
+
     if dy < 5:
         press(Keybindings.JUMP)
     elif dy < Jump_Up.move_range.stop:
@@ -196,26 +199,26 @@ class DoubleJump(Skill):
         if dy < 0:
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
             press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
-        elif distance in range(26,28):
+        elif distance in range(26, 28):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.1)
             Shadow_Dodge(direction).execute()
             self.attack_if_needed = False
-        elif distance in range(32,34):
+        elif distance in range(32, 34):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 2, down_time=0.02, up_time=0.1)
             Shadow_Dodge(direction).execute()
             self.attack_if_needed = False
-        elif distance in range(40,44):
+        elif distance in range(40, 44):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.1, up_time=0.1)
-            press(self.key, 1, down_time=0.02, up_time=0.2) 
+            press(self.key, 1, down_time=0.02, up_time=0.2)
             Shadow_Dodge(direction).execute()
             self.attack_if_needed = False
-        elif distance in range(44,47):
+        elif distance in range(44, 47):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.1, up_time=0.2)
-            press(self.key, 1, down_time=0.02, up_time=0.2) 
+            press(self.key, 1, down_time=0.02, up_time=0.2)
             Shadow_Dodge(direction).execute()
             self.attack_if_needed = False
         elif distance in range(32, 35):
@@ -266,7 +269,8 @@ class DoubleJump(Skill):
         # else:
         sleep_in_the_air(n=1)
         if need_check and not target_reached(bot_status.player_pos, self.target):
-            utils.log_event(f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
+            utils.log_event(
+                f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
         return True
 
 
@@ -289,8 +293,12 @@ class Jump_Up(Command):
         press(Keybindings.JUMP)
         time.sleep(1)
         dx = self.target.x - bot_status.player_pos.x
-        if abs(dx) in Shadow_Dodge.move_range:
-            Shadow_Dodge('left' if dx < 0 else 'right').execute()
+        direction = 'left' if dx < 0 else 'right'
+        if abs(dx) >= 30 or not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 2):
+            press(direction)
+            press(Keybindings.Shadow_Jump)
+        elif abs(dx) >= Shadow_Dodge.move_range.start:
+            Shadow_Dodge(direction).execute()
         sleep_in_the_air(n=4, detect_rope=True)
         time.sleep(0.02)
         key_up('up')
@@ -579,6 +587,33 @@ class Shadow_Attack(Command):
         return True
 
 
+class around_jump(Command):
+
+    def __init__(self, direction=None):
+        self.direction = bot_settings.validate_horizontal_arrows(direction)
+        if self.direction is None:
+            self.direction = random_direction()
+
+    def main(self, wait=True):
+        direction = self.direction
+        press(direction)
+        press(Keybindings.JUMP)
+        press(Keybindings.Shadow_Jump)
+        press(opposite_direction(direction))
+        press(Keybindings.Shadow_Jump)
+        return True
+
+
+class random_action(Command):
+    def main(self, wait=True):
+        match randrange(0, 2):
+            case 0:
+                around_jump().execute()
+            case 1:
+                Jump(0.3, attack=True).execute()
+        return True
+
+
 class burst(Command):
     def main(self, wait=True):
         Shadow_Spear().execute()
@@ -770,7 +805,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
 
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         return target
-    
+
     if shared_map.current_map is None:
         return target
 
@@ -955,27 +990,27 @@ class Test_Command(Command):
 
             # press(Keybindings.Quintu
             # ple_Star, down_time=0.01, up_time=0.02)
-            
+
             # 26-27
             # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             # press(self.key, 1, down_time=0.02, up_time=0.1)
-            
+
             # 32-33
             # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             # press(self.key, 2, down_time=0.02, up_time=0.1)
-            
+
             # 40-42
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.1, up_time=0.1)
-            press(self.key, 1, down_time=0.02, up_time=0.2) 
-            
+            press(self.key, 1, down_time=0.02, up_time=0.2)
+
             # 44-46
             # press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             # press(self.key, 1, down_time=0.1, up_time=0.2)
-            # press(self.key, 1, down_time=0.02, up_time=0.2) 
-               
+            # press(self.key, 1, down_time=0.02, up_time=0.2)
+
             Shadow_Dodge('right').execute()
-            
+
             key_up(direction)
             sleep_in_the_air(n=1)
             print('end: ' + str(bot_status.player_pos.tuple))

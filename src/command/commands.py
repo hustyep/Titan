@@ -293,6 +293,11 @@ def target_reached(start: MapPoint, target: MapPoint):
     # else:
     return abs(start.y - target.y) <= target.tolerance_v and abs(start.x - target.x) <= target.tolerance
 
+def random_direction():
+    if random() > 0.5:
+        return 'left'
+    else:
+        return 'right'
 
 #############################
 #      Abstract Command     #
@@ -358,7 +363,7 @@ class Walk(Command):
             time.sleep(sleep_time)
             key_up(direction)
             walk_counter += 1
-            time.sleep(0.2)
+            time.sleep(0.3)
             d_x = self.target.x - bot_status.player_pos.x
             print(f"[walk] step={walk_counter} pos={bot_status.player_pos.tuple}")
         print(f"end dx={d_x}")
