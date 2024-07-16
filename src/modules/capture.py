@@ -22,7 +22,7 @@ class Capture(Subject):
     def __init__(self):
         super().__init__()
 
-        self.camera = bettercam.create(output_idx=0, output_color="BGR", nvidia_gpu=True)
+        self.camera = bettercam.create(output_idx=0, output_color="BGR")
         self.calibrated = False
         self.window_list = []
         self.hwnd = 0
