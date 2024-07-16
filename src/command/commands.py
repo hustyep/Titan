@@ -152,6 +152,8 @@ class Move(Command):
 
     def main(self, wait=True):
         if self.step > self.max_steps:
+            print(f"[Failed][Move] pos={bot_status.player_pos.tuple} target={str(self.target)}", True)
+            DoubleJump(self.target).execute()
             return False
 
         if shared_map.data_available and target_reached(bot_status.player_pos, self.target):
@@ -310,11 +312,10 @@ class Attack(ABC):
         pass
 
 
-class DoubleJump(ABC):
+class DoubleJump(Command):
     """Undefined 'FlashJump' command for the default command book."""
 
-    @abstractmethod
-    def __init__(self, target: tuple[int, int], attack_if_needed=False):
+    def __init__(self, target: MapPoint, attack_if_needed=False):
         pass
 
 

@@ -73,7 +73,7 @@ def step(target: MapPoint):
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    # utils.log_event(f"[step]target:{str(target)}", bot_settings.debug)s
+    # utils.log_event(f"[step]target:{str(target)}", bot_settings.debug)
     next_p = find_next_point(bot_status.player_pos, target)
     utils.log_event(f"[step]next_p:{str(next_p)}", bot_settings.debug)
     if not next_p:
@@ -344,7 +344,7 @@ class Greater_Dark_Servant(Skill):
     type = SkillType.Summon
     cooldown = 60
     precast = 0.4
-    backswing = 0.5
+    backswing = 0.3
     duration = 55
     tolerance = 1
 
@@ -359,7 +359,7 @@ class Replace_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Move
     cooldown = 1
-    backswing = 0.8
+    backswing = 0.6
 
     def __init__(self, resummon='False'):
         super().__init__(locals())
@@ -374,7 +374,7 @@ class Replace_Dark_Servant(Skill):
         result = super().main(wait)
         if self.resummon:
             key_up('down')
-            time.sleep(0.01)
+        time.sleep(0.5)
         return result
 
 
@@ -514,6 +514,11 @@ class Cygnus_Knights_Will(Command):
     tolerance = 5
 
 
+####################
+#      Actions     #
+####################
+
+
 class Attack(Command):
     key = Quintuple_Star.key
     type = SkillType.Attack
@@ -540,7 +545,7 @@ class Shadow_Attack(Command):
 
         if bot_status.elite_boss_detected:
             Direction(opposite_direction(self.direction)).execute()
-            burst().execute()
+            Burst().execute()
 
         start_time = time.time()
         if start_time - Shadow_Bite.castedTime > 5.5 and not bot_status.elite_boss_detected:
@@ -582,12 +587,14 @@ class Shadow_Attack(Command):
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)
             time.sleep(Quintuple_Star.backswing)
+            if bot_status.stage_fright and random() <= 0.3:
+                Random_Action().execute()
         else:
             time.sleep(0.3)
         return True
 
 
-class around_jump(Command):
+class Around_Jump(Command):
 
     def __init__(self, direction=None):
         self.direction = bot_settings.validate_horizontal_arrows(direction)
@@ -604,17 +611,17 @@ class around_jump(Command):
         return True
 
 
-class random_action(Command):
+class Random_Action(Command):
     def main(self, wait=True):
         match randrange(0, 2):
             case 0:
-                around_jump().execute()
+                Around_Jump().execute()
             case 1:
                 Jump(0.3, attack=True).execute()
         return True
 
 
-class burst(Command):
+class Burst(Command):
     def main(self, wait=True):
         Shadow_Spear().execute()
         Shadow_Illusion().execute()
@@ -801,7 +808,7 @@ class Potion(Command):
 
 @bot_status.run_if_enabled
 def find_next_point(start: MapPoint, target: MapPoint):
-    utils.log_event(f"[find_next_point] start:{start.tuple} target:{str(target)}", bot_settings.debug)
+    # utils.log_event(f"[find_next_point] start:{start.tuple} target:{str(target)}", bot_settings.debug)
 
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         return target
