@@ -251,6 +251,9 @@ class DoubleJump(Skill):
             press_acc(opposite_direction(direction), down_time=times[2], up_time=times[3])
             press(self.key, 1, down_time=0.02, up_time=0.02)
             self.attack_if_needed = False
+        elif dy == 0 and not shared_map.is_continuous(start_p, self.target):
+            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
+            press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
         else:
             need_check = False
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)

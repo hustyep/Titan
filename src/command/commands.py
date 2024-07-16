@@ -341,11 +341,16 @@ class Walk(Command):
         while bot_status.enabled and abs(d_x) > self.target.tolerance and walk_counter < self.max_steps:
             d_x = self.target.x - bot_status.player_pos.x
             direction = 'left' if d_x < 0 else 'right'
+            sleep_time = 0
+            if bot_status.player_direction != direction:
+                # 转身时间
+                sleep_time += 0.3
+            if not bot_status.player_moving:
+                # 启动时间
+                sleep_time += 0.1
+            sleep_time += abs(d_x) * 0.08
             key_down(direction)
-            if abs(d_x) > 1:
-                time.sleep((abs(d_x) - 1) * 0.075)
-            else:
-                time.sleep(0.1)
+            time.sleep(sleep_time)
             key_up(direction)
             walk_counter += 1
             time.sleep(0.2)
