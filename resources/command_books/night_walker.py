@@ -124,7 +124,6 @@ def move_up(target: MapPoint):
         DoubleJump(target, False)
         return
 
-    
     next_platform = shared_map.platform_of_point(target)
     assert (next_platform)
     if bot_status.player_moving and bot_status.player_direction == 'left':
@@ -289,6 +288,9 @@ class Jump_Up(Command):
         time.sleep(0.06 if dy >= 20 else 0.3)
         press(Keybindings.JUMP)
         time.sleep(1)
+        dx = self.target.x - bot_status.player_pos.x
+        if abs(dx) in Shadow_Dodge.move_range:
+            Shadow_Dodge('left' if dx < 0 else 'right').execute()
         sleep_in_the_air(n=4, detect_rope=True)
         time.sleep(0.02)
         key_up('up')
@@ -859,13 +861,8 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
         # 有交集
         # 优先垂直方向接近
         next_p = MapPoint(start.x, platform_target.y, 2)
-        if not shared_map.is_continuous(next_p, target):
-            next_p = None
-        if next_p:
-            if target_reached(start, next_p):
-                return target
-            else:
-                return next_p
+        if shared_map.is_continuous(next_p, target):
+            return target
 
         # 尝试水平方向接近
         next_p = MapPoint(target.x, start.y, 2)
