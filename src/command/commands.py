@@ -353,18 +353,21 @@ class Walk(Command):
             d_x = self.target.x - bot_status.player_pos.x
             direction = 'left' if d_x < 0 else 'right'
             sleep_time = 0
-            if bot_status.player_direction != direction:
-                # 转身时间
-                sleep_time += 0.3
-            if not bot_status.player_moving:
-                # 启动时间
-                sleep_time += 0.1
-            sleep_time += abs(d_x) * 0.08
+            # if bot_status.player_direction != direction:
+            #     # 转身时间
+            #     sleep_time += 0.08
+            # if not bot_status.player_moving:
+            #     # 启动时间
+            #     sleep_time += 0.08
+            if abs(d_x) > 1:
+                sleep_time = (abs(d_x) - 1) * 0.07
+            else:
+                sleep_time = 0.08
             key_down(direction)
             time.sleep(sleep_time)
             key_up(direction)
             walk_counter += 1
-            time.sleep(0.3)
+            time.sleep(0.2)
             d_x = self.target.x - bot_status.player_pos.x
             print(f"[walk] step={walk_counter} pos={bot_status.player_pos.tuple}")
         print(f"end dx={d_x}")

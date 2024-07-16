@@ -246,7 +246,7 @@ class MapModel:
         if paths:
             result = []
             for tmp in paths:
-                if path and path.steps + tmp.steps <= Max_Path_Step:
+                if not path or path.steps + tmp.steps <= Max_Path_Step:
                     result.append(tmp)
             return result
 
