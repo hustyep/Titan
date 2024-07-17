@@ -220,6 +220,17 @@ class MapModel:
             return gap <= 8 and abs(dy) <= 8
         else:
             if gap <= -Min_Jumpable_Gap:
+                xs_start = set(platform_start.x_range)
+                xs_target = set(platform_target.x_range)
+                intersections = xs_start.intersection(xs_target)
+                for y in range(platform_start.y + 1, platform_target.y):
+                    plats = self.platforms_of_y(y)
+                    if plats:
+                        for plat in plats:
+                            xs_pat = set(plat.x_range)
+                            plat_intersection = xs_pat.intersection(intersections)
+                            if len(intersections) - len(plat_intersection) < 15:
+                                return False
                 return True
             if gap <= 26:
                 for y in range(platform_start.y, platform_target.y):
@@ -246,6 +257,8 @@ class MapModel:
         if paths:
             result = []
             for tmp in paths:
+                if path and set(tmp.routes).intersection(path.routes):
+                        continue
                 if not path or path.steps + tmp.steps <= Max_Path_Step:
                     result.append(tmp)
             return result
