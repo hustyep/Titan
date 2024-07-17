@@ -9,7 +9,7 @@ from src.map import map_helper
 from src.common.constants import RESOURCES_DIR, Platform, MapPointType, MapPoint, Portal, Path
 from src.modules.capture import capture
 
-Min_Jumpable_Gap = 5
+Min_Jumpable_Gap = 6
 Max_Jumpable_Gap = 26
 Max_Path_Step = 5
 
@@ -59,14 +59,6 @@ class MapModel:
         self._load_mob_template()
 
         self.init_path()
-
-    # def clear(self):
-    #     self.minimap_data = None
-    #     self.minimap_sample = None
-    #     self.mob_templates = []
-    #     self.elite_templates = []
-    #     self.boss_templates = []
-    #     self.platforms.clear()
 
     def load_minimap_data(self):
         map_dir = map_helper.get_maps_dir(self.name)
@@ -218,7 +210,7 @@ class MapModel:
         elif dy < 0:
             if gap <= -Min_Jumpable_Gap:
                 return True
-            return gap <= 8 and abs(dy) <= 8
+            return gap in range(1, 10) and abs(dy) <= 10
         else:
             if gap <= -Min_Jumpable_Gap:
                 xs_start = set(platform_start.x_range)
@@ -228,12 +220,9 @@ class MapModel:
                     plats = self.platforms_of_y(y)
                     if plats:
                         for plat in plats:
-                            xs_pat = set(plat.x_range)
-                            plat_intersection = xs_pat.intersection(intersections)
-                            if len(intersections) - len(plat_intersection) < 15:
-                                return False
-                return True
-            if gap <= 26:
+                            intersections -= set(plat.x_range)
+                return len(intersections) > 0
+            if gap in range(1, 27):
                 for y in range(platform_start.y, platform_target.y):
                     plats = self.platforms_of_y(y)
                     if plats:
@@ -259,7 +248,7 @@ class MapModel:
             result = []
             for tmp in paths:
                 if path and set(tmp.routes).intersection(path.routes):
-                        continue
+                    continue
                 if not path or path.steps + tmp.steps <= Max_Path_Step:
                     result.append(tmp)
             return result

@@ -14,6 +14,7 @@ from src.map.map_helper import *
 from src.map.map import shared_map
 from src.modules.capture import capture
 from src.chat_bot.chat_bot import chat_bot
+from src.models.map_model import Min_Jumpable_Gap
 
 # List of key mappings
 
@@ -988,6 +989,7 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
     if start.y >= target.y:
         return
 
+    assert (shared_map.current_map)
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
 
@@ -999,12 +1001,22 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
     if not platform_start or not platform_target:
         return
 
-    if gap <= -3:
-        next_p = MapPoint(start.x, platform_target.y, 3)
-        if shared_map.on_the_platform(next_p):
-            return next_p
-        else:
-            return point_of_intersection(platform_start, platform_target)
+    if gap <= -Min_Jumpable_Gap:
+        available_x = set(platform_start.x_range).intersection(set(platform_target.x_range))
+        for y in [y for y in shared_map.current_map.platform_map.keys() if y in range(start.y + 1, target.y)]:
+            plats = shared_map.current_map.platforms_of_y(y)
+            assert (plats)
+            for plat in plats:
+                available_x = available_x.difference(set(plat.x_range))
+        if len(available_x) > 0:
+            if start.x in available_x:
+                return MapPoint(start.x, platform_target.y, 3)
+            else:
+                nearest_x = sys.maxsize
+                for x in available_x:
+                    if abs(start.x - x) < abs(start.x - nearest_x):
+                        nearest_x = x
+                return MapPoint(nearest_x, start.y, 3)
     else:
         if platform_start.end_x < platform_target.begin_x:
             next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)
