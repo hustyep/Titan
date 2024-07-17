@@ -1028,7 +1028,7 @@ class RopeLift(Skill):
         if dy >= 50:
             press_acc(DefaultKeybindings.JUMP, up_time=0.2)
 
-        press(self.key)
+        press_acc(self.key)
         # 50：0.97
         # 42：
         if dy >= 55:
