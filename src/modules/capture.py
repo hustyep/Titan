@@ -2,7 +2,7 @@ import ctypes
 import threading
 import time
 import operator
-import dxcam
+import bettercam
 import win32gui
 
 from enum import Enum
@@ -22,7 +22,7 @@ class Capture(Subject):
     def __init__(self):
         super().__init__()
 
-        self.camera = dxcam.create(output_idx=0, output_color="BGR")
+        self.camera = bettercam.create(output_idx=0, output_color="BGR")
         self.calibrated = False
         self.window_list = []
         self.hwnd = 0
