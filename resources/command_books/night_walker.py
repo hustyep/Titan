@@ -657,6 +657,7 @@ class Around_Jump(Command):
         press(Keybindings.Shadow_Jump)
         press(opposite_direction(direction))
         press(Keybindings.Shadow_Jump)
+        sleep_in_the_air()
         return True
 
 

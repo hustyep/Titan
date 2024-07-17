@@ -184,10 +184,11 @@ class MapModel:
                 return platforms[index - 1]
 
     def platform_of_point(self, p: MapPoint) -> Platform | None:
-        platform_list = self.platform_map[p.y]
-        for platform in platform_list:
-            if p.x in platform.x_range:
-                return platform
+        platform_list = self.platforms_of_y(p.y)
+        if platform_list:
+            for platform in platform_list:
+                if p.x in platform.x_range:
+                    return platform
 
     def platform_portable(self, platform_start: Platform, platform_target: Platform):
         for portal in platform_start.portals:
