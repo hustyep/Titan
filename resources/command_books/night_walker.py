@@ -145,7 +145,7 @@ def move_up(target: MapPoint):
     elif dy < Jump_Up.move_range.stop:
         Jump_Up(target).execute()
     else:
-        RopeLift(target.y).execute()
+        Shadow_Rope_Lift(target).execute()
 
 
 @bot_status.run_if_enabled
@@ -174,100 +174,119 @@ class DoubleJump(Skill):
     cooldown = 0.6
     backswing = 0
     move_range = range(26, 33)
-    # 18-40
+    config = {
+        (7, 8): (0.01, 0.02, 0.02, 0.01),
+        (8, 10): (0.10, 0.02, 0.02, 0.02),
+        (10, 11): (0.20, 0.02, 0.02, 0.02),
 
-    def __init__(self, target: MapPoint, attack_if_needed=False):
+        (15, 16): (0.20, 0.05, 0.1, 0.02),
+        (16, 17): (0.10, 0.10, 0.1, 0.02),
+        (17, 18): (0.20, 0.10, 0.1, 0.02),
+        (18, 19): (0.15, 0.12, 0.1, 0.02),
+        (19, 21): (0.10, 0.20, 0.1, 0.02),
+        (21, 23): (0.10, 0.25, 0.1, 0.02),
+        (23, 26): (0.20, 0.20, 0.1, 0.10),
+        # 1代表shadow_dodge
+        (26, 28): (0.01, 0.10, 1),
+        (28, 30): (0.06, 0.04),
+        (30, 32): (0.06, 0.04, 0.04),
+        (32, 34): (0.01, 0.1, 0.1, 1),
+        (34, 35): (0.04, 0.05, 0.05),
+        (35, 38): (0.01, 0.1, 0.15, 1),
+        (38, 41): (0.01, 0.1, 0.2, 1),
+        (41, 44): (0.01, 0.2, 0.2, 1),
+        (44, 47): (0.01, 0.3, 0.2, 1),
+    }
+
+    def __init__(self, target: MapPoint | None = None, attack_if_needed=False):
         super().__init__(locals())
         self.target = target
         self.attack_if_needed = attack_if_needed
+
+    def time_config(self, distance: int):
+        for range_tuple, value in self.config.items():
+            if distance in range(range_tuple[0], range_tuple[1]):
+                return value
+        return (0.02, 0.02, 0.02, 0.02)
+
+    def double_jump(self, t1, t2):
+        press(Keybindings.JUMP, 1, down_time=0.02, up_time=t1)
+        press(self.key, 1, down_time=0.02, up_time=t2)
+
+    def triple_jump(self, t1, t2, t3):
+        self.double_jump(t1, t2)
+        press(self.key, 1, down_time=0.02, up_time=t3)
+
+    def common_jump(self):
+        self.double_jump(0.01, 0.02)
+
+    def scram(self, direction, down_time, up_time):
+        key_up(direction)
+        time.sleep(0.02)
+        press_acc(opposite_direction(direction), down_time=down_time, up_time=up_time)
+        press(self.key, 1, down_time=0.02, up_time=0.02)
+
+    def jumpe_with_config(self, times, direction):
+        if len(times) == 2:
+            self.double_jump(times[0], times[1])
+        elif len(times) == 3:
+            if times[2] == 1:
+                self.attack_if_needed = False
+                self.double_jump(times[0], times[1])
+                Shadow_Dodge(direction).execute()
+            else:
+                self.triple_jump(times[0], times[1], times[2])
+        elif len(times) == 4:
+            self.attack_if_needed = False
+            if times[3] == 1:
+                self.triple_jump(times[0], times[1], times[2])
+                Shadow_Dodge(direction).execute()
+            else:
+                self.double_jump(times[0], times[1])
+                self.scram(direction, times[2], times[3])
 
     def main(self, wait=True):
         while not self.canUse():
             utils.log_event("double jump waiting", bot_settings.debug)
             time.sleep(0.01)
+        if self.target is None:
+            direction = random_direction()
+            key_down(direction)
+            time.sleep(0.02)
+            self.common_jump()
+            key_up(direction)
+            sleep_in_the_air()
+            return True
+
         dx = self.target.x - bot_status.player_pos.x
         dy = self.target.y - bot_status.player_pos.y
         direction = 'left' if dx < 0 else 'right'
         start_p = bot_status.player_pos
-        start_y = bot_status.player_pos.y
         distance = abs(dx)
 
         self.__class__.castedTime = time.time()
         key_down(direction)
         time.sleep(0.02)
-        need_check = True
+        need_check = False
         if dy < 0:
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
-            press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
-            self.attack_if_needed = False
-        elif distance in range(26, 28):
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 1, down_time=0.02, up_time=0.1)
-            Shadow_Dodge(direction).execute()
-            self.attack_if_needed = False
-        elif distance in range(32, 34):
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 2, down_time=0.02, up_time=0.1)
-            Shadow_Dodge(direction).execute()
-            self.attack_if_needed = False
-        elif distance in range(40, 44):
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 1, down_time=0.1, up_time=0.1)
-            press(self.key, 1, down_time=0.02, up_time=0.2)
-            Shadow_Dodge(direction).execute()
-            self.attack_if_needed = False
-        elif distance in range(44, 47):
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 1, down_time=0.1, up_time=0.2)
-            press(self.key, 1, down_time=0.02, up_time=0.2)
-            Shadow_Dodge(direction).execute()
-            self.attack_if_needed = False
-        elif distance in range(32, 35):
-            press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-            press_acc(self.key, 2, down_time=0.03, up_time=0.04)
-        elif distance <= 25:
-            times = [0.02, 0.02, 0.02, 0.02]
-            if distance in range(23, 26):
-                times = [0.2, 0.2, 0.1, 0.1]
-            elif distance in range(21, 23):
-                times = [0.1, 0.25, 0.1, 0.02]
-            elif distance in range(19, 21):
-                times = [0.1, 0.2, 0.1, 0.02]
-            elif distance == 18:
-                times = [0.15, 0.12, 0.1, 0.02]
-            elif distance == 17:
-                times = [0.2, 0.1, 0.1, 0.02]
-            elif distance == 16:
-                times = [0.1, 0.1, 0.1, 0.02]
-            elif distance == 15:
-                times = [0.2, 0.05, 0.1, 0.02]
-            # elif distance == 10:
-            #     times = [0.2, 0.02, 0.02, 0.02]
-            elif distance in range(8, 10):
-                times = [0.1, 0.02, 0.02, 0.02]
-            elif distance == 7:
-                times = [0.01, 0.02, 0.02, 0.01]
-            press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=times[0])
-            press_acc(self.key, 1, down_time=0.02, up_time=times[1])
-            key_up(direction)
-            time.sleep(0.02)
-            press_acc(opposite_direction(direction), down_time=times[2], up_time=times[3])
-            press(self.key, 1, down_time=0.02, up_time=0.02)
-            self.attack_if_needed = False
+            if distance >= 20:
+                self.triple_jump(0.06, 0.04, 0.04)
+            else:
+                self.double_jump(0.06, 0.04)
+        elif distance < 47:
+            times = self.time_config(distance)
+            self.jumpe_with_config(times, direction)
+            need_check = True
         elif dy == 0 and not shared_map.is_continuous(start_p, self.target):
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
-            press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
+            if distance >= 30:
+                self.triple_jump(0.06, 0.04, 0.04)
+            else:
+                self.double_jump(0.06, 0.04)
         else:
-            need_check = False
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 1, down_time=0.02, up_time=0.02)
+            self.common_jump()
         if self.attack_if_needed:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.1)
         key_up(direction)
-        # if abs(shared_map.current_map.base_floor - start_y) <= 2:
-        #     print("bingo")
-        #     time.sleep(0.01)
-        # else:
         sleep_in_the_air(n=1)
         if need_check and not target_reached(bot_status.player_pos, self.target):
             utils.log_event(
@@ -303,6 +322,35 @@ class Jump_Up(Command):
         sleep_in_the_air(n=4, detect_rope=True)
         time.sleep(0.02)
         key_up('up')
+        return True
+
+
+class Shadow_Rope_Lift(Command):
+    '''自定义绳索'''
+    key = DefaultKeybindings.ROPE_LIFT
+    type = SkillType.Move
+    cooldown = 3
+
+    def __init__(self, target: MapPoint):
+        super().__init__(locals())
+        self.target = target
+
+    def main(self, wait=True):
+        RopeLift(self.target.y).execute()
+        start_time = time.time()
+        while bot_status.player_pos.y > self.target.y:
+            time.sleep(0.1)
+            if time.time() - start_time > 3:
+                DoubleJump().execute()
+                break
+        dx = self.target.x - bot_status.player_pos.x
+        direction = 'left' if dx < 0 else 'right'
+        if abs(dx) >= 30:
+            press(direction)
+            press(Keybindings.Shadow_Jump)
+        elif abs(dx) >= Shadow_Dodge.move_range.start:
+            Shadow_Dodge(direction).execute()
+        sleep_in_the_air(n=30)
         return True
 
 #########################

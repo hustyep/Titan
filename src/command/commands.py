@@ -362,7 +362,7 @@ class Walk(Command):
             if abs(d_x) > 1:
                 sleep_time = (abs(d_x) - 1) * 0.07
             else:
-                sleep_time = 0.08
+                sleep_time = 0.05
             key_down(direction)
             time.sleep(sleep_time)
             key_up(direction)
@@ -1031,7 +1031,12 @@ class RopeLift(Skill):
         press_acc(self.key)
         # 50：0.97
         # 42：
-        if dy >= 55:
+        has_upper_plat = False
+        for y in range(0, self.target_y):
+            if shared_map.is_floor_point(MapPoint(bot_status.player_pos.x, y)):
+                has_upper_plat = True
+                break
+        if dy >= 55 or not has_upper_plat:
             pass
         elif dy >= 50:
             time.sleep(0.97)
@@ -1042,7 +1047,7 @@ class RopeLift(Skill):
         else:
             time.sleep(0.24)
             press(self.key)
-        sleep_in_the_air(n=30)
+        # sleep_in_the_air(n=30)
         return True
 
 ###################
