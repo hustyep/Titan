@@ -9,7 +9,7 @@ from enum import Enum
 from rx.subject.subject import Subject
 
 from src.common.dll_helper import dll_helper
-from src.common.image_template import MM_TL_BMP, MM_BR_BMP, PLAYER_TEMPLATE, PLAYER_TEMPLATE_L, PLAYER_TEMPLATE_R
+from src.common.image_template import MM_TL_BMP, MM_BR_BMP, PLAYER_TEMPLATE, PLAYER_TEMPLATE_L, PLAYER_TEMPLATE_R, MM_ME_BMP
 from src.common import utils, bot_status
 from src.common.constants import *
 
@@ -23,6 +23,7 @@ class Capture(Subject):
         super().__init__()
 
         self.camera = bettercam.create(output_idx=0, output_color="BGR")
+        self.minimap_camera = bettercam.create(output_idx=0, output_color="BGR")
         self.calibrated = False
         self.window_list = []
         self.hwnd = 0
@@ -49,7 +50,7 @@ class Capture(Subject):
 
     def start(self):
         """Starts this Capture's thread."""
-        self.camera.start(video_mode=False)
+        self.camera.start(target_fps=60, video_mode=True)
 
         self.thread.start()
         print('\n[~] Started video capture')
@@ -134,6 +135,8 @@ class Capture(Subject):
 
         if operator.eq(mm_tl, self.mm_tl) and operator.eq(mm_br, self.mm_br):
             return True
+        self.minimap_camera.stop()
+        self.minimap_camera.start(region=(mm_tl[0], mm_tl[1], mm_br[0], mm_br[1]), target_fps=120, video_mode=True)
 
         self.mm_tl = mm_tl
         self.mm_br = mm_br
@@ -141,49 +144,34 @@ class Capture(Subject):
         return True
 
     def locatePlayer(self):
-        assert(self.mm_tl is not None)
-        assert(self.mm_br is not None)
-
-        frame = self.camera.get_latest_frame()
-        if frame is None:
-            return
+        assert (self.mm_tl is not None)
+        assert (self.mm_br is not None)
 
         top = self.window['top']
         left = self.window['left']
         width = self.window['width']
         height = self.window['height']
-        new_frame = frame[top:top+height, left:left+width]
 
-        # Crop the frame to only show the minimap
-        minimap = new_frame[self.mm_tl[1]
-            :self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+        minimap_width = self.mm_br[0] - self.mm_tl[0]
+        minimap_height = self.mm_br[1] - self.mm_tl[1]
+        mm_x = left+self.mm_tl[0]
+        mm_y = top+self.mm_tl[1]
 
         # Determine the player's position
-        player = utils.multi_match(minimap, PLAYER_TEMPLATE, threshold=0.8)
-        if len(player) == 0:
-            player = utils.multi_match(
-                minimap, PLAYER_TEMPLATE_R, threshold=0.8)
-            if player:
-                x = player[0][0] - 2
-                y = player[0][1]
-                player[0] = (x, y)
-        if len(player) == 0:
-            player = utils.multi_match(
-                minimap, PLAYER_TEMPLATE_L, threshold=0.8)
-            if player:
-                x = player[0][0] + 2
-                y = player[0][1]
-                player[0] = (x, y)
-
+        player = dll_helper.screenSearch(MM_ME_BMP, mm_x, mm_y, mm_x+minimap_width, mm_y+minimap_height)
         if player:
             # h, w, _ = minimap.shape
             # print(f"{player[0]} | {w}")
-            new_pos = self.convert_to_relative_minimap_point(player[0])
+            new_pos = self.convert_to_relative_minimap_point(player)
             if new_pos.x != bot_status.player_pos.x:
                 self.pos_update_time = time.time()
             bot_status.player_moving = time.time() - self.pos_update_time < 0.3
             bot_status.player_pos = new_pos
             self.lost_player_time = 0
+        elif bot_status.player_pos.x <= 2:
+            bot_status.player_pos.x = 0
+        elif bot_status.player_pos.x >= minimap_width - 2:
+            bot_status.player_pos.x = minimap_width - 1
         else:
             self.calibrated = False
             if bot_status.enabled:
@@ -194,9 +182,16 @@ class Capture(Subject):
                     self.on_next(
                         (BotError.LOST_PLAYER, now - self.lost_player_time))
 
-        self.frame = new_frame
-        self.minimap_display = minimap
-        # self.on_next((BotVerbose.NEW_FRAME, self.frame))
+        frame = self.camera.get_latest_frame()
+        if frame is not None:
+            new_frame = frame[top:top+height, left:left+width]
+            self.frame = new_frame
+
+            # Crop the frame to only show the minimap
+            minimap = new_frame[self.mm_tl[1]:self.mm_br[1], self.mm_tl[0]:self.mm_br[0]]
+            self.minimap_display = minimap
+
+        # self.minimap_display = self.minimap_camera.get_latest_frame()
 
     def convert_to_relative_minimap_point(self, pos):
         return MapPoint(pos[0] - self.minimap_margin, pos[1] + 7)
@@ -208,8 +203,7 @@ class Capture(Subject):
     def minimap_frame(self):
         if self.minimap_display is not None:
             minimap_margin = self.minimap_margin
-            return self.minimap_display[:,
-                                           minimap_margin:-minimap_margin]
+            return self.minimap_display[:, minimap_margin:-minimap_margin]
 
     @property
     def buff_frame(self):

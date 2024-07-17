@@ -245,6 +245,7 @@ WINDOWED_OFFSET_LEFT = 10
 # The top-left and bottom-right corners of the minimap
 MM_TL_BMP = dll_helper.loadImage(f'{ASSETS_PATH}minimap/minimap_border_tl.bmp')
 MM_BR_BMP = dll_helper.loadImage(f'{ASSETS_PATH}minimap/minimap_border_br.bmp')
+MM_ME_BMP = dll_helper.loadImage(f'{ASSETS_PATH}minimap/minimap_me.bmp')
 
 # The player's symbol on the minimap
 PLAYER_TEMPLATE = cv2.imread(
