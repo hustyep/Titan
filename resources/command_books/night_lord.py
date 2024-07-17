@@ -174,7 +174,8 @@ class DoubleJump(Skill):
         if dy < 0 or not shared_map.is_continuous(bot_status.player_pos, self.target):
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
             press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
-            self.attack_if_needed = False
+            if dy < 0:
+                self.attack_if_needed = False
         else:
             need_check = False
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.02)
@@ -183,7 +184,10 @@ class DoubleJump(Skill):
             Attack().execute()
             time.sleep(0.1)
         key_up(direction)
-        sleep_in_the_air(n=1)
+        if shared_map.current_map and start_y == shared_map.current_map.base_floor:
+            time.sleep(0.02)
+        else:
+            sleep_in_the_air(n=1)
 
         if need_check and not target_reached(bot_status.player_pos, self.target):
             utils.log_event(

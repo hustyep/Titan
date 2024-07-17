@@ -199,6 +199,7 @@ class DoubleJump(Skill):
         if dy < 0:
             press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
             press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
+            self.attack_if_needed = False
         elif distance in range(26, 28):
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.1)
@@ -260,7 +261,7 @@ class DoubleJump(Skill):
             need_check = False
             press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
             press(self.key, 1, down_time=0.02, up_time=0.02)
-        if self.attack_if_needed and self.target.y >= start_y:
+        if self.attack_if_needed:
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.1)
         key_up(direction)
         # if abs(shared_map.current_map.base_floor - start_y) <= 2:
