@@ -279,7 +279,7 @@ class DoubleJump(Skill):
             self.jumpe_with_config(times, direction)
             need_check = True
         elif dy == 0 and not shared_map.is_continuous(start_p, self.target):
-            times = self.time_config(41)
+            times = self.time_config(38)
             self.jumpe_with_config(times, direction)
         else:
             self.common_jump()
