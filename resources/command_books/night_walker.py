@@ -609,8 +609,6 @@ class Shadow_Attack(Command):
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
-        elif Silence.canUse():
-            Silence().execute()
         elif Dominion.canUse():
             Dominion().execute()
         elif Arachnid.canUse():
@@ -639,47 +637,6 @@ class Shadow_Attack(Command):
             #     Random_Action().execute()
         else:
             time.sleep(0.3)
-        return True
-
-
-class Jump_Around(Command):
-
-    def __init__(self, direction=None):
-        self.direction = bot_settings.validate_horizontal_arrows(direction)
-        if self.direction is None:
-            self.direction = random_direction()
-
-    def main(self, wait=True):
-        direction = self.direction
-        press(direction)
-        press(Keybindings.JUMP)
-        press(Keybindings.Shadow_Jump)
-        press(Keybindings.Quintuple_Star)
-        press(opposite_direction(direction))
-        press(Keybindings.Shadow_Jump)
-        sleep_in_the_air()
-        return True
-
-class Walk_Around(Command):
-    def main(self, wait=True):
-        plat = shared_map.platform_of_point(bot_status.player_pos)
-        if not plat:
-            return False
-        direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
-        press(direction, down_time=randrange(7, 10))
-        press(opposite_direction(direction), down_time=randrange(7, 10))
-        return True
-    
-
-class Random_Action(Command):
-    def main(self, wait=True):
-        match randrange(0, 3):
-            case 0:
-                Jump_Around().execute()
-            case 1:
-                Jump(0.2, attack=True).execute()
-            case 2:
-                Walk_Around().execute()
         return True
 
 
@@ -939,9 +896,11 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     max_distance = Max_Jumpable_Gap
     target_range = None
     if platform_start.end_x < platform_target.begin_x:
-        target_range = range(max(platform_target.begin_x - max_distance, platform_start.begin_x), platform_start.end_x + 1)
+        target_range = range(max(platform_target.begin_x - max_distance,
+                             platform_start.begin_x), platform_start.end_x + 1)
     else:
-        target_range = range(platform_start.begin_x, min(platform_target.end_x + max_distance, platform_start.end_x) + 1)
+        target_range = range(platform_start.begin_x, min(
+            platform_target.end_x + max_distance, platform_start.end_x) + 1)
     if start.x in target_range:
         return target
     else:

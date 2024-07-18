@@ -36,6 +36,8 @@ class Detector(Subject):
         self.others_comming_time = 0
         self.others_detect_count = 0
         self.others_no_detect_count = 0
+        
+        self.boss_detect_time = 0
 
         self.lost_time_threshold = 1
         self.lost_minimap_time = 0
@@ -316,8 +318,13 @@ class Detector(Subject):
             self.on_next((BotInfo.BOSS_APPEAR, ))
             
         bot_status.elite_boss_detected = utils.match_count(
-            frame[:20, 320:400], BOSS_TEMPLATE, threshold=0.9) > 0
-
+            frame[:20, 300:320], BOSS_TEMPLATE) > 0
+        if bot_status.elite_boss_detected:
+            self.boss_detect_time = time.time()
+        elif time.time() - self.boss_detect_time in range(3, 10):
+            self.boss_detect_time = 0
+            self.on_next((BotInfo.BOSS_DEAD, ))
+            
     def check_binded(self):
         frame = capture.frame
         if frame is None or bot_settings.role is None:

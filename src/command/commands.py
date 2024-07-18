@@ -2,6 +2,7 @@ import time
 import os
 from abc import ABC, abstractmethod
 from enum import Enum
+from random import randrange
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils, bot_action, bot_helper
 from src.common.gui_setting import gui_setting
@@ -295,6 +296,7 @@ def target_reached(start: MapPoint, target: MapPoint):
     # else:
     return abs(start.y - target.y) <= target.tolerance_v and abs(start.x - target.x) <= target.tolerance
 
+
 def random_direction():
     if random() > 0.5:
         return 'left'
@@ -304,6 +306,7 @@ def random_direction():
 #############################
 #      Abstract Command     #
 #############################
+
 
 class Attack(Command):
     """Undefined 'Attack' command for the default command book."""
@@ -520,8 +523,9 @@ class Fall(Command):
         key_up('down')
         return True
 
+
 class Use_Portal(Command):
-    
+
     def __init__(self, portal: Portal, count=0):
         self.portal = portal
         self.count = count
@@ -534,8 +538,59 @@ class Use_Portal(Command):
             Move(self.portal.entrance.x, self.portal.entrance.y, 5).execute()
             Walk(self.portal.entrance, use_portal=True).execute()
             return True
-        
-        
+
+
+class Jump_Around(Command):
+
+    def __init__(self, direction=None):
+        self.direction = bot_settings.validate_horizontal_arrows(direction)
+        if self.direction is None:
+            self.direction = random_direction()
+
+    def main(self, wait=True):
+        direction = self.direction
+        press(direction)
+        press(DefaultKeybindings.JUMP, 2)
+        Attack().execute()
+        press(opposite_direction(direction))
+        press(DefaultKeybindings.JUMP)
+        sleep_in_the_air()
+        return True
+
+
+class Walk_Around(Command):
+    def main(self, wait=True):
+        plat = shared_map.platform_of_point(bot_status.player_pos)
+        if not plat:
+            return False
+        direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
+        press(direction, down_time=randrange(7, 10))
+        press(opposite_direction(direction), down_time=randrange(7, 10))
+        return True
+
+
+class Random_Action(Command):
+    def main(self, wait=True):
+        match randrange(0, 3):
+            case 0:
+                Jump_Around().execute()
+            case 1:
+                Jump(0.2, attack=True).execute()
+            case 2:
+                Walk_Around().execute()
+        return True
+
+
+class Collect_Boss_Essence(Command):
+    def main(self, wait=True):
+        Walk_Around().execute()
+        time.sleep(0.5)
+        Fall().execute()
+        time.sleep(0.2)
+        Jump_Around().execute()
+        return True
+
+
 class SolveRune(Command):
     """
     Moves to the position of the rune and solves the arrow-key puzzle.

@@ -53,6 +53,7 @@ class BotInfo(Enum):
     RUNE_LIBERATED = 'Rune Liberated'
     OTHERS_LEAVED = 'Someone\'s gone'
     BOSS_APPEAR = 'Boss Appear'
+    BOSS_DEAD = 'Boss Dead'
 
 
 class BotVerbose(Enum):

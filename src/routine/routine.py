@@ -60,6 +60,8 @@ class Routine(Subject):
         self.command_book = None
         self.settings: list[Setting] = []
 
+        self.action_queue: list[commands.Command] = []
+
     @dirty
     @update
     def set(self, arr):
@@ -184,6 +186,13 @@ class Routine(Subject):
     @bot_status.run_if_enabled
     def step(self):
         """Increments config.seq_index and wraps back to 0 at the end of config.sequence."""
+        if self.action_queue:
+            # 临时插入的action
+            action = self.action_queue[0]
+            action.execute()
+            self.action_queue.remove(action)
+            return
+
         self._run()
         add = 1
         element = self.current_step()
@@ -383,7 +392,7 @@ class Routine(Subject):
             if tmp is not None:
                 result, frame = tmp
                 threading.Thread(target=self.solve_rune_callback,
-                                args=(result, frame)).start()
+                                 args=(result, frame)).start()
             else:
                 bot_status.rune_pos = None
                 bot_status.rune_closest_pos = None
@@ -419,6 +428,10 @@ class Routine(Subject):
         file_path = 'screenshot/rune_failed'
         utils.save_screenshot(
             frame=used_frame, file_path=file_path, compress=False)
+
+    def on_bot_event(self, event):
+        if event == BotInfo.BOSS_DEAD:
+            self.action_queue.insert(0, commands.Collect_Boss_Essence())
 
 
 routine = Routine()

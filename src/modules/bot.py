@@ -239,6 +239,7 @@ class Bot(Subject):
             arg = args[1]
         else:
             arg = 0
+        routine.on_bot_event(event_type)
         if isinstance(event_type, BotFatal):
             if event_type == BotFatal.BLACK_SCREEN:
                 pass
