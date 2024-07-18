@@ -88,7 +88,7 @@ def step(target: MapPoint):
         return
 
     d_y = next_p.y - bot_status.player_pos.y
-    if abs(d_y) > target.tolerance_v:
+    if abs(d_y) > 5:
         if d_y > 0:
             move_down(next_p)
         else:
@@ -184,7 +184,7 @@ class DoubleJump(Skill):
         (16, 17): (0.10, 0.10, 0.1, 0.02),
         (17, 18): (0.20, 0.10, 0.1, 0.02),
         (18, 19): (0.15, 0.12, 0.1, 0.02),
-        (19, 21): (0.10, 0.20, 0.1, 0.02),
+        (19, 21): (0.10, 0.16, 0.1, 0.02),
         (21, 23): (0.10, 0.25, 0.1, 0.02),
         (23, 26): (0.20, 0.20, 0.1, 0.10),
         # 1代表shadow_dodge
@@ -269,18 +269,22 @@ class DoubleJump(Skill):
         key_down(direction)
         time.sleep(0.02)
         need_check = False
-        if dy < 0:
+        if dy < -5:
             if distance >= 20:
                 self.triple_jump(0.06, 0.04, 0.04)
             else:
                 self.double_jump(0.06, 0.04)
+        elif abs(dy) <=5 and not shared_map.is_continuous(start_p, self.target):
+            if distance >= 38:
+                distance = 38
+            elif distance < 26:
+                distance = 26
+            times = self.time_config(distance)
+            self.jumpe_with_config(times, direction)
         elif distance <= 46:
             times = self.time_config(distance)
             self.jumpe_with_config(times, direction)
             need_check = True
-        elif dy == 0 and not shared_map.is_continuous(start_p, self.target):
-            times = self.time_config(38)
-            self.jumpe_with_config(times, direction)
         else:
             self.common_jump()
         if self.attack_if_needed:
@@ -310,7 +314,7 @@ class Jump_Up(Command):
         key_down('up')
         time.sleep(0.06 if dy >= 20 else 0.3)
         press(Keybindings.JUMP)
-        time.sleep(1)
+        time.sleep(0.5)
         key_up('up')
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
@@ -625,12 +629,13 @@ class Shadow_Attack(Command):
             self.__class__.castedTime = time.time() - 4
 
         if n > 0:
-            if self.direction == 'right':
-                Phalanx_Charge('left').execute()
-                Direction("left" if bot_status.elite_boss_detected else "right").execute()
+            if bot_status.elite_boss_detected:
+                p = bot_status.player_pos
+                plat = shared_map.platform_of_point(p)
+                assert (plat)
+                Direction("left" if p.x - plat.begin_x > plat.end_x - p.x else "right").execute()
             else:
-                Phalanx_Charge('right').execute()
-                Direction("right" if bot_status.elite_boss_detected else "left").execute()
+                Direction(self.direction).execute()
             key_down(Keybindings.Quintuple_Star)
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)
@@ -896,11 +901,9 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     max_distance = Max_Jumpable_Gap
     target_range = None
     if platform_start.end_x < platform_target.begin_x:
-        target_range = range(max(platform_target.begin_x - max_distance,
-                             platform_start.begin_x), platform_start.end_x + 1)
+        target_range = range(platform_target.begin_x - max_distance, platform_start.end_x + 1)
     else:
-        target_range = range(platform_start.begin_x, min(
-            platform_target.end_x + max_distance, platform_start.end_x) + 1)
+        target_range = range(platform_start.begin_x, platform_target.end_x + max_distance + 1)
     if start.x in target_range:
         return target
     else:

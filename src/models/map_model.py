@@ -9,7 +9,7 @@ from src.map import map_helper
 from src.common.constants import RESOURCES_DIR, Platform, MapPointType, MapPoint, Portal, Path
 from src.modules.capture import capture
 
-Min_Jumpable_Gap = 6
+Min_Jumpable_Gap = 4
 Max_Jumpable_Gap = 36
 Max_Path_Step = 5
 
@@ -205,9 +205,9 @@ class MapModel:
         dy = platform_target.y - platform_start.y
         gap = map_helper.platform_gap(platform_start, platform_target)
 
-        if dy == 0:
+        if abs(dy) <= 5:
             return gap <= Max_Jumpable_Gap
-        elif dy < 0:
+        elif dy < -5:
             if gap <= -Min_Jumpable_Gap:
                 return True
             return gap in range(1, 10) and abs(dy) <= 10
