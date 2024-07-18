@@ -305,10 +305,10 @@ def random_direction():
 #      Abstract Command     #
 #############################
 
-class Attack(ABC):
+class Attack(Command):
     """Undefined 'Attack' command for the default command book."""
     @abstractmethod
-    def __init__(self, detect: bool):
+    def __init__(self):
         pass
 
 
@@ -506,7 +506,7 @@ class Fall(Command):
         press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
         if self.attack:
             key_up('down')
-            Attack().main()  # type: ignore
+            Attack().main()
         elif self.forward:
             key_up('down')
             time.sleep(0.2)

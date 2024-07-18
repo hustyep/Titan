@@ -432,7 +432,7 @@ class Replace_Dark_Servant(Skill):
 #       Skills        #
 #######################
 
-class Shadow_Bat(Skill):
+class HEXA_Shadow_Bat(Skill):
     key = Keybindings.Shadow_Bat
     type = SkillType.Switch
     cooldown = 1
@@ -574,7 +574,7 @@ class Attack(Command):
     type = SkillType.Attack
     backswing = Quintuple_Star.backswing
 
-    def main(self):
+    def main(self, wait=True):
         return Quintuple_Star().execute()
 
 
@@ -739,7 +739,7 @@ class Buff(Command):
         super().__init__(locals())
         self.buffs = [
             Dark_Elemental,
-            # Shadow_Bat,
+            HEXA_Shadow_Bat,
             Transcendent_Cygnus_Blessing,
             LastResort,
             Glory_of_the_Guardians,
