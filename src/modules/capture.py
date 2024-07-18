@@ -230,7 +230,7 @@ class Capture(Subject):
     @property
     def map_name_frame(self):
         if self.frame is not None and self.mm_tl is not None and self.mm_br is not None:
-            return self.frame[self.mm_tl[1] - 34:self.mm_tl[1] - 2,
+            return self.frame[self.mm_tl[1] - 25:self.mm_tl[1] - 5,
                               self.mm_tl[0] + 31:self.mm_br[0]]
 
     @property
