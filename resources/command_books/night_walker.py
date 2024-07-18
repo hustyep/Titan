@@ -574,8 +574,8 @@ class Attack(Command):
     type = SkillType.Attack
     backswing = Quintuple_Star.backswing
 
-    def main(self, wait=True):
-        return Quintuple_Star(wait).execute()
+    def main(self):
+        return Quintuple_Star().execute()
 
 
 class Shadow_Attack(Command):
@@ -607,7 +607,7 @@ class Shadow_Attack(Command):
                 if time.time() - start_time > 2:
                     break
 
-        n = 2.5 if shared_map.current_map_name == 'Blooming Spring 2' else 2
+        n = 2 if shared_map.current_map_name == 'Blooming Spring 2' else 2
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
@@ -637,8 +637,8 @@ class Shadow_Attack(Command):
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)
             time.sleep(Quintuple_Star.backswing)
-            if bot_status.stage_fright and random() <= 0.3:
-                Random_Action().execute()
+            # if bot_status.stage_fright and random() <= 0.3:
+            #     Random_Action().execute()
         else:
             time.sleep(0.3)
         return True
@@ -739,7 +739,7 @@ class Buff(Command):
         super().__init__(locals())
         self.buffs = [
             Dark_Elemental,
-            Shadow_Bat,
+            # Shadow_Bat,
             Transcendent_Cygnus_Blessing,
             LastResort,
             Glory_of_the_Guardians,
