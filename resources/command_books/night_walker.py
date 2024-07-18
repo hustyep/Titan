@@ -597,9 +597,12 @@ class Shadow_Attack(Command):
         start_time = time.time()
         if start_time - Shadow_Bite.castedTime > 5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
-                time.sleep(0.1)
+                if bot_status.stage_fright and random() <= 0.2:
+                    Random_Action().execute()
+                else:
+                    time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
-                if len(mobs) <= 2:
+                if len(mobs) == 0:
                     return False
                 if time.time() - start_time > 2:
                     break
@@ -632,8 +635,6 @@ class Shadow_Attack(Command):
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)
             time.sleep(Quintuple_Star.backswing)
-            # if bot_status.stage_fright and random() <= 0.3:
-            #     Random_Action().execute()
         else:
             time.sleep(0.3)
         return True
