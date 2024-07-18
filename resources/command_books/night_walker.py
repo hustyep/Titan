@@ -642,7 +642,7 @@ class Shadow_Attack(Command):
         return True
 
 
-class Around_Jump(Command):
+class Jump_Around(Command):
 
     def __init__(self, direction=None):
         self.direction = bot_settings.validate_horizontal_arrows(direction)
@@ -654,19 +654,32 @@ class Around_Jump(Command):
         press(direction)
         press(Keybindings.JUMP)
         press(Keybindings.Shadow_Jump)
+        press(Keybindings.Quintuple_Star)
         press(opposite_direction(direction))
         press(Keybindings.Shadow_Jump)
         sleep_in_the_air()
         return True
 
+class Walk_Around(Command):
+    def main(self, wait=True):
+        plat = shared_map.platform_of_point(bot_status.player_pos)
+        if not plat:
+            return False
+        direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
+        press(direction, down_time=randrange(7, 10))
+        press(opposite_direction(direction), down_time=randrange(7, 10))
+        return True
+    
 
 class Random_Action(Command):
     def main(self, wait=True):
-        match randrange(0, 2):
+        match randrange(0, 3):
             case 0:
-                Around_Jump().execute()
+                Jump_Around().execute()
             case 1:
-                Jump(0.3, attack=True).execute()
+                Jump(0.2, attack=True).execute()
+            case 2:
+                Walk_Around().execute()
         return True
 
 
