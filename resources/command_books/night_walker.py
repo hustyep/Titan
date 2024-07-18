@@ -279,7 +279,7 @@ class DoubleJump(Skill):
             self.jumpe_with_config(times, direction)
             need_check = True
         elif dy == 0 and not shared_map.is_continuous(start_p, self.target):
-            times = self.time_config(46)
+            times = self.time_config(41)
             self.jumpe_with_config(times, direction)
         else:
             self.common_jump()
@@ -596,7 +596,7 @@ class Shadow_Attack(Command):
             Burst().execute()
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 5.5 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
