@@ -14,7 +14,7 @@ from src.map.map_helper import *
 from src.map.map import shared_map
 from src.modules.capture import capture
 from src.chat_bot.chat_bot import chat_bot
-from src.models.map_model import Min_Jumpable_Gap
+from src.models.map_model import Min_Jumpable_Gap, Max_Jumpable_Gap
 
 # List of key mappings
 
@@ -174,7 +174,7 @@ class DoubleJump(Skill):
     type = SkillType.Move
     cooldown = 0.6
     backswing = 0
-    move_range = range(26, 33)
+    move_range = range(26, 47)
     config = {
         (7, 8): (0.01, 0.02, 0.02, 0.01),
         (8, 10): (0.10, 0.02, 0.02, 0.02),
@@ -274,15 +274,13 @@ class DoubleJump(Skill):
                 self.triple_jump(0.06, 0.04, 0.04)
             else:
                 self.double_jump(0.06, 0.04)
-        elif distance < 47:
+        elif distance <= 46:
             times = self.time_config(distance)
             self.jumpe_with_config(times, direction)
             need_check = True
         elif dy == 0 and not shared_map.is_continuous(start_p, self.target):
-            if distance >= 30:
-                self.triple_jump(0.06, 0.04, 0.04)
-            else:
-                self.double_jump(0.06, 0.04)
+            times = self.time_config(46)
+            self.jumpe_with_config(times, direction)
         else:
             self.common_jump()
         if self.attack_if_needed:
@@ -925,12 +923,12 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     if platform_start == platform_target:
         return target
 
-    max_distance = 32
+    max_distance = Max_Jumpable_Gap
     target_range = None
     if platform_start.end_x < platform_target.begin_x:
-        target_range = range(platform_target.begin_x + 3 - max_distance, platform_start.end_x + 1)
+        target_range = range(max(platform_target.begin_x - max_distance, platform_start.begin_x), platform_start.end_x + 1)
     else:
-        target_range = range(platform_start.begin_x, platform_target.end_x - 3 + max_distance + 1)
+        target_range = range(platform_start.begin_x, min(platform_target.end_x + max_distance, platform_start.end_x) + 1)
     if start.x in target_range:
         return target
     else:
