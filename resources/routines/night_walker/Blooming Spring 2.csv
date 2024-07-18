@@ -26,6 +26,7 @@ $, target=move_tolerance, value=10
 
 ~, label=pickup, interval=90, skip=False
 *, x=160, y=48, interval=0, tolerance=8, detect=False, skip=False
+    Wait, duration=0.4
 *, x=160, y=36, interval=0, tolerance=8, detect=False, skip=False
 *, x=113, y=36, interval=0, tolerance=8, detect=False, skip=False
 #
