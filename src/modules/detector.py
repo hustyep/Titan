@@ -398,21 +398,26 @@ class Detector(Subject):
         if self.others_no_detect_count == 30:
             self.others_no_detect_count += 1
             if self.others_comming_time > 0 and self.others_detect_count > 40:
-                self.on_next((BotInfo.OTHERS_LEAVED, ))
+                if not game_map.current_map.instance:
+                    self.on_next((BotInfo.OTHERS_LEAVED, ))
             self.others_detect_count = 0
             self.others_comming_time = 0
         elif self.others_detect_count == 2000:
             self.others_detect_count += 1
-            self.on_next((BotError.OTHERS_STAY_OVER_120S, duration))
+            if not game_map.current_map.instance:
+                self.on_next((BotError.OTHERS_STAY_OVER_120S, duration))
         elif self.others_detect_count == 200:
             self.others_detect_count += 1
-            self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
+            if not game_map.current_map.instance:
+                self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
         elif self.others_detect_count == 100:
             self.others_detect_count += 1
-            self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
+            if not game_map.current_map.instance:
+                self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
         elif self.others_detect_count == 50:
             self.others_detect_count += 1
-            self.on_next((BotWarnning.OTHERS_COMMING, duration))
+            if not game_map.current_map.instance:
+                self.on_next((BotWarnning.OTHERS_COMMING, duration))
 
     def check_rune_status(self, frame, minimap):
         if bot_status.rune_solving:

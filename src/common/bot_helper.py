@@ -171,12 +171,12 @@ def wait_until_map_changed(timeout=7):
 def chenck_map_available(instance=True):
     if instance:
         start_time = time.time()
-        while time.time() - start_time <= 4:
+        while time.time() - start_time <= 5:
+            if detect_mobs(capture.frame):
+                return True
             others = check_others()
             if others >= 2:
                 return False
-            if detect_mobs(capture.frame):
-                return True
             time.sleep(0.1)
         return False
     else:
