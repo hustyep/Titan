@@ -121,7 +121,7 @@ def sleep_while_move_y(interval=0.02, n=15):
 
 
 @bot_status.run_if_enabled
-def sleep_in_the_air(interval=0.005, n=4, detect_rope=False):
+def sleep_in_the_air(interval=0.02, n=4, detect_rope=False):
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
         return
@@ -140,10 +140,10 @@ def sleep_in_the_air(interval=0.005, n=4, detect_rope=False):
             break
         last_y = pos.y
         step += 1
-        if step >= 600:
+        if step >= 150:
             utils.log_event("sleep_in_the_air timeout")
             break
-        elif detect_rope and step >= 250 and shared_map.on_the_rope(bot_status.player_pos):
+        elif detect_rope and step >= 25 and shared_map.on_the_rope(bot_status.player_pos):
             # 检测是否在绳子上
             break
         time.sleep(interval)

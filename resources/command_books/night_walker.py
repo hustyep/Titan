@@ -311,6 +311,7 @@ class Jump_Up(Command):
         time.sleep(0.06 if dy >= 20 else 0.3)
         press(Keybindings.JUMP)
         time.sleep(1)
+        key_up('up')
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
         if abs(dx) >= 30 or not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 2):
@@ -319,8 +320,6 @@ class Jump_Up(Command):
         elif abs(dx) >= Shadow_Dodge.move_range.start:
             Shadow_Dodge(direction).execute()
         sleep_in_the_air(n=4, detect_rope=True)
-        time.sleep(0.02)
-        key_up('up')
         return True
 
 

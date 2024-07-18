@@ -131,6 +131,18 @@ def climb_rope(isUP=True):
     bot_status.acting = True
     step = 0
     key = 'up' if isUP else 'down'
+    if key == 'down':
+        p = shared_map.platform_point(bot_status.player_pos)
+        plat = shared_map.platform_of_point(p)
+        assert (plat)
+        if p.y - bot_status.player_pos.y >= 10:
+            direction = 'left' if p.x - plat.begin_x > plat.end_x - p.x else 'right'
+            press_key(direction)
+            click_key('s')
+            release_key(direction)
+            sleep_in_the_air(n=2)
+            return
+
     press_key(key)
     time.sleep(0.1)
     while not shared_map.on_the_platform(bot_status.player_pos):
@@ -138,8 +150,13 @@ def climb_rope(isUP=True):
         step += 1
         if step > 50:
             break
-    time.sleep(0.1)
+    plat = shared_map.platform_of_point(bot_status.player_pos)
+    assert (plat)
+    direction = 'left' if bot_status.player_pos.x - plat.begin_x > plat.end_x - bot_status.player_pos.x else 'right'
+    press_key(direction)
+    time.sleep(0.2)
     release_key(key)
+    release_key(direction)
     bot_status.acting = False
 
 
@@ -283,8 +300,6 @@ def teleport_random_town(retried_count=0, max_retry_count=3):
         print("[error]cant open teleport stone")
         mouse_move_relative(-20, 20)
         return teleport_random_town(retried_count+1)
-    
-    
 
 
 @bot_status.run_if_enabled
