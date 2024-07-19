@@ -220,8 +220,8 @@ class MapModel:
                     plats = self.platforms_of_y(y)
                     if plats:
                         for plat in plats:
-                            intersections -= set(plat.x_range)
-                return len(intersections) > 0
+                            intersections = intersections.difference(set(plat.x_range))
+                return len(intersections) > 5
             if gap in range(1, 27):
                 for y in range(platform_start.y, platform_target.y):
                     plats = self.platforms_of_y(y)
@@ -293,7 +293,7 @@ class MapModel:
                 if self.platform_portable(last, plat):
                     result += 50
                 else:
-                    if plat.y != last.y:
+                    if abs(plat.y - last.y) > 5:
                         result += 150
                     result += abs(plat.center.x - last.center.x)
             last = plat

@@ -189,8 +189,8 @@ class DoubleJump(Skill):
         (23, 26): (0.20, 0.20, 0.1, 0.10),
         # 1代表shadow_dodge
         (26, 28): (0.01, 0.10, 1),
-        (28, 30): (0.06, 0.04),
-        (30, 32): (0.06, 0.04, 0.04),
+        (28, 29): (0.06, 0.04),
+        (29, 32): (0.06, 0.04, 0.04),
         (32, 34): (0.01, 0.1, 0.1, 1),
         (34, 35): (0.04, 0.05, 0.05),
         (35, 38): (0.01, 0.1, 0.15, 1),
@@ -601,10 +601,10 @@ class Shadow_Attack(Command):
         start_time = time.time()
         if start_time - Shadow_Bite.castedTime > 5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
-                if bot_status.stage_fright and random() <= 0.2:
-                    Random_Action().execute()
-                else:
-                    time.sleep(0.1)
+                # if bot_status.stage_fright and random() <= 0.2:
+                #     Random_Action().execute()
+                # else:
+                time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
                 if len(mobs) == 0:
                     return False
@@ -854,7 +854,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if platform_start == platform_target:
         return target
 
-    paths = shared_map.path_between(platform_start, platform_target, bot_status.stage_fright)
+    paths = shared_map.path_between(platform_start, platform_target)
     utils.log_event(f"[find_next_point] paths:", bot_settings.debug)
     if paths:
         for plat in paths:
@@ -871,7 +871,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
                 else:
                     return portal.entrance
             tmp_p = target
-        if d_y == 0:
+        if abs(d_y) <= 5:
             next_p = find_next_horizontal_point(start, tmp_p)
             if next_p:
                 return next_p
