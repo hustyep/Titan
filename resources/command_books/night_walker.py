@@ -317,7 +317,7 @@ class Jump_Up(Command):
         key_up('up')
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
-        if abs(dx) >= 30 or not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 2):
+        if abs(dx) >= 20 or not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 2):
             press(direction)
             press(Keybindings.Shadow_Jump)
         elif abs(dx) >= Shadow_Dodge.move_range.start:
