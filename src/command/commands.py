@@ -520,7 +520,7 @@ class Fall(Command):
             key_up('down')
             Buff().main(wait=False)  # type: ignore
 
-        sleep_in_the_air(n=1, detect_rope=True)
+        sleep_in_the_air(n=4, detect_rope=True)
         key_up('down')
         return True
 
