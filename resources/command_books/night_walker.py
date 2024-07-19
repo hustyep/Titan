@@ -131,13 +131,13 @@ def move_up(target: MapPoint):
     if bot_status.player_moving and bot_status.player_direction == 'left':
         if up_point.x - next_platform.begin_x <= 8:
             # move_horizontal(MapPoint(up_point.x+3, p.y, 2))
-            press('right', down_time=0.1)
+            press('right', down_time=0.2)
         else:
             time.sleep(0.2)
     elif bot_status.player_moving and bot_status.player_direction == 'right':
         if next_platform.end_x - up_point.x <= 10:
             # move_horizontal(MapPoint(up_point.x-3, p.y, 2))
-            press('left', down_time=0.1)
+            press('left', down_time=0.2)
         else:
             time.sleep(0.2)
 
@@ -151,7 +151,6 @@ def move_up(target: MapPoint):
 
 @bot_status.run_if_enabled
 def move_down(target: MapPoint):
-    sleep_in_the_air(n=4)
     if target.y <= bot_status.player_pos.y:
         return
     if abs(bot_status.player_pos.y - target.y) <= 4:

@@ -286,7 +286,7 @@ class MapModel:
     def weight_of_path(self, path: Path):
         if path.steps <= 1:
             return sys.maxsize
-        result = 0
+        result = path.steps * 10
         last = None
         for plat in path.routes:
             if last:
@@ -294,8 +294,9 @@ class MapModel:
                     result += 50
                 else:
                     if abs(plat.y - last.y) > 5:
-                        result += 150
-                    result += abs(plat.center.x - last.center.x)
+                        result += 80
+                    else:
+                        result += abs(plat.center.x - last.center.x)
             last = plat
         return result
 

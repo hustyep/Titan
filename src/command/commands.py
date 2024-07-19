@@ -506,6 +506,7 @@ class Fall(Command):
         # evade_rope()
         key_down('down')
         time.sleep(0.03)
+        sleep_in_the_air(n=4)
         press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
         if self.attack:
             key_up('down')
