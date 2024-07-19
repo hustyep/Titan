@@ -519,7 +519,7 @@ class Fall(Command):
         if self.buff:
             key_up('down')
             Buff().main(wait=False)  # type: ignore
-
+        time.sleep(0.3)
         sleep_in_the_air(n=4, detect_rope=True)
         key_up('down')
         return True
