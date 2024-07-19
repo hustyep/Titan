@@ -153,9 +153,7 @@ def move_up(target: MapPoint):
 def move_down(target: MapPoint):
     if target.y <= bot_status.player_pos.y:
         return
-    if abs(bot_status.player_pos.y - target.y) <= 4:
-        sleep_in_the_air()
-        return
+    sleep_in_the_air(n=4)
     next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
     if shared_map.on_the_platform(next_p):
         Fall().execute()
