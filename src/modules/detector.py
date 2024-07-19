@@ -318,7 +318,7 @@ class Detector(Subject):
             self.on_next((BotInfo.BOSS_APPEAR, ))
             
         bot_status.elite_boss_detected = utils.match_count(
-            frame[:20, 300:320], BOSS_TEMPLATE, 0.9) > 0
+            frame[:30, 300:330], BOSS_TEMPLATE, 0.95) > 0
         if bot_status.elite_boss_detected:
             self.boss_detect_time = time.time()
         elif time.time() - self.boss_detect_time in range(3, 10):
