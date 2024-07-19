@@ -176,11 +176,15 @@ class Map:
             return
         return self.current_map.point_portable(start, target)
 
-    def path_between(self, platform_start: Platform, platform_target: Platform, random_path=False) -> list[Platform]:
-        if not self.current_map:
-            return []
+    def path_between(self, start: MapPoint, target: MapPoint, random_path=False) -> list[Platform]:
+        platform_start = self.platform_of_point(start)
+        platform_target = self.platform_of_point(target)
+        assert platform_start
+        assert platform_target
+        assert self.current_map
         paths = self.current_map.path_between(platform_start, platform_target)
         if paths:
+            paths.sort(key=lambda path: self.weight_of_full_path(path, start, target))
             if random_path:
                 paths = paths[:3]
                 index = random.randrange(0, len(paths))
@@ -188,6 +192,23 @@ class Map:
             else:
                 return paths[0].routes
         return []
+    
+    def weight_of_full_path(self, path: Path, start: MapPoint, target: MapPoint):
+        assert self.current_map
+        if path.steps <= 1:
+            return sys.maxsize
+
+        last = start
+        points = self.current_map.points_of_path(path, start, target)
+        result = len(points) * 3
+        for point in points:
+            if point == start:
+                continue
+            if abs(point.y - last.y) > 5:
+                result += 80
+            else:
+                result += abs(point.x - last.x)
+        return result
 
     def add_start_point(self, point: MapPoint):
         if gui_setting.mode.type != BotRunMode.Mapping:

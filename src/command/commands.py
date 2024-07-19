@@ -965,13 +965,30 @@ class ErdaShower(Skill):
         return True
 
 
-class Sol_Janus(Skill):
+class Sol_Janus(Command):
     key = DefaultKeybindings.Sol_Janus
     type = SkillType.Summon
     cooldown = 60
     precast = 0.3
     backswing = 0.6
     duration = 120
+    count = 2
+
+    def __init__(self, direction=None, jump=False):
+        super().__init__(locals())
+        self.jump = bot_settings.validate_boolean(jump)
+        if direction is None:
+            self.direction = direction
+        else:
+            self.direction = bot_settings.validate_horizontal_arrows(direction)
+
+    def main(self, wait=True):
+        if self.direction:
+            Direction(self.direction).execute()
+        if self.jump:
+            press(DefaultKeybindings.JUMP)
+        press(self.key, down_time=0.8)
+        return True
 
 
 class Will_of_Erda(Command):

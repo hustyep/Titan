@@ -283,6 +283,43 @@ class MapModel:
 
         return result
 
+    def points_of_path(self, path: Path, start: MapPoint, target: MapPoint):
+        assert (start != target)
+
+        start_plat = path.start_plat
+        target_plat = path.end_plat
+        assert start_plat
+        assert target_plat
+        if start_plat == target_plat:
+            return [start, target]
+
+        path_points: list[MapPoint] = [start]
+        last_plat = start_plat
+        for plat in path.routes:
+            if plat == start_plat:
+                continue
+            gap = map_helper.platform_gap(plat, last_plat)
+            if gap > 0:
+                if plat.begin_x > last_plat.end_x:
+                    path_points.append(MapPoint(last_plat.end_x, last_plat.y))
+                    path_points.append(MapPoint(plat.begin_x, plat.y))
+                else:
+                    path_points.append(MapPoint(last_plat.begin_x, last_plat.y))
+                    path_points.append(MapPoint(plat.end_x, plat.y))
+            else:
+                intersecions = set(last_plat.x_range).intersection(set(plat.x_range))
+                last_p = path_points[-1]
+                if last_p.x in intersecions:
+                    path_points.append(MapPoint(last_p.x, plat.y))
+                else:
+                    x_list = list(intersecions)
+                    x_list.sort()
+                    index = int(len(x_list)/2)
+                    path_points.append(MapPoint(x_list[index], last_p.y))
+                    path_points.append(MapPoint(x_list[index], plat.y))
+        path_points.append(target)
+        return path_points
+
     def weight_of_path(self, path: Path):
         if path.steps <= 1:
             return sys.maxsize

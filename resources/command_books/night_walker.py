@@ -853,7 +853,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if platform_start == platform_target:
         return target
 
-    paths = shared_map.path_between(platform_start, platform_target)
+    paths = shared_map.path_between(start, target)
     utils.log_event(f"[find_next_point] paths:", bot_settings.debug)
     if paths:
         for plat in paths:
