@@ -886,8 +886,8 @@ def find_next_point(start: MapPoint, target: MapPoint):
 
 
 def find_next_horizontal_point(start: MapPoint, target: MapPoint):
-    if start.y != target.y:
-        return
+    # if start.y != target.y:
+    #     return
 
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
