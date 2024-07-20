@@ -258,22 +258,22 @@ class MapModel:
         reachable_plats = self.single_path[platform_start]
         result: List[Path] = []
         for plat in reachable_plats:
-            if path and plat in path.routes:
-                continue
-            if dy == 0:
-                if plat.y != platform_start.y:
-                    continue
-                dx = platform_target.begin_x - platform_start.begin_x
-                if dx > 0 and plat.begin_x < platform_start.begin_x:
-                    continue
-                elif dx < 0 and plat.begin_x > platform_start.begin_x:
-                    continue
-            elif dy < 0:
-                if plat.y > platform_start.y:
-                    continue
-            else:
-                if plat.y < platform_start.y:
-                    continue
+            # if path and plat in path.routes:
+            #     continue
+            # if dy == 0:
+            #     if plat.y != platform_start.y:
+            #         continue
+            #     dx = platform_target.begin_x - platform_start.begin_x
+            #     if dx > 0 and plat.begin_x < platform_start.begin_x:
+            #         continue
+            #     elif dx < 0 and plat.begin_x > platform_start.begin_x:
+            #         continue
+            # elif dy < 0:
+            #     if plat.y > platform_start.y:
+            #         continue
+            # else:
+            #     if plat.y < platform_start.y:
+                    # continue
             next_paths = self.path_between(plat, platform_target, new_path)
             if next_paths:
                 for sub_path in next_paths:
