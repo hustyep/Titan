@@ -36,7 +36,7 @@ class Detector(Subject):
         self.others_comming_time = 0
         self.others_detect_count = 0
         self.others_no_detect_count = 0
-        
+
         self.boss_detect_time = 0
 
         self.lost_time_threshold = 1
@@ -316,15 +316,19 @@ class Detector(Subject):
         elite = utils.multi_match(elite_frame, ELITE_TEMPLATE, threshold=0.9)
         if len(elite) > 0:
             self.on_next((BotInfo.BOSS_APPEAR, ))
-            
-        bot_status.elite_boss_detected = utils.match_count(
-            frame[:30, 300:330], BOSS_TEMPLATE, 0.95) > 0
-        if bot_status.elite_boss_detected:
+
+        elite_boss_detected = utils.match_count(frame[:30, 300:330], BOSS_TEMPLATE, 0.95) > 0
+        if elite_boss_detected:
+            if not bot_status.elite_boss_detected:
+                self.on_next((BotInfo.BOSS_FIGHTING, ))
+
+            bot_status.elite_boss_detected = True
             self.boss_detect_time = time.time()
-        elif self.boss_detect_time > 0:
+        elif self.boss_detect_time > 0 and time.time() - self.boss_detect_time >= 2:
             self.boss_detect_time = 0
+            bot_status.elite_boss_detected = False
             self.on_next((BotInfo.BOSS_DEAD, ))
-            
+
     def check_binded(self):
         frame = capture.frame
         if frame is None or bot_settings.role is None:
