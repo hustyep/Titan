@@ -550,11 +550,13 @@ class Jump_Around(Command):
 
     def main(self, wait=True):
         direction = self.direction
-        press(direction)
+        key_down(direction)
         press(DefaultKeybindings.JUMP, 2)
         Attack().execute()
-        press(opposite_direction(direction))
+        key_up(direction)
+        key_down(opposite_direction(direction))
         press(DefaultKeybindings.JUMP)
+        key_up(opposite_direction(direction))
         sleep_in_the_air()
         return True
 
@@ -565,8 +567,8 @@ class Walk_Around(Command):
         if not plat:
             return False
         direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
-        press(direction, down_time=randrange(7, 10))
-        press(opposite_direction(direction), down_time=randrange(7, 10))
+        press(direction, down_time=randrange(3, 5))
+        press(opposite_direction(direction), down_time=randrange(3, 5))
         return True
 
 

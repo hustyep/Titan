@@ -328,12 +328,18 @@ class Jump_Up(Command):
         direction = 'left' if dx < 0 else 'right'
         if abs(dx) >= 20 or not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 2):
             key_down(direction)
-            time.sleep(0.1)
+            time.sleep(0.02)
             press(Keybindings.Shadow_Jump)
-            time.sleep(0.1)
+            time.sleep(0.02)
             key_up(direction)
         elif abs(dx) >= Shadow_Dodge.move_range.start:
             Shadow_Dodge(direction, wait=False).execute()
+        elif abs(dx) >= 8:
+            key_down(direction)
+            time.sleep(0.1)
+            press(Keybindings.Shadow_Jump)
+            time.sleep(0.05)
+            key_up(direction)
         sleep_in_the_air(n=2, detect_rope=True)
         return True
 
@@ -614,10 +620,10 @@ class Shadow_Attack(Command):
         start_time = time.time()
         if start_time - Shadow_Bite.castedTime > 5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
-                # if bot_status.stage_fright and random() <= 0.2:
-                #     Random_Action().execute()
-                # else:
-                time.sleep(0.1)
+                if random() <= 0.2:
+                    Random_Action().execute()
+                else:
+                    time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
                 if len(mobs) == 0:
                     return False
