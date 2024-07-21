@@ -700,6 +700,7 @@ class Detect_Around_Anchor(Command):
                 Will_of_Erda().execute()
 
         start = time.time()
+        acted = False
         while True:
             mobs = detect_mobs_around_anchor(
                 anchor=anchor,
@@ -713,8 +714,9 @@ class Detect_Around_Anchor(Command):
             if time.time() - start > 7:
                 utils.log_event("Detect_Around_Anchor timeout", bot_settings.debug)
                 break
-            if random() <= 0.5:
+            if random() <= 0.3 and not acted:
                 Random_Action().execute()
+                acted = True
             else:
                 time.sleep(0.3)
         return True
