@@ -296,7 +296,7 @@ class DoubleJump(Skill):
         else:
             self.common_jump()
         if self.attack_if_needed:
-            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.03)
+            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         sleep_in_the_air(n=1)
         if need_check and not target_reached(bot_status.player_pos, self.target):
