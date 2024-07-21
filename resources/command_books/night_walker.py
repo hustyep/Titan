@@ -283,8 +283,8 @@ class DoubleJump(Skill):
             else:
                 self.double_jump(0.06, 0.04)
         elif abs(dy) <= 5 and not shared_map.is_continuous(start_p, self.target):
-            if distance >= 38:
-                distance = 38
+            if distance >= 44:
+                distance = 44
             elif distance < 29:
                 distance = 29
             times = self.time_config(distance)
