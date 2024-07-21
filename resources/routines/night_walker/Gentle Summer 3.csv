@@ -23,8 +23,8 @@ $, target=move_tolerance, value=10
 *, x=43, y=54, interval=0, tolerance=5, detect=False, skip=False
     Dark_Omen
 *, x=18, y=39, interval=0, tolerance=8, detect=False, skip=False
-*, x=65, y=39, interval=0, tolerance=8, detect=False, skip=False
-*, x=65, y=54, interval=0, tolerance=8, detect=False, skip=False
-*, x=65, y=67, interval=0, tolerance=8, detect=False, skip=False
-*, x=157, y=67, interval=0, tolerance=8, detect=False, skip=False
+*, x=70, y=39, interval=0, tolerance=8, detect=False, skip=False
+*, x=70, y=54, interval=0, tolerance=8, detect=False, skip=False
+*, x=70, y=67, interval=0, tolerance=8, detect=False, skip=False
+*, x=165, y=67, interval=0, tolerance=8, detect=False, skip=False
 #
