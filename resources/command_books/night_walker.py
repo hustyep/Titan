@@ -231,9 +231,9 @@ class DoubleJump(Skill):
 
     def scram(self, direction, down_time, up_time):
         key_up(direction)
-        time.sleep(0.02)
+        time.sleep(0.01)
         press_acc(opposite_direction(direction), down_time=down_time, up_time=up_time)
-        press(self.key, 1, down_time=0.02, up_time=0.02)
+        press(self.key, 1, down_time=0.02, up_time=0.01)
 
     def jumpe_with_config(self, times, direction):
         if len(times) == 2:
@@ -700,7 +700,7 @@ class Detect_Around_Anchor(Command):
                 Will_of_Erda().execute()
 
         start = time.time()
-        acted = random() < 0.3
+        acted = random() < 0.5
         while True:
             mobs = detect_mobs_around_anchor(
                 anchor=anchor,
