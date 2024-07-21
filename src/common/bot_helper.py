@@ -59,12 +59,12 @@ def detect_mobs(
     if frame is None or shared_map.current_map is None:
         return []
 
-    match (type):
-        case (MobType.BOSS):
+    match(type):
+        case(MobType.BOSS):
             mob_templates = shared_map.current_map.boss_templates
-        case (MobType.ELITE):
+        case(MobType.ELITE):
             mob_templates = shared_map.current_map.elite_templates
-        case (_):
+        case(_):
             mob_templates = shared_map.current_map.mob_templates
 
     if len(mob_templates) == 0:
@@ -198,21 +198,31 @@ def get_available_routines(command_name) -> list:
     return routines
 
 
-def identify_map_name(try_count=1):
+def get_available_map_names():
+    maps: list[str] = []
+    folder = os.path.join(RESOURCES_DIR, 'maps/minimap_name')
+    for root, ds, fs in os.walk(folder):
+        for f in fs:
+            if f.endswith(".png"):
+                maps.append(f[:-4])
+    return maps
+
+
+def identify_map_name():
     available_map_names = []
     for map in shared_map.available_maps:
         available_map_names.append(map.name)
 
     frame = capture.map_name_frame
-    # utils.show_image(frame)
-    for _ in range(0, try_count):
-        result = utils.image_match_text(
-            frame, available_map_names, 0.8, filter=[])
-        if not result:
-            time.sleep(0.3)
-        else:
-            return result
+    result = utils.image_match_text(frame, available_map_names, 0.8, filter=[])
+    if result:
+        return result
 
+    available_map_names = get_available_map_names()
+    for name in available_map_names:
+        name_image = cv2.imread(name+'.png')
+        if utils.multi_match(capture.map_name_frame, name_image):
+            return name
 
 def get_full_pos(pos):
     return pos[0] + capture.window['left'], pos[1] + capture.window['top']
@@ -235,7 +245,7 @@ def get_channel_pos(channel):
 
 def convert_point_minimap_to_window(point: MapPoint):
     '''convent the minimap point to the window point'''
-    assert(capture.minimap_frame is not None)
+    assert (capture.minimap_frame is not None)
     window_width = capture.window_rect.width
     window_height = capture.window_rect.height
 
@@ -300,7 +310,8 @@ def check_blind():
         return True
     else:
         return False
-    
+
+
 def check_others():
     minimap = capture.minimap_display
     filtered = utils.filter_color(minimap, OTHER_RANGES)

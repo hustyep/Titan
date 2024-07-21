@@ -137,7 +137,7 @@ class Bot(Subject):
         if bot_status.lost_minimap:
             time.sleep(0.1)
             return False
-        map_name = bot_helper.identify_map_name(try_count=3)
+        map_name = bot_helper.identify_map_name()
         utils.log_event(f"identify map:{map_name}")
 
         target_map = None
