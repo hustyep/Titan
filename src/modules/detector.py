@@ -321,7 +321,7 @@ class Detector(Subject):
             frame[:30, 300:330], BOSS_TEMPLATE, 0.95) > 0
         if bot_status.elite_boss_detected:
             self.boss_detect_time = time.time()
-        elif time.time() - self.boss_detect_time in range(3, 10):
+        elif self.boss_detect_time > 0:
             self.boss_detect_time = 0
             self.on_next((BotInfo.BOSS_DEAD, ))
             
