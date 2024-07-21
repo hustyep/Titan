@@ -483,7 +483,7 @@ class Dark_Omen(Skill):
     key = Keybindings.Dark_Omen
     type = SkillType.Attack
     cooldown = 20
-    backswing = 0.9
+    backswing = 0.7
     tolerance = 1
 
 
@@ -620,10 +620,7 @@ class Shadow_Attack(Command):
         start_time = time.time()
         if start_time - Shadow_Bite.castedTime > 5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
-                if random() <= 0.2:
-                    Random_Action().execute()
-                else:
-                    time.sleep(0.1)
+                time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
                 if len(mobs) == 0:
                     return False
@@ -716,7 +713,10 @@ class Detect_Around_Anchor(Command):
             if time.time() - start > 7:
                 utils.log_event("Detect_Around_Anchor timeout", bot_settings.debug)
                 break
-            time.sleep(0.3)
+            if random() <= 0.5:
+                Random_Action().execute()
+            else:
+                time.sleep(0.3)
         return True
 
 ###################
