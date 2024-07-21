@@ -156,9 +156,18 @@ def move_down(target: MapPoint):
     if abs(bot_status.player_pos.y - target.y) <= 5:
         sleep_in_the_air()
         return
-    next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
-    if shared_map.on_the_platform(next_p):
-        Fall().execute()
+    platform_start = shared_map.platform_of_point(bot_status.player_pos)
+    platform_target = shared_map.platform_of_point(target)
+    assert platform_target
+    if not platform_start:
+        return
+    intersections = set(platform_start.x_range).intersection(set(platform_target.x_range))
+    if target.x in intersections:
+        next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
+        if shared_map.on_the_platform(next_p):
+            Fall().execute()
+        else:
+            DoubleJump(target, False)
     else:
         DoubleJump(target, False)
 
@@ -273,7 +282,7 @@ class DoubleJump(Skill):
                 self.triple_jump(0.06, 0.04, 0.04)
             else:
                 self.double_jump(0.06, 0.04)
-        elif abs(dy) <=5 and not shared_map.is_continuous(start_p, self.target):
+        elif abs(dy) <= 5 and not shared_map.is_continuous(start_p, self.target):
             if distance >= 38:
                 distance = 38
             elif distance < 26:
@@ -968,11 +977,23 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
     if not platform_start or not platform_target:
         return
 
+    intersections = set(platform_start.x_range).intersection(set(platform_target.x_range))
+    if target.x in intersections:
+        return find_fall_point(start, target)
+    if shared_map.current_map.can_jump_down(platform_start, platform_target):
+        return find_jump_down_point(start, target)
+    return find_fall_point(start, target)
+
+
+def find_fall_point(start: MapPoint, target: MapPoint):
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    assert (shared_map.current_map)
+    assert platform_start
+    assert platform_target
+
     gap = platform_gap(platform_start, platform_target)
-
-    if not platform_start or not platform_target:
-        return
-
     if gap <= -Min_Jumpable_Gap:
         available_x = set(platform_start.x_range).intersection(set(platform_target.x_range))
         for y in [y for y in shared_map.current_map.platform_map.keys() if y in range(start.y + 1, target.y)]:
@@ -989,16 +1010,48 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
                     if abs(start.x - x) < abs(start.x - nearest_x):
                         nearest_x = x
                 return MapPoint(nearest_x, start.y, 3)
-    else:
-        if platform_start.end_x < platform_target.begin_x:
-            next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)
+
+
+def find_jump_down_point(start: MapPoint, target: MapPoint):
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    assert (shared_map.current_map)
+    assert platform_start
+    assert platform_target
+
+    dy = platform_target.y - platform_start.y
+    max_jump_distance = 30 + dy
+    gap = platform_gap(platform_start, platform_target)
+    available_x = 0
+    if platform_target.end_x > platform_start.end_x:
+        if gap < 0:
+            available_x = platform_start.end_x - max_jump_distance
         else:
-            next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 2)
+            available_x = platform_target.begin_x - max_jump_distance
+        available_x = max(available_x, platform_start.begin_x)
+        x = (available_x + platform_start.end_x)/2
+        tolorance = (platform_start.end_x - available_x + 1)/2
+        next_p = MapPoint(int(x), start.y, int(tolorance))
+        tmp_p = MapPoint(platform_start.end_x + 20, target.y, 10)
         if target_reached(start, next_p):
-            return target
+            return target if target_reached(target, tmp_p) else tmp_p
         else:
             return next_p
-
+    else:
+        if gap < 0:
+            available_x = platform_start.begin_x + max_jump_distance
+        else:
+            available_x = platform_target.end_x + max_jump_distance
+        available_x = min(available_x, platform_start.end_x)
+        x = (platform_start.begin_x + available_x)/2
+        tolorance = (available_x - platform_start.begin_x + 1)/2
+        next_p = MapPoint(int(x), start.y, int(tolorance))
+        tmp_p = MapPoint(platform_start.begin_x - 20, target.y, 10)
+        if target_reached(start, next_p):
+            return target if target_reached(target, tmp_p) else tmp_p
+        else:
+            return next_p
 
 class Test_Command(Command):
     key = Keybindings.Shadow_Jump

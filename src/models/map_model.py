@@ -12,6 +12,7 @@ from src.modules.capture import capture
 Min_Jumpable_Gap = 4
 Max_Jumpable_Gap = 36
 Max_Path_Step = 5
+Jump_Down_Ratio = 1
 
 
 class MapType(Enum):
@@ -194,6 +195,35 @@ class MapModel:
             return None
         return self.platform_portable(platform_start, platform_target)
 
+    def can_jump_down(self, platform_start: Platform, platform_target: Platform):
+        dy = platform_target.y - platform_start.y
+        assert (dy > 5)
+
+        if set(platform_target.x_range).issubset(set(platform_start.x_range)):
+            return False
+        if platform_target.begin_x < platform_target.begin_x and platform_start.end_x < platform_target.end_x:
+            return self.can_jump_down(platform_start, Platform(platform_target.begin_x, platform_start.end_x, platform_target.y)) or self.can_jump_down(platform_start, Platform(platform_start.begin_x, platform_target.end_x, platform_target.y))
+
+        max_jump_distance = 30 + dy
+        xs_target = set()
+        intersections = set(platform_start.x_range).intersection(set(platform_target.x_range))
+        if platform_target.end_x > platform_start.end_x:
+            xs_target = set(range(platform_start.end_x+1, platform_start.end_x+max_jump_distance+1))
+        else:
+            xs_target = set(range(platform_start.begin_x-max_jump_distance, platform_start.begin_x))
+
+        xs_target = xs_target.intersection(set(platform_target.x_range))
+        if len(xs_target) < 30:
+            return False
+        for y in range(platform_start.y, platform_target.y):
+            plats = self.platforms_of_y(y)
+            if plats:
+                for plat in plats:
+                    xs_pat = set(plat.x_range)
+                    intersections = xs_target.intersection(xs_pat)
+                    if intersections:
+                        return False
+
     def platform_reachable(self, platform_start: Platform | None, platform_target: Platform | None):
         if platform_start is None or platform_target is None:
             return False
@@ -208,10 +238,12 @@ class MapModel:
         if abs(dy) <= 5:
             return gap <= Max_Jumpable_Gap
         elif dy < -5:
+            # move up
             if gap <= -Min_Jumpable_Gap:
                 return True
             return gap in range(1, 10) and abs(dy) <= 10
         else:
+            # move down
             if gap <= -Min_Jumpable_Gap:
                 xs_start = set(platform_start.x_range)
                 xs_target = set(platform_target.x_range)
@@ -221,19 +253,12 @@ class MapModel:
                     if plats:
                         for plat in plats:
                             intersections = intersections.difference(set(plat.x_range))
-                return len(intersections) > 5
-            if gap in range(1, 27):
-                for y in range(platform_start.y, platform_target.y):
-                    plats = self.platforms_of_y(y)
-                    if plats:
-                        for plat in plats:
-                            start_x = max(platform_target.begin_x, platform_target.end_x - 30)
-                            xs_target = list(range(start_x, platform_target.end_x+1))
-                            xs_pat = list(range(plat.begin_x, plat.end_x+1))
-                            intersections = set(xs_target).intersection(set(xs_pat))
-                            if intersections:
-                                return False
-                return True
+                if len(intersections) > 5:
+                    return True
+                return self.can_jump_down(platform_start, platform_target)
+            
+            if gap in range(1, 31):
+                return self.can_jump_down(platform_start, platform_target)
             return False
 
     def path_between(self, platform_start: Platform, platform_target: Platform, path: Path | None = None) -> list[Path]:
@@ -254,7 +279,6 @@ class MapModel:
             return result
 
         new_path = Path(path.routes + [platform_start] if path else [platform_start])
-        dy = platform_target.y - platform_start.y
         reachable_plats = self.single_path[platform_start]
         result: List[Path] = []
         for plat in reachable_plats:
@@ -273,7 +297,7 @@ class MapModel:
             #         continue
             # else:
             #     if plat.y < platform_start.y:
-                    # continue
+            # continue
             next_paths = self.path_between(plat, platform_target, new_path)
             if next_paths:
                 for sub_path in next_paths:
