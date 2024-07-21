@@ -578,8 +578,10 @@ class Random_Action(Command):
         match randrange(0, 3):
             # case 0:
             #     Jump_Around().execute()
-            case 0, 1:
+            case 0:
                 Jump(0.2, attack=True).execute()
+            case 1:
+                Jump(0.1, attack=True).execute()
             case 2:
                 Walk_Around().execute()
         return True
