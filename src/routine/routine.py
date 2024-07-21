@@ -430,7 +430,9 @@ class Routine(Subject):
             frame=used_frame, file_path=file_path, compress=False)
 
     def on_bot_event(self, event):
-        if event == BotInfo.BOSS_DEAD:
+        if event == BotInfo.BOSS_APPEAR:
+            self.action_queue.insert(0, commands.Pre_Burst())
+        elif event == BotInfo.BOSS_DEAD:
             self.action_queue.insert(0, commands.Collect_Boss_Essence())
 
 

@@ -554,6 +554,8 @@ class Jump_Around(Command):
         press(DefaultKeybindings.JUMP, 2, 0.02, 0.02)
         key_up(direction)
         time.sleep(0.01)
+        Attack().execute()
+        sleep_in_the_air()
         key_down(opposite_direction(direction))
         time.sleep(0.01)
         press(DefaultKeybindings.JUMP)
@@ -569,7 +571,10 @@ class Walk_Around(Command):
         if not plat:
             return False
         direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
-        press(direction, down_time=1 * random())
+        walk_time = down_time=1 * random()
+        press(direction, down_time=walk_time)
+        Attack().execute()
+        press(opposite_direction(direction), down_time=walk_time)
         return True
 
 
@@ -879,6 +884,15 @@ class Aoe(Skill):
     def canUse(cls, next_t: float = 0) -> bool:
         return False
 
+
+class Pre_Burst(Command):
+    def main(self, wait=True):
+        pass
+
+
+class Burst(Command):
+    def main(self, wait=True):
+        pass
 
 #########################
 #      Common Skill     #

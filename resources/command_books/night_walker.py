@@ -661,16 +661,24 @@ class Shadow_Attack(Command):
         return True
 
 
-class Burst(Command):
+class Pre_Burst(Command):
     def main(self, wait=True):
         Shadow_Spear().execute()
         Shadow_Illusion().execute()
         if time.time() - self.castedTime > 30:
             Replace_Dark_Servant(resummon='True').execute()
+        self.castedTime = time.time()
+        return True
+
+
+class Burst(Command):
+    def main(self, wait=True):
         Shadow_Bite().execute()
         Silence().execute()
+        Dominion().execute()
         Quintuple_Star().execute()
         Rapid_Throw().execute()
+        Quintuple_Star().execute()
         self.castedTime = time.time()
         return True
 
