@@ -242,14 +242,14 @@ class DoubleJump(Skill):
             if times[2] == 1:
                 self.attack_if_needed = False
                 self.double_jump(times[0], times[1])
-                Shadow_Dodge(direction).execute()
+                Shadow_Dodge(direction, wait=False).execute()
             else:
                 self.triple_jump(times[0], times[1], times[2])
         elif len(times) == 4:
             self.attack_if_needed = False
             if times[3] == 1:
                 self.triple_jump(times[0], times[1], times[2])
-                Shadow_Dodge(direction).execute()
+                Shadow_Dodge(direction, wait=False).execute()
             else:
                 self.double_jump(times[0], times[1])
                 self.scram(direction, times[2], times[3])
@@ -285,8 +285,8 @@ class DoubleJump(Skill):
         elif abs(dy) <= 5 and not shared_map.is_continuous(start_p, self.target):
             if distance >= 38:
                 distance = 38
-            elif distance < 26:
-                distance = 26
+            elif distance < 29:
+                distance = 29
             times = self.time_config(distance)
             self.jumpe_with_config(times, direction)
         elif distance <= 46:
@@ -296,7 +296,7 @@ class DoubleJump(Skill):
         else:
             self.common_jump()
         if self.attack_if_needed:
-            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.1)
+            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.05)
         key_up(direction)
         sleep_in_the_air(n=1)
         if need_check and not target_reached(bot_status.player_pos, self.target):
@@ -330,7 +330,7 @@ class Jump_Up(Command):
             press(direction)
             press(Keybindings.Shadow_Jump)
         elif abs(dx) >= Shadow_Dodge.move_range.start:
-            Shadow_Dodge(direction).execute()
+            Shadow_Dodge(direction, wait=False).execute()
         sleep_in_the_air(n=4, detect_rope=True)
         return True
 
@@ -359,8 +359,8 @@ class Shadow_Rope_Lift(Command):
             press(direction)
             press(Keybindings.Shadow_Jump)
         elif abs(dx) >= Shadow_Dodge.move_range.start:
-            Shadow_Dodge(direction).execute()
-        sleep_in_the_air(n=30)
+            Shadow_Dodge(direction, wait=False).execute()
+        sleep_in_the_air(n=20)
         return True
 
 #########################
@@ -377,9 +377,10 @@ class Shadow_Dodge(Skill):
     move_range = range(10, 15)
     # 12-14
 
-    def __init__(self, direction='right'):
+    def __init__(self, direction='right', wait=True):
         super().__init__(locals())
         self.direction = bot_settings.validate_horizontal_arrows(direction)
+        self.wait = bot_settings.validate_boolean(wait)
 
     def main(self, wait=True):
         if not self.canUse():
@@ -390,7 +391,8 @@ class Shadow_Dodge(Skill):
         press(opposite_direction(self.direction), down_time=0.1)
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
         # press(self.direction)
-        sleep_in_the_air()
+        if self.wait:
+            sleep_in_the_air()
         return True
 
 #######################
