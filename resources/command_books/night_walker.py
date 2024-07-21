@@ -873,7 +873,6 @@ def find_next_point(start: MapPoint, target: MapPoint):
         return
 
     start = shared_map.fixed_point(start)
-    d_x = target.x - start.x
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
 
@@ -883,23 +882,25 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if platform_start == platform_target:
         return target
 
-    paths = shared_map.path_between(start, target, bot_status.stage_fright)
-    utils.log_event(f"[find_next_point] paths:", bot_settings.debug)
-    if paths:
-        for plat in paths:
-            utils.log_event(f"  {str(plat)}", bot_settings.debug)
-        next_platform = paths[1]
-        d_y = next_platform.y - platform_start.y
+    current_path = bot_status.current_path
+    if not current_path:
+        new_path = Path([], start, target)
+        plats = shared_map.path_between(start, target, bot_status.stage_fright)
+        new_path.routes = plats
+        utils.log_event(f"[find_new_path] {start.tuple} => {target.tuple}:\n {str(new_path)}", bot_settings.debug)
+        bot_status.current_path = new_path
 
-        tmp_p = next_platform.center
-        if len(paths) == 2:
-            portal = shared_map.current_map.platform_portable(platform_start, platform_target)
-            if portal:
-                if target_reached(start, portal.entrance):
-                    return portal.export
-                else:
-                    return portal.entrance
-            tmp_p = target
+    if current_path and current_path.next_plat:
+        d_y = current_path.next_plat.y - platform_start.y
+        tmp_p = current_path.next_plat.center
+        # if len(paths) == 2:
+        #     portal = shared_map.current_map.platform_portable(platform_start, platform_target)
+        #     if portal:
+        #         if target_reached(start, portal.entrance):
+        #             return portal.export
+        #         else:
+        #             return portal.entrance
+        #     tmp_p = target
         if abs(d_y) <= 5:
             next_p = find_next_horizontal_point(start, tmp_p)
             if next_p:

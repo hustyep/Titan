@@ -143,10 +143,11 @@ class Platform:
 
 class Path:
     def __init__(self, routes: List[Platform], start: MapPoint | None = None, target: MapPoint | None = None):
-        assert(len(routes) > 0)
+        assert (len(routes) > 0)
         self.routes = routes
-        self.start = start if start else routes[0].center
-        self.target = target if target else routes[-1].center
+        self.start = start
+        self.target = target
+        self.current_step = 0
 
     def __str__(self) -> str:
         result = ''
@@ -163,9 +164,19 @@ class Path:
         return self.routes[-1] if self.steps > 0 else None
 
     @property
+    def current_plat(self):
+        if self.current_step < self.steps:
+            return self.routes[self.current_step]
+        
+    @property
+    def next_plat(self):
+        if self.current_step + 1 < self.steps:
+            return self.routes[self.current_step + 1]
+
+    @property
     def steps(self):
         return len(self.routes)
-    
+
     @property
     def direction(self):
         return 'right' if self.target.x > self.start.x else 'left'

@@ -1,5 +1,5 @@
 from functools import wraps
-from src.common.constants import MapPoint
+from src.common.constants import MapPoint, Path
 
 #################################
 #       Global Variables        #
@@ -21,6 +21,8 @@ player_moving = False
 
 # Represents the current path that the bot is taking
 path = []
+
+current_path: Path | None = None
 
 invisible = False
 stage_fright = False
