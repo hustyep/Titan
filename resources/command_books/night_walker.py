@@ -1026,11 +1026,11 @@ def find_fall_point(start: MapPoint, target: MapPoint):
             if start.x in available_x:
                 return MapPoint(start.x, platform_target.y, 3)
             else:
-                nearest_x = sys.maxsize
-                for x in available_x:
-                    if abs(start.x - x) < abs(start.x - nearest_x):
-                        nearest_x = x
-                return MapPoint(nearest_x, start.y, 3)
+                next_p = point_of_intersection(platform_start, platform_target)
+                assert next_p
+                if target_reached(start, next_p):
+                    next_p.tolerance = 0
+                return next_p
 
 
 def find_jump_down_point(start: MapPoint, target: MapPoint):
