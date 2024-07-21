@@ -551,7 +551,7 @@ class Jump_Around(Command):
     def main(self, wait=True):
         direction = self.direction
         key_down(direction)
-        press(DefaultKeybindings.JUMP, 2, 0.03, 0.02)
+        press(DefaultKeybindings.JUMP, 2, 0.02, 0.02)
         key_up(direction)
         time.sleep(0.01)
         key_down(opposite_direction(direction))
@@ -569,16 +569,16 @@ class Walk_Around(Command):
         if not plat:
             return False
         direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
-        press(direction, down_time=randrange(1, 2))
+        press(direction, down_time=1 * random())
         return True
 
 
 class Random_Action(Command):
     def main(self, wait=True):
         match randrange(0, 3):
-            case 0:
-                Jump_Around().execute()
-            case 1:
+            # case 0:
+            #     Jump_Around().execute()
+            case 0, 1:
                 Jump(0.2, attack=True).execute()
             case 2:
                 Walk_Around().execute()
@@ -631,7 +631,7 @@ class SolveRune(Command):
             return -1, capture.frame
         bot_status.rune_solving = True
         Move(x=self.target.x, y=self.target.y, tolerance=1).execute()
-        time.sleep(0.5)
+        time.sleep(0.3)
         sleep_in_the_air(n=50)
         # Inherited from Configurable
         bot_status.acting = True
@@ -640,7 +640,7 @@ class SolveRune(Command):
         print('\nSolving rune:')
         used_frame = None
         find_solution = False
-        for i in range(4):
+        for i in range(3):
             frame = capture.frame
             solution = rune.show_magic(frame)
             if solution is None:
