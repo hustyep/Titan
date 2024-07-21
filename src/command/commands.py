@@ -567,8 +567,8 @@ class Walk_Around(Command):
         if not plat:
             return False
         direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
-        press(direction, down_time=randrange(3, 5))
-        press(opposite_direction(direction), down_time=randrange(3, 5))
+        press(direction, down_time=randrange(1, 2))
+        press(opposite_direction(direction), down_time=randrange(1, 2))
         return True
 
 
