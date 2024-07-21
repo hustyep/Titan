@@ -205,7 +205,7 @@ class Map:
             if point == start:
                 continue
             if abs(point.y - last.y) > 5:
-                result += 80
+                result += 150
             else:
                 result += abs(point.x - last.x)
         return result

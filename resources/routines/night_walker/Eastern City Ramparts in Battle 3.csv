@@ -17,11 +17,11 @@ $, target=move_tolerance, value=10
     Buff
     Potion
     FeedPet
-    Phalanx_Charge
+    Phalanx_Charge, direction=none
 
 ~, label=pickup, interval=120, skip=False
 *, x=59, y=53, interval=0, tolerance=5, detect=False, skip=False
     Dark_Omen
 *, x=14, y=68, interval=0, tolerance=8, detect=False, skip=False
-*, x=31, y=38, interval=0, tolerance=8, detect=False, skip=False
+*, x=36, y=38, interval=0, tolerance=3, detect=False, skip=False
 *, x=112, y=38, interval=0, tolerance=8, detect=False, skip=False

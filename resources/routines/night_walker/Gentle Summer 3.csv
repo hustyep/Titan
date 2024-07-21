@@ -1,6 +1,6 @@
 $, target=move_tolerance, value=10
 
-~, label=Summon Loop, interval=40, skip=False
+~, label=Summon Loop, interval=42, skip=False
 *, x=43, y=54, interval=0, tolerance=5, detect=False, skip=False
     Greater_Dark_Servant
 *, x=142, y=53, interval=0, tolerance=3, detect=False, skip=False
