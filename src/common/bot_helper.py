@@ -220,7 +220,7 @@ def identify_map_name():
 
     available_map_names = get_available_map_names()
     for name in available_map_names:
-        name_image = cv2.imread(name+'.png')
+        name_image = cv2.imread('resources/maps/minimap_name/'+name+'.png')
         if utils.multi_match(capture.map_name_frame, name_image):
             return name
 
