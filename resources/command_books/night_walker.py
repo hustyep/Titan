@@ -714,7 +714,7 @@ class Detect_Around_Anchor(Command):
             if time.time() - start > 7:
                 utils.log_event("Detect_Around_Anchor timeout", bot_settings.debug)
                 break
-            if random() <= 0.3 and not acted:
+            if random() < 0.1 and not acted:
                 Random_Action().execute()
                 acted = True
             else:

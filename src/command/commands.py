@@ -551,9 +551,14 @@ class Jump_Around(Command):
     def main(self, wait=True):
         direction = self.direction
         key_down(direction)
-        press(DefaultKeybindings.JUMP, 2)
-        Attack().execute()
+        press(DefaultKeybindings.JUMP, 2, 0.03, 0.02)
         key_up(direction)
+        time.sleep(0.01)
+        key_down(opposite_direction(direction))
+        time.sleep(0.01)
+        press(DefaultKeybindings.JUMP)
+        key_up(opposite_direction(direction))
+        Attack().execute()
         sleep_in_the_air()
         return True
 
