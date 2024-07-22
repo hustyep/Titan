@@ -180,7 +180,7 @@ class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
-    cooldown = 0.5
+    cooldown = 0.2
     backswing = 0
     move_range = range(26, 47)
     config = {
@@ -612,8 +612,12 @@ class Shadow_Attack(Command):
             return False
 
         if bot_status.elite_boss_detected:
-            Direction(opposite_direction(self.direction)).execute()
-            Burst().execute()
+            start_time = time.time()
+            while bot_status.elite_boss_detected:
+                Burst().execute()
+                if time.time() - start_time >= 20:
+                    break
+            return True
 
         start_time = time.time()
         if start_time - Shadow_Bite.castedTime > 5 and not bot_status.elite_boss_detected:
@@ -639,20 +643,14 @@ class Shadow_Attack(Command):
             Dark_Omen().execute()
             n = 3
         else:
-            n = 3 if bot_status.elite_boss_detected else 0
+            n = 0
             self.__class__.castedTime = time.time() - 4
 
         direction = self.direction
         if direction is None:
             direction = random_direction()
         if n > 0:
-            if bot_status.elite_boss_detected:
-                p = bot_status.player_pos
-                plat = shared_map.platform_of_point(p)
-                assert (plat)
-                Direction("left" if p.x - plat.begin_x > plat.end_x - p.x else "right").execute()
-            else:
-                Direction(direction).execute()
+            Direction(direction).execute()
             key_down(Keybindings.Quintuple_Star)
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)
@@ -664,19 +662,34 @@ class Shadow_Attack(Command):
 
 class Pre_Burst(Command):
     def main(self, wait=True):
+        Dominion().execute()
+        p = shared_map.platform_point(bot_status.player_pos)
+        plat = shared_map.platform_of_point(p)
+        assert (plat)
+        if p.x - plat.begin_x <= plat.end_x - p.x:
+            Move(plat.begin_x + 3, plat.y, 3).execute()
+        else:
+            Move(plat.end_x - 3, plat.y, 3).execute()
         Shadow_Spear().execute()
         Shadow_Illusion().execute()
         if time.time() - self.castedTime > 30:
             Replace_Dark_Servant(resummon='True').execute()
         self.castedTime = time.time()
+        while not bot_status.elite_boss_detected:
+            Shadow_Attack().execute()
+            if time.time() - self.castedTime > 5:
+                break
         return True
 
 
 class Burst(Command):
     def main(self, wait=True):
+        p = bot_status.player_pos
+        plat = shared_map.platform_of_point(p)
+        assert (plat)
+        Direction("left" if p.x - plat.begin_x > plat.end_x - p.x else "right").execute()
         Shadow_Bite().execute()
         Silence().execute()
-        Dominion().execute()
         Quintuple_Star().execute()
         Rapid_Throw().execute()
         Quintuple_Star().execute()
@@ -684,23 +697,12 @@ class Burst(Command):
         return True
 
 
-class Detect_Around_Anchor(Command):
-    def __init__(self, count=1, x=0, y=0, top=315, bottom=0, left=500, right=500):
+class Detect_Mobs(Command):
+    def __init__(self, count=1):
         super().__init__(locals())
         self.count = int(count)
-        self.x = int(x)
-        self.y = int(y)
-        self.top = int(top)
-        self.bottom = int(bottom)
-        self.left = int(left)
-        self.right = int(right)
 
     def main(self, wait=True):
-        if self.x == 0 and self.y == 0:
-            anchor = bot_helper.locate_player_fullscreen(accurate=True)
-        else:
-            anchor = (self.x, self.y)
-
         if bot_helper.check_blind():
             # chat_bot.send_message("blind", capture.frame)
             if Cygnus_Knights_Will.canUse():
@@ -709,25 +711,30 @@ class Detect_Around_Anchor(Command):
                 Will_of_Erda().execute()
 
         start = time.time()
-        acted = random() < 0.3
+        need_act = random() < 0.3
+        mobs_count = -1
         while True:
-            mobs = detect_mobs_around_anchor(
-                anchor=anchor,
-                insets=AreaInsets(
-                    top=self.top, bottom=self.bottom, left=self.left, right=self.right),
-                multy_match=self.count > 1,
-                debug=False)
-            utils.log_event(f"mobs count = {len(mobs)}", bot_settings.debug)
-            if len(mobs) >= self.count or bot_status.elite_boss_detected:
-                break
-            if time.time() - start > 7:
-                utils.log_event("Detect_Around_Anchor timeout", bot_settings.debug)
-                break
-            if acted:
-                Random_Action().execute()
-                acted = False
+            if capture.frame is None:
+                time.sleep(0.1)
             else:
-                time.sleep(0.3)
+                mobs = detect_mobs(
+                    capture.frame,
+                    multy_match=self.count > 1,
+                    debug=False)
+                if mobs_count != len(mobs):
+                    mobs_count = len(mobs)
+                    utils.log_event(f"mobs count = {mobs_count}", bot_settings.debug)
+                if mobs_count >= self.count or bot_status.elite_boss_detected:
+                    break
+                if time.time() - start >= 7:
+                    utils.log_event("Detect_Mobs timeout", bot_settings.debug)
+                    bot_status.prepared = False
+                    break
+                if need_act:
+                    Random_Action().execute()
+                    need_act = False
+                else:
+                    time.sleep(0.1)
         return True
 
 ###################
@@ -955,6 +962,14 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     else:
         target_x = (target_range.start + target_range.stop) / 2
         tolerance = (target_range.stop - target_range.start) / 2
+        if platform_start.end_x < platform_target.begin_x:
+            if abs(target_range.start - start.x) <= 10 and abs(platform_start.end_x - start.x) > 14:
+                target_x = platform_start.end_x - 4
+                tolerance = 4
+        else:
+            if abs(target_range.stop - start.x) <= 10 and abs(platform_start.begin_x - start.x) > 14:
+                target_x = platform_start.begin_x + 4
+                tolerance = 4
         return MapPoint(int(target_x), start.y, int(tolerance))
 
 

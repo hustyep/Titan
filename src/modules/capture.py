@@ -42,6 +42,7 @@ class Capture(Subject):
         self.lost_player_time = 0
 
         self.lost_time_threshold = 1
+        self.pos_update_time_threshold = 45
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -181,6 +182,8 @@ class Capture(Subject):
             new_pos = self.convert_to_relative_minimap_point(player[0])
             if new_pos.x != bot_status.player_pos.x:
                 self.pos_update_time = time.time()
+            elif time.time() - self.pos_update_time >= self.pos_update_time_threshold:
+                self.on_next((BotWarnning.NO_MOVEMENT, time.time() - self.pos_update_time))
             bot_status.player_moving = time.time() - self.pos_update_time < 0.3
             bot_status.player_pos = new_pos
             self.lost_player_time = 0
@@ -191,8 +194,9 @@ class Capture(Subject):
                 if self.lost_player_time == 0:
                     self.lost_player_time = now
                 if now - self.lost_player_time >= self.lost_time_threshold:
-                    self.on_next(
-                        (BotError.LOST_PLAYER, now - self.lost_player_time))
+                    self.on_next((BotError.LOST_PLAYER, now - self.lost_player_time))
+            else:
+                self.lost_player_time = 0
 
         self.frame = new_frame
         self.minimap_display = minimap

@@ -8,7 +8,7 @@ $, target=move_tolerance, value=10
     ErdaShower, direction=right
     Replace_Dark_Servant, resummon=False
 *, x=113, y=48, interval=0, tolerance=3, detect=False, skip=False
-    Detect_Around_Anchor, count=1, x=710, y=520, top=500, bottom=180, left=650, right=650
+    Detect_Mobs, count=1
     Shadow_Attack, direction=right
     Replace_Dark_Servant, resummon=True
 *, x=118, y=23, interval=0, tolerance=12, detect=False, skip=False
@@ -17,7 +17,7 @@ $, target=move_tolerance, value=10
 
 @, label=Bottom mobbing
 *, x=113, y=48, interval=0, tolerance=3, detect=False, skip=False
-    Detect_Around_Anchor, count=1, x=650, y=520, top=50, bottom=180, left=600, right=600
+    Detect_Mobs, count=1
     Shadow_Attack, direction=right
     Buff
     Potion
