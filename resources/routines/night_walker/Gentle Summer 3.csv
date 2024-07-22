@@ -22,11 +22,10 @@ $, target=move_tolerance, value=10
 ~, label=pickup, interval=120, skip=False
 *, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
     Dark_Omen
-*, x=18, y=39, interval=0, tolerance=8, detect=False, skip=False
-*, x=70, y=39, interval=0, tolerance=8, detect=False, skip=False
-*, x=70, y=54, interval=0, tolerance=8, detect=False, skip=False
-*, x=70, y=67, interval=0, tolerance=8, detect=False, skip=False
+*, x=18, y=67, interval=0, tolerance=8, detect=False, skip=False
 *, x=165, y=67, interval=0, tolerance=8, detect=False, skip=False
+    Wait, duration=0.5
     Fall
     Wait, duration=0.65
+*, x=70, y=39, interval=0, tolerance=8, detect=False, skip=False
 #
