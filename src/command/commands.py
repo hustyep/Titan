@@ -657,20 +657,20 @@ class SolveRune(Command):
             print('Solution found, entering result')
             print(', '.join(solution))
             used_frame = frame
-            find_solution = True
             for arrow in solution:
                 press(arrow, 1, down_time=0.1)
-
         bot_status.acting = False
-        if find_solution:
-            # 成功激活，识别出结果，待进一步判断
-            bot_status.rune_solving = False
-            return 1, used_frame
-        elif len(bot_helper.rune_buff_match(capture.frame)) > 0:
+        time.sleep(0.3)
+        buff_count = len(bot_helper.rune_buff_match(capture.frame))
+        if buff_count == 1:
             # 成功激活，识别失败
             self.__class__.castedTime = time.time()
             bot_status.rune_solving = False
             return -1, used_frame
+        elif buff_count > 1:
+            # 成功激活，识别出结果，待进一步判断
+            bot_status.rune_solving = False
+            return 1, used_frame
         else:
             # 未成功激活
             time.sleep(0.5)
