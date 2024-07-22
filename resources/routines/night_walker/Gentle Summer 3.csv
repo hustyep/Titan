@@ -12,7 +12,7 @@ $, target=move_tolerance, value=10
 
 @, label=Bottom mobbing
 *, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
-    Detect_Mobs, count=1
+    Detect_Mobs, count=2
     Shadow_Attack
     Buff
     Potion
