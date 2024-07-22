@@ -727,7 +727,8 @@ class Detect_Mobs(Command):
                 if mobs_count >= self.count or bot_status.elite_boss_detected:
                     break
                 if time.time() - start >= 7:
-                    utils.log_event("Detect_Around_Anchor timeout", bot_settings.debug)
+                    utils.log_event("Detect_Mobs timeout", bot_settings.debug)
+                    bot_status.prepared = False
                     break
                 if need_act:
                     Random_Action().execute()

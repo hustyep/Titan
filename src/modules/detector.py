@@ -150,8 +150,14 @@ class Detector(Subject):
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 220) // 2
         ok_btn = utils.multi_match(
-            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.8)
         if ok_btn:
+            hid.key_press('esc')
+            time.sleep(0.1)
+            return
+        cancel_btn = utils.multi_match(
+            frame[y:y+220, x:x+260], BUTTON_CANCEL_TEMPLATE, threshold=0.8)
+        if cancel_btn:
             hid.key_press('esc')
             time.sleep(0.1)
             return
@@ -169,6 +175,7 @@ class Detector(Subject):
         if confirm_btn:
             hid.key_press('esc')
             time.sleep(0.1)
+            return
 
         chat_btn = utils.multi_match(
             frame, CHAT_MINI_TEMPLATE, threshold=0.9)
@@ -181,11 +188,13 @@ class Detector(Subject):
         if setting_btn:
             hid.key_press('esc')
             time.sleep(0.1)
+            return
 
         inventory = utils.multi_match(frame, INVENTORY_MESO_TEMPLATE)
         if inventory:
             hid.key_press('esc')
             time.sleep(0.1)
+            return
 
     def check_init(self):
         if capture.frame is None:
