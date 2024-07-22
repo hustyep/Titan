@@ -49,7 +49,7 @@ class Notifier(Subject):
         noticed_time = self.notice_time_record.get(event, 0)
         # utils.log_event(f'[{event.value}] {info}', need_print=False)
 
-        if noticed_time == 0 or now - noticed_time >= 5:
+        if noticed_time == 0 or now - noticed_time >= (3 if event == BotWarnning.RUNE_FAILED else 20):
             self.notice_time_record[event] = now
             event_type = type(event)
             if event_type == BotFatal:
