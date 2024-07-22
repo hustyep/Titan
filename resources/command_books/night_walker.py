@@ -180,7 +180,7 @@ class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.Shadow_Jump
     type = SkillType.Move
-    cooldown = 0.6
+    cooldown = 0.5
     backswing = 0
     move_range = range(26, 47)
     config = {
@@ -604,8 +604,6 @@ class Shadow_Attack(Command):
     def __init__(self, direction=None):
         super().__init__(locals())
         self.direction = bot_settings.validate_horizontal_arrows(direction)
-        if self.direction is None:
-            self.direction = 'right' if random() <= 0.5 else 'left'
 
     def main(self, wait=True):
         assert (shared_map.current_map)
@@ -644,6 +642,9 @@ class Shadow_Attack(Command):
             n = 3 if bot_status.elite_boss_detected else 0
             self.__class__.castedTime = time.time() - 4
 
+        direction = self.direction
+        if direction is None:
+            direction = random_direction()
         if n > 0:
             if bot_status.elite_boss_detected:
                 p = bot_status.player_pos
@@ -651,7 +652,7 @@ class Shadow_Attack(Command):
                 assert (plat)
                 Direction("left" if p.x - plat.begin_x > plat.end_x - p.x else "right").execute()
             else:
-                Direction(self.direction).execute()
+                Direction(direction).execute()
             key_down(Keybindings.Quintuple_Star)
             time.sleep(n)
             key_up(Keybindings.Quintuple_Star)
@@ -1027,11 +1028,11 @@ def find_fall_point(start: MapPoint, target: MapPoint):
             if start.x in available_x:
                 return MapPoint(start.x, platform_target.y, 3)
             else:
-                nearest_x = sys.maxsize
-                for x in available_x:
-                    if abs(start.x - x) < abs(start.x - nearest_x):
-                        nearest_x = x
-                return MapPoint(nearest_x, start.y, 3)
+                next_p = point_of_intersection(platform_start, platform_target)
+                assert next_p
+                if target_reached(start, next_p):
+                    next_p.tolerance = 0
+                return next_p
 
 
 def find_jump_down_point(start: MapPoint, target: MapPoint):
