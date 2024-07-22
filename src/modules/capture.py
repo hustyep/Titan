@@ -42,7 +42,7 @@ class Capture(Subject):
         self.lost_player_time = 0
 
         self.lost_time_threshold = 1
-        self.pos_update_time_threshold = 50
+        self.pos_update_time_threshold = 120
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
