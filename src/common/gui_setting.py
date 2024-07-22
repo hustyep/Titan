@@ -3,14 +3,17 @@ from src.common.constants import BotRunMode
 
 class AutoSettings(Configurable):
     DEFAULT_CONFIG = {
-        'MVP': False,
+        'Action': False,
         'Ask': False,
         'Mining': False,
         'Load Map': True,
         'Login': True,
-        'Cube': False,
         'Channel': 33,
     }
+    
+    @property
+    def action(self):
+        return bool(self.get('Action'))
 
     @property
     def mining(self):
@@ -23,10 +26,6 @@ class AutoSettings(Configurable):
     @property
     def auto_login(self):
         return self.get('Login')
-
-    @property
-    def cube(self):
-        return self.get('Cube')
     
     @property
     def auto_login_channel(self):
