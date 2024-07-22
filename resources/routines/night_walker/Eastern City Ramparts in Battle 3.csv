@@ -1,18 +1,19 @@
 $, target=move_tolerance, value=10
 
 ~, label=Summon Loop, interval=40, skip=False
-*, x=59, y=53, interval=0, tolerance=5, detect=False, skip=False
+*, x=63, y=53, interval=0, tolerance=5, detect=False, skip=False
     Greater_Dark_Servant
-*, x=154, y=40, interval=0, tolerance=3, detect=False, skip=False
+*, x=116, y=53, interval=0, tolerance=3, detect=False, skip=False
     Wait, duration=0.3
-    ErdaShower, direction=left
-*, x=171, y=68, interval=0, tolerance=12, detect=False, skip=False
+    ErdaShower, direction=right
+*, x=153, y=40, interval=0, tolerance=6, detect=False, skip=False
+*, x=145, y=23, interval=0, tolerance=5, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
 #
 
 @, label=Bottom mobbing
-*, x=59, y=53, interval=0, tolerance=5, detect=False, skip=False
-    Detect_Mobs, count=1
+*, x=63, y=53, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=2
     Shadow_Attack
     Buff
     Potion
@@ -20,8 +21,8 @@ $, target=move_tolerance, value=10
     Phalanx_Charge, direction=none
 
 ~, label=pickup, interval=120, skip=False
-*, x=59, y=53, interval=0, tolerance=5, detect=False, skip=False
+*, x=64, y=53, interval=0, tolerance=5, detect=False, skip=False
     Dark_Omen
+*, x=36, y=38, interval=0, tolerance=5, detect=False, skip=False
 *, x=14, y=68, interval=0, tolerance=8, detect=False, skip=False
-*, x=36, y=38, interval=0, tolerance=3, detect=False, skip=False
-*, x=112, y=38, interval=0, tolerance=8, detect=False, skip=False
+*, x=122, y=68, interval=0, tolerance=5, detect=False, skip=False
