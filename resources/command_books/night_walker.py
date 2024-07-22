@@ -709,7 +709,7 @@ class Detect_Around_Anchor(Command):
                 Will_of_Erda().execute()
 
         start = time.time()
-        acted = random() < 0.5
+        acted = random() < 0.3
         while True:
             mobs = detect_mobs_around_anchor(
                 anchor=anchor,
@@ -928,7 +928,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
 
 def find_new_path(start: MapPoint, target: MapPoint):
     new_path = Path([], start, target)
-    plats = shared_map.path_between(start, target, bot_status.stage_fright)
+    plats = shared_map.path_between(start, target, bot_status.stage_fright and gui_setting.auto.action)
     new_path.routes = plats
     utils.log_event(f"[find_new_path] {start.tuple} => {target.tuple}:\n {str(new_path)}", bot_settings.debug)
     

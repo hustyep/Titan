@@ -205,9 +205,9 @@ class Map:
             if point == start:
                 continue
             if abs(point.y - last.y) > 5:
-                result += 150
-            else:
-                result += abs(point.x - last.x)
+                result += 50
+            result += abs(point.x - last.x)
+            last = point
         return result
 
     def add_start_point(self, point: MapPoint):

@@ -282,8 +282,8 @@ class MapModel:
         reachable_plats = self.single_path[platform_start]
         result: List[Path] = []
         for plat in reachable_plats:
-            # if path and plat in path.routes:
-            #     continue
+            if path and plat in path.routes:
+                continue
             # if dy == 0:
             #     if plat.y != platform_start.y:
             #         continue
