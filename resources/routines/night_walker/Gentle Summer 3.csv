@@ -8,6 +8,9 @@ $, target=move_tolerance, value=10
     ErdaShower, direction=left
 *, x=170, y=28, interval=0, tolerance=12, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
+*, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=1
+    Shadow_Attack
 #
 
 @, label=Bottom mobbing
@@ -28,4 +31,7 @@ $, target=move_tolerance, value=10
     Fall
     Wait, duration=0.65
 *, x=70, y=39, interval=0, tolerance=8, detect=False, skip=False
+*, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=1
+    Shadow_Attack
 #
