@@ -551,6 +551,7 @@ class Jump_Around(Command):
     def main(self, wait=True):
         direction = self.direction
         key_down(direction)
+        time.sleep(0.01)
         press(DefaultKeybindings.JUMP, 2, 0.02, 0.02)
         key_up(direction)
         time.sleep(0.01)
@@ -558,8 +559,9 @@ class Jump_Around(Command):
         sleep_in_the_air()
         key_down(opposite_direction(direction))
         time.sleep(0.01)
-        press(DefaultKeybindings.JUMP)
+        press(DefaultKeybindings.JUMP, 2, 0.02, 0.02)
         key_up(opposite_direction(direction))
+        time.sleep(0.01)
         Attack().execute()
         sleep_in_the_air()
         return True
@@ -571,7 +573,7 @@ class Walk_Around(Command):
         if not plat:
             return False
         direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
-        walk_time = down_time=1 * random()
+        walk_time = 1 * random()
         press(direction, down_time=walk_time)
         Attack().execute()
         press(opposite_direction(direction), down_time=walk_time)
@@ -580,14 +582,15 @@ class Walk_Around(Command):
 
 class Random_Action(Command):
     def main(self, wait=True):
-        match randrange(0, 3):
-            # case 0:
-            #     Jump_Around().execute()
+        match randrange(0, 4):
             case 0:
-                Jump(0.2, attack=True).execute()
+                Jump_Around().execute()
             case 1:
-                Jump(0.1, attack=True).execute()
+                Jump(0.2, attack=True).execute()
             case 2:
+                Jump(0.1, attack=True).execute()
+                Jump(0.1, attack=True).execute()
+            case 3:
                 Walk_Around().execute()
         return True
 
@@ -595,9 +598,9 @@ class Random_Action(Command):
 class Collect_Boss_Essence(Command):
     def main(self, wait=True):
         Walk_Around().execute()
-        time.sleep(0.5)
+        time.sleep(0.1)
         Fall().execute()
-        time.sleep(0.2)
+        time.sleep(0.1)
         Jump_Around().execute()
         return True
 

@@ -709,7 +709,7 @@ class Detect_Around_Anchor(Command):
                 Will_of_Erda().execute()
 
         start = time.time()
-        acted = random() < 0.5
+        acted = random() < 0.3
         while True:
             mobs = detect_mobs_around_anchor(
                 anchor=anchor,
