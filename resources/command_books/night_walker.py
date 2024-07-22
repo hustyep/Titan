@@ -870,38 +870,48 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if shared_map.current_map is None:
         return target
 
-    if target_reached(start, target):
-        return
-
     start = shared_map.fixed_point(start)
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
 
     if not platform_start or not platform_target:
         return
-
+    if target_reached(start, target):
+        return
     if platform_start == platform_target:
         return target
 
     current_path = bot_status.current_path
+    if current_path:
+        current_plat = current_path.current_plat
+        next_plat = current_path.next_plat
+        if not current_plat or not next_plat:
+            current_path = None
+        else:
+            if current_plat.own_point(start):
+                pass
+            elif next_plat.own_point(start):
+                current_path.current_step += 1
+            else:
+                current_path = None
+            
+
     if not current_path:
-        new_path = Path([], start, target)
-        plats = shared_map.path_between(start, target, bot_status.stage_fright)
-        new_path.routes = plats
-        utils.log_event(f"[find_new_path] {start.tuple} => {target.tuple}:\n {str(new_path)}", bot_settings.debug)
+        new_path = find_new_path(start, target)
         bot_status.current_path = new_path
 
-    if current_path and current_path.next_plat:
+    if current_path and current_path.steps >= 2:
+        assert current_path.next_plat
         d_y = current_path.next_plat.y - platform_start.y
         tmp_p = current_path.next_plat.center
-        # if len(paths) == 2:
-        #     portal = shared_map.current_map.platform_portable(platform_start, platform_target)
-        #     if portal:
-        #         if target_reached(start, portal.entrance):
-        #             return portal.export
-        #         else:
-        #             return portal.entrance
-        #     tmp_p = target
+        if current_path.steps == 2:
+            # portal = shared_map.current_map.platform_portable(platform_start, platform_target)
+            # if portal:
+            #     if target_reached(start, portal.entrance):
+            #         return portal.export
+            #     else:
+            #         return portal.entrance
+            tmp_p = target
         if abs(d_y) <= 5:
             next_p = find_next_horizontal_point(start, tmp_p)
             if next_p:
@@ -916,7 +926,12 @@ def find_next_point(start: MapPoint, target: MapPoint):
                 return next_p
     return shared_map.platform_point(MapPoint(target.x, target.y - 1, 3))
 
-
+def find_new_path(start: MapPoint, target: MapPoint):
+    new_path = Path([], start, target)
+    plats = shared_map.path_between(start, target, bot_status.stage_fright)
+    new_path.routes = plats
+    utils.log_event(f"[find_new_path] {start.tuple} => {target.tuple}:\n {str(new_path)}", bot_settings.debug)
+    
 def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     # if start.y != target.y:
     #     return
