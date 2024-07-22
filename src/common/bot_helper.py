@@ -84,7 +84,6 @@ def detect_mobs(
             for mob in mobs_tmp:
                 mobs.append(mob)
                 if not multy_match:
-                    print(f"mobs count = {len(mobs)}")
                     return mobs
     return mobs
 
