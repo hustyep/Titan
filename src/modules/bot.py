@@ -264,8 +264,8 @@ class Bot(Subject):
                     self.toggle(False, event_type.value)
         elif isinstance(event_type, BotWarnning):
             match event_type:
-                # case BotWarnning.NO_MOVEMENT:
-                #     bot_action.jump_down()
+                case BotWarnning.NO_MOVEMENT:
+                    chat_bot.voice_call()
                 case BotWarnning.OTHERS_STAY_OVER_30S:
                     if shared_map.current_map and not shared_map.current_map.instance:
                         words = ['cc pls', 'cc pls ', ' cc pls']

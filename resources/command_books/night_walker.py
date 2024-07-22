@@ -712,7 +712,7 @@ class Detect_Mobs(Command):
 
         start = time.time()
         need_act = random() < 0.3
-        mobs_count = 0
+        mobs_count = -1
         while True:
             if capture.frame is None:
                 time.sleep(0.1)
