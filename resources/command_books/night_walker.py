@@ -904,8 +904,8 @@ def find_next_point(start: MapPoint, target: MapPoint):
             
 
     if not current_path:
-        new_path = find_new_path(start, target)
-        bot_status.current_path = new_path
+        current_path = find_new_path(start, target)
+        bot_status.current_path = current_path
 
     if current_path and current_path.steps >= 2:
         assert current_path.next_plat
@@ -940,8 +940,9 @@ def find_new_path(start: MapPoint, target: MapPoint):
     utils.log_event(f"[find_new_path] {start.tuple} => {target.tuple}:\n {str(new_path)}", bot_settings.debug)
     
 def find_next_horizontal_point(start: MapPoint, target: MapPoint):
-    # if start.y != target.y:
-    #     return
+    if abs(start.y - target.y) > 5:
+        utils.log_event("find_next_horizontal_point error")
+        return
 
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
@@ -954,9 +955,9 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     max_distance = Max_Jumpable_Gap
     target_range = None
     if platform_start.end_x < platform_target.begin_x:
-        target_range = range(platform_target.begin_x - max_distance, platform_start.end_x + 1)
+        target_range = range(max(platform_target.begin_x - max_distance, platform_start.begin_x), platform_start.end_x + 1)
     else:
-        target_range = range(platform_start.begin_x, platform_target.end_x + max_distance + 1)
+        target_range = range(platform_start.begin_x, min(platform_target.end_x + max_distance, platform_start.end_x) + 1)
     if start.x in target_range:
         return target
     else:
