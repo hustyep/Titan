@@ -141,6 +141,7 @@ def climb_rope(isUP=True):
             click_key('s')
             release_key(direction)
             sleep_in_the_air(n=2)
+            bot_status.acting = False
             return
 
     press_key(key)
@@ -232,6 +233,7 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
         mouse_left_click(delay=0.3)
         frame = capture.frame
         if frame is None:
+            bot_status.acting = False
             return False
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
@@ -249,6 +251,7 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
         else:
             click_key('esc', delay=0.1)
             click_key('esc', delay=0.1)
+            bot_status.acting = False
             return teleport_to_map(map_name, retried_count+1)
     else:
         print("[error]cant open teleport stone")
@@ -267,6 +270,7 @@ def teleport_random_town(retried_count=0, max_retry_count=3):
         if not mouse_move(TELEPORT_STONE_SHOW_TOWNS_TEMPLATE):
             print("[error]cant fined TELEPORT_STONE_SHOW_TOWNS_TEMPLATE")
             mouse_move_relative(-20, 20)
+            bot_status.acting = False
             return teleport_random_town(retried_count+1)
         mouse_left_click()
         press_key("down")
@@ -277,11 +281,13 @@ def teleport_random_town(retried_count=0, max_retry_count=3):
         if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
             print("[error]cant find move button")
             mouse_move_relative(-20, 20)
+            bot_status.acting = False
             return teleport_random_town(retried_count+1)
         mouse_left_click(delay=0.3)
         frame = capture.frame
         if frame is None:
             time.sleep(0.3)
+            bot_status.acting = False
             return teleport_random_town(retried_count+1)
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
@@ -295,10 +301,12 @@ def teleport_random_town(retried_count=0, max_retry_count=3):
         else:
             click_key('esc', delay=0.1)
             click_key('esc')
+            bot_status.acting = False
             return teleport_random_town(retried_count+1)
     else:
         print("[error]cant open teleport stone")
         mouse_move_relative(-20, 20)
+        bot_status.acting = False
         return teleport_random_town(retried_count+1)
 
 
@@ -339,6 +347,7 @@ def _change_channel(num: int = 0, instance=True) -> None:
 
     frame = capture.frame
     if frame is None:
+        bot_status.acting = False
         return
     x = (frame.shape[1] - 260) // 2
     y = (frame.shape[0] - 220) // 2
@@ -348,11 +357,13 @@ def _change_channel(num: int = 0, instance=True) -> None:
         click_key('esc')
         time.sleep(1)
         _change_channel(num, instance)
+        bot_status.acting = False
         return
 
     wait_until_map_changed()
 
     if not bot_status.enabled:
+        bot_status.acting = False
         return
 
     chat_bot.send_message('channel changed', capture.frame)
@@ -362,6 +373,7 @@ def _change_channel(num: int = 0, instance=True) -> None:
         bot_status.acting = False
     else:
         _change_channel(num, instance)
+        bot_status.acting = False
 
 
 @bot_status.run_if_enabled
@@ -528,22 +540,6 @@ def stop_game():
     release_key('alt', 0.5)
     click_key('enter', 10)
     hid.consumer_sleep()
-
-
-@bot_status.run_if_enabled
-def take_daily_quest():
-    bot_status.acting = True
-    mouse_move(QUEST_BUBBLE_TEMPLATE,
-               Rect(0, 200, 100, 100),
-               YELLOW_RANGES)
-    mouse_left_click(delay=0.3)
-    click_key('down')
-    click_key(
-        bot_settings.SystemKeybindings.INTERACT, delay=0.3)
-    click_key('y', delay=0.3)
-    click_key(
-        bot_settings.SystemKeybindings.INTERACT, delay=0.3)
-    bot_status.acting = False
 
 
 def handle_white_room():

@@ -646,36 +646,30 @@ class SolveRune(Command):
         # Inherited from Configurable
         bot_status.acting = True
         press(DefaultKeybindings.INTERACT, 1, down_time=0.3, up_time=0.5)
-
+        self.__class__.castedTime = time.time()
+        
         print('\nSolving rune:')
         used_frame = None
         find_solution = False
-        for i in range(3):
-            frame = capture.frame
-            solution = rune.show_magic(frame)
-            if solution is None:
-                return -1, frame
-            if len(solution) == 4:
-                print('Solution found, entering result')
-                print(', '.join(solution))
-                used_frame = frame
-                find_solution = True
-                for arrow in solution:
-                    press(arrow, 1, down_time=0.1)
-                self.__class__.castedTime = time.time()
-                break
-            time.sleep(0.1)
+        frame = capture.frame
+        solution = rune.show_magic(frame)
+        if solution is not None and len(solution) == 4:
+            print('Solution found, entering result')
+            print(', '.join(solution))
+            used_frame = frame
+            find_solution = True
+            for arrow in solution:
+                press(arrow, 1, down_time=0.1)
 
+        bot_status.acting = False
         if find_solution:
             # 成功激活，识别出结果，待进一步判断
             bot_status.rune_solving = False
-            bot_status.acting = False
             return 1, used_frame
         elif len(bot_helper.rune_buff_match(capture.frame)) > 0:
             # 成功激活，识别失败
             self.__class__.castedTime = time.time()
             bot_status.rune_solving = False
-            bot_status.acting = False
             return -1, used_frame
         else:
             # 未成功激活
