@@ -711,7 +711,7 @@ class Detect_Mobs(Command):
                 Will_of_Erda().execute()
 
         start = time.time()
-        need_act = random() < 0.3
+        need_act = random() < 0.1
         mobs_count = -1
         while True:
             if capture.frame is None:
