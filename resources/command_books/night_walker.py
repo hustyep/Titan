@@ -615,7 +615,7 @@ class Shadow_Attack(Command):
             start_time = time.time()
             while bot_status.elite_boss_detected:
                 Burst().execute()
-                if time.time() - start_time >= 20:
+                if time.time() - start_time >= 30:
                     break
             return True
 
