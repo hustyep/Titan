@@ -1,37 +1,46 @@
 $, target=move_tolerance, value=10
 
-~, label=Summon Loop, interval=45, skip=False
-*, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
+~, label=Summon Loop, interval=57, skip=False
+*, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
     Greater_Dark_Servant
-*, x=142, y=53, interval=0, tolerance=3, detect=False, skip=False
-    Wait, duration=0.3
-    ErdaShower, direction=left
+*, x=115, y=52, interval=0, tolerance=3, detect=False, skip=False
+    Sol_Janus, direction=right, jump=False
+*, x=157, y=53, interval=0, tolerance=3, detect=False, skip=False
+    Sol_Janus, direction=right, jump=False
 *, x=170, y=28, interval=0, tolerance=12, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
-*, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
+*, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
     Detect_Mobs, count=1
+    Shadow_Attack
+*, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
+    Detect_Mobs, count=3
     Shadow_Attack
 #
 
+~, label=Summon Loop 2, interval=50, skip=False
+*, x=28, y=23, interval=0, tolerance=3, detect=False, skip=False
+    Wait, duration=0.2
+    ErdaShower, direction=left
+#
+
 @, label=Bottom mobbing
-*, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
+*, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
     Detect_Mobs, count=3
-    Shadow_Attack
+    Shadow_Attack, direction=right
     Buff
     Potion
     FeedPet
     Phalanx_Charge, direction=right
 
 ~, label=pickup, interval=120, skip=False
-*, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
+*, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
     Dark_Omen
 *, x=18, y=67, interval=0, tolerance=8, detect=False, skip=False
 *, x=170, y=67, interval=0, tolerance=8, detect=False, skip=False
     Wait, duration=0.3
     Fall
     Wait, duration=0.65
-*, x=70, y=39, interval=0, tolerance=8, detect=False, skip=False
-*, x=53, y=54, interval=0, tolerance=5, detect=False, skip=False
+*, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
     Detect_Mobs, count=1
     Shadow_Attack
 #

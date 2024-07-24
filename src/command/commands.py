@@ -43,7 +43,7 @@ class DefaultKeybindings:
     GODDESS_BLESSING = '1'
     SolarCrest = '5'
     Will_of_Erda = 'home'
-    Sol_Janus = ''
+    Sol_Janus = 't'
 
 
 class Command():
@@ -1003,7 +1003,7 @@ class Sol_Janus(Command):
             Direction(self.direction).execute()
         if self.jump:
             press(DefaultKeybindings.JUMP)
-        press(self.key, down_time=0.8)
+        press(self.key, down_time=0.6)
         return True
 
 
