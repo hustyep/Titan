@@ -21,6 +21,9 @@ $, target=move_tolerance, value=10
 *, x=28, y=23, interval=0, tolerance=3, detect=False, skip=False
     Wait, duration=0.2
     ErdaShower, direction=left
+*, x=46, y=54, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=1
+    Shadow_Attack
 #
 
 @, label=Bottom mobbing
@@ -40,7 +43,7 @@ $, target=move_tolerance, value=10
     Wait, duration=0.3
     Fall
     Wait, duration=0.65
-*, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
+*, x=46, y=54, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=1
     Shadow_Attack
 #
