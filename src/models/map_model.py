@@ -341,7 +341,9 @@ class MapModel:
                     index = int(len(x_list)/2)
                     path_points.append(MapPoint(x_list[index], last_p.y))
                     path_points.append(MapPoint(x_list[index], plat.y))
-        path_points.append(target)
+            last_plat = plat
+        if path_points[-1].tuple != target.tuple:
+            path_points.append(target)
         return path_points
 
     def weight_of_path(self, path: Path):

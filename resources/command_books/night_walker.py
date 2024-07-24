@@ -938,9 +938,9 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     max_distance = Max_Jumpable_Gap
     target_range = None
     if platform_start.end_x < platform_target.begin_x:
-        target_range = range(platform_target.begin_x - max_distance, platform_start.end_x + 1)
+        target_range = range(max(platform_target.begin_x - max_distance, platform_start.begin_x), platform_start.end_x + 1)
     else:
-        target_range = range(platform_start.begin_x, platform_target.end_x + max_distance + 1)
+        target_range = range(platform_start.begin_x, min(platform_target.end_x + max_distance, platform_start.end_x) + 1)
     if start.x in target_range:
         return target
     else:
