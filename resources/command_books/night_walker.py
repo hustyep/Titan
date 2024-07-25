@@ -599,7 +599,7 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
-    cooldown = 4
+    cooldown = 3
 
     def __init__(self, direction=None):
         super().__init__(locals())
@@ -607,8 +607,8 @@ class Shadow_Attack(Command):
 
     def main(self, wait=True):
         assert (shared_map.current_map)
-        if not self.canUse() and not bot_status.elite_boss_detected:
-            time.sleep(0.3)
+        while not self.canUse() and not bot_status.elite_boss_detected:
+            time.sleep(0.1)
             return False
 
         if bot_status.elite_boss_detected:
@@ -620,16 +620,16 @@ class Shadow_Attack(Command):
             return True
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 4.2 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 4.5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
                 if len(mobs) == 0:
                     return False
-                if time.time() - start_time > 2:
+                if time.time() - start_time > 5:
                     break
 
-        n = 2
+        n = 0
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
@@ -641,10 +641,10 @@ class Shadow_Attack(Command):
             SolarCrest().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
-            n = 3
+            n = 2
         else:
             n = 0
-            self.__class__.castedTime = time.time() - 4
+            self.__class__.castedTime = time.time() - self.cooldown
 
         direction = self.direction
         if direction is None:
@@ -656,7 +656,7 @@ class Shadow_Attack(Command):
             key_up(Keybindings.Quintuple_Star)
             time.sleep(Quintuple_Star.backswing)
         else:
-            time.sleep(0.3)
+            time.sleep(0.5)
         return True
 
 
