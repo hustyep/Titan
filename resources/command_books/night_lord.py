@@ -381,7 +381,7 @@ class Buff(Command):
     def __init__(self):
         super().__init__(locals())
         self.buffs = [
-            Mark,
+            # Mark,
             MapleWarrior,
             MapleWorldGoddessBlessing,
             LastResort,
