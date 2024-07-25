@@ -171,7 +171,7 @@ def chenck_map_available(instance=True):
     if instance:
         start_time = time.time()
         while time.time() - start_time <= 5:
-            if detect_mobs(capture.frame):
+            if len(detect_mobs(capture.frame, multy_match=True)) >= 3:
                 return True
             others = check_others()
             if others >= 2:

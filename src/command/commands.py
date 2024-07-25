@@ -43,7 +43,8 @@ class DefaultKeybindings:
     GODDESS_BLESSING = '1'
     SolarCrest = '5'
     Will_of_Erda = 'home'
-    Sol_Janus = 't'
+    Sol_Janus_Dawn = 't'
+    Sol_Janus = 'page down'
 
 
 class Command():
@@ -647,7 +648,7 @@ class SolveRune(Command):
         bot_status.acting = True
         press(DefaultKeybindings.INTERACT, 1, down_time=0.3, up_time=0.5)
         self.__class__.castedTime = time.time()
-        
+
         print('\nSolving rune:')
         used_frame = None
         find_solution = False
@@ -895,6 +896,7 @@ class Burst(Command):
 #      Common Skill     #
 #########################
 
+
 class LastResort(Skill):
     key = DefaultKeybindings.LAST_RESORT
     cooldown = 75
@@ -984,11 +986,29 @@ class ErdaShower(Skill):
 class Sol_Janus(Command):
     key = DefaultKeybindings.Sol_Janus
     type = SkillType.Summon
+    cooldown = 3
+    precast = 0.2
+    backswing = 0.2
+
+    # 1: dusk; 2: dawn
+    def __init__(self, type: int):
+        super().__init__(locals())
+        self.type = bot_settings.validate_nonnegative_int(type)
+
+    def main(self, wait=True):
+        press(self.key)
+        press('right' if self.type == 1 else 'left')
+        return True
+
+
+class Sol_Janus_Dawn(Command):
+    key = DefaultKeybindings.Sol_Janus_Dawn
+    type = SkillType.Summon
     cooldown = 60
     precast = 0.3
     backswing = 0.6
     duration = 120
-    count = 2
+    count = 3
 
     def __init__(self, direction=None, jump=False):
         super().__init__(locals())

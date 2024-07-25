@@ -1,12 +1,15 @@
 $, target=move_tolerance, value=10
 
+*, x=46, y=54, interval=99999999999, tolerance=100, detect=False, skip=False
+    Sol_Janus, type=2
+
 ~, label=Summon Loop 1, interval=58, skip=False
 *, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
     Greater_Dark_Servant
 *, x=115, y=52, interval=0, tolerance=3, detect=False, skip=False
-    Sol_Janus, direction=right, jump=False
+    Sol_Janus_Dawn, direction=right, jump=False
 *, x=157, y=53, interval=0, tolerance=3, detect=False, skip=False
-    Sol_Janus, direction=right, jump=False
+    Sol_Janus_Dawn, direction=right, jump=False
 *, x=160, y=28, interval=0, tolerance=15, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
 *, x=46, y=54, interval=0, tolerance=15, detect=False, skip=False
