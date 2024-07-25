@@ -82,6 +82,7 @@ class WechatBot:
             return
         image = self.shot_new_msg()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
         height, width = gray.shape
         if np.count_nonzero(gray == 245) / height / width > 0.8:
             return
