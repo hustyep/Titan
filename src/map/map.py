@@ -75,7 +75,7 @@ class Map:
                         if self.point_type(MapPoint(x, y)) == MapPointType.Rope:
                             return True
             else:
-                for x in range(cur_x - 1, cur_x + 2):
+                for x in range(cur_x - 2, cur_x + 3):
                     if self.point_type(MapPoint(x, cur_y)) == MapPointType.FloorRope:
                         return True
         return False

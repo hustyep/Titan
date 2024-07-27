@@ -260,7 +260,7 @@ def evade_rope(up=False):
     if not plat:
         return
     direction = 'left' if pos.x - plat.begin_x > plat.end_x - pos.x else 'right'
-    press(direction)
+    press(direction, down_time=0.1)
     
 
 def opposite_direction(direction):
@@ -998,8 +998,8 @@ class Sol_Janus(Command):
         self.type = bot_settings.validate_nonnegative_int(type)
 
     def main(self, wait=True):
-        press(self.key, down_time=0.5, up_time=0.5)
-        press('right' if self.type == 1 else 'left', down_time=0.08)
+        press(self.key, down_time=0.5, up_time=0.2)
+        press('right' if self.type == 1 else 'left', down_time=0.06)
         return True
 
 
