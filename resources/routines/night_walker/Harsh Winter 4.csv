@@ -1,23 +1,27 @@
 $, target=move_tolerance, value=10
 
-*, x=46, y=54, interval=999999, tolerance=100, detect=False, skip=False
+*, x=78, y=61, interval=999999, tolerance=100, detect=False, skip=False
     Sol_Janus, type=1
 
 ~, label=Summon Loop, interval=45, skip=False
-*, x=61, y=54, interval=0, tolerance=5, detect=False, skip=False
+*, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
     Greater_Dark_Servant
-*, x=149, y=53, interval=0, tolerance=3, detect=False, skip=False
-    Wait, duration=0.3
+*, x=78, y=75, interval=0, tolerance=3, detect=False, skip=False
+    Fall
+    Wait, duration=0.6
+    Direction, direction=up
+    Wait, duration=0.6
+*, x=150, y=39, interval=0, tolerance=3, detect=False, skip=False
     ErdaShower, direction=left
-*, x=170, y=28, interval=0, tolerance=12, detect=False, skip=False
+*, x=150, y=75, interval=0, tolerance=12, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
-*, x=61, y=54, interval=0, tolerance=5, detect=False, skip=False
+*, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=1
     Shadow_Attack
 #
 
 @, label=Bottom mobbing
-*, x=61, y=54, interval=0, tolerance=5, detect=False, skip=False
+*, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=3
     Shadow_Attack
     Buff
