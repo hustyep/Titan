@@ -250,17 +250,18 @@ def find_first_gap(start: tuple[int, int], target: tuple[int, int]):
             return (start_x+2, start[1])
 
 
+@bot_status.run_if_enabled
 def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return
     pos = bot_status.player_pos
-    target_l = MapPoint(pos.x - 3, pos.y, 2)
-    target_r = MapPoint(pos.x + 3, pos.y, 2)
-    if shared_map.is_floor_point(target_l, count_none=False):
-        Walk(target_l).execute()
-    elif shared_map.is_floor_point(target_r, count_none=False):
-        Walk(target_r).execute()
-
+    pos = shared_map.fixed_point(pos)
+    plat = shared_map.platform_of_point(pos)
+    if not plat:
+        return
+    direction = 'left' if pos.x - plat.begin_x > plat.end_x - pos.x else 'right'
+    press(direction)
+    
 
 def opposite_direction(direction):
     if direction not in ['left', 'right', 'up', 'down']:
@@ -504,7 +505,7 @@ class Fall(Command):
         self.buff = bot_settings.validate_boolean(buff)
 
     def main(self, wait=True):
-        # evade_rope()
+        evade_rope()
         key_down('down')
         time.sleep(0.03)
         sleep_in_the_air(n=4)
@@ -612,7 +613,7 @@ class SolveRune(Command):
     :param sct:     The mss instance object with which to take screenshots.
     :return:        None
     """
-    cooldown = 8
+    cooldown = 7
     max_attempts = 3
 
     def __init__(self, target: MapPoint, attempts=0):
@@ -625,9 +626,9 @@ class SolveRune(Command):
         frame = capture.frame
         if frame is None:
             return False
-        rune_buff = bot_helper.rune_buff_match(frame)
-        if len(rune_buff) > 0:
-            return False
+        # rune_buff = bot_helper.rune_buff_match(frame)
+        # if len(rune_buff) > 0:
+        #     return False
         return super().canUse(next_t)
 
     def main(self, wait=True):  # type: ignore
@@ -643,10 +644,10 @@ class SolveRune(Command):
         bot_status.rune_solving = True
         Move(x=self.target.x, y=self.target.y, tolerance=1).execute()
         time.sleep(0.3)
-        sleep_in_the_air(n=50)
+        sleep_in_the_air(n=10)
         # Inherited from Configurable
         bot_status.acting = True
-        press(DefaultKeybindings.INTERACT, 1, down_time=0.3, up_time=0.5)
+        press(DefaultKeybindings.INTERACT, 1, down_time=0.3, up_time=0.3)
         self.__class__.castedTime = time.time()
 
         print('\nSolving rune:')
@@ -670,6 +671,7 @@ class SolveRune(Command):
             return -1, used_frame
         elif buff_count > 1:
             # 成功激活，识别出结果，待进一步判断
+            self.__class__.castedTime = time.time()
             bot_status.rune_solving = False
             return 1, used_frame
         else:
