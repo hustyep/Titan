@@ -1,6 +1,6 @@
 $, target=move_tolerance, value=10
 
-*, x=46, y=54, interval=99999999999, tolerance=100, detect=False, skip=False
+*, x=46, y=54, interval=999999, tolerance=100, detect=False, skip=False
     Sol_Janus, type=2
 
 ~, label=Summon Loop 1, interval=58, skip=False
@@ -27,9 +27,20 @@ $, target=move_tolerance, value=10
     Phalanx_Charge, direction=right
 
 ~, label=Summon Loop 2, interval=50, skip=False
-*, x=30, y=23, interval=0, tolerance=3, detect=False, skip=False
+*, x=28, y=39, interval=0, tolerance=3, detect=False, skip=False
     ErdaShower, direction=left
 *, x=46, y=54, interval=0, tolerance=15, detect=False, skip=False
     Detect_Mobs, count=1
     Shadow_Attack
+#
+
+~, label=pickup, interval=120, skip=False
+*, x=46, y=54, interval=0, tolerance=3, detect=False, skip=False
+    Dark_Omen
+*, x=18, y=67, interval=0, tolerance=8, detect=False, skip=False
+*, x=170, y=67, interval=0, tolerance=8, detect=False, skip=False
+    Wait, duration=0.1
+    Fall
+    Wait, duration=0.65
+*, x=59, y=39, interval=0, tolerance=8, detect=False, skip=False
 #

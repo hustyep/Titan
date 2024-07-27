@@ -44,7 +44,7 @@ class DefaultKeybindings:
     SolarCrest = '5'
     Will_of_Erda = 'home'
     Sol_Janus_Dawn = 't'
-    Sol_Janus = 'page down'
+    Sol_Janus = ';'
 
 
 class Command():
@@ -520,7 +520,7 @@ class Fall(Command):
         if self.buff:
             key_up('down')
             Buff().main(wait=False)  # type: ignore
-        time.sleep(0.3)
+        time.sleep(0.4)
         sleep_in_the_air(n=2, detect_rope=True)
         key_up('down')
         return True
@@ -996,8 +996,8 @@ class Sol_Janus(Command):
         self.type = bot_settings.validate_nonnegative_int(type)
 
     def main(self, wait=True):
-        press(self.key)
-        press('right' if self.type == 1 else 'left')
+        press(self.key, down_time=0.5, up_time=0.5)
+        press('right' if self.type == 1 else 'left', down_time=0.08)
         return True
 
 
