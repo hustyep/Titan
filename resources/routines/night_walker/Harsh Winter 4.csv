@@ -5,6 +5,7 @@ $, target=move_tolerance, value=10
 
 ~, label=Summon Loop, interval=45, skip=False
 *, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
+    Wait, duration=0.5
     Greater_Dark_Servant
 *, x=78, y=75, interval=0, tolerance=3, detect=False, skip=False
     Fall
@@ -12,6 +13,7 @@ $, target=move_tolerance, value=10
     Direction, direction=up
     Wait, duration=0.6
 *, x=150, y=39, interval=0, tolerance=3, detect=False, skip=False
+    Wait, duration=0.5
     ErdaShower, direction=left
 *, x=150, y=75, interval=0, tolerance=12, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
@@ -22,9 +24,29 @@ $, target=move_tolerance, value=10
 
 @, label=Bottom mobbing
 *, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
-    Detect_Mobs, count=3
+    Detect_Mobs, count=4
     Shadow_Attack
     Buff
     Potion
     FeedPet
     Phalanx_Charge, direction=right
+
+~, label=pickup1, interval=120, skip=False
+*, x=11, y=75, interval=0, tolerance=8, detect=False, skip=False
+*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
+    Detect_Mobs, count=1
+    Shadow_Attack
+*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
+    Detect_Mobs, count=4
+    Shadow_Attack
+#
+
+~, label=pickup2, interval=120, skip=False
+*, x=114, y=75, interval=0, tolerance=8, detect=False, skip=False
+*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
+    Detect_Mobs, count=1
+    Shadow_Attack
+*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
+    Detect_Mobs, count=4
+    Shadow_Attack
+#
