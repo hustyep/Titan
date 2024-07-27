@@ -326,20 +326,27 @@ class Jump_Up(Command):
         key_up('up')
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
-        if abs(dx) >= 20 or not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
+        if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
             key_down(direction)
             time.sleep(0.02)
             press(Keybindings.Shadow_Jump)
             time.sleep(0.02)
             key_up(direction)
-        elif abs(dx) >= Shadow_Dodge.move_range.start:
-            Shadow_Dodge(direction, wait=False).execute()
-        elif abs(dx) >= 8:
-            key_down(direction)
-            time.sleep(0.1)
-            press(Keybindings.Shadow_Jump)
-            time.sleep(0.05)
-            key_up(direction)
+        elif abs(dx) > self.target.tolerance:
+            if abs(dx) >= 20:
+                key_down(direction)
+                time.sleep(0.02)
+                press(Keybindings.Shadow_Jump)
+                time.sleep(0.02)
+                key_up(direction)
+            elif abs(dx) >= Shadow_Dodge.move_range.start:
+                Shadow_Dodge(direction, wait=False).execute()
+            elif abs(dx) >= 8:
+                key_down(direction)
+                time.sleep(0.1)
+                press(Keybindings.Shadow_Jump)
+                time.sleep(0.05)
+                key_up(direction)
         sleep_in_the_air(n=2, detect_rope=True)
         return True
 
@@ -883,7 +890,6 @@ def find_next_point(start: MapPoint, target: MapPoint):
         return
 
     start = shared_map.fixed_point(start)
-    d_x = target.x - start.x
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
 
@@ -974,6 +980,8 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
         # 有交集
         # 优先垂直方向接近
         next_p = MapPoint(start.x, platform_target.y, 2)
+        if target_reached(next_p, target):
+            return next_p
         if shared_map.is_continuous(next_p, target):
             return target
 
