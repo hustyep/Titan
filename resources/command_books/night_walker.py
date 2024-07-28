@@ -499,7 +499,7 @@ class Shadow_Bite(Skill):
     type = SkillType.Attack
     cooldown = 7
     backswing = 0.7
-    tolerance = 0.8
+    tolerance = 0.9
 
     @classmethod
     def check(cls):
@@ -606,7 +606,7 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
-    cooldown = 4.5
+    cooldown = 4.2
 
     def __init__(self, attack=True, direction=None):
         super().__init__(locals())
@@ -630,7 +630,7 @@ class Shadow_Attack(Command):
             return True
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime >= 5 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 5.3 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
