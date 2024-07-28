@@ -648,7 +648,6 @@ class SolveRune(Command):
         # Inherited from Configurable
         bot_status.acting = True
         press(DefaultKeybindings.INTERACT, 1, down_time=0.3, up_time=0.3)
-        self.__class__.castedTime = time.time()
 
         print('\nSolving rune:')
         used_frame = None
@@ -665,17 +664,17 @@ class SolveRune(Command):
         time.sleep(0.3)
         buff_count = len(bot_helper.rune_buff_match(capture.frame))
         if buff_count == 1:
-            # 成功激活，识别失败
+            print("成功激活，识别失败")
             self.__class__.castedTime = time.time()
             bot_status.rune_solving = False
             return -1, used_frame
         elif buff_count > 1:
-            # 成功激活，识别出结果，待进一步判断
+            print("成功激活，识别出结果，待进一步判断")
             self.__class__.castedTime = time.time()
             bot_status.rune_solving = False
             return 1, used_frame
         else:
-            # 未成功激活
+            print("未成功激活")
             time.sleep(0.5)
             return SolveRune(self.target, self.attempts + 1).execute()
 

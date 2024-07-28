@@ -436,7 +436,7 @@ class Replace_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Move
     cooldown = 1
-    backswing = 0.6
+    backswing = 0.5
 
     def __init__(self, resummon='False'):
         super().__init__(locals())
@@ -451,7 +451,7 @@ class Replace_Dark_Servant(Skill):
         result = super().main(wait)
         if self.resummon:
             key_up('down')
-        time.sleep(0.5)
+        time.sleep(0.3)
         return result
 
 
@@ -497,9 +497,9 @@ class Dark_Omen(Skill):
 class Shadow_Bite(Skill):
     key = Keybindings.Shadow_Bite
     type = SkillType.Attack
-    cooldown = 15
+    cooldown = 7
     backswing = 0.7
-    tolerance = 0.9
+    tolerance = 0.8
 
     @classmethod
     def check(cls):
