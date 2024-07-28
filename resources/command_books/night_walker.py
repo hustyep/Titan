@@ -428,7 +428,7 @@ class Greater_Dark_Servant(Skill):
     def main(self, wait=True):
         while not self.canUse():
             Shadow_Attack().execute()
-        Dark_Omen().execute()
+        # Dark_Omen().execute()
         return super().main(wait)
 
 
@@ -606,7 +606,7 @@ class Attack(Command):
 
 
 class Shadow_Attack(Command):
-    cooldown = 4
+    cooldown = 4.5
 
     def __init__(self, direction=None):
         super().__init__(locals())
@@ -629,7 +629,7 @@ class Shadow_Attack(Command):
             return True
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 5 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime >= 5 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
                 time.sleep(0.1)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
@@ -638,7 +638,7 @@ class Shadow_Attack(Command):
                 if time.time() - start_time > 5:
                     break
 
-        n = 1
+        n = 0
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
