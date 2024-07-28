@@ -182,7 +182,7 @@ class Capture(Subject):
             new_pos = self.convert_to_relative_minimap_point(player[0])
             if new_pos.x != bot_status.player_pos.x:
                 self.pos_update_time = time.time()
-            elif time.time() - self.pos_update_time >= self.pos_update_time_threshold:
+            elif time.time() - self.pos_update_time >= self.pos_update_time_threshold and bot_status.enabled and not bot_status.acting:
                 self.on_next((BotWarnning.NO_MOVEMENT, time.time() - self.pos_update_time))
             bot_status.player_moving = time.time() - self.pos_update_time < 0.3
             bot_status.player_pos = new_pos
