@@ -1,18 +1,18 @@
-$, target=move_tolerance, value=10
+*, x=78, y=61, interval=999999, tolerance=100, detect=False, skip=False
+    Sol_Janus, type=1
 
 ~, label=Summon Loop, interval=40, skip=False
-*, x=63, y=53, interval=0, tolerance=5, detect=False, skip=False
-    Greater_Dark_Servant
-*, x=116, y=53, interval=0, tolerance=3, detect=False, skip=False
-    Wait, duration=0.3
+*, x=75, y=53, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=2
+    Shadow_Attack, attack=False
+    Replace_Dark_Servant, resummon=True
+*, x=151, y=40, interval=0, tolerance=3, detect=False, skip=False
     ErdaShower, direction=right
-*, x=153, y=40, interval=0, tolerance=6, detect=False, skip=False
-*, x=145, y=23, interval=0, tolerance=5, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
 #
 
 @, label=Bottom mobbing
-*, x=63, y=53, interval=0, tolerance=5, detect=False, skip=False
+*, x=75, y=53, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=2
     Shadow_Attack
     Buff
@@ -20,9 +20,21 @@ $, target=move_tolerance, value=10
     FeedPet
     Phalanx_Charge, direction=none
 
-~, label=pickup, interval=120, skip=False
-*, x=64, y=53, interval=0, tolerance=5, detect=False, skip=False
-    Dark_Omen
+~, label=pickup1, interval=90, skip=False
+*, x=75, y=53, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=2
+    Shadow_Attack, attack=False
+    Replace_Dark_Servant, resummon=True
 *, x=36, y=38, interval=0, tolerance=5, detect=False, skip=False
 *, x=14, y=68, interval=0, tolerance=8, detect=False, skip=False
+    Replace_Dark_Servant, resummon=False
+#
+
+~, label=pickup2, interval=90, skip=False
+*, x=75, y=53, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=2
+    Shadow_Attack, attack=False
+    Replace_Dark_Servant, resummon=True
 *, x=122, y=68, interval=0, tolerance=5, detect=False, skip=False
+    Replace_Dark_Servant, resummon=False
+#
