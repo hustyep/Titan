@@ -608,8 +608,9 @@ class Attack(Command):
 class Shadow_Attack(Command):
     cooldown = 4.5
 
-    def __init__(self, direction=None):
+    def __init__(self, attack=True, direction=None):
         super().__init__(locals())
+        self.attack = bot_settings.validate_boolean(attack)
         self.direction = bot_settings.validate_horizontal_arrows(direction)
 
     def main(self, wait=True):
@@ -658,7 +659,7 @@ class Shadow_Attack(Command):
         direction = self.direction
         if direction is None:
             direction = random_direction()
-        if n > 0:
+        if self.attack and n > 0:
             Direction(direction).execute()
             key_down(Keybindings.Quintuple_Star)
             time.sleep(n)

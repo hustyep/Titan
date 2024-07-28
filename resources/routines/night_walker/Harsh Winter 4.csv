@@ -1,24 +1,23 @@
 $, target=move_tolerance, value=10
-*, x=78, y=61, interval=999999, tolerance=10, detect=False, skip=False
+
+*, x=78, y=61, interval=999999, tolerance=100, detect=False, skip=False
     Sol_Janus, type=1
 
 ~, label=Summon Loop, interval=45, skip=False
 *, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
-    Greater_Dark_Servant
+    Detect_Mobs, count=4
+    Shadow_Attack, attack=False
+    Greater_Dark_Servant, resummon=True
 *, x=78, y=75, interval=0, tolerance=3, detect=False, skip=False
-    Fall, attack=False, forward=False, buff=False
+    Fall
     Wait, duration=0.6
     Direction, direction=up
     Wait, duration=0.6
-*, x=149, y=46, interval=0, tolerance=3, detect=False, skip=False
+*, x=150, y=39, interval=0, tolerance=3, detect=False, skip=False
+    Wait, duration=0.5
     ErdaShower, direction=left
+*, x=150, y=75, interval=0, tolerance=12, detect=False, skip=False
     Replace_Dark_Servant, resummon=False
-*, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
-    Detect_Mobs, count=3
-    Shadow_Attack
-*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
-    Detect_Mobs, count=4
-    Shadow_Attack
 #
 
 @, label=Bottom mobbing
@@ -32,26 +31,16 @@ $, target=move_tolerance, value=10
 
 ~, label=pickup1, interval=120, skip=False
 *, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
-    Replace_Dark_Servant, resummon=True
-*, x=11, y=75, interval=0, tolerance=8, detect=False, skip=False
-    Replace_Dark_Servant, resummon=False
-*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
-    Detect_Mobs, count=3
-    Shadow_Attack
-*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
     Detect_Mobs, count=4
-    Shadow_Attack
+    Shadow_Attack, attack=False
+*, x=11, y=75, interval=0, tolerance=8, detect=False, skip=False
 #
 
-~, label=pickup2, interval=120, skip=False
-*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
-    Replace_Dark_Servant, resummon=True
-*, x=145, y=75, interval=0, tolerance=8, detect=False, skip=False
-    Replace_Dark_Servant, resummon=False
-*, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
-    Detect_Mobs, count=3
-    Shadow_Attack
+~, label=pickup2, interval=50, skip=False
 *, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
     Detect_Mobs, count=4
-    Shadow_Attack
+    Shadow_Attack, attack=False
+    Greater_Dark_Servant, resummon=True
+*, x=120, y=75, interval=0, tolerance=5, detect=False, skip=False
+    Greater_Dark_Servant, resummon=False
 #
