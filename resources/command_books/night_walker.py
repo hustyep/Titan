@@ -494,23 +494,23 @@ class Dark_Omen(Skill):
     tolerance = 1
 
 
-class Shadow_Bite(Skill):
+class Shadow_Bite(Command):
     key = Keybindings.Shadow_Bite
     type = SkillType.Attack
     cooldown = 7
     backswing = 0.7
     tolerance = 0.9
 
-    @classmethod
-    def check(cls):
-        if cls.icon is None:
-            return
-        last_state = cls.ready
-        matchs = utils.multi_match(
-            capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
-        cls.ready = len(matchs) > 0
-        if not cls.ready or cls.ready != last_state:
-            cls.update_time = time.time()
+    # @classmethod
+    # def check(cls):
+    #     if cls.icon is None:
+    #         return
+    #     last_state = cls.ready
+    #     matchs = utils.multi_match(
+    #         capture.skill_frame, cls.icon[2:-2, 12:-2], threshold=0.98)
+    #     cls.ready = len(matchs) > 0
+    #     if not cls.ready or cls.ready != last_state:
+    #         cls.update_time = time.time()
 
 
 class Dominion(Skill):
@@ -630,9 +630,9 @@ class Shadow_Attack(Command):
             return True
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 5.3 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 5.8 and not bot_status.elite_boss_detected:
             while not Shadow_Bite.canUse():
-                time.sleep(0.1)
+                time.sleep(0.03)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
                 if len(mobs) == 0:
                     return False

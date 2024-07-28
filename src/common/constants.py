@@ -264,7 +264,7 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': "Gentle Summer 3",
+        'default': 'Harsh Winter 4',
         'quest': [
             'Western City Ramparts in Battle 1',
             'Outlaw-Infested Wastes 2',
