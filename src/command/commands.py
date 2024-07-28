@@ -998,7 +998,7 @@ class Sol_Janus(Command):
 
     def main(self, wait=True):
         press(self.key, down_time=0.5, up_time=0.2)
-        press('right' if self.type == 1 else 'left', down_time=0.06)
+        press('right' if self.type == 1 else 'left', down_time=0.03)
         return True
 
 
