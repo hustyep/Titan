@@ -639,14 +639,15 @@ class Shadow_Attack(Command):
                 if time.time() - start_time > 5:
                     break
 
-        n = 0
+        n = 1
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
-        elif Dominion.canUse():
-            Dominion().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
+        elif Dominion.canUse():
+            Dominion().execute()
+            n = 2
         elif SolarCrest.canUse():
             SolarCrest().execute()
         elif Dark_Omen.canUse():
