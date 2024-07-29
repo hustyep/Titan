@@ -697,8 +697,9 @@ class Pre_Burst(Command):
 class Burst(Command):
     def main(self, wait=True):
         p = bot_status.player_pos
-        plat = shared_map.platform_of_point(p)
-        assert (plat)
+        plat = shared_map.platform_of_point(shared_map.platform_point(p))
+        if not plat:
+            return False
         Direction("left" if p.x - plat.begin_x > plat.end_x - p.x else "right").execute()
         Shadow_Bite().execute()
         Silence().execute()
