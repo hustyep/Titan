@@ -14,7 +14,7 @@ from src.routine.components import Point
 from src.routine.routine import routine
 from src.common import bot_status, bot_settings
 from src.common.image_template import *
-from src.common.constants import BotInfo, BotWarnning, BotFatal, BotError, MapPoint, window_cap_horiz, window_cap_botton, window_cap_top
+from src.common.constants import BotRunMode, BotInfo, BotWarnning, BotFatal, BotError, MapPoint, window_cap_horiz, window_cap_botton, window_cap_top
 from src.common.hid import hid
 from src.modules.capture import capture
 from src.map.map import shared_map as game_map
@@ -309,7 +309,7 @@ class Detector(Subject):
     def check_no_movement(self):
         if bot_status.enabled and operator.eq(bot_status.player_pos, self.player_pos):
             interval = int(time.time() - self.player_pos_updated_time)
-            if interval >= 15 and self.player_pos_updated_time:
+            if gui_setting.mode.type == BotRunMode.Farm and interval >= 15 and self.player_pos_updated_time:
                 self.on_next((BotWarnning.NO_MOVEMENT, interval))
         else:
             self.player_pos = bot_status.player_pos
@@ -322,7 +322,7 @@ class Detector(Subject):
         height, width, _ = frame.shape
         elite_frame = frame[height // 4:3 *
                             height // 4, width // 4:3 * width // 4]
-        elite = utils.multi_match(elite_frame, ELITE_TEMPLATE, threshold=0.8)
+        elite = utils.multi_match(elite_frame, ELITE_TEMPLATE, threshold=0.7)
         if len(elite) > 0:
             self.on_next((BotInfo.BOSS_APPEAR, ))
 

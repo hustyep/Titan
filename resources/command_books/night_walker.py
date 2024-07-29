@@ -625,7 +625,7 @@ class Shadow_Attack(Command):
             start_time = time.time()
             while bot_status.elite_boss_detected:
                 Burst().execute()
-                if time.time() - start_time >= 30:
+                if time.time() - start_time >= 15:
                     break
             return True
 
@@ -674,22 +674,23 @@ class Shadow_Attack(Command):
 class Pre_Burst(Command):
     def main(self, wait=True):
         Dominion().execute()
-        p = shared_map.platform_point(bot_status.player_pos)
-        plat = shared_map.platform_of_point(p)
-        assert (plat)
-        if p.x - plat.begin_x <= plat.end_x - p.x:
-            Move(plat.begin_x + 3, plat.y, 3).execute()
-        else:
-            Move(plat.end_x - 3, plat.y, 3).execute()
+        # p = shared_map.platform_point(bot_status.player_pos)
+        # plat = shared_map.platform_of_point(p)
+        # assert (plat)
+        # if p.x - plat.begin_x <= plat.end_x - p.x:
+        #     Move(plat.begin_x + 3, plat.y, 3).execute()
+        # else:
+        #     Move(plat.end_x - 3, plat.y, 3).execute()
         Shadow_Spear().execute()
         Shadow_Illusion().execute()
         if time.time() - self.castedTime > 30:
             Replace_Dark_Servant(resummon='True').execute()
         self.castedTime = time.time()
-        while not bot_status.elite_boss_detected:
-            Shadow_Attack().execute()
-            if time.time() - self.castedTime > 5:
-                break
+        # while not bot_status.elite_boss_detected:
+        #     Shadow_Attack().execute()
+        #     if time.time() - self.castedTime > 5:
+        #         break
+        Silence().execute()
         return True
 
 
