@@ -75,8 +75,7 @@ class Label(Component):
         self.index = None
 
     def _main(self):
-        for component in self.series:
-            component.execute()
+        pass
 
     def set_index(self, i):
         self.index = i
@@ -206,7 +205,7 @@ class Sequence(Component):
 
     def __init__(self, label, interval=0, skip='False'):
         super().__init__(locals())
-        self.label = str(label)
+        self.label: str = str(label)
         self.interval = bot_settings.validate_nonnegative_int(interval)
         self.skip = bot_settings.validate_boolean(skip)
 

@@ -180,6 +180,15 @@ class Routine(Subject):
                 f"\n[!] Found invalid arguments for '{target.__class__.__name__}':")
             print(f"{' ' * 4} -  {e}")
 
+    def check_summon_sequence(self):
+        element = self.sequence[self.index]
+        if not isinstance(element, Sequence) and not isinstance(element, Label):
+            return
+        for index, element in enumerate(self.sequence):
+            if isinstance(element, Sequence) and element.label.lower().startswith('summon') and element.interval > 0 and element.last_execute_time > 0 and time.time() - element.last_execute_time >= element.interval:
+                self.index = index
+                break
+
     def current_step(self):
         return self.sequence[self.index]
 
@@ -193,6 +202,7 @@ class Routine(Subject):
             self.action_queue.remove(action)
             return
 
+        self.check_summon_sequence()
         self._run()
         add = 1
         element = self.current_step()

@@ -2,13 +2,12 @@ $, target=move_tolerance, value=10
 *, x=78, y=61, interval=999999, tolerance=100, detect=False, skip=False
     Sol_Janus, type=1
 
-~, label=Summon Loop, interval=42, skip=False
+~, label=summon1, interval=42, skip=False
 *, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=4
     Shadow_Attack, attack=False
     Greater_Dark_Servant
-*, x=78, y=75, interval=0, tolerance=3, detect=False, skip=False
-*, x=78, y=75, interval=0, tolerance=3, detect=False, skip=False
+*, x=78, y=75, interval=0, tolerance=8, detect=False, skip=False
     Fall, attack=False, forward=False, buff=False
     Wait, duration=0.6
     Direction, direction=up
@@ -18,7 +17,7 @@ $, target=move_tolerance, value=10
     Replace_Dark_Servant, resummon=False
 #
 
-~, label=pickup2, interval=42, skip=False
+~, label=summon2, interval=42, skip=False
 *, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
     Detect_Mobs, count=4
     Shadow_Attack, attack=False
@@ -27,7 +26,7 @@ $, target=move_tolerance, value=10
     Replace_Dark_Servant, resummon=False
 #
 
-@, label=Bottom mobbing
+@, label=mobbing
 *, x=78, y=61, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=4
     Shadow_Attack, attack=True
@@ -36,7 +35,7 @@ $, target=move_tolerance, value=10
     FeedPet
     Phalanx_Charge, direction=right
 
-~, label=pickup1, interval=120, skip=False
+~, label=pickup, interval=120, skip=False
 *, x=78, y=61, interval=0, tolerance=8, detect=False, skip=False
     Detect_Mobs, count=4
     Shadow_Attack, attack=False
