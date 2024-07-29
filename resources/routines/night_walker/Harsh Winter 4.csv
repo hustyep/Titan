@@ -13,7 +13,7 @@ $, target=move_tolerance, value=10
     Wait, duration=0.6
     Direction, direction=up
     Wait, duration=0.6
-*, x=150, y=39, interval=0, tolerance=3, detect=False, skip=False
+*, x=155, y=39, interval=0, tolerance=5, detect=False, skip=False
     ErdaShower, direction=left
     Replace_Dark_Servant, resummon=False
 #
