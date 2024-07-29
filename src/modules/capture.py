@@ -189,7 +189,7 @@ class Capture(Subject):
             self.lost_player_time = 0
         else:
             self.calibrated = False
-            if bot_status.enabled:
+            if bot_status.enabled and not bot_status.acting:
                 now = time.time()
                 if self.lost_player_time == 0:
                     self.lost_player_time = now
