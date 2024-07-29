@@ -326,7 +326,7 @@ class Detector(Subject):
         if len(elite) > 0:
             self.on_next((BotInfo.BOSS_APPEAR, ))
 
-        elite_boss_detected = utils.match_count(frame[:30, 300:330], BOSS_TEMPLATE, 0.95) > 0
+        elite_boss_detected = utils.match_count(frame[:30, 300:330], BOSS_TEMPLATE, 0.97) > 0
         if elite_boss_detected:
             if not bot_status.elite_boss_detected:
                 self.on_next((BotInfo.BOSS_FIGHTING, ))
