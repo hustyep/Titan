@@ -1019,7 +1019,14 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
             if target_reached(start, next_p):
                 return target
             else:
-                return next_p
+                if next_p.x < start.x:
+                    if next_p.x - platform_start.begin_x <= 3:
+                        next_p = None
+                else:
+                    if platform_start.end_x - next_p.x <= 3:
+                        next_p = None
+                if next_p:
+                    return next_p
 
         intersection_point = point_of_intersection(platform_start, platform_target)
         assert (intersection_point)
@@ -1083,7 +1090,7 @@ def find_fall_point(start: MapPoint, target: MapPoint):
                 next_p = point_of_intersection(platform_start, platform_target)
                 assert next_p
                 if target_reached(start, next_p):
-                    next_p.tolerance = 0
+                    next_p.tolerance = 2
                 return next_p
 
 
