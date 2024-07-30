@@ -132,14 +132,12 @@ def move_up(target: MapPoint):
         if up_point.x - next_platform.begin_x <= 8 and next_platform.end_x - next_platform.begin_x > 20:
             # move_horizontal(MapPoint(up_point.x+3, p.y, 2))
             press('right', down_time=0.1)
-        else:
-            time.sleep(0.15)
+        time.sleep(0.2)
     elif bot_status.player_moving and bot_status.player_direction == 'right':
         if next_platform.end_x - up_point.x <= 10 and next_platform.end_x - next_platform.begin_x > 20:
             # move_horizontal(MapPoint(up_point.x-3, p.y, 2))
             press('left', down_time=0.1)
-        else:
-            time.sleep(0.15)
+        time.sleep(0.2)
 
     if dy < 5:
         press(Keybindings.JUMP)

@@ -8,7 +8,7 @@ $, target=move_tolerance, value=10
     Shadow_Attack, attack=False
     Greater_Dark_Servant
 *, x=78, y=75, interval=0, tolerance=8, detect=False, skip=False
-    Fall, attack=False, forward=False, buff=False
+    Fall
     Wait, duration=0.6
     Direction, direction=up
     Wait, duration=0.6
