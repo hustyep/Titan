@@ -498,10 +498,10 @@ class Fall(Command):
     from their starting position.
     """
 
-    def __init__(self, attack=False, forward=False, buff=False):
+    def __init__(self, attack=False, target_x=0, buff=False):
         super().__init__(locals())
         self.attack = bot_settings.validate_boolean(attack)
-        self.forward = bot_settings.validate_boolean(forward)
+        self.target_x = bot_settings.validate_nonnegative_int(target_x)
         self.buff = bot_settings.validate_boolean(buff)
 
     def main(self, wait=True):
@@ -509,21 +509,24 @@ class Fall(Command):
         key_down('down')
         time.sleep(0.03)
         sleep_in_the_air(n=4)
-        press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
-        if self.attack:
-            key_up('down')
-            Attack().main()
-        elif self.forward:
-            key_up('down')
-            time.sleep(0.2)
-            press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
-            press(DefaultKeybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
-        if self.buff:
-            key_up('down')
-            Buff().main(wait=False)  # type: ignore
-        time.sleep(0.4)
-        result = sleep_in_the_air(n=2, detect_rope=True)
+        press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.1)
         key_up('down')
+        if self.attack:
+            Attack().main()
+        elif self.target_x > 0:
+            p = bot_status.player_pos
+            direction = 'left' if self.target_x < p.x else 'right'
+            time.sleep(0.2)
+            key_down(direction)
+            time.sleep(0.01)
+            press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
+            press(DefaultKeybindings.JUMP, n=2 if abs(self.target_x - p.x) >=26 else 1, down_time=0.02, up_time=0.02)
+            key_up(direction)
+            time.sleep(0.01)
+        if self.buff:
+            Buff().main(wait=False)  # type: ignore
+        time.sleep(0.35)
+        result = sleep_in_the_air(n=2, detect_rope=True)
         if not result:
             bot_action.climb_rope(isUP=False)
         return True

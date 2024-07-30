@@ -204,12 +204,7 @@ class Map:
         for point in points:
             if point == start:
                 continue
-            if point.y - last.y > 5:
-                result += 50
-            elif last.y - point.y >= 29:
-                result += 80
-            elif last.y - point.y > 5:
-                result += 50
+            result += abs(point.y - last.y)
             result += abs(point.x - last.x)
             last = point
         return result

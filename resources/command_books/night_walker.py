@@ -321,10 +321,10 @@ class Jump_Up(Command):
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
-        time.sleep(0.06 if dy >= 20 else 0.3)
+        time.sleep(0.06 if dy >= 20 else 0.25)
         press(Keybindings.JUMP)
-        time.sleep(0.8 if dy >= 20 else 0.5)
         key_up('up')
+        time.sleep(0.8 if dy >= 20 else 0.5)
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
         if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
@@ -348,7 +348,9 @@ class Jump_Up(Command):
                 press(Keybindings.Shadow_Jump)
                 time.sleep(0.05)
                 key_up(direction)
-        sleep_in_the_air(n=2, detect_rope=True)
+        result = sleep_in_the_air(n=2, detect_rope=True)
+        if not result:
+            bot_action.climb_rope(isUP=True)
         return True
 
 
@@ -1058,12 +1060,19 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
         return
 
     intersections = set(platform_start.x_range).intersection(set(platform_target.x_range))
+
     if target.x in intersections:
         return find_fall_point(start, target)
     if shared_map.current_map.can_jump_down(platform_start, platform_target):
         return find_jump_down_point(start, target)
     if shared_map.current_map.can_walk_down(platform_start, platform_target):
-        return find_walk_down_point(start, target)
+        walk_down_point= find_walk_down_point(start, target)
+        if walk_down_point != target:
+            fall_down_point = find_fall_point(start, target)
+            if fall_down_point:
+                return fall_down_point
+            else:
+                return fall_down_point
     return find_fall_point(start, target)
 
 
@@ -1085,7 +1094,8 @@ def find_fall_point(start: MapPoint, target: MapPoint):
                 available_x = available_x.difference(set(plat.x_range))
         if len(available_x) > 0:
             if start.x in available_x:
-                return MapPoint(start.x, platform_target.y, 3)
+                Fall(attack=False, target_x=target.x).execute()
+                return target
             else:
                 next_p = point_of_intersection(platform_start, platform_target)
                 assert next_p
