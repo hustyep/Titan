@@ -516,7 +516,7 @@ class Fall(Command):
         elif self.target_x > 0:
             p = bot_status.player_pos
             plat = shared_map.platform_of_point(shared_map.platform_point(p))
-            if plat:
+            if plat and plat.end_x - plat.begin_x > 40:
                 direction = 'left' if self.target_x < p.x else 'right'
                 dy = abs(plat.y - p.y)
                 dx = abs(self.target_x - p.x)
@@ -526,7 +526,7 @@ class Fall(Command):
                     key_down(direction)
                     time.sleep(0.01)
                     press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
-                    press(DefaultKeybindings.JUMP, n=2 if dx >=26 else 1, down_time=0.02, up_time=0.02)
+                    press(DefaultKeybindings.JUMP, n=2 if dx >=30 else 1, down_time=0.02, up_time=0.02)
                     key_up(direction)
                     time.sleep(0.01)
         if self.buff:
