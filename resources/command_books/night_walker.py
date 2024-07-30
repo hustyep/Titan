@@ -107,7 +107,7 @@ def move_horizontal(target: MapPoint):
         DoubleJump(target=target, attack_if_needed=True).execute()
     elif distance >= DoubleJump.move_range.start:
         DoubleJump(target=target, attack_if_needed=True).execute()
-    elif distance >= 15 or distance in range(7, 10):
+    elif distance >= 15:
         DoubleJump(target=target, attack_if_needed=False).execute()
     elif distance >= Shadow_Dodge.move_range.start:
         Shadow_Dodge('left' if d_x < 0 else 'right').execute()
@@ -129,17 +129,17 @@ def move_up(target: MapPoint):
     next_platform = shared_map.platform_of_point(target)
     assert (next_platform)
     if bot_status.player_moving and bot_status.player_direction == 'left':
-        if up_point.x - next_platform.begin_x <= 8:
+        if up_point.x - next_platform.begin_x <= 8 and next_platform.end_x - next_platform.begin_x > 20:
             # move_horizontal(MapPoint(up_point.x+3, p.y, 2))
-            press('right', down_time=0.2)
+            press('right', down_time=0.1)
         else:
-            time.sleep(0.2)
+            time.sleep(0.1)
     elif bot_status.player_moving and bot_status.player_direction == 'right':
-        if next_platform.end_x - up_point.x <= 10:
+        if next_platform.end_x - up_point.x <= 10 and next_platform.end_x - next_platform.begin_x > 20:
             # move_horizontal(MapPoint(up_point.x-3, p.y, 2))
-            press('left', down_time=0.2)
+            press('left', down_time=0.1)
         else:
-            time.sleep(0.2)
+            time.sleep(0.1)
 
     if dy < 5:
         press(Keybindings.JUMP)
@@ -724,7 +724,7 @@ class Detect_Mobs(Command):
                 Will_of_Erda().execute()
 
         start = time.time()
-        need_act = bot_status.stage_fright and gui_setting.auto.action and random() < 0.1
+        need_act = bot_status.stage_fright and gui_setting.auto.action and random() < 0.4
         mobs_count = -1
         while True:
             if capture.frame is None:

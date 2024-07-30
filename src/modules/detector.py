@@ -77,6 +77,8 @@ class Detector(Subject):
     def _main_exception(self):
         while True:
             self.check_minimap()
+            if bot_status.acting and bot_status.lost_minimap:
+                self.clear()
             if bot_status.enabled and not bot_status.acting:
                 self.check_boss()
                 self.check_binded()
@@ -100,6 +102,7 @@ class Detector(Subject):
         self.others_no_detect_count = 0
 
         self.lost_minimap_time = 0
+        bot_status.others_comming_time = self.others_comming_time
 
     def _main_event(self):
         while True:
@@ -177,11 +180,12 @@ class Detector(Subject):
             time.sleep(0.1)
             return
 
-        chat_btn = utils.multi_match(
-            frame, CHAT_MINI_TEMPLATE, threshold=0.9)
-        if chat_btn:
-            bot_action.mouse_left_click(
-                bot_helper.get_full_pos(chat_btn[0]), delay=0.5)
+        chat_all_btn = utils.multi_match(frame[-60:,:60], CHAT_ALL_TEMPLATE, threshold=0.9)
+        if chat_all_btn:
+            hid.key_press('enter')
+            time.sleep(0.1)
+            return
+
 
         setting_btn = utils.multi_match(
             frame[400:600, 800:1000], SETTING_TEMPLATE, threshold=0.9)
@@ -411,6 +415,7 @@ class Detector(Subject):
             self.others_no_detect_count = 0
             if self.others_comming_time == 0:
                 self.others_comming_time = time.time()
+                bot_status.others_comming_time = self.others_comming_time
         else:
             self.others_no_detect_count += 1
 
@@ -422,6 +427,7 @@ class Detector(Subject):
                     self.on_next((BotInfo.OTHERS_LEAVED, ))
             self.others_detect_count = 0
             self.others_comming_time = 0
+            bot_status.others_comming_time = self.others_comming_time
         elif self.others_detect_count == 2000:
             self.others_detect_count += 1
             if not game_map.current_map.instance:

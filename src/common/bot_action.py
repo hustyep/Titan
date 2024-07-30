@@ -90,7 +90,7 @@ def mouse_double_click(position=None, delay=0.05):
 def setClipboard(text: str):
     wc.OpenClipboard()
     wc.EmptyClipboard()
-    wc.SetClipboardData(win32con.CF_UNICODETEXT, text)
+    wc.SetClipboardData(win32con.CF_UNICODETEXT, str(text))
     wc.CloseClipboard()
 
 
@@ -100,15 +100,17 @@ def setClipboard(text: str):
 
 def __say(text: str):
     setClipboard(str(text))
-    click_key('enter', 0.3)
-    press_key("ctrl", 0.05)
-    click_key("v", 0.05)
-    release_key("ctrl", 0.3)
-    click_key('enter', 0.3)
-    click_key('enter', 0.05)
+    hid.key_press('enter')
+    hid.key_down("ctrl")
+    hid.key_press("v")
+    hid.key_up("ctrl")
+    time.sleep(0.3)
+    hid.key_press('enter')
+    time.sleep(0.2)
+    hid.key_press('enter')
+    time.sleep(0.1)
 
 
-@bot_status.run_if_enabled
 def say_to_all(text: str):
     bot_status.acting = True
     time.sleep(1)
@@ -343,7 +345,7 @@ def _change_channel(num: int = 0, instance=True) -> None:
         click_key('down')
         click_key('right')
         click_key('enter')
-    time.sleep(1)
+    time.sleep(2)
 
     frame = capture.frame
     if frame is None:

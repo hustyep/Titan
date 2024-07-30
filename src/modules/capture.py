@@ -240,7 +240,7 @@ class Capture(Subject):
     @property
     def msg_frame(self):
         if self.frame is not None:
-            return self.frame[-40:, :400]
+            return self.frame[-110:-10, :400]
 
     @property
     def window_rect(self):

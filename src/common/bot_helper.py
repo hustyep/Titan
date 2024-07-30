@@ -144,7 +144,7 @@ def sleep_in_the_air(interval=0.02, n=4, detect_rope=False):
             break
         elif detect_rope and step >= 25 and shared_map.on_the_rope(bot_status.player_pos):
             # 检测是否在绳子上
-            break
+            return
         time.sleep(interval)
 
 

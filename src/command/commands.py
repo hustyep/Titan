@@ -575,7 +575,7 @@ class Walk_Around(Command):
         if not plat:
             return False
         direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
-        walk_time = 1 * random()
+        walk_time = 0.2
         press(direction, down_time=walk_time)
         Attack().execute()
         press(opposite_direction(direction), down_time=walk_time)
@@ -584,19 +584,27 @@ class Walk_Around(Command):
 
 class Random_Action(Command):
     def main(self, wait=True):
-        match randrange(0, 4):
+        match randrange(1, 4):
             case 0:
                 Jump_Around().execute()
             case 1:
+                Direction(random_direction()).execute()
                 Jump(0.2, attack=True).execute()
             case 2:
+                Direction(random_direction()).execute()
                 Jump(0.1, attack=True).execute()
                 Jump(0.1, attack=True).execute()
             case 3:
                 Walk_Around().execute()
         return True
 
-
+class Check_Others(Command):
+    def main(self, wait=True):
+        if bot_status.stage_fright and time.time() - bot_status.others_comming_time >= 600:
+            press('shift')
+            time.sleep(5)
+            bot_action.change_channel()
+            
 class Collect_Boss_Essence(Command):
     def main(self, wait=True):
         Walk_Around().execute()

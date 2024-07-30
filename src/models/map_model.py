@@ -10,7 +10,7 @@ from src.common.constants import RESOURCES_DIR, Platform, MapPointType, MapPoint
 from src.modules.capture import capture
 
 Min_Jumpable_Gap = 4
-Max_Jumpable_Gap = 36
+Max_Jumpable_Gap = 44
 Max_Path_Step = 5
 Jump_Down_Ratio = 1
 

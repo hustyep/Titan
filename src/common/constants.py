@@ -55,6 +55,7 @@ class BotInfo(Enum):
     BOSS_APPEAR = 'Boss Appear'
     BOSS_FIGHTING = 'Boss fighting'
     BOSS_DEAD = 'Boss Dead'
+    CHANGE_CHANNEL = 'Change Channel'
 
 
 class BotVerbose(Enum):
@@ -264,11 +265,12 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': 'Harsh Winter 4',
+        'default': 'Western Outskirts',
         'quest': [
             'Western City Ramparts in Battle 1',
             'Outlaw-Infested Wastes 2',
-            'Laboratory Behind Locked Door 1'
+            'Laboratory Behind Locked Door 1',
+            'Harsh Winter 4'
         ]
     }
 }
