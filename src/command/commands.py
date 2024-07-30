@@ -532,7 +532,7 @@ class Fall(Command):
                     time.sleep(0.01)
         if self.buff:
             Buff().main(wait=False)  # type: ignore
-        time.sleep(0.35)
+        time.sleep(0.1)
         result = sleep_in_the_air(n=2, detect_rope=True)
         if not result:
             bot_action.climb_rope(isUP=False)
