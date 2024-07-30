@@ -329,11 +329,14 @@ class Detector(Subject):
         elite = utils.multi_match(elite_frame, ELITE_TEMPLATE, threshold=0.8)
         if len(elite) > 0:
             self.on_next((BotInfo.BOSS_APPEAR, ))
+            bot_status.elite_boss_appear_time = time.time()
 
         elite_boss_detected = utils.match_count(frame[:30, 300:330], BOSS_TEMPLATE, 0.97) > 0
         if elite_boss_detected:
             if not bot_status.elite_boss_detected:
                 self.on_next((BotInfo.BOSS_FIGHTING, ))
+                if time.time() - bot_status.elite_boss_appear_time > 600:
+                    bot_status.elite_boss_appear_time = time.time()
 
             bot_status.elite_boss_detected = True
             self.boss_detect_time = time.time()

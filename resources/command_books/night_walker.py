@@ -442,6 +442,12 @@ class Replace_Dark_Servant(Skill):
         super().__init__(locals())
         self.resummon = bot_settings.validate_boolean(resummon)
 
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if Greater_Dark_Servant.canUse():
+            return False
+        return super(Replace_Dark_Servant, cls).canUse(next_t)
+
     def main(self, wait=True):
         if self.resummon and not self.canUse():
             return False
@@ -560,6 +566,12 @@ class Silence(Skill):
     precast = 0.3
     backswing = 3
     tolerance = 6
+    
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if bot_status.elite_boss_appear_time > 0 and time.time() - bot_status.elite_boss_appear_time >= 7000:
+            return False
+        return super(Silence, cls).canUse(next_t)
 
 
 class Rapid_Throw(Skill):
@@ -661,11 +673,15 @@ class Shadow_Attack(Command):
         if direction is None:
             direction = random_direction()
         if self.attack and n > 0:
-            Direction(direction).execute()
-            key_down(Keybindings.Quintuple_Star)
-            time.sleep(n)
-            key_up(Keybindings.Quintuple_Star)
-            time.sleep(Quintuple_Star.backswing)
+            if random() < 0.5:
+                Jump(0.1, attack=True).execute()
+                Jump(0.1, attack=True).execute()
+            else:
+                Direction(direction).execute()
+                key_down(Keybindings.Quintuple_Star)
+                time.sleep(n)
+                key_up(Keybindings.Quintuple_Star)
+                time.sleep(Quintuple_Star.backswing)
         else:
             time.sleep(0.5)
         return True
@@ -950,9 +966,11 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     max_distance = Max_Jumpable_Gap
     target_range = None
     if platform_start.end_x < platform_target.begin_x:
-        target_range = range(max(platform_target.begin_x - max_distance, platform_start.begin_x), platform_start.end_x + 1)
+        target_range = range(max(platform_target.begin_x - max_distance,
+                             platform_start.begin_x), platform_start.end_x + 1)
     else:
-        target_range = range(platform_start.begin_x, min(platform_target.end_x + max_distance, platform_start.end_x) + 1)
+        target_range = range(platform_start.begin_x, min(
+            platform_target.end_x + max_distance, platform_start.end_x) + 1)
     if start.x in target_range:
         return target
     else:
@@ -1103,6 +1121,7 @@ def find_jump_down_point(start: MapPoint, target: MapPoint):
             return target if target_reached(target, tmp_p) else tmp_p
         else:
             return next_p
+
 
 class Test_Command(Command):
     key = Keybindings.Shadow_Jump

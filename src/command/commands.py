@@ -261,7 +261,7 @@ def evade_rope(up=False):
         return
     direction = 'left' if pos.x - plat.begin_x > plat.end_x - pos.x else 'right'
     press(direction, down_time=0.1)
-    
+
 
 def opposite_direction(direction):
     if direction not in ['left', 'right', 'up', 'down']:
@@ -598,13 +598,17 @@ class Random_Action(Command):
                 Walk_Around().execute()
         return True
 
+
 class Check_Others(Command):
     def main(self, wait=True):
         if bot_status.stage_fright and time.time() - bot_status.others_comming_time >= 600:
             press('shift')
             time.sleep(5)
             bot_action.change_channel()
-            
+            return True
+        return False
+
+
 class Collect_Boss_Essence(Command):
     def main(self, wait=True):
         Walk_Around().execute()

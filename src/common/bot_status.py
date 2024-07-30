@@ -25,6 +25,7 @@ path = []
 invisible = False
 stage_fright = False
 elite_boss_detected = False
+elite_boss_appear_time = 0
 others_comming_time = 0
 
 lost_minimap = False
