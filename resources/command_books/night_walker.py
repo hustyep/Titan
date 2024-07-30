@@ -319,10 +319,10 @@ class Jump_Up(Command):
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
-        time.sleep(0.06 if dy >= 20 else 0.25)
+        time.sleep(0.06 if dy >= 18 else 0.25)
         press(Keybindings.JUMP)
         key_up('up')
-        time.sleep(0.8 if dy >= 20 else 0.5)
+        time.sleep(0.8 if dy >= 18 else 0.5)
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
         if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
