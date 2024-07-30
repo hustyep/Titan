@@ -515,14 +515,20 @@ class Fall(Command):
             Attack().main()
         elif self.target_x > 0:
             p = bot_status.player_pos
-            direction = 'left' if self.target_x < p.x else 'right'
-            time.sleep(0.2)
-            key_down(direction)
-            time.sleep(0.01)
-            press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
-            press(DefaultKeybindings.JUMP, n=2 if abs(self.target_x - p.x) >=26 else 1, down_time=0.02, up_time=0.02)
-            key_up(direction)
-            time.sleep(0.01)
+            plat = shared_map.platform_of_point(shared_map.platform_point(p))
+            if plat:
+                direction = 'left' if self.target_x < p.x else 'right'
+                dy = abs(plat.y - p.y)
+                dx = abs(self.target_x - p.x)
+                if dx > dy:
+                    dx = dx - dy
+                    time.sleep(0.2 if dx <= 26 else 0.02)
+                    key_down(direction)
+                    time.sleep(0.01)
+                    press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
+                    press(DefaultKeybindings.JUMP, n=2 if dx >=26 else 1, down_time=0.02, up_time=0.02)
+                    key_up(direction)
+                    time.sleep(0.01)
         if self.buff:
             Buff().main(wait=False)  # type: ignore
         time.sleep(0.35)
