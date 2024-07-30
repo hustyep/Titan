@@ -5,8 +5,7 @@ class AutoSettings(Configurable):
     DEFAULT_CONFIG = {
         'Action': False,
         'Ask': False,
-        'Mining': False,
-        'Load Map': True,
+        'CC': False,
         'Login': True,
         'Channel': 33,
     }
@@ -20,8 +19,8 @@ class AutoSettings(Configurable):
         return self.get('Mining')
 
     @property
-    def load_map(self):
-        return self.get('Load Map')
+    def change_channel(self):
+        return bool(self.get('CC'))
     
     @property
     def auto_login(self):

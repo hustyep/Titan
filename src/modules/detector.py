@@ -423,7 +423,7 @@ class Detector(Subject):
             self.others_no_detect_count += 1
 
         duration = int(time.time() - self.others_comming_time)
-        if self.others_no_detect_count == 30:
+        if self.others_no_detect_count == 60:
             self.others_no_detect_count += 1
             if self.others_comming_time > 0 and self.others_detect_count > 40:
                 if not game_map.current_map.instance:
