@@ -298,10 +298,16 @@ class Bot(Subject):
     def bot_status(self, ext='') -> str:
         message = (
             f"bot status: {'running' if bot_status.enabled  else 'pause'}\n"
+            f"bot duration: {time.time() - bot_status.started_time if bot_status.started_time else 0}\n"
             f"rune status: {f'{time.time()}s' if bot_status.rune_pos is not None else 'clear'}\n"
-            f"other players: {detector.others_count}\n"
-            f"reason: {ext}\n"
+            f"boss appear time: {time.time() - bot_status.elite_boss_appear_time if bot_status.elite_boss_appear_time > 0 else 0}s ago\n"
+            f"other players count: {detector.others_count}\n"
         )
+        if bot_status.stage_fright:
+            message += f"other player stay time: {time.time() - bot_status.others_comming_time}\n"
+        
+        if ext:
+            message += f"reason: {ext}\n"
         return message
 
 
