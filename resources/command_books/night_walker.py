@@ -317,6 +317,7 @@ class Jump_Up(Command):
 
     def main(self, wait=True):
         sleep_in_the_air(n=4)
+        evade_rope()
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')

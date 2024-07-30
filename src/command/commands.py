@@ -522,8 +522,10 @@ class Fall(Command):
             key_up('down')
             Buff().main(wait=False)  # type: ignore
         time.sleep(0.4)
-        sleep_in_the_air(n=2, detect_rope=True)
+        result = sleep_in_the_air(n=2, detect_rope=True)
         key_up('down')
+        if not result:
+            bot_action.climb_rope(isUP=False)
         return True
 
 

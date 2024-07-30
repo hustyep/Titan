@@ -137,30 +137,30 @@ def climb_rope(isUP=True):
         p = shared_map.platform_point(bot_status.player_pos)
         plat = shared_map.platform_of_point(p)
         assert (plat)
-        if p.y - bot_status.player_pos.y >= 10:
-            direction = 'left' if p.x - plat.begin_x > plat.end_x - p.x else 'right'
-            press_key(direction)
-            click_key('s')
-            release_key(direction)
-            sleep_in_the_air(n=2)
-            bot_status.acting = False
-            return
-
-    press_key(key)
-    time.sleep(0.1)
-    while not shared_map.on_the_platform(bot_status.player_pos):
+        # if p.y - bot_status.player_pos.y >= 10:
+        direction = 'left' if p.x - plat.begin_x > plat.end_x - p.x else 'right'
+        press_key(direction)
+        click_key('s')
+        release_key(direction)
+        sleep_in_the_air(n=2)
+        bot_status.acting = False
+        # return
+    else:
+        press_key(key)
         time.sleep(0.1)
-        step += 1
-        if step > 50:
-            break
-    plat = shared_map.platform_of_point(bot_status.player_pos)
-    assert (plat)
-    direction = 'left' if bot_status.player_pos.x - plat.begin_x > plat.end_x - bot_status.player_pos.x else 'right'
-    press_key(direction)
-    time.sleep(0.2)
-    release_key(key)
-    release_key(direction)
-    bot_status.acting = False
+        while not shared_map.on_the_platform(bot_status.player_pos):
+            time.sleep(0.1)
+            step += 1
+            if step > 50:
+                break
+        plat = shared_map.platform_of_point(bot_status.player_pos)
+        assert (plat)
+        direction = 'left' if bot_status.player_pos.x - plat.begin_x > plat.end_x - bot_status.player_pos.x else 'right'
+        press_key(direction)
+        time.sleep(0.15)
+        release_key(key)
+        release_key(direction)
+        bot_status.acting = False
 
 
 @bot_status.run_if_enabled
