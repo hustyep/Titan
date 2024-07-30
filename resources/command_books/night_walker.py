@@ -323,7 +323,7 @@ class Jump_Up(Command):
         key_down('up')
         time.sleep(0.06 if dy >= 20 else 0.3)
         press(Keybindings.JUMP)
-        time.sleep(0.5)
+        time.sleep(0.8 if dy >= 20 else 0.5)
         key_up('up')
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
