@@ -661,6 +661,9 @@ class Shadow_Attack(Command):
         elif Dominion.canUse():
             Dominion().execute()
             n = 2
+        elif Silence.canUse():
+            Silence().execute()
+            n = 2
         elif SolarCrest.canUse():
             SolarCrest().execute()
         elif Dark_Omen.canUse():
