@@ -223,6 +223,27 @@ class MapModel:
                     intersections = xs_target.intersection(xs_pat)
                     if intersections:
                         return False
+                    
+    def can_walk_down(self, platform_start: Platform, platform_target: Platform):
+        gap = map_helper.platform_gap(platform_start, platform_target)
+        if gap >= 0:
+            return False
+        
+        if set(platform_start.x_range).issubset(set(platform_target.x_range)):
+            return self.can_walk_down(platform_start, Platform(platform_target.begin_x, platform_start.end_x-1, platform_target.y)) or self.can_jump_down(platform_start, Platform(platform_start.begin_x+1, platform_target.end_x, platform_target.y))
+        
+        if platform_target.end_x > platform_start.end_x:
+            x_target = platform_start.end_x + 1
+        else:
+            x_target = platform_start.begin_x - 1
+        for y in range(platform_start.y, platform_target.y):
+            plats = self.platforms_of_y(y)
+            if plats:
+                for plat in plats:
+                    if x_target in plat.x_range:
+                        return False
+        return True
+
 
     def platform_reachable(self, platform_start: Platform | None, platform_target: Platform | None):
         if platform_start is None or platform_target is None:
@@ -255,7 +276,10 @@ class MapModel:
                             intersections = intersections.difference(set(plat.x_range))
                 if len(intersections) > 5:
                     return True
-                return self.can_jump_down(platform_start, platform_target)
+                if self.can_jump_down(platform_start, platform_target):
+                    return True
+            if gap < 0:
+                return self.can_walk_down(platform_start, platform_target)
             
             if gap in range(1, 31):
                 return self.can_jump_down(platform_start, platform_target)

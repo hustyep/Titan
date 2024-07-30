@@ -1055,6 +1055,8 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
         return find_fall_point(start, target)
     if shared_map.current_map.can_jump_down(platform_start, platform_target):
         return find_jump_down_point(start, target)
+    if shared_map.current_map.can_walk_down(platform_start, platform_target):
+        return find_walk_down_point(start, target)
     return find_fall_point(start, target)
 
 
@@ -1126,6 +1128,65 @@ def find_jump_down_point(start: MapPoint, target: MapPoint):
         else:
             return next_p
 
+
+def find_walk_down_point(start: MapPoint, target: MapPoint):
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    assert (shared_map.current_map)
+    assert platform_start
+    assert platform_target
+    
+    left_x = platform_start.begin_x - 1
+    right_x = platform_start.end_x + 1
+
+    if left_x in platform_target.x_range:
+        for y in range(platform_start.y, platform_target.y):
+            plats = shared_map.current_map.platforms_of_y(y)
+            if plats:
+                for plat in plats:
+                    if left_x in plat.x_range:
+                        left_x = None
+                        break
+            if left_x is None:
+                break
+    else:
+        left_x = None
+        
+    if right_x in platform_target.x_range:
+        for y in range(platform_start.y, platform_target.y):
+            plats = shared_map.current_map.platforms_of_y(y)
+            if plats:
+                for plat in plats:
+                    if right_x in plat.x_range:
+                        right_x = None
+                        break
+            if right_x is None:
+                break
+    else:
+        right_x = None
+    
+    if left_x and right_x:
+        target_x = left_x+1 if abs(target.x - left_x) < abs(target.x - right_x) else right_x-1
+    elif left_x:
+        target_x = left_x+1
+    elif right_x:
+        target_x = right_x-1
+    else:
+        target_x = platform_start.begin_x
+    next_p = MapPoint(target_x, start.y, 3)
+    if target_reached(start, next_p):
+        direction = 'left' if abs(platform_start.begin_x - next_p.x) < abs(platform_start.end_x - next_p.x) else 'right'
+        key_down(direction)
+        while bot_status.player_pos.y == start.y:
+            time.sleep(0.1)
+        sleep_in_the_air()
+        key_up(direction)
+        time.sleep(0.01)
+        return target
+    else:
+        return next_p
+        
 
 class Test_Command(Command):
     key = Keybindings.Shadow_Jump
