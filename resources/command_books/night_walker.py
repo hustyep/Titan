@@ -1179,7 +1179,7 @@ def find_walk_down_point(start: MapPoint, target: MapPoint):
         direction = 'left' if abs(platform_start.begin_x - next_p.x) < abs(platform_start.end_x - next_p.x) else 'right'
         key_down(direction)
         while bot_status.player_pos.y == start.y:
-            time.sleep(0.1)
+            time.sleep(0.02)
         sleep_in_the_air()
         key_up(direction)
         time.sleep(0.01)
