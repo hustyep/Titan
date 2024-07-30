@@ -1002,13 +1002,13 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
         return
 
     gap = platform_gap(platform_start, platform_target)
-    if gap <= -3:
+    if gap <= -5:
         # 有交集
         # 优先垂直方向接近
         next_p = MapPoint(start.x, platform_target.y, 2)
-        if target_reached(next_p, target):
-            return next_p
         if shared_map.is_continuous(next_p, target):
+            if target_reached(next_p, target):
+                return next_p
             return target
 
         # 尝试水平方向接近
