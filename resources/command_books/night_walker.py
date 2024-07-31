@@ -1232,10 +1232,10 @@ def find_walk_down_point(start: MapPoint, target: MapPoint):
             time.sleep(0.01)
         key_up(direction)
         time.sleep(0.01)
-        press(opposite_direction(direction))
         if abs(bot_status.player_pos.x - target.x) >= 26:
             DoubleJump(target).execute()
         else:
+            press(opposite_direction(direction))
             sleep_in_the_air()
         return target
     else:
