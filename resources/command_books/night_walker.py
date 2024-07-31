@@ -601,7 +601,7 @@ class Silence(Skill):
     type = SkillType.Attack
     cooldown = 350
     precast = 0.3
-    backswing = 3
+    backswing = 4
     tolerance = 6
 
     @classmethod
@@ -694,14 +694,10 @@ class Shadow_Attack(Command):
             Shadow_Bite().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
-        elif Dominion.canUse():
-            Dominion().execute()
-            n = 2
-        elif Silence.canUse():
-            Silence().execute()
-            n = 2
         elif SolarCrest.canUse():
             SolarCrest().execute()
+        elif Silence.canUse():
+            Silence().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
             n = 2
@@ -826,6 +822,7 @@ class Buff(Command):
             # Shadow_Illusion,
             ForTheGuild,
             HardHitter,
+            Dominion,
             Darkness_Ascending
         ]
 
