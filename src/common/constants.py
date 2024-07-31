@@ -137,6 +137,10 @@ class Platform:
     @property
     def x_range(self):
         return range(self.begin_x, self.end_x + 1)
+    
+    @property
+    def width(self):
+        return self.end_x - self.begin_x + 1
 
     def own_point(self, p: MapPoint):
         return p.y == self.y and p.x in self.x_range

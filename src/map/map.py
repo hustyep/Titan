@@ -204,7 +204,8 @@ class Map:
         for point in points:
             if point == start:
                 continue
-            result += abs(point.y - last.y)
+            if abs(point.y - last.y) > 5:
+                result += abs(point.y - last.y)
             result += abs(point.x - last.x)
             last = point
         return result
