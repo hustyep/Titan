@@ -340,7 +340,7 @@ class Detector(Subject):
 
             bot_status.elite_boss_detected = True
             self.boss_detect_time = time.time()
-        elif self.boss_detect_time > 0 and time.time() - self.boss_detect_time >= 2:
+        elif self.boss_detect_time > 0 and time.time() - self.boss_detect_time > 3:
             self.boss_detect_time = 0
             bot_status.elite_boss_detected = False
             self.on_next((BotInfo.BOSS_DEAD, ))
