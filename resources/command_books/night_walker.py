@@ -174,6 +174,124 @@ def move_down(target: MapPoint):
 #        Y轴移动         #
 #########################
 
+
+# 上跳
+class Jump_Up(Command):
+    key = Keybindings.Shadow_Jump
+    type = SkillType.Move
+    move_range = range(0, 29)
+
+    def __init__(self, target: MapPoint):
+        super().__init__(locals())
+        self.target = target
+
+    def main(self, wait=True):
+        sleep_in_the_air(n=4)
+        evade_rope()
+        dy = bot_status.player_pos.y - self.target.y
+        press(Keybindings.JUMP)
+        key_down('up')
+        time.sleep(0.06 if dy >= 18 else 0.25)
+        press(Keybindings.JUMP)
+        key_up('up')
+        time.sleep(0.8 if dy >= 18 else 0.5)
+        dx = self.target.x - bot_status.player_pos.x
+        direction = 'left' if dx < 0 else 'right'
+        if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
+            key_down(direction)
+            time.sleep(0.02)
+            press(Keybindings.Shadow_Jump)
+            time.sleep(0.02)
+            key_up(direction)
+        elif abs(dx) > self.target.tolerance:
+            if abs(dx) >= 20:
+                key_down(direction)
+                time.sleep(0.02)
+                press(Keybindings.Shadow_Jump)
+                time.sleep(0.02)
+                key_up(direction)
+            elif abs(dx) >= Shadow_Dodge.move_range.start:
+                Shadow_Dodge(direction, wait=False).execute()
+            elif abs(dx) >= 8:
+                key_down(direction)
+                time.sleep(0.1)
+                press(Keybindings.Shadow_Jump)
+                time.sleep(0.05)
+                key_up(direction)
+        result = sleep_in_the_air(n=2, detect_rope=True)
+        if not result:
+            bot_action.climb_rope(isUP=True)
+        return True
+
+
+class Shadow_Rope_Lift(Command):
+    '''自定义绳索'''
+    key = DefaultKeybindings.ROPE_LIFT
+    type = SkillType.Move
+    cooldown = 3
+
+    def __init__(self, target: MapPoint):
+        super().__init__(locals())
+        self.target = target
+
+    def main(self, wait=True):
+        RopeLift(self.target.y).execute()
+        start_time = time.time()
+        while bot_status.player_pos.y > self.target.y:
+            time.sleep(0.1)
+            if time.time() - start_time > 3:
+                DoubleJump().execute()
+                break
+        dx = self.target.x - bot_status.player_pos.x
+        direction = 'left' if dx < 0 else 'right'
+        if abs(dx) >= 30:
+            press(direction)
+            press(Keybindings.Shadow_Jump)
+        elif abs(dx) >= Shadow_Dodge.move_range.start:
+            Shadow_Dodge(direction, wait=False).execute()
+        sleep_in_the_air(n=10)
+        return True
+
+
+class Shadow_Fall(Command):
+
+    def __init__(self, target: MapPoint):
+        super().__init__(locals())
+        self.target = target
+
+    def main(self, wait=True):
+        sleep_in_the_air(n=2)
+        evade_rope()
+        p = bot_status.player_pos
+
+        key_down('down')
+        time.sleep(0.01)
+        press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.1)
+        key_up('down')
+            
+        plat = shared_map.platform_of_point(self.target)
+        assert(plat)
+        direction = 'left' if self.target.x < p.x else 'right'
+        dy = abs(plat.y - p.y)
+        dx = abs(self.target.x - p.x)
+        if dx - dy >= 10 and plat.width > 40:
+            time.sleep(0.1 if dx <= 26 else 0.02)
+            key_down(direction)
+            time.sleep(0.005)
+            press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
+            press(DefaultKeybindings.JUMP, n=2 if dx >= 30 else 1, down_time=0.01, up_time=0.01)
+            key_up(direction)
+            time.sleep(0.005)
+        result = sleep_in_the_air(detect_rope=True)
+        if not result:
+            bot_action.climb_rope(isUP=False)
+        return True
+
+#########################
+#        X轴移动         #
+#########################
+
+
 class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.Shadow_Jump
@@ -301,88 +419,6 @@ class DoubleJump(Skill):
             utils.log_event(
                 f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
         return True
-
-
-# 上跳
-class Jump_Up(Command):
-    key = Keybindings.Shadow_Jump
-    type = SkillType.Move
-    move_range = range(0, 29)
-
-    def __init__(self, target: MapPoint):
-        super().__init__(locals())
-        self.target = target
-
-    def main(self, wait=True):
-        sleep_in_the_air(n=4)
-        evade_rope()
-        dy = bot_status.player_pos.y - self.target.y
-        press(Keybindings.JUMP)
-        key_down('up')
-        time.sleep(0.06 if dy >= 18 else 0.25)
-        press(Keybindings.JUMP)
-        key_up('up')
-        time.sleep(0.8 if dy >= 18 else 0.5)
-        dx = self.target.x - bot_status.player_pos.x
-        direction = 'left' if dx < 0 else 'right'
-        if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
-            key_down(direction)
-            time.sleep(0.02)
-            press(Keybindings.Shadow_Jump)
-            time.sleep(0.02)
-            key_up(direction)
-        elif abs(dx) > self.target.tolerance:
-            if abs(dx) >= 20:
-                key_down(direction)
-                time.sleep(0.02)
-                press(Keybindings.Shadow_Jump)
-                time.sleep(0.02)
-                key_up(direction)
-            elif abs(dx) >= Shadow_Dodge.move_range.start:
-                Shadow_Dodge(direction, wait=False).execute()
-            elif abs(dx) >= 8:
-                key_down(direction)
-                time.sleep(0.1)
-                press(Keybindings.Shadow_Jump)
-                time.sleep(0.05)
-                key_up(direction)
-        result = sleep_in_the_air(n=2, detect_rope=True)
-        if not result:
-            bot_action.climb_rope(isUP=True)
-        return True
-
-
-class Shadow_Rope_Lift(Command):
-    '''自定义绳索'''
-    key = DefaultKeybindings.ROPE_LIFT
-    type = SkillType.Move
-    cooldown = 3
-
-    def __init__(self, target: MapPoint):
-        super().__init__(locals())
-        self.target = target
-
-    def main(self, wait=True):
-        RopeLift(self.target.y).execute()
-        start_time = time.time()
-        while bot_status.player_pos.y > self.target.y:
-            time.sleep(0.1)
-            if time.time() - start_time > 3:
-                DoubleJump().execute()
-                break
-        dx = self.target.x - bot_status.player_pos.x
-        direction = 'left' if dx < 0 else 'right'
-        if abs(dx) >= 30:
-            press(direction)
-            press(Keybindings.Shadow_Jump)
-        elif abs(dx) >= Shadow_Dodge.move_range.start:
-            Shadow_Dodge(direction, wait=False).execute()
-        sleep_in_the_air(n=10)
-        return True
-
-#########################
-#        X轴移动         #
-#########################
 
 
 class Shadow_Dodge(Skill):
@@ -567,7 +603,7 @@ class Silence(Skill):
     precast = 0.3
     backswing = 3
     tolerance = 6
-    
+
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
         if bot_status.elite_boss_appear_time > 0 and time.time() - bot_status.elite_boss_appear_time >= 7000:
@@ -1064,7 +1100,7 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
     if shared_map.current_map.can_jump_down(platform_start, platform_target):
         return find_jump_down_point(start, target)
     if shared_map.current_map.can_walk_down(platform_start, platform_target):
-        walk_down_point= find_walk_down_point(start, target)
+        walk_down_point = find_walk_down_point(start, target)
         if walk_down_point != target:
             fall_down_point = find_fall_point(start, target)
             if fall_down_point:
@@ -1092,7 +1128,7 @@ def find_fall_point(start: MapPoint, target: MapPoint):
                 available_x = available_x.difference(set(plat.x_range))
         if len(available_x) > 0:
             if start.x in available_x:
-                Fall(attack=False, target_x=target.x).execute()
+                Shadow_Fall(target).execute()
                 return target
             else:
                 next_p = point_of_intersection(platform_start, platform_target)
@@ -1151,7 +1187,7 @@ def find_walk_down_point(start: MapPoint, target: MapPoint):
     assert (shared_map.current_map)
     assert platform_start
     assert platform_target
-    
+
     left_x = platform_start.begin_x - 1
     right_x = platform_start.end_x + 1
 
@@ -1167,7 +1203,7 @@ def find_walk_down_point(start: MapPoint, target: MapPoint):
                 break
     else:
         left_x = None
-        
+
     if right_x in platform_target.x_range:
         for y in range(platform_start.y, platform_target.y):
             plats = shared_map.current_map.platforms_of_y(y)
@@ -1180,7 +1216,7 @@ def find_walk_down_point(start: MapPoint, target: MapPoint):
                 break
     else:
         right_x = None
-    
+
     if left_x and right_x:
         target_x = left_x+1 if abs(target.x - left_x) < abs(target.x - right_x) else right_x-1
     elif left_x:
@@ -1204,7 +1240,7 @@ def find_walk_down_point(start: MapPoint, target: MapPoint):
         return target
     else:
         return next_p
-        
+
 
 class Test_Command(Command):
     key = Keybindings.Shadow_Jump
