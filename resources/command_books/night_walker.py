@@ -191,24 +191,20 @@ class Jump_Up(Command):
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
-        time.sleep(0.06 if dy >= 18 else 0.25)
+        time.sleep(0.06 if dy >= 18 else 0.3)
         press(Keybindings.JUMP)
         key_up('up')
         time.sleep(0.8 if dy >= 18 else 0.5)
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
         if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
-            key_down(direction)
-            time.sleep(0.02)
-            press(Keybindings.Shadow_Jump)
-            time.sleep(0.02)
-            key_up(direction)
+            Shadow_Dodge(direction).execute()
         elif abs(dx) > self.target.tolerance:
             if abs(dx) >= 20:
                 key_down(direction)
-                time.sleep(0.02)
+                time.sleep(0.01)
                 press(Keybindings.Shadow_Jump)
-                time.sleep(0.02)
+                time.sleep(0.01)
                 key_up(direction)
             elif abs(dx) >= Shadow_Dodge.move_range.start:
                 Shadow_Dodge(direction, wait=False).execute()
@@ -415,6 +411,12 @@ class DoubleJump(Skill):
             press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
         key_up(direction)
         sleep_in_the_air(n=1)
+        p = bot_status.player_pos
+        plat = shared_map.platform_of_point(self.target)
+        if plat and abs(p.x - plat.begin_x) <= 2:
+            press('right')
+        elif plat and abs(p.x - plat.end_x) <= 2:
+            press('left')
         if need_check and not target_reached(bot_status.player_pos, self.target):
             utils.log_event(
                 f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
