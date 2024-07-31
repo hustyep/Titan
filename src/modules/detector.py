@@ -77,8 +77,7 @@ class Detector(Subject):
     def _main_exception(self):
         while True:
             self.check_minimap()
-            if bot_status.acting and bot_status.lost_minimap:
-                self.clear()
+
             if bot_status.enabled and not bot_status.acting:
                 self.check_boss()
                 self.check_binded()
@@ -88,21 +87,22 @@ class Detector(Subject):
                 self.check_alert()
                 self.check_forground()
                 self.check_init()
-            else:
+            elif bot_status.acting and bot_status.lost_minimap:
                 self.clear()
             time.sleep(0.2)
 
     def clear(self):
         self.player_pos_updated_time = 0
         self.player_pos = (0, 0)
-
+        
         self.others_count = 0
         self.others_comming_time = 0
         self.others_detect_count = 0
         self.others_no_detect_count = 0
 
         self.lost_minimap_time = 0
-        bot_status.others_comming_time = self.others_comming_time
+        bot_status.others_comming_time = 0
+        bot_status.stage_fright = False
 
     def _main_event(self):
         while True:

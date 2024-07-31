@@ -628,22 +628,22 @@ class Shadow_Attack(Command):
 
     def main(self, wait=True):
         assert (shared_map.current_map)
-        while not self.canUse() and not bot_status.elite_boss_detected:
+        while not self.canUse() and not (bot_status.elite_boss_detected and bot_status.stage_fright):
             time.sleep(0.1)
             mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
             if len(mobs) == 0:
                 return False
 
-        if bot_status.elite_boss_detected:
+        if bot_status.elite_boss_detected and bot_status.stage_fright:
             start_time = time.time()
-            while bot_status.elite_boss_detected:
+            while bot_status.elite_boss_detected and bot_status.stage_fright:
                 Burst().execute()
                 if time.time() - start_time >= 15:
                     break
             return True
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 5.5 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 5.5 and not (bot_status.elite_boss_detected and bot_status.stage_fright):
             while not Shadow_Bite.canUse():
                 time.sleep(0.03)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
@@ -757,7 +757,7 @@ class Detect_Mobs(Command):
                 if mobs_count != len(mobs):
                     mobs_count = len(mobs)
                     utils.log_event(f"mobs count = {mobs_count}", bot_settings.debug)
-                if mobs_count >= self.count or bot_status.elite_boss_detected:
+                if mobs_count >= self.count or (bot_status.elite_boss_detected and bot_status.stage_fright):
                     break
                 if time.time() - start >= 7:
                     utils.log_event("Detect_Mobs timeout", bot_settings.debug)

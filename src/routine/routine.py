@@ -443,7 +443,8 @@ class Routine(Subject):
         if event == BotInfo.BOSS_APPEAR:
             self.action_queue.insert(0, commands.Pre_Burst())
         elif event == BotInfo.BOSS_DEAD:
-            self.action_queue.insert(0, commands.Collect_Boss_Essence())
+            if bot_status.stage_fright:
+                self.action_queue.insert(0, commands.Collect_Boss_Essence())
 
 
 routine = Routine()
