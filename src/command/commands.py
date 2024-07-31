@@ -521,19 +521,19 @@ class Fall(Command):
                 direction = 'left' if self.target_x < p.x else 'right'
                 dy = abs(plat.y - p.y)
                 dx = abs(self.target_x - p.x)
-                if dx > dy:
+                if dx - dy >= 20:
                     dx = dx - dy
                     time.sleep(0.2 if dx <= 26 else 0.02)
                     key_down(direction)
                     time.sleep(0.01)
                     press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
-                    press(DefaultKeybindings.JUMP, n=2 if dx >=26 else 1, down_time=0.02, up_time=0.02)
+                    press(DefaultKeybindings.JUMP, n=2 if dx >=30 else 1, down_time=0.01, up_time=0.01)
                     key_up(direction)
                     time.sleep(0.01)
         if self.buff:
             Buff().main(wait=False)  # type: ignore
         time.sleep(0.1)
-        result = sleep_in_the_air(n=2, detect_rope=True)
+        result = sleep_in_the_air(n=4, detect_rope=True)
         if not result:
             bot_action.climb_rope(isUP=False)
         return True

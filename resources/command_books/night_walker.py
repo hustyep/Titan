@@ -107,7 +107,7 @@ def move_horizontal(target: MapPoint):
         DoubleJump(target=target, attack_if_needed=True).execute()
     elif distance >= DoubleJump.move_range.start:
         DoubleJump(target=target, attack_if_needed=True).execute()
-    elif distance >= 15:
+    elif distance >= 15 or distance in range(7, 10):
         DoubleJump(target=target, attack_if_needed=False).execute()
     elif distance >= Shadow_Dodge.move_range.start:
         Shadow_Dodge('left' if d_x < 0 else 'right').execute()
@@ -390,7 +390,7 @@ class Shadow_Dodge(Skill):
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 0.3
+    backswing = 0.2
     move_range = range(10, 15)
     # 12-14
 
