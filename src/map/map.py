@@ -185,6 +185,12 @@ class Map:
         paths = self.current_map.path_between(platform_start, platform_target)
         if paths:
             paths.sort(key=lambda path: self.weight_of_full_path(path, start, target))
+            paths = paths[:3]
+            
+            for path in paths:
+                weight = shared_map.weight_of_full_path(path, start, target)
+                print(f"{str(path)} {weight}")
+            
             if random_path:
                 paths = paths[:3]
                 index = random.randrange(0, len(paths))
