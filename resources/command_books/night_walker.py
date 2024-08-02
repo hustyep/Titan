@@ -450,7 +450,7 @@ class DoubleJump(Skill):
             press('left')
         if need_check and not target_reached(bot_status.player_pos, self.target):
             utils.log_event(
-                f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
+                f"[Failed][DoubleJump] distance={distance} start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
         return True
 
 
