@@ -142,7 +142,7 @@ def sleep_in_the_air(interval=0.02, n=4, detect_rope=False):
         if step >= 150:
             utils.log_event("sleep_in_the_air timeout")
             return True
-        elif detect_rope and step >= 25 and shared_map.on_the_rope(bot_status.player_pos):
+        elif detect_rope and step >= 20 and shared_map.on_the_rope(bot_status.player_pos):
             # 检测是否在绳子上
             return False
         time.sleep(interval)

@@ -200,7 +200,7 @@ class Jump_Up(Command):
         if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
             Shadow_Dodge(direction).execute()
         elif abs(dx) > self.target.tolerance:
-            if abs(dx) >= 20:
+            if abs(dx) >= 15:
                 key_down(direction)
                 time.sleep(0.01)
                 press(Keybindings.Shadow_Jump)

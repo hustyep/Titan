@@ -130,7 +130,6 @@ def jump_down():
 
 @bot_status.run_if_enabled
 def climb_rope(isUP=True):
-    bot_status.acting = True
     step = 0
     key = 'up' if isUP else 'down'
     if key == 'down':
@@ -139,11 +138,10 @@ def climb_rope(isUP=True):
         assert (plat)
         # if p.y - bot_status.player_pos.y >= 10:
         direction = 'left' if p.x - plat.begin_x > plat.end_x - p.x else 'right'
-        press_key(direction)
+        press_key(direction, 0.01)
         click_key('s')
         release_key(direction)
         sleep_in_the_air(n=2)
-        bot_status.acting = False
         # return
     else:
         press_key(key)
@@ -160,7 +158,6 @@ def climb_rope(isUP=True):
         time.sleep(0.15)
         release_key(key)
         release_key(direction)
-        bot_status.acting = False
 
 
 @bot_status.run_if_enabled
