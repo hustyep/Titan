@@ -264,9 +264,9 @@ class Shadow_Fall(Command):
         time.sleep(0.01)
         press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.1)
         key_up('down')
-            
+
         plat = shared_map.platform_of_point(self.target)
-        assert(plat)
+        assert (plat)
         direction = 'left' if self.target.x < p.x else 'right'
         dy = abs(plat.y - p.y)
         dx = abs(self.target.x - p.x)
@@ -366,6 +366,34 @@ class DoubleJump(Skill):
                 self.double_jump(times[0], times[1])
                 self.scram(direction, times[2], times[3])
 
+    def caculate_distance(self, target: MapPoint):
+        start_p = shared_map.fixed_point(bot_status.player_pos)
+        start_plat = shared_map.platform_of_point(start_p)
+        target_plat = shared_map.platform_of_point(target)
+        assert target_plat
+
+        dx = target.x - start_p.x
+        if start_plat == target_plat:
+            return abs(dx)
+        good_x1 = set()
+        good_x2 = set()
+        for x in range(target.x - target.tolerance, target.x + target.tolerance + 1):
+            distance = abs(x - start_p.x)
+            config = self.time_config(distance)
+            if abs(x - target_plat.begin_x) > 2 and abs(x - target_plat.end_x) > 2:
+                good_x1.add(x)
+            if len(config) < 4 or config[3] != 0.02:
+                good_x2.add(x)
+        good_x = good_x1.intersection(good_x2)
+        target_x = target.x
+        if good_x:
+            target_x = list(good_x)[randrange(0, len(good_x))]
+        elif good_x1:
+            target_x = list(good_x1)[randrange(0, len(good_x1))]
+        elif good_x2:
+            target_x = list(good_x2)[randrange(0, len(good_x2))]
+        return abs(start_p.x - target_x)
+
     def main(self, wait=True):
         while not self.canUse():
             utils.log_event("double jump waiting", bot_settings.debug)
@@ -383,7 +411,7 @@ class DoubleJump(Skill):
         dy = self.target.y - bot_status.player_pos.y
         direction = 'left' if dx < 0 else 'right'
         start_p = bot_status.player_pos
-        distance = abs(dx)
+        distance = self.caculate_distance(self.target)
 
         self.__class__.castedTime = time.time()
         key_down(direction)
