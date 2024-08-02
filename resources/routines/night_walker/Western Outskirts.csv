@@ -4,7 +4,7 @@ $, target=move_tolerance, value=10
 
 ~, label=summon1, interval=45, skip=False
 *, x=142, y=62, interval=0, tolerance=5, detect=False, skip=False
-    Detect_Mobs, count=5
+    Detect_Mobs, count=4
     Shadow_Attack, attack=False
     Greater_Dark_Servant
 *, x=77, y=74, interval=0, tolerance=5, detect=False, skip=False
@@ -23,7 +23,7 @@ $, target=move_tolerance, value=10
 
 ~, label=pickup1, interval=120, skip=False
 *, x=143, y=62, interval=0, tolerance=5, detect=False, skip=False
-    Detect_Mobs, count=5
+    Detect_Mobs, count=4
     Shadow_Attack, attack=False
     Replace_Dark_Servant, resummon=True
 *, x=104, y=40, interval=0, tolerance=8, detect=False, skip=False
@@ -33,7 +33,7 @@ $, target=move_tolerance, value=10
 
 ~, label=pickup2, interval=120, skip=False
 *, x=143, y=62, interval=0, tolerance=5, detect=False, skip=False
-    Detect_Mobs, count=5
+    Detect_Mobs, count=4
     Shadow_Attack, attack=False
     Replace_Dark_Servant, resummon=True
 *, x=176, y=58, interval=0, tolerance=8, detect=False, skip=False
@@ -44,7 +44,7 @@ $, target=move_tolerance, value=10
 
 ~, label=pickup3, interval=120, skip=False
 *, x=143, y=62, interval=0, tolerance=5, detect=False, skip=False
-    Detect_Mobs, count=5
+    Detect_Mobs, count=4
     Shadow_Attack, attack=False
 *, x=187, y=74, interval=0, tolerance=8, detect=False, skip=False
 #

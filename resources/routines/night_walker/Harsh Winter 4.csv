@@ -9,7 +9,7 @@ $, target=move_tolerance, value=10
     Greater_Dark_Servant
 *, x=78, y=75, interval=0, tolerance=8, detect=False, skip=False
     Fall
-    Wait, duration=0.6
+    Wait, duration=1
     Direction, direction=up
     Wait, duration=0.6
 *, x=155, y=39, interval=0, tolerance=5, detect=False, skip=False
