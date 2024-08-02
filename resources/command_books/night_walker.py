@@ -163,7 +163,7 @@ def move_down(target: MapPoint):
     if target.x in intersections:
         next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
         if shared_map.on_the_platform(next_p):
-            Fall().execute()
+            Shadow_Fall(target).execute()
         else:
             DoubleJump(target, False)
     else:
@@ -263,7 +263,6 @@ class Shadow_Fall(Command):
         key_down('down')
         time.sleep(0.01)
         press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.1)
-        key_up('down')
 
         plat = shared_map.platform_of_point(self.target)
         assert (plat)
@@ -271,6 +270,7 @@ class Shadow_Fall(Command):
         dy = abs(plat.y - p.y)
         dx = abs(self.target.x - p.x)
         if dx - dy >= 10 and plat.width > 40:
+            key_up('down')
             time.sleep(0.1 if dx <= 26 else 0.02)
             key_down(direction)
             time.sleep(0.005)
@@ -278,7 +278,10 @@ class Shadow_Fall(Command):
             press(DefaultKeybindings.JUMP, n=2 if dx >= 30 else 1, down_time=0.01, up_time=0.01)
             key_up(direction)
             time.sleep(0.005)
-        result = sleep_in_the_air(detect_rope=True)
+        else:
+            time.sleep(0.3)
+            key_up('down')
+        result = sleep_in_the_air(n=4, detect_rope=True)
         if not result:
             bot_action.climb_rope(isUP=False)
         return True
@@ -1133,7 +1136,7 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
             if fall_down_point:
                 return fall_down_point
             else:
-                return fall_down_point
+                return walk_down_point
     return find_fall_point(start, target)
 
 

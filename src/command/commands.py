@@ -498,42 +498,32 @@ class Fall(Command):
     from their starting position.
     """
 
-    def __init__(self, attack=False, target_x=0, buff=False):
+    def __init__(self, attack=False, forward=False, buff=False):
         super().__init__(locals())
         self.attack = bot_settings.validate_boolean(attack)
-        self.target_x = bot_settings.validate_nonnegative_int(target_x)
+        self.forward = bot_settings.validate_boolean(forward)
         self.buff = bot_settings.validate_boolean(buff)
 
     def main(self, wait=True):
+        sleep_in_the_air(n=4)
         evade_rope()
         key_down('down')
-        time.sleep(0.03)
-        sleep_in_the_air(n=4)
-        press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.1)
-        key_up('down')
+        time.sleep(0.01)
+        press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
         if self.attack:
+            key_up('down')
             Attack().main()
-        elif self.target_x > 0:
-            p = bot_status.player_pos
-            p.y = p.y + 1
-            plat = shared_map.platform_of_point(shared_map.platform_point(p))
-            if plat:
-                direction = 'left' if self.target_x < p.x else 'right'
-                dy = abs(plat.y - p.y)
-                dx = abs(self.target_x - p.x)
-                if dx - dy >= 20:
-                    dx = dx - dy
-                    time.sleep(0.2 if dx <= 26 else 0.02)
-                    key_down(direction)
-                    time.sleep(0.01)
-                    press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
-                    press(DefaultKeybindings.JUMP, n=2 if dx >=30 else 1, down_time=0.01, up_time=0.01)
-                    key_up(direction)
-                    time.sleep(0.01)
+        elif self.forward:
+            key_up('down')
+            time.sleep(0.2)
+            press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
+            press(DefaultKeybindings.FLASH_JUMP, down_time=0.02, up_time=0.02)
         if self.buff:
+            key_up('down')
             Buff().main(wait=False)  # type: ignore
-        time.sleep(0.1)
-        result = sleep_in_the_air(n=4, detect_rope=True)
+        time.sleep(0.4)
+        result = sleep_in_the_air(n=2, detect_rope=True)
+        key_up('down')
         if not result:
             bot_action.climb_rope(isUP=False)
         return True
