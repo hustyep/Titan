@@ -1071,14 +1071,14 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
     if gap <= -5:
         # 有交集
         # 优先垂直方向接近
-        next_p = MapPoint(start.x, platform_target.y, 2)
+        next_p = MapPoint(start.x, platform_target.y, 3)
         if shared_map.is_continuous(next_p, target):
             if target_reached(next_p, target):
                 return next_p
             return target
 
         # 尝试水平方向接近
-        next_p = MapPoint(target.x, start.y, 2)
+        next_p = MapPoint(target.x, start.y, target.tolerance)
         if not shared_map.is_continuous(start, next_p):
             next_p = None
         if next_p:
