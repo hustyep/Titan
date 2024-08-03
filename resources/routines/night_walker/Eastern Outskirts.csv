@@ -1,0 +1,50 @@
+$, target=move_tolerance, value=10
+*, x=65, y=59, interval=999999, tolerance=100, detect=False, skip=False
+    Sol_Janus, type=1
+
+~, label=summon1, interval=45, skip=False
+*, x=65, y=59, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=4
+    Shadow_Attack, attack=False
+    Greater_Dark_Servant
+*, x=131, y=74, interval=0, tolerance=5, detect=False, skip=False
+    ErdaShower, direction=right
+    Replace_Dark_Servant, resummon=False
+#
+
+@, label=mobbing
+*, x=65, y=59, interval=0, tolerance=5, detect=False, skip=False
+    Check_Others
+    Detect_Mobs, count=5
+    Shadow_Attack, attack=True
+    Buff
+    Potion
+    FeedPet
+
+~, label=pickup1, interval=120, skip=False
+*, x=65, y=59, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=4
+    Shadow_Attack, attack=False
+    Replace_Dark_Servant, resummon=True
+*, x=18, y=41, interval=0, tolerance=8, detect=False, skip=False
+    Wait, duration=0.3
+    Replace_Dark_Servant, resummon=False
+#
+
+~, label=pickup2, interval=120, skip=False
+*, x=65, y=59, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=4
+    Shadow_Attack, attack=False
+    Replace_Dark_Servant, resummon=True
+*, x=103, y=58, interval=0, tolerance=5, detect=False, skip=False
+*, x=115, y=41, interval=0, tolerance=8, detect=False, skip=False
+    Wait, duration=0.3
+    Replace_Dark_Servant, resummon=False
+#
+
+~, label=pickup3, interval=120, skip=False
+*, x=65, y=59, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=4
+    Shadow_Attack, attack=False
+*, x=16, y=74, interval=0, tolerance=5, detect=False, skip=False
+#

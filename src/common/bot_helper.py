@@ -208,20 +208,20 @@ def get_available_map_names():
 
 
 def identify_map_name():
-    available_map_names = []
-    for map in shared_map.available_maps:
-        available_map_names.append(map.name)
-
     frame = capture.map_name_frame
-    result = utils.image_match_text(frame, available_map_names, 0.8, filter=[])
-    if result:
-        return result
 
     available_map_names = get_available_map_names()
     for name in available_map_names:
         name_image = cv2.imread('resources/maps/minimap_name/'+name+'.png')
-        if utils.multi_match(capture.map_name_frame, name_image):
+        if utils.multi_match(capture.map_name_frame, name_image, 0.98):
             return name
+        
+    available_map_names = []
+    for map in shared_map.available_maps:
+        available_map_names.append(map.name)
+    result = utils.image_match_text(frame, available_map_names, 0.8, filter=[])
+    if result:
+        return result
 
 def get_full_pos(pos):
     return pos[0] + capture.window['left'], pos[1] + capture.window['top']

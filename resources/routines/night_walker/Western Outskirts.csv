@@ -21,7 +21,7 @@ $, target=move_tolerance, value=10
     Potion
     FeedPet
 
-~, label=pickup1, interval=120, skip=False
+~, label=pickup1, interval=110, skip=False
 *, x=143, y=62, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=4
     Shadow_Attack, attack=False
@@ -31,20 +31,20 @@ $, target=move_tolerance, value=10
     Replace_Dark_Servant, resummon=False
 #
 
-~, label=pickup2, interval=120, skip=False
+~, label=pickup2, interval=110, skip=False
 *, x=143, y=62, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=4
     Shadow_Attack, attack=False
     Replace_Dark_Servant, resummon=True
 *, x=176, y=58, interval=0, tolerance=8, detect=False, skip=False
-*, x=190, y=44, interval=0, tolerance=8, detect=False, skip=False
+*, x=198, y=44, interval=0, tolerance=8, detect=False, skip=False
     Wait, duration=0.3
     Replace_Dark_Servant, resummon=False
 #
 
-~, label=pickup3, interval=120, skip=False
+~, label=pickup3, interval=110, skip=False
 *, x=143, y=62, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=4
     Shadow_Attack, attack=False
-*, x=190, y=74, interval=0, tolerance=5, detect=False, skip=False
+*, x=196, y=74, interval=0, tolerance=5, detect=False, skip=False
 #
