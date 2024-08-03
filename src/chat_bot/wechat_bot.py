@@ -82,6 +82,7 @@ class WechatBot:
             return
         image = self.shot_new_msg()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
         height, width = gray.shape
         if np.count_nonzero(gray == 245) / height / width > 0.8:
             return
@@ -139,7 +140,7 @@ class WechatBot:
         self.send_image(imagePath=image_path)
 
     def say_command(self, msg: str):
-        list = msg.split(' ')
+        list = msg.split(':')
         if len(list) > 1:
             message, image_path = self.command_handler(ChatBotCommand.SAY, str(list[1]))
             self.send_message(message, imagePath=image_path)

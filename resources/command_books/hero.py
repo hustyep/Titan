@@ -125,6 +125,7 @@ def move_up(target):
         UpwardCharge(True if dy > 15 else False).execute()
     else:
         RopeLift(dy).execute()
+        sleep_in_the_air(n=30)
 
 
 @bot_status.run_if_enabled

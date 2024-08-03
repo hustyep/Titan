@@ -90,7 +90,7 @@ def mouse_double_click(position=None, delay=0.05):
 def setClipboard(text: str):
     wc.OpenClipboard()
     wc.EmptyClipboard()
-    wc.SetClipboardData(win32con.CF_UNICODETEXT, text)
+    wc.SetClipboardData(win32con.CF_UNICODETEXT, str(text))
     wc.CloseClipboard()
 
 
@@ -100,15 +100,17 @@ def setClipboard(text: str):
 
 def __say(text: str):
     setClipboard(str(text))
-    click_key('enter', 0.3)
-    press_key("ctrl", 0.05)
-    click_key("v", 0.05)
-    release_key("ctrl", 0.3)
-    click_key('enter', 0.3)
-    click_key('enter', 0.05)
+    hid.key_press('enter')
+    hid.key_down("ctrl")
+    hid.key_press("v")
+    hid.key_up("ctrl")
+    time.sleep(0.3)
+    hid.key_press('enter')
+    time.sleep(0.2)
+    hid.key_press('enter')
+    time.sleep(0.1)
 
 
-@bot_status.run_if_enabled
 def say_to_all(text: str):
     bot_status.acting = True
     time.sleep(1)
@@ -128,19 +130,34 @@ def jump_down():
 
 @bot_status.run_if_enabled
 def climb_rope(isUP=True):
-    bot_status.acting = True
     step = 0
     key = 'up' if isUP else 'down'
-    press_key(key)
-    time.sleep(0.1)
-    while not shared_map.on_the_platform(bot_status.player_pos):
+    if key == 'down':
+        p = shared_map.platform_point(bot_status.player_pos)
+        plat = shared_map.platform_of_point(p)
+        assert (plat)
+        # if p.y - bot_status.player_pos.y >= 10:
+        direction = 'left' if p.x - plat.begin_x > plat.end_x - p.x else 'right'
+        press_key(direction, 0.01)
+        click_key('s')
+        release_key(direction)
+        sleep_in_the_air(n=2)
+        # return
+    else:
+        press_key(key)
         time.sleep(0.1)
-        step += 1
-        if step > 50:
-            break
-    time.sleep(0.1)
-    release_key(key)
-    bot_status.acting = False
+        while not shared_map.on_the_platform(bot_status.player_pos):
+            time.sleep(0.1)
+            step += 1
+            if step > 50:
+                break
+        plat = shared_map.platform_of_point(bot_status.player_pos)
+        assert (plat)
+        direction = 'left' if bot_status.player_pos.x - plat.begin_x > plat.end_x - bot_status.player_pos.x else 'right'
+        press_key(direction)
+        time.sleep(0.15)
+        release_key(key)
+        release_key(direction)
 
 
 @bot_status.run_if_enabled
@@ -215,6 +232,7 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
         mouse_left_click(delay=0.3)
         frame = capture.frame
         if frame is None:
+            bot_status.acting = False
             return False
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
@@ -232,6 +250,7 @@ def teleport_to_map(map_name: str, retried_count=0, max_retry_count=5) -> bool:
         else:
             click_key('esc', delay=0.1)
             click_key('esc', delay=0.1)
+            bot_status.acting = False
             return teleport_to_map(map_name, retried_count+1)
     else:
         print("[error]cant open teleport stone")
@@ -250,6 +269,7 @@ def teleport_random_town(retried_count=0, max_retry_count=3):
         if not mouse_move(TELEPORT_STONE_SHOW_TOWNS_TEMPLATE):
             print("[error]cant fined TELEPORT_STONE_SHOW_TOWNS_TEMPLATE")
             mouse_move_relative(-20, 20)
+            bot_status.acting = False
             return teleport_random_town(retried_count+1)
         mouse_left_click()
         press_key("down")
@@ -260,11 +280,13 @@ def teleport_random_town(retried_count=0, max_retry_count=3):
         if not mouse_move(TELEPORT_STONE_MOVE_TEMPLATE):
             print("[error]cant find move button")
             mouse_move_relative(-20, 20)
+            bot_status.acting = False
             return teleport_random_town(retried_count+1)
         mouse_left_click(delay=0.3)
         frame = capture.frame
         if frame is None:
             time.sleep(0.3)
+            bot_status.acting = False
             return teleport_random_town(retried_count+1)
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 100) // 2
@@ -278,13 +300,13 @@ def teleport_random_town(retried_count=0, max_retry_count=3):
         else:
             click_key('esc', delay=0.1)
             click_key('esc')
+            bot_status.acting = False
             return teleport_random_town(retried_count+1)
     else:
         print("[error]cant open teleport stone")
         mouse_move_relative(-20, 20)
+        bot_status.acting = False
         return teleport_random_town(retried_count+1)
-    
-    
 
 
 @bot_status.run_if_enabled
@@ -320,10 +342,11 @@ def _change_channel(num: int = 0, instance=True) -> None:
         click_key('down')
         click_key('right')
         click_key('enter')
-    time.sleep(1)
+    time.sleep(2)
 
     frame = capture.frame
     if frame is None:
+        bot_status.acting = False
         return
     x = (frame.shape[1] - 260) // 2
     y = (frame.shape[0] - 220) // 2
@@ -333,11 +356,13 @@ def _change_channel(num: int = 0, instance=True) -> None:
         click_key('esc')
         time.sleep(1)
         _change_channel(num, instance)
+        bot_status.acting = False
         return
 
     wait_until_map_changed()
 
     if not bot_status.enabled:
+        bot_status.acting = False
         return
 
     chat_bot.send_message('channel changed', capture.frame)
@@ -347,6 +372,7 @@ def _change_channel(num: int = 0, instance=True) -> None:
         bot_status.acting = False
     else:
         _change_channel(num, instance)
+        bot_status.acting = False
 
 
 @bot_status.run_if_enabled
@@ -513,22 +539,6 @@ def stop_game():
     release_key('alt', 0.5)
     click_key('enter', 10)
     hid.consumer_sleep()
-
-
-@bot_status.run_if_enabled
-def take_daily_quest():
-    bot_status.acting = True
-    mouse_move(QUEST_BUBBLE_TEMPLATE,
-               Rect(0, 200, 100, 100),
-               YELLOW_RANGES)
-    mouse_left_click(delay=0.3)
-    click_key('down')
-    click_key(
-        bot_settings.SystemKeybindings.INTERACT, delay=0.3)
-    click_key('y', delay=0.3)
-    click_key(
-        bot_settings.SystemKeybindings.INTERACT, delay=0.3)
-    bot_status.acting = False
 
 
 def handle_white_room():

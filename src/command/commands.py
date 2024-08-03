@@ -2,6 +2,7 @@ import time
 import os
 from abc import ABC, abstractmethod
 from enum import Enum
+from random import randrange
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils, bot_action, bot_helper
 from src.common.gui_setting import gui_setting
@@ -42,7 +43,8 @@ class DefaultKeybindings:
     GODDESS_BLESSING = '1'
     SolarCrest = '5'
     Will_of_Erda = 'home'
-    Sol_Janus = ''
+    Sol_Janus_Dawn = 't'
+    Sol_Janus = ';'
 
 
 class Command():
@@ -248,16 +250,17 @@ def find_first_gap(start: tuple[int, int], target: tuple[int, int]):
             return (start_x+2, start[1])
 
 
+@bot_status.run_if_enabled
 def evade_rope(up=False):
     if not shared_map.near_rope(bot_status.player_pos, up):
         return
     pos = bot_status.player_pos
-    target_l = MapPoint(pos.x - 3, pos.y, 2)
-    target_r = MapPoint(pos.x + 3, pos.y, 2)
-    if shared_map.is_floor_point(target_l, count_none=False):
-        Walk(target_l).execute()
-    elif shared_map.is_floor_point(target_r, count_none=False):
-        Walk(target_r).execute()
+    pos = shared_map.fixed_point(pos)
+    plat = shared_map.platform_of_point(pos)
+    if not plat:
+        return
+    direction = 'left' if pos.x - plat.begin_x > plat.end_x - pos.x else 'right'
+    press(direction, down_time=0.1)
 
 
 def opposite_direction(direction):
@@ -295,6 +298,7 @@ def target_reached(start: MapPoint, target: MapPoint):
     # else:
     return abs(start.y - target.y) <= target.tolerance_v and abs(start.x - target.x) <= target.tolerance
 
+
 def random_direction():
     if random() > 0.5:
         return 'left'
@@ -305,10 +309,11 @@ def random_direction():
 #      Abstract Command     #
 #############################
 
-class Attack(ABC):
+
+class Attack(Command):
     """Undefined 'Attack' command for the default command book."""
     @abstractmethod
-    def __init__(self, detect: bool):
+    def __init__(self):
         pass
 
 
@@ -362,7 +367,7 @@ class Walk(Command):
             if abs(d_x) > 1:
                 sleep_time = (abs(d_x) - 1) * 0.07
             else:
-                sleep_time = 0.08
+                sleep_time = 0.05
             key_down(direction)
             time.sleep(sleep_time)
             key_up(direction)
@@ -500,13 +505,14 @@ class Fall(Command):
         self.buff = bot_settings.validate_boolean(buff)
 
     def main(self, wait=True):
-        # evade_rope()
+        sleep_in_the_air(n=4)
+        evade_rope()
         key_down('down')
-        time.sleep(0.03)
+        time.sleep(0.01)
         press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.05)
         if self.attack:
             key_up('down')
-            Attack().main()  # type: ignore
+            Attack().main()
         elif self.forward:
             key_up('down')
             time.sleep(0.2)
@@ -515,13 +521,16 @@ class Fall(Command):
         if self.buff:
             key_up('down')
             Buff().main(wait=False)  # type: ignore
-
-        sleep_in_the_air(n=1, detect_rope=True)
+        time.sleep(0.4)
+        result = sleep_in_the_air(n=2, detect_rope=True)
         key_up('down')
+        if not result:
+            bot_action.climb_rope(isUP=False)
         return True
 
+
 class Use_Portal(Command):
-    
+
     def __init__(self, portal: Portal, count=0):
         self.portal = portal
         self.count = count
@@ -534,15 +543,92 @@ class Use_Portal(Command):
             Move(self.portal.entrance.x, self.portal.entrance.y, 5).execute()
             Walk(self.portal.entrance, use_portal=True).execute()
             return True
-        
-        
+
+
+class Jump_Around(Command):
+
+    def __init__(self, direction=None):
+        self.direction = bot_settings.validate_horizontal_arrows(direction)
+        if self.direction is None:
+            self.direction = random_direction()
+
+    def main(self, wait=True):
+        direction = self.direction
+        key_down(direction)
+        time.sleep(0.01)
+        press(DefaultKeybindings.JUMP, 2, 0.02, 0.02)
+        key_up(direction)
+        time.sleep(0.01)
+        Attack().execute()
+        sleep_in_the_air()
+        key_down(opposite_direction(direction))
+        time.sleep(0.01)
+        press(DefaultKeybindings.JUMP, 2, 0.02, 0.02)
+        key_up(opposite_direction(direction))
+        time.sleep(0.01)
+        Attack().execute()
+        sleep_in_the_air()
+        return True
+
+
+class Walk_Around(Command):
+    def main(self, wait=True):
+        plat = shared_map.platform_of_point(bot_status.player_pos)
+        if not plat:
+            return False
+        direction = 'left' if plat.begin_x - bot_status.player_pos.x >= plat.end_x - bot_status.player_pos.x else 'right'
+        walk_time = 0.2
+        press(direction, down_time=walk_time)
+        Attack().execute()
+        press(opposite_direction(direction), down_time=walk_time)
+        return True
+
+
+class Random_Action(Command):
+    def main(self, wait=True):
+        match randrange(1, 4):
+            case 0:
+                Jump_Around().execute()
+            case 1:
+                Direction(random_direction()).execute()
+                Jump(0.2, attack=True).execute()
+            case 2:
+                Direction(random_direction()).execute()
+                Jump(0.1, attack=True).execute()
+                Jump(0.1, attack=True).execute()
+            case 3:
+                Walk_Around().execute()
+        return True
+
+
+class Check_Others(Command):
+    def main(self, wait=True):
+        if bot_status.stage_fright and time.time() - bot_status.others_comming_time >= 180:
+            time.sleep(3)
+            press('shift')
+            time.sleep(4)
+            bot_action.change_channel()
+            return True
+        return False
+
+
+class Collect_Boss_Essence(Command):
+    def main(self, wait=True):
+        Walk_Around().execute()
+        time.sleep(0.1)
+        Fall().execute()
+        time.sleep(0.1)
+        Jump_Around().execute()
+        return True
+
+
 class SolveRune(Command):
     """
     Moves to the position of the rune and solves the arrow-key puzzle.
     :param sct:     The mss instance object with which to take screenshots.
     :return:        None
     """
-    cooldown = 8
+    cooldown = 7
     max_attempts = 3
 
     def __init__(self, target: MapPoint, attempts=0):
@@ -555,9 +641,9 @@ class SolveRune(Command):
         frame = capture.frame
         if frame is None:
             return False
-        rune_buff = bot_helper.rune_buff_match(frame)
-        if len(rune_buff) > 0:
-            return False
+        # rune_buff = bot_helper.rune_buff_match(frame)
+        # if len(rune_buff) > 0:
+        #     return False
         return super().canUse(next_t)
 
     def main(self, wait=True):  # type: ignore
@@ -572,44 +658,38 @@ class SolveRune(Command):
             return -1, capture.frame
         bot_status.rune_solving = True
         Move(x=self.target.x, y=self.target.y, tolerance=1).execute()
-        time.sleep(0.5)
-        sleep_in_the_air(n=50)
+        time.sleep(0.3)
+        sleep_in_the_air(n=10)
         # Inherited from Configurable
         bot_status.acting = True
-        press(DefaultKeybindings.INTERACT, 1, down_time=0.3, up_time=0.5)
+        press(DefaultKeybindings.INTERACT, 1, down_time=0.3, up_time=0.3)
 
         print('\nSolving rune:')
         used_frame = None
         find_solution = False
-        for i in range(4):
-            frame = capture.frame
-            solution = rune.show_magic(frame)
-            if solution is None:
-                return -1, frame
-            if len(solution) == 4:
-                print('Solution found, entering result')
-                print(', '.join(solution))
-                used_frame = frame
-                find_solution = True
-                for arrow in solution:
-                    press(arrow, 1, down_time=0.1)
-                self.__class__.castedTime = time.time()
-                break
-            time.sleep(0.1)
-
-        if find_solution:
-            # 成功激活，识别出结果，待进一步判断
-            bot_status.rune_solving = False
-            bot_status.acting = False
-            return 1, used_frame
-        elif len(bot_helper.rune_buff_match(capture.frame)) > 0:
-            # 成功激活，识别失败
+        frame = capture.frame
+        solution = rune.show_magic(frame)
+        if solution is not None and len(solution) == 4:
+            print('Solution found, entering result')
+            print(', '.join(solution))
+            used_frame = frame
+            for arrow in solution:
+                press(arrow, 1, down_time=0.1)
+        bot_status.acting = False
+        time.sleep(0.3)
+        buff_count = len(bot_helper.rune_buff_match(capture.frame))
+        if buff_count == 1:
+            print("成功激活，识别失败")
             self.__class__.castedTime = time.time()
             bot_status.rune_solving = False
-            bot_status.acting = False
             return -1, used_frame
+        elif buff_count > 1:
+            print("成功激活，识别出结果，待进一步判断")
+            self.__class__.castedTime = time.time()
+            bot_status.rune_solving = False
+            return 1, used_frame
         else:
-            # 未成功激活
+            print("未成功激活")
             time.sleep(0.5)
             return SolveRune(self.target, self.attempts + 1).execute()
 
@@ -819,9 +899,19 @@ class Aoe(Skill):
         return False
 
 
+class Pre_Burst(Command):
+    def main(self, wait=True):
+        pass
+
+
+class Burst(Command):
+    def main(self, wait=True):
+        pass
+
 #########################
 #      Common Skill     #
 #########################
+
 
 class LastResort(Skill):
     key = DefaultKeybindings.LAST_RESORT
@@ -909,13 +999,48 @@ class ErdaShower(Skill):
         return True
 
 
-class Sol_Janus(Skill):
+class Sol_Janus(Command):
     key = DefaultKeybindings.Sol_Janus
+    type = SkillType.Summon
+    cooldown = 3
+    precast = 0.2
+    backswing = 0.2
+
+    # 1: dusk; 2: dawn
+    def __init__(self, type: int):
+        super().__init__(locals())
+        self.type = bot_settings.validate_nonnegative_int(type)
+
+    def main(self, wait=True):
+        press(self.key, down_time=0.5, up_time=0.2)
+        press('right' if self.type == 1 else 'left', down_time=0.02, up_time=0.02)
+        return True
+
+
+class Sol_Janus_Dawn(Command):
+    key = DefaultKeybindings.Sol_Janus_Dawn
     type = SkillType.Summon
     cooldown = 60
     precast = 0.3
     backswing = 0.6
     duration = 120
+    count = 3
+
+    def __init__(self, direction=None, jump=False):
+        super().__init__(locals())
+        self.jump = bot_settings.validate_boolean(jump)
+        if direction is None:
+            self.direction = direction
+        else:
+            self.direction = bot_settings.validate_horizontal_arrows(direction)
+
+    def main(self, wait=True):
+        if self.direction:
+            Direction(self.direction).execute()
+        if self.jump:
+            press(DefaultKeybindings.JUMP)
+        press(self.key, down_time=0.6)
+        return True
 
 
 class Will_of_Erda(Command):
@@ -1031,7 +1156,12 @@ class RopeLift(Skill):
         press_acc(self.key)
         # 50：0.97
         # 42：
-        if dy >= 55:
+        has_upper_plat = False
+        for y in range(0, self.target_y):
+            if shared_map.is_floor_point(MapPoint(bot_status.player_pos.x, y)):
+                has_upper_plat = True
+                break
+        if dy >= 55 or not has_upper_plat:
             pass
         elif dy >= 50:
             time.sleep(0.97)
@@ -1042,7 +1172,7 @@ class RopeLift(Skill):
         else:
             time.sleep(0.24)
             press(self.key)
-        sleep_in_the_air(n=30)
+        # sleep_in_the_air(n=30)
         return True
 
 ###################

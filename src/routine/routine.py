@@ -60,6 +60,8 @@ class Routine(Subject):
         self.command_book = None
         self.settings: list[Setting] = []
 
+        self.action_queue: list[commands.Command] = []
+
     @dirty
     @update
     def set(self, arr):
@@ -178,12 +180,29 @@ class Routine(Subject):
                 f"\n[!] Found invalid arguments for '{target.__class__.__name__}':")
             print(f"{' ' * 4} -  {e}")
 
+    def check_summon_sequence(self):
+        element = self.sequence[self.index]
+        if not isinstance(element, Sequence) and not isinstance(element, Label):
+            return
+        for index, element in enumerate(self.sequence):
+            if isinstance(element, Sequence) and element.label.lower().startswith('summon') and element.interval > 0 and element.last_execute_time > 0 and time.time() - element.last_execute_time >= element.interval:
+                self.index = index
+                break
+
     def current_step(self):
         return self.sequence[self.index]
 
     @bot_status.run_if_enabled
     def step(self):
         """Increments config.seq_index and wraps back to 0 at the end of config.sequence."""
+        if self.action_queue:
+            # 临时插入的action
+            action = self.action_queue[0]
+            action.execute()
+            self.action_queue.remove(action)
+            return
+
+        self.check_summon_sequence()
         self._run()
         add = 1
         element = self.current_step()
@@ -383,7 +402,7 @@ class Routine(Subject):
             if tmp is not None:
                 result, frame = tmp
                 threading.Thread(target=self.solve_rune_callback,
-                                args=(result, frame)).start()
+                                 args=(result, frame)).start()
             else:
                 bot_status.rune_pos = None
                 bot_status.rune_closest_pos = None
@@ -419,6 +438,13 @@ class Routine(Subject):
         file_path = 'screenshot/rune_failed'
         utils.save_screenshot(
             frame=used_frame, file_path=file_path, compress=False)
+
+    def on_bot_event(self, event):
+        if event == BotInfo.BOSS_APPEAR:
+            self.action_queue.insert(0, commands.Pre_Burst())
+        elif event == BotInfo.BOSS_DEAD:
+            if bot_status.stage_fright:
+                self.action_queue.insert(0, commands.Collect_Boss_Essence())
 
 
 routine = Routine()

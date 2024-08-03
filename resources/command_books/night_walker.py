@@ -14,6 +14,7 @@ from src.map.map_helper import *
 from src.map.map import shared_map
 from src.modules.capture import capture
 from src.chat_bot.chat_bot import chat_bot
+from src.models.map_model import Min_Jumpable_Gap, Max_Jumpable_Gap
 
 # List of key mappings
 
@@ -87,7 +88,7 @@ def step(target: MapPoint):
         return
 
     d_y = next_p.y - bot_status.player_pos.y
-    if abs(d_y) > target.tolerance_v:
+    if abs(d_y) > 5:
         if d_y > 0:
             move_down(next_p)
         else:
@@ -128,37 +129,43 @@ def move_up(target: MapPoint):
     next_platform = shared_map.platform_of_point(target)
     assert (next_platform)
     if bot_status.player_moving and bot_status.player_direction == 'left':
-        if up_point.x - next_platform.begin_x <= 8:
+        if up_point.x - next_platform.begin_x <= 8 and next_platform.end_x - next_platform.begin_x > 20:
             # move_horizontal(MapPoint(up_point.x+3, p.y, 2))
             press('right', down_time=0.1)
-        else:
-            time.sleep(0.2)
+        time.sleep(0.2)
     elif bot_status.player_moving and bot_status.player_direction == 'right':
-        if next_platform.end_x - up_point.x <= 10:
+        if next_platform.end_x - up_point.x <= 10 and next_platform.end_x - next_platform.begin_x > 20:
             # move_horizontal(MapPoint(up_point.x-3, p.y, 2))
             press('left', down_time=0.1)
-        else:
-            time.sleep(0.2)
+        time.sleep(0.2)
 
     if dy < 5:
         press(Keybindings.JUMP)
     elif dy < Jump_Up.move_range.stop:
         Jump_Up(target).execute()
     else:
-        RopeLift(target.y).execute()
+        Shadow_Rope_Lift(target).execute()
 
 
 @bot_status.run_if_enabled
 def move_down(target: MapPoint):
-    sleep_in_the_air(n=4)
     if target.y <= bot_status.player_pos.y:
         return
-    if abs(bot_status.player_pos.y - target.y) <= 4:
+    if abs(bot_status.player_pos.y - target.y) <= 5:
         sleep_in_the_air()
         return
-    next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
-    if shared_map.on_the_platform(next_p):
-        Fall().execute()
+    platform_start = shared_map.platform_of_point(bot_status.player_pos)
+    platform_target = shared_map.platform_of_point(target)
+    assert platform_target
+    if not platform_start:
+        return
+    intersections = set(platform_start.x_range).intersection(set(platform_target.x_range))
+    if target.x in intersections:
+        next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
+        if shared_map.on_the_platform(next_p):
+            Shadow_Fall(target).execute()
+        else:
+            DoubleJump(target, False)
     else:
         DoubleJump(target, False)
 
@@ -166,113 +173,6 @@ def move_down(target: MapPoint):
 #########################
 #        Y轴移动         #
 #########################
-
-class DoubleJump(Skill):
-    """Performs a flash jump in the given direction."""
-    key = Keybindings.Shadow_Jump
-    type = SkillType.Move
-    cooldown = 0.6
-    backswing = 0
-    move_range = range(26, 33)
-    # 18-40
-
-    def __init__(self, target: MapPoint, attack_if_needed=False):
-        super().__init__(locals())
-        self.target = target
-        self.attack_if_needed = attack_if_needed
-
-    def main(self, wait=True):
-        while not self.canUse():
-            utils.log_event("double jump waiting", bot_settings.debug)
-            time.sleep(0.01)
-        dx = self.target.x - bot_status.player_pos.x
-        dy = self.target.y - bot_status.player_pos.y
-        direction = 'left' if dx < 0 else 'right'
-        start_p = bot_status.player_pos
-        start_y = bot_status.player_pos.y
-        distance = abs(dx)
-
-        self.__class__.castedTime = time.time()
-        key_down(direction)
-        time.sleep(0.02)
-        need_check = True
-        if dy < 0:
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
-            press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
-            self.attack_if_needed = False
-        elif distance in range(26, 28):
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 1, down_time=0.02, up_time=0.1)
-            Shadow_Dodge(direction).execute()
-            self.attack_if_needed = False
-        elif distance in range(32, 34):
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 2, down_time=0.02, up_time=0.1)
-            Shadow_Dodge(direction).execute()
-            self.attack_if_needed = False
-        elif distance in range(40, 44):
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 1, down_time=0.1, up_time=0.1)
-            press(self.key, 1, down_time=0.02, up_time=0.2)
-            Shadow_Dodge(direction).execute()
-            self.attack_if_needed = False
-        elif distance in range(44, 47):
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 1, down_time=0.1, up_time=0.2)
-            press(self.key, 1, down_time=0.02, up_time=0.2)
-            Shadow_Dodge(direction).execute()
-            self.attack_if_needed = False
-        elif distance in range(32, 35):
-            press_acc(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
-            press_acc(self.key, 2, down_time=0.03, up_time=0.04)
-        elif distance <= 25:
-            times = [0.02, 0.02, 0.02, 0.02]
-            if distance in range(23, 26):
-                times = [0.2, 0.2, 0.1, 0.1]
-            elif distance in range(21, 23):
-                times = [0.1, 0.25, 0.1, 0.02]
-            elif distance in range(19, 21):
-                times = [0.1, 0.2, 0.1, 0.02]
-            elif distance == 18:
-                times = [0.15, 0.12, 0.1, 0.02]
-            elif distance == 17:
-                times = [0.2, 0.1, 0.1, 0.02]
-            elif distance == 16:
-                times = [0.1, 0.1, 0.1, 0.02]
-            elif distance == 15:
-                times = [0.2, 0.05, 0.1, 0.02]
-            # elif distance == 10:
-            #     times = [0.2, 0.02, 0.02, 0.02]
-            elif distance in range(8, 10):
-                times = [0.1, 0.02, 0.02, 0.02]
-            elif distance == 7:
-                times = [0.01, 0.02, 0.02, 0.01]
-            press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=times[0])
-            press_acc(self.key, 1, down_time=0.02, up_time=times[1])
-            key_up(direction)
-            time.sleep(0.02)
-            press_acc(opposite_direction(direction), down_time=times[2], up_time=times[3])
-            press(self.key, 1, down_time=0.02, up_time=0.02)
-            self.attack_if_needed = False
-        elif dy == 0 and not shared_map.is_continuous(start_p, self.target):
-            press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.05)
-            press(self.key, 1 if abs(dx) < 30 else 2, down_time=0.03, up_time=0.03)
-        else:
-            need_check = False
-            press(Keybindings.JUMP, 1, down_time=0.02, up_time=0.01)
-            press(self.key, 1, down_time=0.02, up_time=0.02)
-        if self.attack_if_needed:
-            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.1)
-        key_up(direction)
-        # if abs(shared_map.current_map.base_floor - start_y) <= 2:
-        #     print("bingo")
-        #     time.sleep(0.01)
-        # else:
-        sleep_in_the_air(n=1)
-        if need_check and not target_reached(bot_status.player_pos, self.target):
-            utils.log_event(
-                f"[Failed][DoubleJump] start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
-        return True
 
 
 # 上跳
@@ -287,22 +187,103 @@ class Jump_Up(Command):
 
     def main(self, wait=True):
         sleep_in_the_air(n=4)
+        evade_rope()
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
-        time.sleep(0.06 if dy >= 20 else 0.3)
+        time.sleep(0.06 if dy >= 18 else 0.3)
         press(Keybindings.JUMP)
-        time.sleep(1)
+        key_up('up')
+        time.sleep(0.8 if dy >= 18 else 0.5)
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
-        if abs(dx) >= 30 or not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 2):
+        if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
+            Shadow_Dodge(direction).execute()
+        elif abs(dx) > self.target.tolerance:
+            if abs(dx) >= 15:
+                key_down(direction)
+                time.sleep(0.01)
+                press(Keybindings.Shadow_Jump)
+                time.sleep(0.01)
+                key_up(direction)
+            elif abs(dx) >= Shadow_Dodge.move_range.start:
+                Shadow_Dodge(direction, wait=False).execute()
+            elif abs(dx) >= 8:
+                key_down(direction)
+                time.sleep(0.1)
+                press(Keybindings.Shadow_Jump)
+                time.sleep(0.05)
+                key_up(direction)
+        result = sleep_in_the_air(n=2, detect_rope=True)
+        if not result:
+            bot_action.climb_rope(isUP=True)
+        return True
+
+
+class Shadow_Rope_Lift(Command):
+    '''自定义绳索'''
+    key = DefaultKeybindings.ROPE_LIFT
+    type = SkillType.Move
+    cooldown = 3
+
+    def __init__(self, target: MapPoint):
+        super().__init__(locals())
+        self.target = target
+
+    def main(self, wait=True):
+        RopeLift(self.target.y).execute()
+        start_time = time.time()
+        while bot_status.player_pos.y > self.target.y:
+            time.sleep(0.1)
+            if time.time() - start_time > 3:
+                DoubleJump().execute()
+                break
+        dx = self.target.x - bot_status.player_pos.x
+        direction = 'left' if dx < 0 else 'right'
+        if abs(dx) >= 30:
             press(direction)
             press(Keybindings.Shadow_Jump)
         elif abs(dx) >= Shadow_Dodge.move_range.start:
-            Shadow_Dodge(direction).execute()
-        sleep_in_the_air(n=4, detect_rope=True)
-        time.sleep(0.02)
-        key_up('up')
+            Shadow_Dodge(direction, wait=False).execute()
+        sleep_in_the_air(n=10)
+        return True
+
+
+class Shadow_Fall(Command):
+
+    def __init__(self, target: MapPoint):
+        super().__init__(locals())
+        self.target = target
+
+    def main(self, wait=True):
+        sleep_in_the_air(n=2)
+        evade_rope()
+        p = bot_status.player_pos
+
+        key_down('down')
+        time.sleep(0.01)
+        press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.1)
+
+        plat = shared_map.platform_of_point(self.target)
+        assert (plat)
+        direction = 'left' if self.target.x < p.x else 'right'
+        dy = abs(plat.y - p.y)
+        dx = abs(self.target.x - p.x)
+        if dx - dy >= 10 and plat.width > 40:
+            key_up('down')
+            time.sleep(0.1 if dx <= 26 else 0.02)
+            key_down(direction)
+            time.sleep(0.005)
+            press(DefaultKeybindings.JUMP, down_time=0.02, up_time=0.02)
+            press(DefaultKeybindings.JUMP, n=2 if dx >= 30 else 1, down_time=0.01, up_time=0.01)
+            key_up(direction)
+            time.sleep(0.005)
+        else:
+            time.sleep(0.3)
+            key_up('down')
+        result = sleep_in_the_air(n=4, detect_rope=True)
+        if not result:
+            bot_action.climb_rope(isUP=False)
         return True
 
 #########################
@@ -310,18 +291,182 @@ class Jump_Up(Command):
 #########################
 
 
+class DoubleJump(Skill):
+    """Performs a flash jump in the given direction."""
+    key = Keybindings.Shadow_Jump
+    type = SkillType.Move
+    cooldown = 0.2
+    backswing = 0
+    move_range = range(26, 47)
+    config = {
+        (7, 8): (0.01, 0.02, 0.02, 0.01),
+        (8, 10): (0.10, 0.02, 0.02, 0.02),
+        (10, 11): (0.20, 0.02, 0.02, 0.02),
+
+        (15, 16): (0.20, 0.05, 0.1, 0.02),
+        (16, 17): (0.10, 0.10, 0.1, 0.02),
+        (17, 18): (0.20, 0.10, 0.1, 0.02),
+        (18, 19): (0.15, 0.12, 0.1, 0.02),
+        (19, 21): (0.10, 0.16, 0.1, 0.02),
+        (21, 23): (0.10, 0.25, 0.1, 0.02),
+        (23, 26): (0.20, 0.20, 0.1, 0.10),
+        # 1代表shadow_dodge
+        (26, 28): (0.01, 0.10, 1),
+        (28, 29): (0.06, 0.04),
+        (29, 32): (0.06, 0.04, 0.04),
+        (32, 34): (0.01, 0.1, 0.1, 1),
+        (34, 35): (0.04, 0.05, 0.05),
+        (35, 38): (0.01, 0.1, 0.15, 1),
+        (38, 41): (0.01, 0.1, 0.2, 1),
+        (41, 44): (0.01, 0.2, 0.2, 1),
+        (44, 47): (0.01, 0.3, 0.2, 1),
+    }
+
+    def __init__(self, target: MapPoint | None = None, attack_if_needed=False):
+        super().__init__(locals())
+        self.target = target
+        self.attack_if_needed = attack_if_needed
+
+    def time_config(self, distance: int):
+        for range_tuple, value in self.config.items():
+            if distance in range(range_tuple[0], range_tuple[1]):
+                return value
+        return (0.02, 0.02, 0.02, 0.02)
+
+    def double_jump(self, t1, t2):
+        press(Keybindings.JUMP, 1, down_time=0.02, up_time=t1)
+        press(self.key, 1, down_time=0.02, up_time=t2)
+
+    def triple_jump(self, t1, t2, t3):
+        self.double_jump(t1, t2)
+        press(self.key, 1, down_time=0.02, up_time=t3)
+
+    def common_jump(self):
+        self.double_jump(0.01, 0.02)
+
+    def scram(self, direction, down_time, up_time):
+        key_up(direction)
+        time.sleep(0.01)
+        press_acc(opposite_direction(direction), down_time=down_time, up_time=up_time)
+        press(self.key, 1, down_time=0.02, up_time=0.01)
+
+    def jumpe_with_config(self, times, direction):
+        if len(times) == 2:
+            self.double_jump(times[0], times[1])
+        elif len(times) == 3:
+            if times[2] == 1:
+                self.attack_if_needed = False
+                self.double_jump(times[0], times[1])
+                Shadow_Dodge(direction, wait=False).execute()
+            else:
+                self.triple_jump(times[0], times[1], times[2])
+        elif len(times) == 4:
+            self.attack_if_needed = False
+            if times[3] == 1:
+                self.triple_jump(times[0], times[1], times[2])
+                Shadow_Dodge(direction, wait=False).execute()
+            else:
+                self.double_jump(times[0], times[1])
+                self.scram(direction, times[2], times[3])
+
+    def caculate_distance(self, target: MapPoint):
+        start_p = shared_map.fixed_point(bot_status.player_pos)
+        start_plat = shared_map.platform_of_point(start_p)
+        target_plat = shared_map.platform_of_point(target)
+        assert target_plat
+
+        dx = target.x - start_p.x
+        if start_plat == target_plat:
+            return abs(dx)
+        good_x1 = set()
+        good_x2 = set()
+        for x in range(target.x - target.tolerance, target.x + target.tolerance + 1):
+            distance = abs(x - start_p.x)
+            config = self.time_config(distance)
+            if abs(x - target_plat.begin_x) > 2 and abs(x - target_plat.end_x) > 2:
+                good_x1.add(x)
+            if len(config) < 4 or config[3] != 0.02:
+                good_x2.add(x)
+        good_x = good_x1.intersection(good_x2)
+        target_x = target.x
+        if good_x:
+            target_x = list(good_x)[randrange(0, len(good_x))]
+        elif good_x1:
+            target_x = list(good_x1)[randrange(0, len(good_x1))]
+        elif good_x2:
+            target_x = list(good_x2)[randrange(0, len(good_x2))]
+        return abs(start_p.x - target_x)
+
+    def main(self, wait=True):
+        while not self.canUse():
+            utils.log_event("double jump waiting", bot_settings.debug)
+            time.sleep(0.01)
+        if self.target is None:
+            direction = random_direction()
+            key_down(direction)
+            time.sleep(0.02)
+            self.common_jump()
+            key_up(direction)
+            sleep_in_the_air()
+            return True
+
+        dx = self.target.x - bot_status.player_pos.x
+        dy = self.target.y - bot_status.player_pos.y
+        direction = 'left' if dx < 0 else 'right'
+        start_p = bot_status.player_pos
+        distance = self.caculate_distance(self.target)
+
+        self.__class__.castedTime = time.time()
+        key_down(direction)
+        time.sleep(0.02)
+        need_check = False
+        if dy < -5:
+            if distance >= 20:
+                self.triple_jump(0.06, 0.04, 0.04)
+            else:
+                self.double_jump(0.06, 0.04)
+        elif abs(dy) <= 5 and not shared_map.is_continuous(start_p, self.target):
+            if distance >= 44:
+                distance = 44
+            elif distance < 16:
+                distance = 16
+            times = self.time_config(distance)
+            self.jumpe_with_config(times, direction)
+        elif distance <= 46:
+            times = self.time_config(distance)
+            self.jumpe_with_config(times, direction)
+            need_check = True
+        else:
+            self.common_jump()
+        if self.attack_if_needed:
+            press(Keybindings.Quintuple_Star, down_time=0.01, up_time=0.01)
+        key_up(direction)
+        sleep_in_the_air(n=1)
+        p = bot_status.player_pos
+        plat = shared_map.platform_of_point(self.target)
+        if plat and abs(p.x - plat.begin_x) <= 2:
+            press('right')
+        elif plat and abs(p.x - plat.end_x) <= 2:
+            press('left')
+        if need_check and not target_reached(bot_status.player_pos, self.target):
+            utils.log_event(
+                f"[Failed][DoubleJump] distance={distance} start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
+        return True
+
+
 class Shadow_Dodge(Skill):
     key = Keybindings.Shadow_Dodge
     type = SkillType.Move
     cooldown = 0
     precast = 0
-    backswing = 0.3
+    backswing = 0.2
     move_range = range(10, 15)
     # 12-14
 
-    def __init__(self, direction='right'):
+    def __init__(self, direction='right', wait=True):
         super().__init__(locals())
         self.direction = bot_settings.validate_horizontal_arrows(direction)
+        self.wait = bot_settings.validate_boolean(wait)
 
     def main(self, wait=True):
         if not self.canUse():
@@ -332,7 +477,8 @@ class Shadow_Dodge(Skill):
         press(opposite_direction(self.direction), down_time=0.1)
         press_acc(self.__class__.key, up_time=self.__class__.backswing)
         # press(self.direction)
-        sleep_in_the_air()
+        if self.wait:
+            sleep_in_the_air()
         return True
 
 #######################
@@ -352,7 +498,7 @@ class Greater_Dark_Servant(Skill):
     def main(self, wait=True):
         while not self.canUse():
             Shadow_Attack().execute()
-        Dark_Omen().execute()
+        # Dark_Omen().execute()
         return super().main(wait)
 
 
@@ -360,11 +506,17 @@ class Replace_Dark_Servant(Skill):
     key = Keybindings.Greater_Dark_Servant
     type = SkillType.Move
     cooldown = 1
-    backswing = 0.6
+    backswing = 0.5
 
     def __init__(self, resummon='False'):
         super().__init__(locals())
         self.resummon = bot_settings.validate_boolean(resummon)
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if Greater_Dark_Servant.canUse():
+            return False
+        return super(Replace_Dark_Servant, cls).canUse(next_t)
 
     def main(self, wait=True):
         if self.resummon and not self.canUse():
@@ -375,7 +527,7 @@ class Replace_Dark_Servant(Skill):
         result = super().main(wait)
         if self.resummon:
             key_up('down')
-        time.sleep(0.5)
+        time.sleep(0.3)
         return result
 
 
@@ -383,7 +535,7 @@ class Replace_Dark_Servant(Skill):
 #       Skills        #
 #######################
 
-class Shadow_Bat(Skill):
+class HEXA_Shadow_Bat(Skill):
     key = Keybindings.Shadow_Bat
     type = SkillType.Switch
     cooldown = 1
@@ -414,14 +566,14 @@ class Dark_Omen(Skill):
     key = Keybindings.Dark_Omen
     type = SkillType.Attack
     cooldown = 20
-    backswing = 0.9
+    backswing = 0.7
     tolerance = 1
 
 
 class Shadow_Bite(Skill):
     key = Keybindings.Shadow_Bite
     type = SkillType.Attack
-    cooldown = 15
+    cooldown = 7
     backswing = 0.7
     tolerance = 0.9
 
@@ -482,8 +634,14 @@ class Silence(Skill):
     type = SkillType.Attack
     cooldown = 350
     precast = 0.3
-    backswing = 3
+    backswing = 4
     tolerance = 6
+
+    @classmethod
+    def canUse(cls, next_t: float = 0) -> bool:
+        if bot_status.elite_boss_appear_time > 0 and time.time() - bot_status.elite_boss_appear_time >= 7000:
+            return False
+        return super(Silence, cls).canUse(next_t)
 
 
 class Rapid_Throw(Skill):
@@ -526,133 +684,123 @@ class Attack(Command):
     backswing = Quintuple_Star.backswing
 
     def main(self, wait=True):
-        return Quintuple_Star(wait).execute()
+        return Quintuple_Star().execute()
 
 
 class Shadow_Attack(Command):
-    cooldown = 4
+    cooldown = 4.2
 
-    def __init__(self, direction=None):
+    def __init__(self, attack=True, direction=None):
         super().__init__(locals())
+        self.attack = bot_settings.validate_boolean(attack)
         self.direction = bot_settings.validate_horizontal_arrows(direction)
-        if self.direction is None:
-            self.direction = 'right' if random() <= 0.5 else 'left'
 
     def main(self, wait=True):
         assert (shared_map.current_map)
-        if not self.canUse() and not bot_status.elite_boss_detected:
-            time.sleep(0.3)
-            return False
+        while not self.canUse() and not (bot_status.elite_boss_detected and bot_status.stage_fright):
+            time.sleep(0.1)
+            mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
+            if len(mobs) == 0:
+                return False
 
-        if bot_status.elite_boss_detected:
-            Direction(opposite_direction(self.direction)).execute()
-            Burst().execute()
+        if bot_status.elite_boss_detected and bot_status.stage_fright:
+            start_time = time.time()
+            while bot_status.elite_boss_detected and bot_status.stage_fright:
+                Burst().execute()
+                if time.time() - start_time >= 15:
+                    break
+            return True
 
         start_time = time.time()
-        if start_time - Shadow_Bite.castedTime > 5.5 and not bot_status.elite_boss_detected:
+        if start_time - Shadow_Bite.castedTime > 5.5 and not (bot_status.elite_boss_detected and bot_status.stage_fright):
             while not Shadow_Bite.canUse():
-                time.sleep(0.1)
+                time.sleep(0.03)
                 mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
-                if len(mobs) <= 2:
+                if len(mobs) == 0:
                     return False
-                if time.time() - start_time > 2:
+                if time.time() - start_time > 5:
                     break
 
-        n = 2.5 if shared_map.current_map_name == 'Blooming Spring 2' else 2
+        n = 1
         self.__class__.castedTime = time.time()
         if Shadow_Bite.canUse():
             Shadow_Bite().execute()
-        elif Silence.canUse():
-            Silence().execute()
-        elif Dominion.canUse():
-            Dominion().execute()
         elif Arachnid.canUse():
             Arachnid().execute()
         elif SolarCrest.canUse():
             SolarCrest().execute()
+        elif Silence.canUse():
+            Silence().execute()
         elif Dark_Omen.canUse():
             Dark_Omen().execute()
-            n = 3
+            n = 2
         else:
-            n = 3 if bot_status.elite_boss_detected else 0
-            self.__class__.castedTime = time.time() - 4
+            n = 0
+            self.__class__.castedTime = time.time() - self.cooldown
 
-        if n > 0:
-            if self.direction == 'right':
-                Phalanx_Charge('left').execute()
-                Direction("left" if bot_status.elite_boss_detected else "right").execute()
-            else:
-                Phalanx_Charge('right').execute()
-                Direction("right" if bot_status.elite_boss_detected else "left").execute()
-            key_down(Keybindings.Quintuple_Star)
-            time.sleep(n)
-            key_up(Keybindings.Quintuple_Star)
-            time.sleep(Quintuple_Star.backswing)
-            if bot_status.stage_fright and random() <= 0.3:
-                Random_Action().execute()
-        else:
-            time.sleep(0.3)
-        return True
-
-
-class Around_Jump(Command):
-
-    def __init__(self, direction=None):
-        self.direction = bot_settings.validate_horizontal_arrows(direction)
-        if self.direction is None:
-            self.direction = random_direction()
-
-    def main(self, wait=True):
         direction = self.direction
-        press(direction)
-        press(Keybindings.JUMP)
-        press(Keybindings.Shadow_Jump)
-        press(opposite_direction(direction))
-        press(Keybindings.Shadow_Jump)
+        if direction is None:
+            direction = random_direction()
+        if self.attack and n > 0:
+            if random() < 0.5:
+                Jump(0.1, attack=True).execute()
+                Jump(0.1, attack=True).execute()
+            else:
+                Direction(direction).execute()
+                key_down(Keybindings.Quintuple_Star)
+                time.sleep(n)
+                key_up(Keybindings.Quintuple_Star)
+                time.sleep(Quintuple_Star.backswing)
+        else:
+            time.sleep(0.5)
         return True
 
 
-class Random_Action(Command):
+class Pre_Burst(Command):
     def main(self, wait=True):
-        match randrange(0, 2):
-            case 0:
-                Around_Jump().execute()
-            case 1:
-                Jump(0.3, attack=True).execute()
+        Dominion().execute()
+        # p = shared_map.platform_point(bot_status.player_pos)
+        # plat = shared_map.platform_of_point(p)
+        # assert (plat)
+        # if p.x - plat.begin_x <= plat.end_x - p.x:
+        #     Move(plat.begin_x + 3, plat.y, 3).execute()
+        # else:
+        #     Move(plat.end_x - 3, plat.y, 3).execute()
+        Shadow_Spear().execute()
+        Shadow_Illusion().execute()
+        if time.time() - self.castedTime > 30:
+            Replace_Dark_Servant(resummon='True').execute()
+        self.castedTime = time.time()
+        # while not bot_status.elite_boss_detected:
+        #     Shadow_Attack().execute()
+        #     if time.time() - self.castedTime > 5:
+        #         break
+        Silence().execute()
         return True
 
 
 class Burst(Command):
     def main(self, wait=True):
-        Shadow_Spear().execute()
-        Shadow_Illusion().execute()
-        if time.time() - self.castedTime > 30:
-            Replace_Dark_Servant(resummon='True').execute()
+        p = bot_status.player_pos
+        plat = shared_map.platform_of_point(shared_map.platform_point(p))
+        if not plat:
+            return False
+        Direction("left" if p.x - plat.begin_x > plat.end_x - p.x else "right").execute()
         Shadow_Bite().execute()
         Silence().execute()
         Quintuple_Star().execute()
         Rapid_Throw().execute()
+        Quintuple_Star().execute()
         self.castedTime = time.time()
         return True
 
 
-class Detect_Around_Anchor(Command):
-    def __init__(self, count=1, x=0, y=0, top=315, bottom=0, left=500, right=500):
+class Detect_Mobs(Command):
+    def __init__(self, count=1):
         super().__init__(locals())
         self.count = int(count)
-        self.x = int(x)
-        self.y = int(y)
-        self.top = int(top)
-        self.bottom = int(bottom)
-        self.left = int(left)
-        self.right = int(right)
 
     def main(self, wait=True):
-        if self.x == 0 and self.y == 0:
-            anchor = bot_helper.locate_player_fullscreen(accurate=True)
-        else:
-            anchor = (self.x, self.y)
-
         if bot_helper.check_blind():
             # chat_bot.send_message("blind", capture.frame)
             if Cygnus_Knights_Will.canUse():
@@ -661,20 +809,30 @@ class Detect_Around_Anchor(Command):
                 Will_of_Erda().execute()
 
         start = time.time()
+        need_act = bot_status.stage_fright and gui_setting.auto.action and random() < 0.4
+        mobs_count = -1
         while True:
-            mobs = detect_mobs_around_anchor(
-                anchor=anchor,
-                insets=AreaInsets(
-                    top=self.top, bottom=self.bottom, left=self.left, right=self.right),
-                multy_match=self.count > 1,
-                debug=False)
-            utils.log_event(f"mobs count = {len(mobs)}", bot_settings.debug)
-            if len(mobs) >= self.count or bot_status.elite_boss_detected:
-                break
-            if time.time() - start > 7:
-                utils.log_event("Detect_Around_Anchor timeout", bot_settings.debug)
-                break
-            time.sleep(0.3)
+            if capture.frame is None:
+                time.sleep(0.1)
+            else:
+                mobs = detect_mobs(
+                    capture.frame,
+                    multy_match=self.count > 1,
+                    debug=False)
+                if mobs_count != len(mobs):
+                    mobs_count = len(mobs)
+                    utils.log_event(f"mobs count = {mobs_count}", bot_settings.debug)
+                if mobs_count >= self.count or (bot_status.elite_boss_detected and bot_status.stage_fright):
+                    break
+                if time.time() - start >= 7:
+                    utils.log_event("Detect_Mobs timeout", bot_settings.debug)
+                    bot_status.prepared = False
+                    break
+                if need_act:
+                    Random_Action().execute()
+                    need_act = False
+                else:
+                    time.sleep(0.1)
         return True
 
 ###################
@@ -689,7 +847,7 @@ class Buff(Command):
         super().__init__(locals())
         self.buffs = [
             Dark_Elemental,
-            Shadow_Bat,
+            HEXA_Shadow_Bat,
             Transcendent_Cygnus_Blessing,
             LastResort,
             Glory_of_the_Guardians,
@@ -697,6 +855,7 @@ class Buff(Command):
             # Shadow_Illusion,
             ForTheGuild,
             HardHitter,
+            Dominion,
             Darkness_Ascending
         ]
 
@@ -821,7 +980,6 @@ def find_next_point(start: MapPoint, target: MapPoint):
         return
 
     start = shared_map.fixed_point(start)
-    d_x = target.x - start.x
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
 
@@ -831,7 +989,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
     if platform_start == platform_target:
         return target
 
-    paths = shared_map.path_between(platform_start, platform_target, bot_status.stage_fright)
+    paths = shared_map.path_between(start, target, bot_status.stage_fright and gui_setting.auto.action)
     utils.log_event(f"[find_next_point] paths:", bot_settings.debug)
     if paths:
         for plat in paths:
@@ -848,7 +1006,7 @@ def find_next_point(start: MapPoint, target: MapPoint):
                 else:
                     return portal.entrance
             tmp_p = target
-        if d_y == 0:
+        if abs(d_y) <= 5:
             next_p = find_next_horizontal_point(start, tmp_p)
             if next_p:
                 return next_p
@@ -864,8 +1022,8 @@ def find_next_point(start: MapPoint, target: MapPoint):
 
 
 def find_next_horizontal_point(start: MapPoint, target: MapPoint):
-    if start.y != target.y:
-        return
+    # if start.y != target.y:
+    #     return
 
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
@@ -875,17 +1033,27 @@ def find_next_horizontal_point(start: MapPoint, target: MapPoint):
     if platform_start == platform_target:
         return target
 
-    max_distance = 32
+    max_distance = Max_Jumpable_Gap
     target_range = None
     if platform_start.end_x < platform_target.begin_x:
-        target_range = range(platform_target.begin_x + 3 - max_distance, platform_start.end_x + 1)
+        target_range = range(max(platform_target.begin_x - max_distance,
+                             platform_start.begin_x), platform_start.end_x + 1)
     else:
-        target_range = range(platform_start.begin_x, platform_target.end_x - 3 + max_distance + 1)
+        target_range = range(platform_start.begin_x, min(
+            platform_target.end_x + max_distance, platform_start.end_x) + 1)
     if start.x in target_range:
         return target
     else:
         target_x = (target_range.start + target_range.stop) / 2
         tolerance = (target_range.stop - target_range.start) / 2
+        if platform_start.end_x < platform_target.begin_x:
+            if abs(target_range.start - start.x) <= 10 and abs(platform_start.end_x - start.x) > 14:
+                target_x = platform_start.end_x - 4
+                tolerance = 4
+        else:
+            if abs(target_range.stop - start.x) <= 10 and abs(platform_start.begin_x - start.x) > 14:
+                target_x = platform_start.begin_x + 4
+                tolerance = 4
         return MapPoint(int(target_x), start.y, int(tolerance))
 
 
@@ -900,22 +1068,31 @@ def find_next_upper_point(start: MapPoint, target: MapPoint):
         return
 
     gap = platform_gap(platform_start, platform_target)
-    if gap <= -3:
+    if gap <= -5:
         # 有交集
         # 优先垂直方向接近
-        next_p = MapPoint(start.x, platform_target.y, 2)
+        next_p = MapPoint(start.x, platform_target.y, 3)
         if shared_map.is_continuous(next_p, target):
+            if target_reached(next_p, target):
+                return next_p
             return target
 
         # 尝试水平方向接近
-        next_p = MapPoint(target.x, start.y, 2)
+        next_p = MapPoint(target.x, start.y, target.tolerance)
         if not shared_map.is_continuous(start, next_p):
             next_p = None
         if next_p:
             if target_reached(start, next_p):
                 return target
             else:
-                return next_p
+                if next_p.x < start.x:
+                    if next_p.x - platform_start.begin_x <= 3:
+                        next_p = None
+                else:
+                    if platform_start.end_x - next_p.x <= 3:
+                        next_p = None
+                if next_p:
+                    return next_p
 
         intersection_point = point_of_intersection(platform_start, platform_target)
         assert (intersection_point)
@@ -939,32 +1116,161 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
     if start.y >= target.y:
         return
 
+    assert (shared_map.current_map)
     platform_start = shared_map.platform_of_point(start)
     platform_target = shared_map.platform_of_point(target)
 
     if not platform_start or not platform_target:
         return
 
+    intersections = set(platform_start.x_range).intersection(set(platform_target.x_range))
+
+    if target.x in intersections:
+        return find_fall_point(start, target)
+    if shared_map.current_map.can_jump_down(platform_start, platform_target):
+        return find_jump_down_point(start, target)
+    if shared_map.current_map.can_walk_down(platform_start, platform_target):
+        walk_down_point = find_walk_down_point(start, target)
+        if walk_down_point != target:
+            fall_down_point = find_fall_point(start, target)
+            if fall_down_point:
+                return fall_down_point
+            else:
+                return walk_down_point
+    return find_fall_point(start, target)
+
+
+def find_fall_point(start: MapPoint, target: MapPoint):
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    assert (shared_map.current_map)
+    assert platform_start
+    assert platform_target
+
     gap = platform_gap(platform_start, platform_target)
+    if gap <= -Min_Jumpable_Gap:
+        available_x = set(platform_start.x_range).intersection(set(platform_target.x_range))
+        for y in [y for y in shared_map.current_map.platform_map.keys() if y in range(start.y + 1, target.y)]:
+            plats = shared_map.current_map.platforms_of_y(y)
+            assert (plats)
+            for plat in plats:
+                available_x = available_x.difference(set(plat.x_range))
+        if len(available_x) > 0:
+            if start.x in available_x:
+                Shadow_Fall(target).execute()
+                return target
+            else:
+                next_p = point_of_intersection(platform_start, platform_target)
+                assert next_p
+                if target_reached(start, next_p):
+                    next_p.tolerance = 2
+                return next_p
 
-    if not platform_start or not platform_target:
-        return
 
-    if gap <= -3:
-        next_p = MapPoint(start.x, platform_target.y, 3)
-        if shared_map.on_the_platform(next_p):
-            return next_p
+def find_jump_down_point(start: MapPoint, target: MapPoint):
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    assert (shared_map.current_map)
+    assert platform_start
+    assert platform_target
+
+    dy = platform_target.y - platform_start.y
+    max_jump_distance = 30 + dy
+    gap = platform_gap(platform_start, platform_target)
+    available_x = 0
+    if platform_target.end_x > platform_start.end_x:
+        if gap < 0:
+            available_x = platform_start.end_x - max_jump_distance
         else:
-            return point_of_intersection(platform_start, platform_target)
-    else:
-        if platform_start.end_x < platform_target.begin_x:
-            next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 2)
-        else:
-            next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 2)
+            available_x = platform_target.begin_x - max_jump_distance
+        available_x = max(available_x, platform_start.begin_x)
+        x = (available_x + platform_start.end_x)/2
+        tolorance = (platform_start.end_x - available_x + 1)/2
+        next_p = MapPoint(int(x), start.y, int(tolorance))
+        tmp_p = MapPoint(platform_start.end_x + 20, target.y, 10)
         if target_reached(start, next_p):
-            return target
+            return target if target_reached(target, tmp_p) else tmp_p
         else:
             return next_p
+    else:
+        if gap < 0:
+            available_x = platform_start.begin_x + max_jump_distance
+        else:
+            available_x = platform_target.end_x + max_jump_distance
+        available_x = min(available_x, platform_start.end_x)
+        x = (platform_start.begin_x + available_x)/2
+        tolorance = (available_x - platform_start.begin_x + 1)/2
+        next_p = MapPoint(int(x), start.y, int(tolorance))
+        tmp_p = MapPoint(platform_start.begin_x - 20, target.y, 10)
+        if target_reached(start, next_p):
+            return target if target_reached(target, tmp_p) else tmp_p
+        else:
+            return next_p
+
+
+def find_walk_down_point(start: MapPoint, target: MapPoint):
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    assert (shared_map.current_map)
+    assert platform_start
+    assert platform_target
+
+    left_x = platform_start.begin_x - 1
+    right_x = platform_start.end_x + 1
+
+    if left_x in platform_target.x_range:
+        for y in range(platform_start.y, platform_target.y):
+            plats = shared_map.current_map.platforms_of_y(y)
+            if plats:
+                for plat in plats:
+                    if left_x in plat.x_range:
+                        left_x = None
+                        break
+            if left_x is None:
+                break
+    else:
+        left_x = None
+
+    if right_x in platform_target.x_range:
+        for y in range(platform_start.y, platform_target.y):
+            plats = shared_map.current_map.platforms_of_y(y)
+            if plats:
+                for plat in plats:
+                    if right_x in plat.x_range:
+                        right_x = None
+                        break
+            if right_x is None:
+                break
+    else:
+        right_x = None
+
+    if left_x and right_x:
+        target_x = left_x+1 if abs(target.x - left_x) < abs(target.x - right_x) else right_x-1
+    elif left_x:
+        target_x = left_x+1
+    elif right_x:
+        target_x = right_x-1
+    else:
+        target_x = platform_start.begin_x
+    next_p = MapPoint(target_x, start.y, 3)
+    if target_reached(start, next_p):
+        direction = 'left' if abs(platform_start.begin_x - next_p.x) < abs(platform_start.end_x - next_p.x) else 'right'
+        key_down(direction)
+        while bot_status.player_pos.y == start.y:
+            time.sleep(0.01)
+        key_up(direction)
+        time.sleep(0.01)
+        if abs(bot_status.player_pos.x - target.x) >= 26:
+            DoubleJump(target).execute()
+        else:
+            press(opposite_direction(direction))
+            sleep_in_the_air()
+        return target
+    else:
+        return next_p
 
 
 class Test_Command(Command):

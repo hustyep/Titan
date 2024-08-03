@@ -24,8 +24,8 @@ class Cube:
         self.running = False
         self.role: RoleModel
 
-        self.type = PotentialType.ATT
-        self.target = 2
+        self.type = PotentialType.STAT
+        self.target = 27
 
     def start(self, role: RoleModel):
         if gui_setting.mode.type != BotRunMode.Cube:

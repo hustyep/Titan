@@ -64,8 +64,6 @@ class Listener(Configurable, Subject):
             if self.enabled:
                 if len(self.config['Start/stop']) > 0 and kb.is_pressed(self.config['Start/stop']):
                     self.toggle_enabled()
-                elif len(self.config['Reload routine']) > 0 and kb.is_pressed(self.config['Reload routine']):
-                    self.reload_routine()
                 elif self.restricted_pressed('Record position'):
                     self.record_position()
                 elif self.restricted_pressed('Add start point'):

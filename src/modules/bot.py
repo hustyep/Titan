@@ -67,6 +67,8 @@ class Bot(Subject):
                     time.sleep(1)
                 elif not bot_status.prepared:
                     self.prepare()
+                elif bot_status.acting:
+                    time.sleep(0.3)
                 elif len(routine) > 0 and bot_status.player_pos != (0, 0):
                     routine.step()
                     if self.is_run_daily:
@@ -137,7 +139,7 @@ class Bot(Subject):
         if bot_status.lost_minimap:
             time.sleep(0.1)
             return False
-        map_name = bot_helper.identify_map_name(try_count=3)
+        map_name = bot_helper.identify_map_name()
         utils.log_event(f"identify map:{map_name}")
 
         target_map = None
@@ -239,6 +241,7 @@ class Bot(Subject):
             arg = args[1]
         else:
             arg = 0
+        routine.on_bot_event(event_type)
         if isinstance(event_type, BotFatal):
             if event_type == BotFatal.BLACK_SCREEN:
                 pass
@@ -263,8 +266,8 @@ class Bot(Subject):
                     self.toggle(False, event_type.value)
         elif isinstance(event_type, BotWarnning):
             match event_type:
-                # case BotWarnning.NO_MOVEMENT:
-                #     bot_action.jump_down()
+                case BotWarnning.NO_MOVEMENT:
+                    chat_bot.voice_call()
                 case BotWarnning.OTHERS_STAY_OVER_30S:
                     if shared_map.current_map and not shared_map.current_map.instance:
                         words = ['cc pls', 'cc pls ', ' cc pls']
@@ -295,10 +298,16 @@ class Bot(Subject):
     def bot_status(self, ext='') -> str:
         message = (
             f"bot status: {'running' if bot_status.enabled  else 'pause'}\n"
+            f"bot duration: {time.time() - bot_status.started_time if bot_status.started_time else 0}\n"
             f"rune status: {f'{time.time()}s' if bot_status.rune_pos is not None else 'clear'}\n"
-            f"other players: {detector.others_count}\n"
-            f"reason: {ext}\n"
+            f"boss appear time: {time.time() - bot_status.elite_boss_appear_time if bot_status.elite_boss_appear_time > 0 else 0}s ago\n"
+            f"other players count: {detector.others_count}\n"
         )
+        if bot_status.stage_fright:
+            message += f"other player stay time: {time.time() - bot_status.others_comming_time}\n"
+        
+        if ext:
+            message += f"reason: {ext}\n"
         return message
 
 

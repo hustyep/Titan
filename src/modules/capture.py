@@ -43,6 +43,7 @@ class Capture(Subject):
         self.lost_player_time = 0
 
         self.lost_time_threshold = 1
+        self.pos_update_time_threshold = 120
 
         self.ready = False
         self.thread = threading.Thread(target=self._main)
@@ -165,6 +166,8 @@ class Capture(Subject):
             new_pos = self.convert_to_relative_minimap_point(player)
             if new_pos.x != bot_status.player_pos.x:
                 self.pos_update_time = time.time()
+            elif time.time() - self.pos_update_time >= self.pos_update_time_threshold and bot_status.enabled and not bot_status.acting:
+                self.on_next((BotWarnning.NO_MOVEMENT, time.time() - self.pos_update_time))
             bot_status.player_moving = time.time() - self.pos_update_time < 0.3
             bot_status.player_pos = new_pos
             self.lost_player_time = 0
@@ -174,13 +177,14 @@ class Capture(Subject):
             bot_status.player_pos.x = minimap_width - 1
         else:
             self.calibrated = False
-            if bot_status.enabled:
+            if bot_status.enabled and not bot_status.acting:
                 now = time.time()
                 if self.lost_player_time == 0:
                     self.lost_player_time = now
                 if now - self.lost_player_time >= self.lost_time_threshold:
-                    self.on_next(
-                        (BotError.LOST_PLAYER, now - self.lost_player_time))
+                    self.on_next((BotError.LOST_PLAYER, now - self.lost_player_time))
+            else:
+                self.lost_player_time = 0
 
         frame = self.camera.get_latest_frame()
         if frame is not None:
@@ -224,13 +228,13 @@ class Capture(Subject):
     @property
     def map_name_frame(self):
         if self.frame is not None and self.mm_tl is not None and self.mm_br is not None:
-            return self.frame[self.mm_tl[1] - 32:self.mm_tl[1] - 4,
-                              self.mm_tl[0] + 34:self.mm_br[0]]
+            return self.frame[self.mm_tl[1] - 35:self.mm_tl[1] - 5,
+                              self.mm_tl[0] + 31:self.mm_br[0]]
 
     @property
     def msg_frame(self):
         if self.frame is not None:
-            return self.frame[-40:, :400]
+            return self.frame[-110:-10, :400]
 
     @property
     def window_rect(self):

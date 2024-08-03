@@ -70,6 +70,8 @@ class GameMsg:
 
     def __eq__(self, __value: object) -> bool:
         if isinstance(__value, GameMsg):
+            if utils.match_count(self.image, __value.image) > 0:
+                return True
             if self.type != __value.type:
                 return False
             ratio = utils.string_similar(self.text, __value.text)
@@ -123,15 +125,16 @@ class MsgCapture:
             time.sleep(0.5)
 
     def get_new_msg(self, frame) -> GameMsg | None:
+        # utils.show_image(frame)
         msg_list = self.image_to_str(frame, WHITE_RANGES)
 
         if len(msg_list) == 0:
             return None
         new_msg = msg_list.pop()
         if bot_status.white_room:
-            return GameMsg(new_msg, GameMsgType.GM, image)
+            return GameMsg(new_msg, GameMsgType.GM, frame)
         else:
-            return GameMsg(new_msg, GameMsgType.NORMAL, image)
+            return GameMsg(new_msg, GameMsgType.NORMAL, frame)
 
     def notify_new_msg(self, msg: GameMsg):
         text = f'{"📢" if msg.type == GameMsgType.GM else "💬"}{msg.text}'
@@ -143,25 +146,25 @@ class MsgCapture:
         chat_bot.send_message(text=text, image_path=image_path)
 
     def image_to_str(self, image, ranges=None):
+        if image is None:
+            return []
         if ranges:
             image = filter_color(image, ranges)
-        # cv2.imshow("", image)
-        # cv2.waitKey(0)
+        # utils.show_image(image)
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         text = tess.image_to_string(image_rgb, lang="eng")
         content = text.replace("\f", "").split("\n")
 
-        list = []
+        msg_list: list[str] = []
         for item in content:
             if len(item.strip()) == 0:
                 continue
             if item.startswith('[') and len(item) > 6 and item[6] == ']':
-                list.append(item)
-            elif len(list) > 0:
-                new = list.pop() + item
-                list.append(new)
-
-        return list
+                msg_list.append(item)
+            elif len(msg_list) > 0:
+                new = msg_list.pop() + item
+                msg_list.append(new)
+        return msg_list
 
 
 msg_capture = MsgCapture()

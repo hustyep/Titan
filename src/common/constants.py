@@ -53,6 +53,9 @@ class BotInfo(Enum):
     RUNE_LIBERATED = 'Rune Liberated'
     OTHERS_LEAVED = 'Someone\'s gone'
     BOSS_APPEAR = 'Boss Appear'
+    BOSS_FIGHTING = 'Boss fighting'
+    BOSS_DEAD = 'Boss Dead'
+    CHANGE_CHANNEL = 'Change Channel'
 
 
 class BotVerbose(Enum):
@@ -134,6 +137,10 @@ class Platform:
     @property
     def x_range(self):
         return range(self.begin_x, self.end_x + 1)
+    
+    @property
+    def width(self):
+        return self.end_x - self.begin_x + 1
 
     def own_point(self, p: MapPoint):
         return p.y == self.y and p.x in self.x_range
@@ -262,11 +269,12 @@ Charactor_Daily_Map = {
         ]
     },
     'heward': {
-        'default': "Blooming Spring 2",
+        'default': 'Western Outskirts',
         'quest': [
             'Western City Ramparts in Battle 1',
             'Outlaw-Infested Wastes 2',
-            'Laboratory Behind Locked Door 1'
+            'Laboratory Behind Locked Door 1',
+            'Harsh Winter 4'
         ]
     }
 }

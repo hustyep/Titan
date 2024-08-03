@@ -59,12 +59,12 @@ def detect_mobs(
     if frame is None or shared_map.current_map is None:
         return []
 
-    match (type):
-        case (MobType.BOSS):
+    match(type):
+        case(MobType.BOSS):
             mob_templates = shared_map.current_map.boss_templates
-        case (MobType.ELITE):
+        case(MobType.ELITE):
             mob_templates = shared_map.current_map.elite_templates
-        case (_):
+        case(_):
             mob_templates = shared_map.current_map.mob_templates
 
     if len(mob_templates) == 0:
@@ -78,13 +78,12 @@ def detect_mobs(
         mobs_tmp = utils.multi_match(
             frame,
             mob_template,
-            threshold=0.95 if type == MobType.NORMAL else 0.9,
+            threshold=0.96 if type == MobType.NORMAL else 0.9,
             debug=debug)
         if len(mobs_tmp) > 0:
             for mob in mobs_tmp:
                 mobs.append(mob)
                 if not multy_match:
-                    print(f"mobs count = {len(mobs)}")
                     return mobs
     return mobs
 
@@ -121,10 +120,10 @@ def sleep_while_move_y(interval=0.02, n=15):
 
 
 @bot_status.run_if_enabled
-def sleep_in_the_air(interval=0.005, n=4, detect_rope=False):
+def sleep_in_the_air(interval=0.02, n=4, detect_rope=False):
     if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
         sleep_while_move_y(interval, n)
-        return
+        return True
     count = 0
     step = 0
     last_y = bot_status.player_pos.y
@@ -137,15 +136,15 @@ def sleep_in_the_air(interval=0.005, n=4, detect_rope=False):
                 count = 0
             count += 1
         if count >= n:
-            break
+            return True
         last_y = pos.y
         step += 1
-        if step >= 600:
+        if step >= 150:
             utils.log_event("sleep_in_the_air timeout")
-            break
-        elif detect_rope and step >= 250 and shared_map.on_the_rope(bot_status.player_pos):
+            return True
+        elif detect_rope and step >= 20 and shared_map.on_the_rope(bot_status.player_pos):
             # 检测是否在绳子上
-            break
+            return False
         time.sleep(interval)
 
 
@@ -171,12 +170,12 @@ def wait_until_map_changed(timeout=7):
 def chenck_map_available(instance=True):
     if instance:
         start_time = time.time()
-        while time.time() - start_time <= 4:
+        while time.time() - start_time <= 5:
+            if len(detect_mobs(capture.frame, multy_match=True)) >= 3:
+                return True
             others = check_others()
             if others >= 2:
                 return False
-            if detect_mobs(capture.frame):
-                return True
             time.sleep(0.1)
         return False
     else:
@@ -198,21 +197,31 @@ def get_available_routines(command_name) -> list:
     return routines
 
 
-def identify_map_name(try_count=1):
+def get_available_map_names():
+    maps: list[str] = []
+    folder = os.path.join(RESOURCES_DIR, 'maps/minimap_name')
+    for root, ds, fs in os.walk(folder):
+        for f in fs:
+            if f.endswith(".png"):
+                maps.append(f[:-4])
+    return maps
+
+
+def identify_map_name():
+    frame = capture.map_name_frame
+
+    available_map_names = get_available_map_names()
+    for name in available_map_names:
+        name_image = cv2.imread('resources/maps/minimap_name/'+name+'.png')
+        if utils.multi_match(capture.map_name_frame, name_image, 0.98):
+            return name
+        
     available_map_names = []
     for map in shared_map.available_maps:
         available_map_names.append(map.name)
-
-    frame = capture.map_name_frame
-    # utils.show_image(frame)
-    for _ in range(0, try_count):
-        result = utils.image_match_text(
-            frame, available_map_names, 0.8, filter=[])
-        if not result:
-            time.sleep(0.3)
-        else:
-            return result
-
+    result = utils.image_match_text(frame, available_map_names, 0.8, filter=[])
+    if result:
+        return result
 
 def get_full_pos(pos):
     return pos[0] + capture.window['left'], pos[1] + capture.window['top']
@@ -235,7 +244,7 @@ def get_channel_pos(channel):
 
 def convert_point_minimap_to_window(point: MapPoint):
     '''convent the minimap point to the window point'''
-    assert(capture.minimap_frame is not None)
+    assert (capture.minimap_frame is not None)
     window_width = capture.window_rect.width
     window_height = capture.window_rect.height
 
@@ -300,7 +309,8 @@ def check_blind():
         return True
     else:
         return False
-    
+
+
 def check_others():
     minimap = capture.minimap_display
     filtered = utils.filter_color(minimap, OTHER_RANGES)

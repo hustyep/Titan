@@ -9,9 +9,10 @@ from src.map import map_helper
 from src.common.constants import RESOURCES_DIR, Platform, MapPointType, MapPoint, Portal, Path
 from src.modules.capture import capture
 
-Min_Jumpable_Gap = 5
-Max_Jumpable_Gap = 26
+Min_Jumpable_Gap = 4
+Max_Jumpable_Gap = 47
 Max_Path_Step = 5
+Jump_Down_Ratio = 1
 
 
 class MapType(Enum):
@@ -59,14 +60,6 @@ class MapModel:
         self._load_mob_template()
 
         self.init_path()
-
-    # def clear(self):
-    #     self.minimap_data = None
-    #     self.minimap_sample = None
-    #     self.mob_templates = []
-    #     self.elite_templates = []
-    #     self.boss_templates = []
-    #     self.platforms.clear()
 
     def load_minimap_data(self):
         map_dir = map_helper.get_maps_dir(self.name)
@@ -184,10 +177,11 @@ class MapModel:
                 return platforms[index - 1]
 
     def platform_of_point(self, p: MapPoint) -> Platform | None:
-        platform_list = self.platform_map[p.y]
-        for platform in platform_list:
-            if p.x in platform.x_range:
-                return platform
+        platform_list = self.platforms_of_y(p.y)
+        if platform_list:
+            for platform in platform_list:
+                if p.x in platform.x_range:
+                    return platform
 
     def platform_portable(self, platform_start: Platform, platform_target: Platform):
         for portal in platform_start.portals:
@@ -201,6 +195,56 @@ class MapModel:
             return None
         return self.platform_portable(platform_start, platform_target)
 
+    def can_jump_down(self, platform_start: Platform, platform_target: Platform):
+        dy = platform_target.y - platform_start.y
+        assert (dy > 5)
+
+        if set(platform_target.x_range).issubset(set(platform_start.x_range)):
+            return False
+        if platform_target.begin_x < platform_target.begin_x and platform_start.end_x < platform_target.end_x:
+            return self.can_jump_down(platform_start, Platform(platform_target.begin_x, platform_start.end_x, platform_target.y)) or self.can_jump_down(platform_start, Platform(platform_start.begin_x, platform_target.end_x, platform_target.y))
+
+        max_jump_distance = 30 + dy
+        xs_target = set()
+        intersections = set(platform_start.x_range).intersection(set(platform_target.x_range))
+        if platform_target.end_x > platform_start.end_x:
+            xs_target = set(range(platform_start.end_x+1, platform_start.end_x+max_jump_distance+1))
+        else:
+            xs_target = set(range(platform_start.begin_x-max_jump_distance, platform_start.begin_x))
+
+        xs_target = xs_target.intersection(set(platform_target.x_range))
+        if len(xs_target) < 30:
+            return False
+        for y in range(platform_start.y, platform_target.y):
+            plats = self.platforms_of_y(y)
+            if plats:
+                for plat in plats:
+                    xs_pat = set(plat.x_range)
+                    intersections = xs_target.intersection(xs_pat)
+                    if intersections:
+                        return False
+                    
+    def can_walk_down(self, platform_start: Platform, platform_target: Platform):
+        gap = map_helper.platform_gap(platform_start, platform_target)
+        if gap >= 0:
+            return False
+        
+        if set(platform_start.x_range).issubset(set(platform_target.x_range)):
+            return self.can_walk_down(platform_start, Platform(platform_target.begin_x, platform_start.end_x-1, platform_target.y)) or self.can_jump_down(platform_start, Platform(platform_start.begin_x+1, platform_target.end_x, platform_target.y))
+        
+        if platform_target.end_x > platform_start.end_x:
+            x_target = platform_start.end_x + 1
+        else:
+            x_target = platform_start.begin_x - 1
+        for y in range(platform_start.y, platform_target.y):
+            plats = self.platforms_of_y(y)
+            if plats:
+                for plat in plats:
+                    if x_target in plat.x_range:
+                        return False
+        return True
+
+
     def platform_reachable(self, platform_start: Platform | None, platform_target: Platform | None):
         if platform_start is None or platform_target is None:
             return False
@@ -212,13 +256,15 @@ class MapModel:
         dy = platform_target.y - platform_start.y
         gap = map_helper.platform_gap(platform_start, platform_target)
 
-        if dy == 0:
+        if abs(dy) <= 5:
             return gap <= Max_Jumpable_Gap
-        elif dy < 0:
+        elif dy < -5:
+            # move up
             if gap <= -Min_Jumpable_Gap:
                 return True
-            return gap <= 8 and abs(dy) <= 8
+            return gap in range(1, 10) and abs(dy) <= 10
         else:
+            # move down
             if gap <= -Min_Jumpable_Gap:
                 xs_start = set(platform_start.x_range)
                 xs_target = set(platform_target.x_range)
@@ -227,23 +273,16 @@ class MapModel:
                     plats = self.platforms_of_y(y)
                     if plats:
                         for plat in plats:
-                            xs_pat = set(plat.x_range)
-                            plat_intersection = xs_pat.intersection(intersections)
-                            if len(intersections) - len(plat_intersection) < 15:
-                                return False
-                return True
-            if gap <= 26:
-                for y in range(platform_start.y, platform_target.y):
-                    plats = self.platforms_of_y(y)
-                    if plats:
-                        for plat in plats:
-                            start_x = max(platform_target.begin_x, platform_target.end_x - 30)
-                            xs_target = list(range(start_x, platform_target.end_x+1))
-                            xs_pat = list(range(plat.begin_x, plat.end_x+1))
-                            intersections = set(xs_target).intersection(set(xs_pat))
-                            if intersections:
-                                return False
-                return True
+                            intersections = intersections.difference(set(plat.x_range))
+                if len(intersections) > 5:
+                    return True
+                if self.can_jump_down(platform_start, platform_target):
+                    return True
+            if gap < 0:
+                return self.can_walk_down(platform_start, platform_target)
+            
+            if gap in range(1, 31):
+                return self.can_jump_down(platform_start, platform_target)
             return False
 
     def path_between(self, platform_start: Platform, platform_target: Platform, path: Path | None = None) -> list[Path]:
@@ -258,32 +297,31 @@ class MapModel:
             result = []
             for tmp in paths:
                 if path and set(tmp.routes).intersection(path.routes):
-                        continue
+                    continue
                 if not path or path.steps + tmp.steps <= Max_Path_Step:
                     result.append(tmp)
             return result
 
         new_path = Path(path.routes + [platform_start] if path else [platform_start])
-        dy = platform_target.y - platform_start.y
         reachable_plats = self.single_path[platform_start]
         result: List[Path] = []
         for plat in reachable_plats:
             if path and plat in path.routes:
                 continue
-            if dy == 0:
-                if plat.y != platform_start.y:
-                    continue
-                dx = platform_target.begin_x - platform_start.begin_x
-                if dx > 0 and plat.begin_x < platform_start.begin_x:
-                    continue
-                elif dx < 0 and plat.begin_x > platform_start.begin_x:
-                    continue
-            elif dy < 0:
-                if plat.y > platform_start.y:
-                    continue
-            else:
-                if plat.y < platform_start.y:
-                    continue
+            # if dy == 0:
+            #     if plat.y != platform_start.y:
+            #         continue
+            #     dx = platform_target.begin_x - platform_start.begin_x
+            #     if dx > 0 and plat.begin_x < platform_start.begin_x:
+            #         continue
+            #     elif dx < 0 and plat.begin_x > platform_start.begin_x:
+            #         continue
+            # elif dy < 0:
+            #     if plat.y > platform_start.y:
+            #         continue
+            # else:
+            #     if plat.y < platform_start.y:
+            # continue
             next_paths = self.path_between(plat, platform_target, new_path)
             if next_paths:
                 for sub_path in next_paths:
@@ -293,19 +331,59 @@ class MapModel:
 
         return result
 
+    def points_of_path(self, path: Path, start: MapPoint, target: MapPoint):
+        assert (start != target)
+
+        start_plat = path.start_plat
+        target_plat = path.end_plat
+        assert start_plat
+        assert target_plat
+        if start_plat == target_plat:
+            return [start, target]
+
+        path_points: list[MapPoint] = [start]
+        last_plat = start_plat
+        for plat in path.routes:
+            if plat == start_plat:
+                continue
+            gap = map_helper.platform_gap(plat, last_plat)
+            if gap > 0:
+                if plat.begin_x > last_plat.end_x:
+                    path_points.append(MapPoint(last_plat.end_x, last_plat.y))
+                    path_points.append(MapPoint(plat.begin_x, plat.y))
+                else:
+                    path_points.append(MapPoint(last_plat.begin_x, last_plat.y))
+                    path_points.append(MapPoint(plat.end_x, plat.y))
+            else:
+                intersecions = set(last_plat.x_range).intersection(set(plat.x_range))
+                last_p = path_points[-1]
+                if last_p.x in intersecions:
+                    path_points.append(MapPoint(last_p.x, plat.y))
+                else:
+                    x_list = list(intersecions)
+                    x_list.sort()
+                    index = int(len(x_list)/2)
+                    path_points.append(MapPoint(x_list[index], last_p.y))
+                    path_points.append(MapPoint(x_list[index], plat.y))
+            last_plat = plat
+        if path_points[-1].tuple != target.tuple:
+            path_points.append(target)
+        return path_points
+
     def weight_of_path(self, path: Path):
         if path.steps <= 1:
             return sys.maxsize
-        result = 0
+        result = path.steps * 10
         last = None
         for plat in path.routes:
             if last:
                 if self.platform_portable(last, plat):
                     result += 50
                 else:
-                    if plat.y != last.y:
-                        result += 150
-                    result += abs(plat.center.x - last.center.x)
+                    if abs(plat.y - last.y) > 5:
+                        result += 80
+                    else:
+                        result += abs(plat.center.x - last.center.x)
             last = plat
         return result
 

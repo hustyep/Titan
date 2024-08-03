@@ -14,7 +14,7 @@ from src.routine.components import Point
 from src.routine.routine import routine
 from src.common import bot_status, bot_settings
 from src.common.image_template import *
-from src.common.constants import BotInfo, BotWarnning, BotFatal, BotError, MapPoint, window_cap_horiz, window_cap_botton, window_cap_top
+from src.common.constants import BotRunMode, BotInfo, BotWarnning, BotFatal, BotError, MapPoint, window_cap_horiz, window_cap_botton, window_cap_top
 from src.common.hid import hid
 from src.modules.capture import capture
 from src.map.map import shared_map as game_map
@@ -36,6 +36,8 @@ class Detector(Subject):
         self.others_comming_time = 0
         self.others_detect_count = 0
         self.others_no_detect_count = 0
+
+        self.boss_detect_time = 0
 
         self.lost_time_threshold = 1
         self.lost_minimap_time = 0
@@ -75,6 +77,7 @@ class Detector(Subject):
     def _main_exception(self):
         while True:
             self.check_minimap()
+
             if bot_status.enabled and not bot_status.acting:
                 self.check_boss()
                 self.check_binded()
@@ -84,20 +87,22 @@ class Detector(Subject):
                 self.check_alert()
                 self.check_forground()
                 self.check_init()
-            else:
+            elif bot_status.acting and bot_status.lost_minimap:
                 self.clear()
             time.sleep(0.2)
 
     def clear(self):
         self.player_pos_updated_time = 0
         self.player_pos = (0, 0)
-
+        
         self.others_count = 0
         self.others_comming_time = 0
         self.others_detect_count = 0
         self.others_no_detect_count = 0
 
         self.lost_minimap_time = 0
+        bot_status.others_comming_time = 0
+        bot_status.stage_fright = False
 
     def _main_event(self):
         while True:
@@ -148,8 +153,14 @@ class Detector(Subject):
         x = (frame.shape[1] - 260) // 2
         y = (frame.shape[0] - 220) // 2
         ok_btn = utils.multi_match(
-            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.9)
+            frame[y:y+220, x:x+260], BUTTON_OK_TEMPLATE, threshold=0.8)
         if ok_btn:
+            hid.key_press('esc')
+            time.sleep(0.1)
+            return
+        cancel_btn = utils.multi_match(
+            frame[y:y+220, x:x+260], BUTTON_CANCEL_TEMPLATE, threshold=0.8)
+        if cancel_btn:
             hid.key_press('esc')
             time.sleep(0.1)
             return
@@ -167,23 +178,27 @@ class Detector(Subject):
         if confirm_btn:
             hid.key_press('esc')
             time.sleep(0.1)
+            return
 
-        chat_btn = utils.multi_match(
-            frame, CHAT_MINI_TEMPLATE, threshold=0.9)
-        if chat_btn:
-            bot_action.mouse_left_click(
-                bot_helper.get_full_pos(chat_btn[0]), delay=0.5)
+        chat_all_btn = utils.multi_match(frame[-60:,:60], CHAT_ALL_TEMPLATE, threshold=0.9)
+        if chat_all_btn:
+            hid.key_press('enter')
+            time.sleep(0.1)
+            return
+
 
         setting_btn = utils.multi_match(
             frame[400:600, 800:1000], SETTING_TEMPLATE, threshold=0.9)
         if setting_btn:
             hid.key_press('esc')
             time.sleep(0.1)
+            return
 
         inventory = utils.multi_match(frame, INVENTORY_MESO_TEMPLATE)
         if inventory:
             hid.key_press('esc')
             time.sleep(0.1)
+            return
 
     def check_init(self):
         if capture.frame is None:
@@ -298,7 +313,7 @@ class Detector(Subject):
     def check_no_movement(self):
         if bot_status.enabled and operator.eq(bot_status.player_pos, self.player_pos):
             interval = int(time.time() - self.player_pos_updated_time)
-            if interval >= 15 and self.player_pos_updated_time:
+            if gui_setting.mode.type == BotRunMode.Farm and interval >= 15 and self.player_pos_updated_time:
                 self.on_next((BotWarnning.NO_MOVEMENT, interval))
         else:
             self.player_pos = bot_status.player_pos
@@ -311,12 +326,24 @@ class Detector(Subject):
         height, width, _ = frame.shape
         elite_frame = frame[height // 4:3 *
                             height // 4, width // 4:3 * width // 4]
-        elite = utils.multi_match(elite_frame, ELITE_TEMPLATE, threshold=0.9)
+        elite = utils.multi_match(elite_frame, ELITE_TEMPLATE, threshold=0.8)
         if len(elite) > 0:
             self.on_next((BotInfo.BOSS_APPEAR, ))
-            
-        bot_status.elite_boss_detected = utils.match_count(
-            frame[:20, 320:400], BOSS_TEMPLATE, threshold=0.9) > 0
+            bot_status.elite_boss_appear_time = time.time()
+
+        elite_boss_detected = utils.match_count(frame[:8, 300:320], BOSS_TEMPLATE, 0.98) > 0
+        if elite_boss_detected:
+            if not bot_status.elite_boss_detected:
+                self.on_next((BotInfo.BOSS_FIGHTING, ))
+                if time.time() - bot_status.elite_boss_appear_time > 600:
+                    bot_status.elite_boss_appear_time = time.time()
+
+            bot_status.elite_boss_detected = True
+            self.boss_detect_time = time.time()
+        elif self.boss_detect_time > 0 and time.time() - self.boss_detect_time > 3:
+            self.boss_detect_time = 0
+            bot_status.elite_boss_detected = False
+            self.on_next((BotInfo.BOSS_DEAD, ))
 
     def check_binded(self):
         frame = capture.frame
@@ -391,28 +418,35 @@ class Detector(Subject):
             self.others_no_detect_count = 0
             if self.others_comming_time == 0:
                 self.others_comming_time = time.time()
+                bot_status.others_comming_time = self.others_comming_time
         else:
             self.others_no_detect_count += 1
 
         duration = int(time.time() - self.others_comming_time)
-        if self.others_no_detect_count == 30:
+        if self.others_no_detect_count == 60:
             self.others_no_detect_count += 1
             if self.others_comming_time > 0 and self.others_detect_count > 40:
-                self.on_next((BotInfo.OTHERS_LEAVED, ))
+                if not game_map.current_map.instance:
+                    self.on_next((BotInfo.OTHERS_LEAVED, ))
             self.others_detect_count = 0
             self.others_comming_time = 0
+            bot_status.others_comming_time = self.others_comming_time
         elif self.others_detect_count == 2000:
             self.others_detect_count += 1
-            self.on_next((BotError.OTHERS_STAY_OVER_120S, duration))
+            if not game_map.current_map.instance:
+                self.on_next((BotError.OTHERS_STAY_OVER_120S, duration))
         elif self.others_detect_count == 200:
             self.others_detect_count += 1
-            self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
+            if not game_map.current_map.instance:
+                self.on_next((BotWarnning.OTHERS_STAY_OVER_60S, duration))
         elif self.others_detect_count == 100:
             self.others_detect_count += 1
-            self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
+            if not game_map.current_map.instance:
+                self.on_next((BotWarnning.OTHERS_STAY_OVER_30S, duration))
         elif self.others_detect_count == 50:
             self.others_detect_count += 1
-            self.on_next((BotWarnning.OTHERS_COMMING, duration))
+            if not game_map.current_map.instance:
+                self.on_next((BotWarnning.OTHERS_COMMING, duration))
 
     def check_rune_status(self, frame, minimap):
         if bot_status.rune_solving:
