@@ -1129,14 +1129,11 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
         return find_fall_point(start, target)
     if shared_map.current_map.can_jump_down(platform_start, platform_target):
         return find_jump_down_point(start, target)
-    if shared_map.current_map.can_walk_down(platform_start, platform_target):
-        walk_down_point = find_walk_down_point(start, target)
-        if walk_down_point != target:
-            fall_down_point = find_fall_point(start, target)
-            if fall_down_point:
-                return fall_down_point
-            else:
-                return walk_down_point
+    fall_down_point = find_fall_point(start, target)
+    if fall_down_point:
+        return fall_down_point
+    elif shared_map.current_map.can_walk_down(platform_start, platform_target):
+        return find_walk_down_point(start, target)
     return find_fall_point(start, target)
 
 
