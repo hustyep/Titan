@@ -376,12 +376,15 @@ class DoubleJump(Skill):
         assert target_plat
 
         dx = target.x - start_p.x
+        dy = target.y - start_p.y
         if start_plat == target_plat:
             return abs(dx)
         good_x1 = set()
         good_x2 = set()
         for x in range(target.x - target.tolerance, target.x + target.tolerance + 1):
             distance = abs(x - start_p.x)
+            if dy > 0 and dy < 5 and dy < distance:
+                distance -= dy
             config = self.time_config(distance)
             if abs(x - target_plat.begin_x) > 2 and abs(x - target_plat.end_x) > 2:
                 good_x1.add(x)
@@ -395,7 +398,10 @@ class DoubleJump(Skill):
             target_x = list(good_x1)[randrange(0, len(good_x1))]
         elif good_x2:
             target_x = list(good_x2)[randrange(0, len(good_x2))]
-        return abs(start_p.x - target_x)
+        distance = abs(start_p.x - target_x)
+        if dy > 0 and dy < 5 and dy < distance:
+            distance -= dy
+        return distance
 
     def main(self, wait=True):
         while not self.canUse():

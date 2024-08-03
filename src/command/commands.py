@@ -989,8 +989,8 @@ class ErdaShower(Skill):
         cls.ready = len(matchs) > 0
 
     def main(self, wait=True):
-        if not self.canUse():
-            return False
+        while not self.canUse():
+            time.sleep(0.001)
         if self.direction:
             Direction(self.direction).execute()
         self.__class__.castedTime = time.time()

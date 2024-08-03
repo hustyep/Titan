@@ -3,7 +3,7 @@ $, target=move_tolerance, value=10
     Sol_Janus, type=1
 
 ~, label=summon1, interval=45, skip=False
-*, x=142, y=62, interval=0, tolerance=5, detect=False, skip=False
+*, x=143, y=62, interval=0, tolerance=5, detect=False, skip=False
     Detect_Mobs, count=4
     Shadow_Attack, attack=False
     Greater_Dark_Servant
@@ -26,7 +26,7 @@ $, target=move_tolerance, value=10
     Detect_Mobs, count=4
     Shadow_Attack, attack=False
     Replace_Dark_Servant, resummon=True
-*, x=104, y=40, interval=0, tolerance=8, detect=False, skip=False
+*, x=100, y=40, interval=0, tolerance=8, detect=False, skip=False
     Wait, duration=0.3
     Replace_Dark_Servant, resummon=False
 #
