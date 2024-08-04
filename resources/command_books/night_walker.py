@@ -1132,7 +1132,7 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
     fall_down_point = find_fall_point(start, target)
     if fall_down_point:
         return fall_down_point
-    elif shared_map.current_map.can_walk_down(platform_start, platform_target):
+    elif shared_map.current_map.can_walk_down(platform_start, platform_target) and (start.x - platform_start.begin_x <= 1 or platform_start.end_x - start.x <= 1):
         return find_walk_down_point(start, target)
     return find_fall_point(start, target)
 
