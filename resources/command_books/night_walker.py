@@ -79,6 +79,12 @@ def step(target: MapPoint):
     utils.log_event(f"[step]next_p:{str(next_p)}", bot_settings.debug)
     if not next_p:
         return
+    
+    if target_reached(bot_status.player_pos, target):
+        return
+    
+    if target_reached(bot_status.player_pos, next_p):
+        return
 
     bot_status.path = [bot_status.player_pos, next_p, target]
 
@@ -383,7 +389,7 @@ class DoubleJump(Skill):
         good_x2 = set()
         for x in range(target.x - target.tolerance, target.x + target.tolerance + 1):
             distance = abs(x - start_p.x)
-            if dy > 0 and dy < 5 and dy < distance:
+            if dy in range(3, distance):
                 distance -= dy
             config = self.time_config(distance)
             if abs(x - target_plat.begin_x) > 2 and abs(x - target_plat.end_x) > 2:
@@ -399,7 +405,7 @@ class DoubleJump(Skill):
         elif good_x2:
             target_x = list(good_x2)[randrange(0, len(good_x2))]
         distance = abs(start_p.x - target_x)
-        if dy > 0 and dy < 5 and dy < distance:
+        if dy in range(3, distance):
             distance -= dy
         return distance
 
@@ -1165,7 +1171,7 @@ def find_fall_point(start: MapPoint, target: MapPoint):
         if len(available_x) > 0:
             if start.x in available_x:
                 Shadow_Fall(target).execute()
-                return target
+                return None
             else:
                 next_p = point_of_intersection(platform_start, platform_target)
                 assert next_p
@@ -1274,7 +1280,7 @@ def find_walk_down_point(start: MapPoint, target: MapPoint):
         else:
             press(opposite_direction(direction))
             sleep_in_the_air()
-        return target
+        return None
     else:
         return next_p
 

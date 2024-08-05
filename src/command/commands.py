@@ -153,19 +153,19 @@ class Move(Command):
         return result
 
     def main(self, wait=True):
+        if shared_map.data_available and target_reached(bot_status.player_pos, self.target):
+            return True
+        
         if self.step > self.max_steps:
             print(f"[Failed][Move] pos={bot_status.player_pos.tuple} target={str(self.target)}", True)
             DoubleJump(self.target).execute()
             return False
 
-        if shared_map.data_available and target_reached(bot_status.player_pos, self.target):
-            return True
-
-        if shared_map.point_type(bot_status.player_pos) == MapPointType.FloorRope:
-            press("up", down_time=0.1)
-
         if shared_map.on_the_rope(bot_status.player_pos):
             bot_action.climb_rope(self.target.y < bot_status.player_pos.y)
+            
+        if shared_map.point_type(bot_status.player_pos) == MapPointType.FloorRope:
+            press("up", down_time=0.1)
 
         bot_status.path = [bot_status.player_pos, self.target]
         step(self.target)
