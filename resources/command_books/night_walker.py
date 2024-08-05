@@ -333,12 +333,6 @@ class DoubleJump(Skill):
         self.target = target
         self.attack_if_needed = attack_if_needed
 
-    def time_config(self, distance: int):
-        for range_tuple, value in self.config.items():
-            if distance in range(range_tuple[0], range_tuple[1]):
-                return value
-        return (0.02, 0.02, 0.02, 0.02)
-
     def double_jump(self, t1, t2):
         press(Keybindings.JUMP, 1, down_time=0.02, up_time=t1)
         press(self.key, 1, down_time=0.02, up_time=t2)
@@ -375,6 +369,12 @@ class DoubleJump(Skill):
                 self.double_jump(times[0], times[1])
                 self.scram(direction, times[2], times[3])
 
+    def time_config(self, distance: int):
+        for range_tuple, value in self.config.items():
+            if distance in range(range_tuple[0], range_tuple[1]):
+                return value
+        return (0.02, 0.02, 0.02, 0.02)
+    
     def caculate_distance(self, target: MapPoint):
         start_p = shared_map.fixed_point(bot_status.player_pos)
         start_plat = shared_map.platform_of_point(start_p)

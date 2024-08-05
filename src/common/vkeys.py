@@ -123,15 +123,19 @@ def key_down(key):
     if key in ['upleft', 'upright', 'downleft', 'downright']:
         if key == 'upleft':
             hid.key_down('up')
+            time.sleep(0.01)
             hid.key_down("left")
         elif key == "upright":
             hid.key_down('up')
+            time.sleep(0.01)
             hid.key_down("right")
         elif key == "downleft":
             hid.key_down('down')
+            time.sleep(0.01)
             hid.key_down("left")
         elif key == "downright":
             hid.key_down('down')
+            time.sleep(0.01)
             hid.key_down("right")            
         else:
            pass
@@ -159,15 +163,19 @@ def key_up(key):
     if key in ['upleft', 'upright', 'downleft', 'downright']:
         if key == 'upleft':
             hid.key_up('up')
+            time.sleep(0.01)
             hid.key_up("left")
         elif key == "upright":
             hid.key_up('up')
+            time.sleep(0.01)
             hid.key_up("right")
         elif key == "downleft":
             hid.key_up('down')
+            time.sleep(0.01)
             hid.key_up("left")
         elif key == "downright":
             hid.key_up('down')
+            time.sleep(0.01)
             hid.key_up("right")            
         else:
            pass

@@ -11,7 +11,7 @@ from src.common import bot_status, bot_settings, utils, bot_helper
 # List of key mappings
 
 
-class Keybindings(DefaultKeybindings):
+class Keybindings:
     # Movement
     JUMP = 's'
     FLASH_JUMP = ';'
@@ -35,7 +35,7 @@ class Keybindings(DefaultKeybindings):
     CANDIED_APPLE = '8'
     LEGION_WEALTHY = '7'
     EXP_COUPON = '6'
-    
+
     # Skills
     CRUEL_STAB = 'f'
     MESO_EXPLOSION = 'd'
@@ -53,67 +53,59 @@ class Keybindings(DefaultKeybindings):
 #########################
 
 
-def step(target, tolerance):
+def step(target: MapPoint, tolerance):
     """
     Performs one movement step in the given DIRECTION towards TARGET.
     Should not press any arrow keys, as those are handled by Mars.
     """
 
-    d_x = target[0] - bot_status.player_pos[0]
-    d_y = target[1] - bot_status.player_pos[1]
-    if abs(d_x) in ShadowAssault.x_range and -d_y in ShadowAssault.y_range:
-        if ShadowAssault.canUse():
+    d_x = target.x - bot_status.player_pos.x
+    d_y = target.y - bot_status.player_pos.y
+    if ShadowAssault.canUse():
+        if abs(d_x) in ShadowAssault.x_range and -d_y in ShadowAssault.y_range:
             ShadowAssault(target=target).execute()
             return
-    if d_y in ShadowAssault.y_range or d_y > 10 and abs(d_x) > 100:
-        if ShadowAssault.canUse():
+        if d_y in ShadowAssault.y_range or d_y > 10 and abs(d_x) > 100:
             ShadowAssault(target=target).execute()
             return
-    if abs(d_x) >= 24:
-        hit_and_run('right' if d_x > 0 else 'left', target, tolerance)
+
+    next_p = find_next_point(bot_status.player_pos, target)
+    utils.log_event(f"[step]next_p:{str(next_p)}", bot_settings.debug)
+    if not next_p:
         return
 
-    next_p = find_next_point(bot_status.player_pos, target, tolerance)
-    if not next_p:
+    if target_reached(bot_status.player_pos, target):
+        return
+
+    if target_reached(bot_status.player_pos, next_p):
         return
 
     bot_status.path = [bot_status.player_pos, next_p, target]
 
-    d_x = next_p[0] - bot_status.player_pos[0]
-    d_y = next_p[1] - bot_status.player_pos[1]
-
-    direction = None
-    if abs(d_x) > tolerance:
-        direction = 'right' if d_x > 0 else 'left'
+    d_y = next_p.y - bot_status.player_pos.y
+    if abs(d_y) > 5:
+        if d_y > 0:
+            move_down(next_p)
+        else:
+            move_up(next_p)
     else:
-        direction = 'down' if d_y > 0 else 'up'
-
-    if direction == "up":
-        move_up(next_p)
-    elif direction == "down":
-        move_down(next_p)
-    elif abs(d_x) >= 24:
-        hit_and_run(direction, next_p, tolerance)
-    # elif abs(d_x) >= 20:
-    #     DoubleJump(next_p).execute()
-    else:
-        Walk(target_x=next_p[0], tolerance=tolerance).execute()
+        move_horizontal(next_p)
 
 
 @bot_status.run_if_enabled
-def hit_and_run(direction, target, tolerance):
-    if gui_setting.detection.detect_mob:
-        if gui_setting.detection.detect_elite or gui_setting.detection.detect_boss:
-            t = AsyncTask(target=pre_detect, args=(direction,))
-            t.start()
-            elite_detected = t.join()
-            DoubleJump(target=target, attack_if_needed=True).execute()
-            if elite_detected:
-                SonicBlow().execute()
-        else:
-            DoubleJump(target=target, attack_if_needed=True).execute()
-    else:
+def move_horizontal(target: MapPoint):
+    start_p = shared_map.fixed_point(bot_status.player_pos)
+    d_x = target.x - start_p.x
+    distance = abs(d_x)
+
+    if not shared_map.is_continuous(start_p, target):
         DoubleJump(target=target, attack_if_needed=True).execute()
+    elif distance >= DoubleJump.move_range.start:
+        DoubleJump(target=target, attack_if_needed=True).execute()
+    elif distance >= 15 or distance in range(7, 10):
+        DoubleJump(target=target, attack_if_needed=False).execute()
+    else:
+        Walk(target).execute()
 
 #########################
 #        Y轴移动         #
@@ -121,124 +113,203 @@ def hit_and_run(direction, target, tolerance):
 
 
 @bot_status.run_if_enabled
-def move_up(target):
+def move_up(target: MapPoint):
     p = bot_status.player_pos
-    dy = p[1] - target[1]
+    dy = abs(p.y - target.y)
+
+    up_point = MapPoint(p.x, target.y)
+    if not shared_map.is_continuous(up_point, target):
+        # 跨平台
+        DoubleJump(target, False)
+        return
+
+    next_platform = shared_map.platform_of_point(target)
+    assert (next_platform)
+    if bot_status.player_moving and bot_status.player_direction == 'left':
+        if up_point.x - next_platform.begin_x <= 8 and next_platform.end_x - next_platform.begin_x > 20:
+            # move_horizontal(MapPoint(up_point.x+3, p.y, 2))
+            press('right', down_time=0.1)
+        time.sleep(0.2)
+    elif bot_status.player_moving and bot_status.player_direction == 'right':
+        if next_platform.end_x - up_point.x <= 10 and next_platform.end_x - next_platform.begin_x > 20:
+            # move_horizontal(MapPoint(up_point.x-3, p.y, 2))
+            press('left', down_time=0.1)
+        time.sleep(0.2)
+
     if dy <= 0:
         return
-    elif dy <= 7:
+    elif dy < 5:
         press(Keybindings.JUMP)
         sleep_in_the_air()
-    elif dy <= 23:
+    elif dy < JumpUp.move_range.stop:
         JumpUp(target).execute()
-    elif dy <= 41 and ShadowAssault.canUse():
+    elif dy in ShadowAssault.y_range and ShadowAssault.canUse():
         ShadowAssault(target=target).execute()
     else:
         RopeLift(dy).execute()
         sleep_in_the_air(n=30)
 
+
 @bot_status.run_if_enabled
-def move_down(target):
-    p = bot_status.player_pos
-    dy = p[1] - target[1]
+def move_down(target: MapPoint):
+    if target.y <= bot_status.player_pos.y:
+        return
+    if abs(bot_status.player_pos.y - target.y) <= 5:
+        sleep_in_the_air()
+        return
+    platform_start = shared_map.platform_of_point(bot_status.player_pos)
+    platform_target = shared_map.platform_of_point(target)
+    assert platform_target
+    if not platform_start:
+        return
+    dy = platform_target.y - platform_start.y
     if dy >= 24 and ShadowAssault.canUse():
         ShadowAssault(target=target).execute()
     else:
-        sleep_in_the_air(n=1)
-        if target[1] > bot_status.player_pos[1]:
+        next_p = MapPoint(bot_status.player_pos.x, target.y, 3)
+        if shared_map.on_the_platform(next_p):
             Fall().execute()
+        else:
+            DoubleJump(target, False)
 
 
 class JumpUp(Command):
     key = Keybindings.FLASH_JUMP
     type = SkillType.Move
+    move_range = range(0, 24)
 
-    def __init__(self, target):
+    def __init__(self, target: MapPoint):
         super().__init__(locals())
         self.target = target
 
-    def main(self):
-        # TODO too long
-        time.sleep(0.5)
-        
-        target_left = (self.target[0] - 1, self.target[1])
-        target_right = (self.target[0] + 1, self.target[1])
-        if not shared_map.on_the_platform(target_left):
-            press('right')
-        elif not shared_map.on_the_platform(target_right):
-            press('left')
-        
-        evade_rope(self.target)
-            
-        dy = bot_status.player_pos[1] - self.target[1]
+    def main(self, wait=True):
+        sleep_in_the_air(n=4)
+        evade_rope()
+
+        dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
         time.sleep(0.06 if dy >= 20 else 0.1)
         press(self.key, 1)
         key_up('up')
         sleep_in_the_air(n=10)
+        return True
 
 
 class DoubleJump(Skill):
     """Performs a flash jump in the given direction."""
     key = Keybindings.FLASH_JUMP
     type = SkillType.Move
-    # cooldown = 0.1
+    cooldown = 0.2
+    move_range = range(26, 35)
+    config = {
+        (20, 26): (0.2, 0.02),
+        (26, 28): (0.02, 0.02),
+        (28, 29): (0.06, 0.02),
+        (29, 32): (0.06, 0.04, 0.02),
+        (32, 35): (0.04, 0.05, 0.02),
+    }
 
-    def __init__(self, target: tuple[int, int], attack_if_needed=False):
+    def __init__(self, target: MapPoint | None = None, attack_if_needed=False):
         super().__init__(locals())
 
         self.target = target
         self.attack_if_needed = attack_if_needed
 
-    def detect_mob(self, direction):
-        insets = AreaInsets(top=220,
-                            bottom=100,
-                            left=650 if direction == 'left' else 10,
-                            right=10 if direction == 'left' else 600)
-        anchor = bot_helper.locate_player_fullscreen(accurate=True)
-        mobs = detect_mobs(insets=insets, anchor=anchor)
-        return mobs
+    def double_jump(self, t1, t2):
+        press(Keybindings.JUMP, 1, down_time=0.02, up_time=t1)
+        press(self.key, 1, down_time=0.02, up_time=t2)
 
-    def main(self):
+    def triple_jump(self, t1, t2, t3):
+        self.double_jump(t1, t2)
+        press(self.key, 1, down_time=0.02, up_time=t3)
+
+    def common_jump(self):
+        self.double_jump(0.02, 0.02)
+
+    def jumpe_with_config(self, times, direction):
+        if len(times) == 2:
+            self.double_jump(times[0], times[1])
+        else:
+            self.triple_jump(times[0], times[1], times[2])
+
+    def time_config(self, distance: int):
+        for range_tuple, value in self.config.items():
+            if distance in range(range_tuple[0], range_tuple[1]):
+                return value
+        return (0.02, 0.02)
+
+    def caculate_distance(self, target: MapPoint):
+        start_p = shared_map.fixed_point(bot_status.player_pos)
+        start_plat = shared_map.platform_of_point(start_p)
+        target_plat = shared_map.platform_of_point(target)
+        assert target_plat
+
+        dx = target.x - start_p.x
+        dy = target.y - start_p.y
+        if start_plat == target_plat:
+            return abs(dx)
+        good_x = set()
+        for x in range(target.x - target.tolerance, target.x + target.tolerance + 1):
+            distance = abs(x - start_p.x)
+            if dy in range(3, distance):
+                distance -= dy
+            if abs(x - target_plat.begin_x) > 2 and abs(x - target_plat.end_x) > 2:
+                good_x.add(x)
+        target_x = target.x
+        if good_x:
+            target_x = list(good_x)[randrange(0, len(good_x))]
+
+        distance = abs(start_p.x - target_x)
+        if dy in range(3, distance):
+            distance -= dy
+        return distance
+
+    def main(self, wait=True):
         while not self.canUse():
+            utils.log_event("double jump waiting", bot_settings.debug)
             time.sleep(0.01)
-        dx = self.target[0] - bot_status.player_pos[0]
-        dy = self.target[1] - bot_status.player_pos[1]
+
+        if self.target is None:
+            direction = random_direction()
+            key_down(direction)
+            time.sleep(0.02)
+            self.common_jump()
+            key_up(direction)
+            sleep_in_the_air()
+            return True
+
+        dx = self.target.x - bot_status.player_pos.x
+        dy = self.target.y - bot_status.player_pos.y
         direction = 'left' if dx < 0 else 'right'
-        start_y = bot_status.player_pos[1]
+        start_p = bot_status.player_pos
+        distance = self.caculate_distance(self.target)
 
         self.__class__.castedTime = time.time()
         key_down(direction)
-        if self.attack_if_needed:
-            # detect = AsyncTask(
-            #     target=self.detect_mob, args=(direction, ))
-            # detect.start()
-            press_acc(Keybindings.JUMP, 1, down_time=0.02, up_time=0.05)
-            # mobs_detected = detect.join()
-            mobs_detected = True
-            times = 2 if mobs_detected else 1
-            press_acc(self.key, 1, down_time=0.02, up_time=0.02)
-            if mobs_detected:
-                Attack().execute()
-        else:
-            times = 2 if abs(dx) >= 32 else 1
-            if dy == 0:
-                if abs(dx) in range(20, 26):
-                    press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.2)
-                else:
-                    press(Keybindings.JUMP, 1, down_time=0.03, up_time=0.03)
+        time.sleep(0.02)
+        need_check = False
+        if dy < -5:
+            if distance >= 20:
+                self.triple_jump(0.06, 0.04, 0.04)
             else:
-                press(Keybindings.JUMP, 1, down_time=0.05, up_time=0.05)
-            press(self.key, times, down_time=0.03, up_time=0.03)
-
-        # if start_y > 55:
-        #     # print("pass")
-        #     time.sleep(0.055)
-        # else:
-        sleep_in_the_air(n=1, start_y=start_y)
+                self.double_jump(0.06, 0.04)
+        else:
+            self.common_jump()
+        if self.attack_if_needed:
+            CruelStab().execute()
         key_up(direction)
-            # time.sleep(0.01)
+        sleep_in_the_air(n=1)
+        p = bot_status.player_pos
+        plat = shared_map.platform_of_point(self.target)
+        if plat and abs(p.x - plat.begin_x) <= 2:
+            press('right')
+        elif plat and abs(p.x - plat.end_x) <= 2:
+            press('left')
+        if need_check and not target_reached(bot_status.player_pos, self.target):
+            utils.log_event(
+                f"[Failed][DoubleJump] distance={distance} start={start_p.tuple} end={bot_status.player_pos.tuple} target={str(self.target)}", True)
+        return True
 
 
 class ShadowAssault(Skill):
@@ -257,7 +328,7 @@ class ShadowAssault(Skill):
     x_range = range(0, 50)
     y_range = range(18, 42)
 
-    def __init__(self, direction='up', jump='True', distance=80, target=None):
+    def __init__(self, direction='up', jump='True', distance=80, target: MapPoint | None = None):
         super().__init__(locals())
         self.target = target
         if target is None:
@@ -265,8 +336,8 @@ class ShadowAssault(Skill):
             self.jump = bot_settings.validate_boolean(jump)
             self.distance = bot_settings.validate_nonnegative_int(distance)
         else:
-            dx = target[0] - bot_status.player_pos[0]
-            dy = target[1] - bot_status.player_pos[1]
+            dx = target.x - bot_status.player_pos.x
+            dy = target.y - bot_status.player_pos.y
             if dy < 0 and abs(dx) >= 15:
                 self.direction = 'upright' if dx > 0 else 'upleft'
                 self.jump = True
@@ -283,6 +354,8 @@ class ShadowAssault(Skill):
 
     @classmethod
     def check(cls):
+        if cls.icon is None:
+            return
         matchs = utils.multi_match(
             capture.skill_frame, cls.icon[9:-2, 2:-12], threshold=0.98, debug=False)
         if matchs:
@@ -296,37 +369,25 @@ class ShadowAssault(Skill):
                 cls.usable_times = 0
         # print(f"ShadowAssault: canuse={cls.ready}")
 
-    def main(self):
+    def main(self, wait=True):
         if self.distance == 0:
-            return
+            return False
 
         if not self.canUse():
-            return
+            return False
 
-        # time.sleep(0.2)
-
-        if self.direction.endswith('left'):
-            if bot_status.player_direction != 'left':
-                press('left', down_time=0.01,up_time=0.01)
-        elif self.direction.endswith("right"):
-            if bot_status.player_direction != 'right':
-                press("right", down_time=0.01,up_time=0.01)
-        elif self.direction != 'left' and self.direction != 'right':
-            time.sleep(0.2)
-            # evade_rope(self.target)
-
-        if self.direction == 'up' and not shared_map.on_the_platform((bot_status.player_pos[0], self.target[1])):
-            Walk(target_x=self.target[0], tolerance=0).execute()
-
-        dx = self.target[0] - bot_status.player_pos[0]
-        dy = self.target[1] - bot_status.player_pos[1]
         if self.jump:
             if self.direction.startswith('down'):
                 key_down('down')
                 time.sleep(0.01)
                 press_acc(Keybindings.JUMP, down_time=0.2, up_time=0.1)
                 key_up("down")
+                time.sleep(0.01)
             else:
+                if self.target is not None:
+                    dy = self.target.y - bot_status.player_pos.y
+                else:
+                    dy = self.distance
                 press(Keybindings.JUMP)
                 if self.direction == 'up':
                     time.sleep(0.1 if abs(dy) >= 39 else 0.05)
@@ -334,17 +395,14 @@ class ShadowAssault(Skill):
                     time.sleep(0.2 if abs(dy) >= 39 else 0.05)
 
         key_down(self.direction)
-        time.sleep(0.03)
-
+        time.sleep(0.01)
         self.__class__.usable_times -= 1
         press(self.key)
-        key_up(self.direction)
-        sleep_in_the_air()
+        releaseAll()
         time.sleep(self.backswing)
+        sleep_in_the_air()
         MesoExplosion().execute()
-
-        # if bot_settings.record_layout:
-        #     layout.add(*bot_status.player_pos)
+        return True
 
 
 #########################
@@ -355,8 +413,8 @@ class Attack(Command):
     key = Keybindings.CRUEL_STAB
     type = SkillType.Attack
 
-    def main(self):
-        CruelStab().execute()
+    def main(self, wait=True):
+        return CruelStab().execute()
 
 
 class Aoe(Skill):
@@ -367,7 +425,7 @@ class Aoe(Skill):
     def canUse(cls, next_t: float = 0) -> bool:
         return TrickBlade.ready
 
-    def main(self):
+    def main(self, wait=True):
         return TrickBlade().main()
 
 
@@ -378,15 +436,16 @@ class CruelStab(Skill):
     # cooldown = 0.5
     backswing = 0.001
 
-    def main(self):
+    def main(self, wait=True):
         if not self.canUse():
-            return
+            return False
         self.__class__.castedTime = time.time()
         jumped = not shared_map.on_the_platform(bot_status.player_pos)
         press_acc(self.key, 1, down_time=0.02, up_time=0.02)
         threading.Timer(0.3, MesoExplosion().execute, ).start()
         # MesoExplosion().execute()
         time.sleep(0.5 if not jumped else self.backswing)
+        return True
 
 
 class MesoExplosion(Skill):
@@ -394,8 +453,9 @@ class MesoExplosion(Skill):
     key = Keybindings.MESO_EXPLOSION
     type = SkillType.Attack
 
-    def main(self):
+    def main(self, wait=True):
         press_acc(self.key, down_time=0.005, up_time=0.01)
+        return True
 
 
 class DarkFlare(Skill):
@@ -416,10 +476,10 @@ class DarkFlare(Skill):
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    def main(self):
+    def main(self, wait=True):
         if self.direction is not None:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
-        super().main()
+        return super().main()
 
 
 class ShadowVeil(Skill):
@@ -437,10 +497,10 @@ class ShadowVeil(Skill):
         else:
             self.direction = bot_settings.validate_horizontal_arrows(direction)
 
-    def main(self):
+    def main(self, wait=True):
         if self.direction is not None:
             press(self.direction)
-        super().main()
+        return super().main()
 
 
 class SuddenRaid(Skill):
@@ -454,7 +514,7 @@ class SuddenRaid(Skill):
         usable = super().canUse()
         if not gui_setting.detection.detect_mob:
             return usable
-        
+
         if usable:
             mobs = detect_mobs(capture.frame)
             return mobs is None or len(mobs) > 0
@@ -486,10 +546,10 @@ class TrickBlade(Skill):
         super().__init__(locals())
         self.direction = direction
 
-    def main(self):
+    def main(self, wait=True):
         if self.direction is not None:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
-        super().main()
+        return super().main()
 
 
 class SlashShadowFormation(Skill):
@@ -538,7 +598,7 @@ class Buff(Command):
 
     def __init__(self):
         super().__init__(locals())
-        self.buffs: list[Skill] = [
+        self.buffs = [
             MapleWarrior,
             MapleWorldGoddessBlessing,
             LastResort,
@@ -549,6 +609,9 @@ class Buff(Command):
             PickPocket,
         ]
 
+        LastResort.key = Keybindings.LAST_RESORT
+        Arachnid.key = Keybindings.ARACHNID
+
     def main(self, wait=True):
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!use buff")
         for buff in self.buffs:
@@ -556,7 +619,8 @@ class Buff(Command):
                 print(buff)
                 result = buff().main(wait)
                 if result:
-                    break
+                    return True
+        return False
 
 
 class ShadowWalker(Skill):
@@ -572,3 +636,36 @@ class EPIC_ADVENTURE(Skill):
     cooldown = 120
     backswing = 0.75
     type = SkillType.Buff
+
+
+class Potion(Command):
+    """Uses each of Shadowers's potion once."""
+
+    def __init__(self):
+        super().__init__(locals())
+        self.potions = [
+            GOLD_POTION,
+            CANDIED_APPLE,
+            GUILD_POTION,
+            LEGION_WEALTHY,
+            EXP_COUPON,
+            EXP_Potion,
+            Wealth_Potion,
+        ]
+
+        GOLD_POTION.key = Keybindings.GOLD_POTION
+        CANDIED_APPLE.key = Keybindings.CANDIED_APPLE
+        GUILD_POTION.key = Keybindings.GUILD_POTION
+        LEGION_WEALTHY.key = Keybindings.LEGION_WEALTHY
+        EXP_COUPON.key = Keybindings.EXP_COUPON
+        Wealth_Potion.key = Keybindings.WEALTH_POTION
+        EXP_Potion.key = Keybindings.EXP_POTION
+
+    def main(self, wait=True):
+        if bot_status.invisible:
+            return False
+        for potion in self.potions:
+            if potion.canUse():
+                potion().execute()
+                time.sleep(0.2)
+        return True
