@@ -13,7 +13,6 @@ from src.command.commands import *  # type: ignore
 from src.map.map_helper import *
 from src.map.map import shared_map
 from src.modules.capture import capture
-from src.chat_bot.chat_bot import chat_bot
 from src.models.map_model import Min_Jumpable_Gap, Max_Jumpable_Gap
 
 # List of key mappings

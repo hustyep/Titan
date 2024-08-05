@@ -7,6 +7,9 @@ from src.common.interfaces import AsyncTask
 from src.command.commands import *
 from src.common.vkeys import *
 from src.common import bot_status, bot_settings, utils, bot_helper
+from src.models.map_model import Min_Jumpable_Gap, Max_Jumpable_Gap
+from src.map.map_helper import *
+from src.map.map import shared_map
 
 # List of key mappings
 
@@ -669,3 +672,239 @@ class Potion(Command):
                 potion().execute()
                 time.sleep(0.2)
         return True
+
+
+@bot_status.run_if_enabled
+def find_next_point(start: MapPoint, target: MapPoint):
+    # utils.log_event(f"[find_next_point] start:{start.tuple} target:{str(target)}", bot_settings.debug)
+
+    if shared_map.minimap_data is None or len(shared_map.minimap_data) == 0:
+        return target
+
+    if shared_map.current_map is None:
+        return target
+
+    if target_reached(start, target):
+        return
+
+    start = shared_map.fixed_point(start)
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    if not platform_start or not platform_target:
+        return
+
+    if platform_start == platform_target:
+        return target
+
+    paths = shared_map.path_between(start, target, bot_status.stage_fright and gui_setting.auto.action)
+    utils.log_event(f"[find_next_point] paths:", bot_settings.debug)
+    if paths:
+        for plat in paths:
+            utils.log_event(f"  {str(plat)}", bot_settings.debug)
+        next_platform = paths[1]
+        d_y = next_platform.y - platform_start.y
+
+        tmp_p = next_platform.center
+        if len(paths) == 2:
+            portal = shared_map.current_map.platform_portable(platform_start, platform_target)
+            if portal:
+                if target_reached(start, portal.entrance):
+                    return portal.export
+                else:
+                    return portal.entrance
+            tmp_p = target
+        if abs(d_y) <= 5:
+            next_p = find_next_horizontal_point(start, tmp_p)
+            if next_p:
+                return next_p
+        elif d_y < 0:
+            next_p = find_next_upper_point(start, tmp_p)
+            if next_p:
+                return next_p
+        else:
+            next_p = find_next_under_point(start, tmp_p)
+            if next_p:
+                return next_p
+    return shared_map.platform_point(MapPoint(target.x, target.y - 1, 3))
+
+
+def find_next_horizontal_point(start: MapPoint, target: MapPoint):
+    # if start.y != target.y:
+    #     return
+
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    if not platform_start or not platform_target:
+        return
+    if platform_start == platform_target:
+        return target
+
+    max_distance = Max_Jumpable_Gap
+    target_range = None
+    if platform_start.end_x < platform_target.begin_x:
+        target_range = range(max(platform_target.begin_x - max_distance,
+                             platform_start.begin_x), platform_start.end_x + 1)
+    else:
+        target_range = range(platform_start.begin_x, min(
+            platform_target.end_x + max_distance, platform_start.end_x) + 1)
+    if start.x in target_range:
+        return target
+    else:
+        target_x = (target_range.start + target_range.stop) / 2
+        tolerance = (target_range.stop - target_range.start) / 2
+        if platform_start.end_x < platform_target.begin_x:
+            if abs(target_range.start - start.x) <= 10 and abs(platform_start.end_x - start.x) > 14:
+                target_x = platform_start.end_x - 4
+                tolerance = 4
+        else:
+            if abs(target_range.stop - start.x) <= 10 and abs(platform_start.begin_x - start.x) > 14:
+                target_x = platform_start.begin_x + 4
+                tolerance = 4
+        return MapPoint(int(target_x), start.y, int(tolerance))
+
+
+def find_next_upper_point(start: MapPoint, target: MapPoint):
+    if start.y <= target.y:
+        return
+
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    if not platform_start or not platform_target:
+        return
+
+    gap = platform_gap(platform_start, platform_target)
+    if gap <= -5:
+        # 有交集
+        # 优先垂直方向接近
+        next_p = MapPoint(start.x, platform_target.y, 3)
+        if shared_map.is_continuous(next_p, target):
+            if target_reached(next_p, target):
+                return next_p
+            return target
+
+        # 尝试水平方向接近
+        next_p = MapPoint(target.x, start.y, target.tolerance)
+        if not shared_map.is_continuous(start, next_p):
+            next_p = None
+        if next_p:
+            if target_reached(start, next_p):
+                return target
+            else:
+                if next_p.x < start.x:
+                    if next_p.x - platform_start.begin_x <= 3:
+                        next_p = None
+                else:
+                    if platform_start.end_x - next_p.x <= 3:
+                        next_p = None
+                if next_p:
+                    return next_p
+
+        intersection_point = point_of_intersection(platform_start, platform_target)
+        assert (intersection_point)
+        if target_reached(start, intersection_point):
+            return target
+        else:
+            return intersection_point
+    else:
+        # 二段跳范围内
+        if platform_start.end_x < platform_target.begin_x:
+            next_p = MapPoint(platform_start.end_x - 2, platform_start.y, 3)
+        else:
+            next_p = MapPoint(platform_start.begin_x + 2, platform_start.y, 3)
+        if target_reached(start, next_p):
+            return target
+        else:
+            return next_p
+
+
+def find_next_under_point(start: MapPoint, target: MapPoint):
+    if start.y >= target.y:
+        return
+
+    assert (shared_map.current_map)
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    if not platform_start or not platform_target:
+        return
+
+    intersections = set(platform_start.x_range).intersection(set(platform_target.x_range))
+
+    if target.x in intersections:
+        return find_fall_point(start, target)
+    if shared_map.current_map.can_jump_down(platform_start, platform_target):
+        return find_jump_down_point(start, target)
+    return find_fall_point(start, target)
+
+
+def find_fall_point(start: MapPoint, target: MapPoint):
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    assert (shared_map.current_map)
+    assert platform_start
+    assert platform_target
+
+    gap = platform_gap(platform_start, platform_target)
+    if gap <= -Min_Jumpable_Gap:
+        available_x = set(platform_start.x_range).intersection(set(platform_target.x_range))
+        for y in [y for y in shared_map.current_map.platform_map.keys() if y in range(start.y + 1, target.y)]:
+            plats = shared_map.current_map.platforms_of_y(y)
+            assert (plats)
+            for plat in plats:
+                available_x = available_x.difference(set(plat.x_range))
+        if len(available_x) > 0:
+            if start.x in available_x:
+                Fall().execute()
+                return None
+            else:
+                next_p = point_of_intersection(platform_start, platform_target)
+                assert next_p
+                if target_reached(start, next_p):
+                    next_p.tolerance = 2
+                return next_p
+
+
+def find_jump_down_point(start: MapPoint, target: MapPoint):
+    platform_start = shared_map.platform_of_point(start)
+    platform_target = shared_map.platform_of_point(target)
+
+    assert (shared_map.current_map)
+    assert platform_start
+    assert platform_target
+
+    dy = platform_target.y - platform_start.y
+    max_jump_distance = 30 + dy
+    gap = platform_gap(platform_start, platform_target)
+    available_x = 0
+    if platform_target.end_x > platform_start.end_x:
+        if gap < 0:
+            available_x = platform_start.end_x - max_jump_distance
+        else:
+            available_x = platform_target.begin_x - max_jump_distance
+        available_x = max(available_x, platform_start.begin_x)
+        x = (available_x + platform_start.end_x)/2
+        tolorance = (platform_start.end_x - available_x + 1)/2
+        next_p = MapPoint(int(x), start.y, int(tolorance))
+        tmp_p = MapPoint(platform_start.end_x + 20, target.y, 10)
+        if target_reached(start, next_p):
+            return target if target_reached(target, tmp_p) else tmp_p
+        else:
+            return next_p
+    else:
+        if gap < 0:
+            available_x = platform_start.begin_x + max_jump_distance
+        else:
+            available_x = platform_target.end_x + max_jump_distance
+        available_x = min(available_x, platform_start.end_x)
+        x = (platform_start.begin_x + available_x)/2
+        tolorance = (available_x - platform_start.begin_x + 1)/2
+        next_p = MapPoint(int(x), start.y, int(tolorance))
+        tmp_p = MapPoint(platform_start.begin_x - 20, target.y, 10)
+        if target_reached(start, next_p):
+            return target if target_reached(target, tmp_p) else tmp_p
+        else:
+            return next_p
