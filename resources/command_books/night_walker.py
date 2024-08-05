@@ -194,7 +194,7 @@ class Jump_Up(Command):
         time.sleep(0.06 if dy >= 18 else 0.3)
         press(Keybindings.JUMP)
         key_up('up')
-        time.sleep(0.8 if dy >= 18 else 0.5)
+        time.sleep(0.75 if dy >= 18 else 0.45)
         dx = self.target.x - bot_status.player_pos.x
         direction = 'left' if dx < 0 else 'right'
         if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
@@ -262,7 +262,7 @@ class Shadow_Fall(Command):
 
         key_down('down')
         time.sleep(0.01)
-        press(DefaultKeybindings.JUMP, 1, down_time=0.1, up_time=0.1)
+        press(DefaultKeybindings.JUMP, 1, down_time=0.15, up_time=0.1)
 
         plat = shared_map.platform_of_point(self.target)
         assert (plat)
@@ -1135,14 +1135,14 @@ def find_next_under_point(start: MapPoint, target: MapPoint):
         return find_fall_point(start, target)
     if shared_map.current_map.can_jump_down(platform_start, platform_target):
         return find_jump_down_point(start, target)
-    if shared_map.current_map.can_walk_down(platform_start, platform_target):
-        walk_down_point = find_walk_down_point(start, target)
-        if walk_down_point != target:
-            fall_down_point = find_fall_point(start, target)
-            if fall_down_point:
-                return fall_down_point
-            else:
-                return walk_down_point
+    # if shared_map.current_map.can_walk_down(platform_start, platform_target):
+    #     walk_down_point = find_walk_down_point(start, target)
+    #     if walk_down_point != target:
+    #         fall_down_point = find_fall_point(start, target)
+    #         if fall_down_point:
+    #             return fall_down_point
+    #         else:
+    #             return walk_down_point
     return find_fall_point(start, target)
 
 
