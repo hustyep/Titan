@@ -8,6 +8,7 @@ $, target=move_tolerance, value=10
     Shadow_Attack, attack=False
     Greater_Dark_Servant
 *, x=131, y=74, interval=0, tolerance=5, detect=False, skip=False
+    Wait, duration=0.3
     ErdaShower, direction=right
     Replace_Dark_Servant, resummon=False
 #
@@ -26,7 +27,7 @@ $, target=move_tolerance, value=10
     Detect_Mobs, count=5
     Shadow_Attack, attack=False
     Replace_Dark_Servant, resummon=True
-*, x=18, y=41, interval=0, tolerance=8, detect=False, skip=False
+*, x=20, y=41, interval=0, tolerance=12, detect=False, skip=False
     Wait, duration=0.3
     Replace_Dark_Servant, resummon=False
 #
@@ -37,7 +38,7 @@ $, target=move_tolerance, value=10
     Shadow_Attack, attack=False
     Replace_Dark_Servant, resummon=True
 *, x=103, y=58, interval=0, tolerance=5, detect=False, skip=False
-*, x=115, y=41, interval=0, tolerance=8, detect=False, skip=False
+*, x=112, y=41, interval=0, tolerance=12, detect=False, skip=False
     Wait, duration=0.3
     Replace_Dark_Servant, resummon=False
 #
