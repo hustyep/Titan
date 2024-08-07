@@ -196,7 +196,7 @@ class Jump_Up(Command):
         dy = bot_status.player_pos.y - self.target.y
         press(Keybindings.JUMP)
         key_down('up')
-        time.sleep(0.06 if dy >= 18 else 0.3)
+        time.sleep(0.06 if dy >= 18 else 0.25)
         press(Keybindings.JUMP)
         key_up('up')
         time.sleep(0.75 if dy >= 18 else 0.45)
