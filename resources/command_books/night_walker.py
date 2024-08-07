@@ -644,7 +644,7 @@ class Silence(Skill):
     key = Keybindings.Silence
     type = SkillType.Attack
     cooldown = 350
-    precast = 0.3
+    precast = 1
     backswing = 4
     tolerance = 6
 
