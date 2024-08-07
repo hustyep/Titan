@@ -603,7 +603,7 @@ class Random_Action(Command):
 
 class Check_Others(Command):
     def main(self, wait=True):
-        if bot_status.stage_fright and time.time() - bot_status.others_comming_time >= 180:
+        if bot_status.stage_fright and time.time() - bot_status.others_comming_time >= 1800:
             time.sleep(3)
             press('shift')
             time.sleep(4)
