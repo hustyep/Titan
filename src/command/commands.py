@@ -601,6 +601,39 @@ class Random_Action(Command):
         return True
 
 
+class Detect_Mobs(Command):
+    def __init__(self, count=1):
+        super().__init__(locals())
+        self.count = int(count)
+
+    def main(self, wait=True):
+        start = time.time()
+        need_act = bot_status.stage_fright and gui_setting.auto.action and random() < 0.4
+        mobs_count = -1
+        while True:
+            if capture.frame is None:
+                time.sleep(0.1)
+            else:
+                mobs = detect_mobs(
+                    capture.frame,
+                    multy_match=self.count > 1,
+                    debug=False)
+                if mobs_count != len(mobs):
+                    mobs_count = len(mobs)
+                    utils.log_event(f"mobs count = {mobs_count}", bot_settings.debug)
+                if mobs_count >= self.count or (bot_status.elite_boss_detected and bot_status.stage_fright):
+                    break
+                if time.time() - start >= 7:
+                    utils.log_event("Detect_Mobs timeout", bot_settings.debug)
+                    bot_status.prepared = False
+                    break
+                if need_act:
+                    Random_Action().execute()
+                    need_act = False
+                else:
+                    time.sleep(0.1)
+        return True
+
 class Check_Others(Command):
     def main(self, wait=True):
         if bot_status.stage_fright and time.time() - bot_status.others_comming_time >= 1800:
@@ -1046,8 +1079,8 @@ class Sol_Janus_Dawn(Command):
 class Will_of_Erda(Command):
     key = DefaultKeybindings.Will_of_Erda
     cooldown = 330
-    precast = 0.3
-    backswing = 0.8
+    precast = 0.5
+    backswing = 0.5
     type = SkillType.Buff
 
 

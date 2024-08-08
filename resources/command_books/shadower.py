@@ -412,6 +412,51 @@ class ShadowAssault(Skill):
 #         Skills        #
 #########################
 
+class Shadow_attack(Command):
+    cooldown = 4
+
+    def __init__(self, attack=True, direction=None):
+        super().__init__(locals())
+        self.attack = bot_settings.validate_boolean(attack)
+        self.direction = bot_settings.validate_horizontal_arrows(direction)
+
+    def main(self, wait=True):
+        assert (shared_map.current_map)
+        while not self.canUse():
+            time.sleep(0.1)
+            mobs = detect_mobs(capture.frame, MobType.NORMAL, True)
+            if len(mobs) == 0:
+                return False
+
+        n = 1
+        self.__class__.castedTime = time.time()
+        if Arachnid.canUse():
+            Arachnid().execute()
+        elif SolarCrest.canUse():
+            SolarCrest().execute()
+        elif SuddenRaid.canUse():
+            SuddenRaid().execute()
+        elif TrickBlade.canUse():
+            TrickBlade(jump=True).execute()
+            n = 2
+        else:
+            n = 3
+            self.__class__.castedTime = time.time() - 1
+
+        if self.attack and n > 0:
+            for _ in range(0, n):
+                direction = self.direction
+                if direction is None:
+                    direction = random_direction()
+                Direction(direction).execute()
+                if random() < 0.7:
+                    Jump(0.1, attack=True).execute()
+                else:
+                    Attack().execute()
+        else:
+            time.sleep(0.5)
+        return True
+
 class Attack(Command):
     key = Keybindings.CRUEL_STAB
     type = SkillType.Attack
@@ -545,13 +590,16 @@ class TrickBlade(Skill):
     backswing = 0.7
     type = SkillType.Attack
 
-    def __init__(self, direction=None):
+    def __init__(self, direction=None, jump=False):
         super().__init__(locals())
         self.direction = direction
+        self.jump = bot_settings.validate_boolean(jump)
 
     def main(self, wait=True):
         if self.direction is not None:
             press_acc(self.direction, down_time=0.03, up_time=0.03)
+        if self.jump:
+            press(Keybindings.JUMP)
         return super().main()
 
 
