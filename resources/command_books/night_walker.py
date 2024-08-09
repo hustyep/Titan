@@ -1176,6 +1176,8 @@ def find_fall_point(start: MapPoint, target: MapPoint):
                 assert next_p
                 if target_reached(start, next_p):
                     next_p.tolerance = 2
+                if target_reached(start, next_p):
+                    return target
                 return next_p
 
 
