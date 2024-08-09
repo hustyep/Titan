@@ -201,10 +201,13 @@ class Jump_Up(Command):
         key_up('up')
         time.sleep(0.75 if dy >= 18 else 0.45)
         dx = self.target.x - bot_status.player_pos.x
-        direction = 'left' if dx < 0 else 'right'
         if not shared_map.on_the_platform(MapPoint(bot_status.player_pos.x, self.target.y), 1):
-            Shadow_Dodge(direction).execute()
+            plat = shared_map.platform_of_point(self.target)
+            if plat:
+                direction = 'left' if abs(plat.begin_x - bot_status.player_pos.x) > abs(plat.end_x - bot_status.player_pos.x) else 'right'
+                Shadow_Dodge(direction).execute()
         elif abs(dx) > self.target.tolerance:
+            direction = 'left' if dx < 0 else 'right'
             if abs(dx) >= 15:
                 key_down(direction)
                 time.sleep(0.01)
