@@ -528,8 +528,8 @@ class Replace_Dark_Servant(Skill):
 
     @classmethod
     def canUse(cls, next_t: float = 0) -> bool:
-        if Greater_Dark_Servant.canUse():
-            return False
+        # if Greater_Dark_Servant.canUse():
+        #     return False
         return super(Replace_Dark_Servant, cls).canUse(next_t)
 
     def main(self, wait=True):
@@ -647,7 +647,7 @@ class Silence(Skill):
     key = Keybindings.Silence
     type = SkillType.Attack
     cooldown = 350
-    precast = 1
+    precast = 2
     backswing = 4
     tolerance = 6
 
