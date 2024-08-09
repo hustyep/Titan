@@ -1,0 +1,23 @@
+$, target=move_tolerance, value=10
+*, x=81, y=67, interval=999999, tolerance=5, detect=False, skip=False
+    Sol_Janus, type=1
+
+~, label=summon1, interval=45, skip=False
+*, x=81, y=67, interval=0, tolerance=5, detect=False, skip=False
+    Detect_Mobs, count=8
+    Shadow_Attack, attack=False
+    Replace_Dark_Servant, resummon=True
+*, x=153, y=67, interval=0, tolerance=5, detect=False, skip=False
+    Wait, duration=0.3
+    ErdaShower, direction=right
+    Replace_Dark_Servant, resummon=False
+#
+
+@, label=mobbing
+*, x=81, y=67, interval=0, tolerance=5, detect=False, skip=False
+    Check_Others
+    Detect_Mobs, count=8
+    Shadow_Attack, attack=True
+    Buff
+    Potion
+    FeedPet
